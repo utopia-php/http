@@ -31,7 +31,8 @@ $utopia->run($request, $response);
 ```
 
 ## System Requirements
-Utopia Framework requires PHP 5.4 or later. We recommend using the latest PHP version whenever possible.
+
+Utopia Framework requires PHP 7.0 or later. We recommend using the latest PHP version whenever possible.
 
 ## Versioning
 
@@ -47,10 +48,6 @@ For more information on SemVer, please visit [http://semver.org/](http://semver.
 
 + [https://twitter.com/eldadfux](https://twitter.com/eldadfux)
 + [https://github.com/eldadfux](https://github.com/eldadfux)
-
-## Links
-* GIT Repositiory: [https://github.com/utopia-php/utopia](https://github.com/utopia-php/utopia)
-* Contributors: [https://github.com/utopia-php/utopia/contributors](https://github.com/utopia-php/utopia/contributors)
 
 ## Copyright and license
 
