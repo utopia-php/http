@@ -1,5 +1,7 @@
 # Utopia Framework
 
+[![Build Status](https://travis-ci.org/utopia-php/framework.svg?branch=master)](https://travis-ci.org/utopia-php/framework)
+
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development.
 
 Utopia Framework is dependency free. Any extra features such as authentication, caching will be available as standalone models in order to keep the framework core as clean, light any easy to learn.
