@@ -34,7 +34,7 @@ $utopia->run($request, $response);
 
 ## System Requirements
 
-Utopia Framework requires PHP 7.0 or later. We recommend using the latest PHP version whenever possible.
+Utopia Framework requires PHP 7.1 or later. We recommend using the latest PHP version whenever possible.
 
 ## Authors
 
