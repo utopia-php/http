@@ -5,8 +5,8 @@
  * @package Framework
  * @subpackage Core
  *
- * @link https://github.com/eldadfux/Utopia-PHP-Framework
- * @author Eldad Fux <eldad@fuxie.co.il>
+ * @link https://github.com/utopia-php/framework
+ * @author Eldad Fux <eldad@appwrite.io>
  */
 
 namespace Utopia;

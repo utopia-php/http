@@ -5,8 +5,8 @@
  * @package Framework
  * @subpackage Tests
  *
- * @link https://github.com/eldadfux/Utopia-PHP-Framework
- * @author Eldad Fux <eldad@fuxie.co.il>
+ * @link https://github.com/utopia-php/framework
+ * @author Eldad Fux <eldad@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
