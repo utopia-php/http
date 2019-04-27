@@ -1,6 +1,10 @@
-# Utopia Framework
+<p>
+    <img height="45" src="docs/logo.png" alt="Logo">
+</p>
 
 [![Build Status](https://travis-ci.org/utopia-php/framework.svg?branch=master)](https://travis-ci.org/utopia-php/framework)
+![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/framework.svg)
+![License](https://img.shields.io/github/license/utopia-php/framework.svg)
 
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development.
 
@@ -8,6 +12,12 @@ Utopia Framework is dependency free. Any extra features such as authentication, 
 
 ## Getting Started
 
+Install using composer:
+```bash
+composer require utopia-php/framework
+```
+
+Init your first application:
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
