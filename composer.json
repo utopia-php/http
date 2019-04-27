@@ -1,0 +1,23 @@
+{
+    "name": "utopia-php/framework",
+    "description": "A simple, light and advanced PHP framework",
+    "type": "library",
+    "keywords": ["php","framework", "upf"],
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "authors": [
+        {
+            "name": "Eldad Fux",
+            "email": "eldad@appwrite.io"
+        }
+    ],
+    "autoload": {
+        "psr-4": {"Utopia\\": "src/"}
+    },
+    "require": {
+        "php": ">=7.0.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.0"
+    }
+}

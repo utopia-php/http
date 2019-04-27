@@ -1,0 +1,47 @@
+<?php
+/**
+ * Utopia PHP Framework
+ *
+ * @package Framework
+ * @subpackage Tests
+ *
+ * @link https://github.com/eldadfux/Utopia-PHP-Framework
+ * @author Eldad Fux <eldad@fuxie.co.il>
+ * @version 1.0 RC4
+ * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
+ */
+
+namespace Utopia\Validator;
+
+use PHPUnit\Framework\TestCase;
+
+class NumericTest extends TestCase
+{
+    /**
+     * @var Numeric
+     */
+    protected $numeric = null;
+
+    public function setUp()
+    {
+        $this->numeric = new Numeric();
+    }
+
+    public function tearDown()
+    {
+        $this->numeric = null;
+    }
+
+    public function testIsValid()
+    {
+        // Assertions
+        $this->assertEquals($this->numeric->isValid('42'), true);
+        $this->assertEquals($this->numeric->isValid(1337), true);
+        $this->assertEquals($this->numeric->isValid(0x539), true);
+        $this->assertEquals($this->numeric->isValid(02471), true);
+        $this->assertEquals($this->numeric->isValid(1337e0), true);
+        $this->assertEquals($this->numeric->isValid(9.1), true);
+        $this->assertEquals($this->numeric->isValid('not numeric'), false);
+        $this->assertEquals($this->numeric->isValid(array()), false);
+    }
+}

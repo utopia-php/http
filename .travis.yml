@@ -1,0 +1,14 @@
+language: php
+
+php:
+- 7.0
+- 7.1
+- 7.2
+- 7.3
+
+notifications:
+  email:
+  - team@appwrite.io
+
+script:
+- phpunit --configuration phpunit.xml --coverage-text --colors=never
