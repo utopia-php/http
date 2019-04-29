@@ -52,6 +52,7 @@ Library | Description
 --- | ---
 **[Utopia Abuse](https://github.com/utopia-php/abuse)** | Simple PHP library for rate limiting usage of different features in your app or API.
 **[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
+**[Utopia CLI](https://github.com/utopia-php/abuse)** | Simple PHP library for for building simple command line tools.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
 
 
