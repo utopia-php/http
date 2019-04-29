@@ -46,6 +46,15 @@ $utopia->run($request, $response);
 
 Utopia Framework requires PHP 7.1 or later. We recommend using the latest PHP version whenever possible.
 
+## More from Utopia
+
+Library | Description
+--- | ---
+**[Utopia Abuse](https://github.com/utopia-php/abuse)** | Simple PHP library for rate limiting usage of different features in your app or API.
+**[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
+**[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
+
+
 ## Authors
 
 **Eldad Fux**
