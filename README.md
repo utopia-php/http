@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/utopia-php/framework.svg?branch=master)](https://travis-ci.org/utopia-php/framework)
 ![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/framework.svg)
-![License](https://img.shields.io/github/license/utopia-php/framework.svg)
+[![Chat With Us](https://img.shields.io/gitter/room/utopia-php/community.svg)](https://gitter.im/utopia-php/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development.
 
@@ -56,7 +56,6 @@ Library | Description
 **[Utopia CLI](https://github.com/utopia-php/abuse)** | Simple PHP library for for building simple command line tools.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
 **[Utopia Registry](https://github.com/utopia-php/registry)** | Simple PHP library for dependency injection and lazy loading of objects or resources.
-
 
 ## Authors
 
