@@ -17,6 +17,9 @@ use Exception;
 
 class View
 {
+    const FILTER_ESCAPE = 'escape';
+    const FILTER_NL2P   = 'nl2p';
+
     /**
      * @var self
      */
@@ -35,7 +38,12 @@ class View
     /**
      * @var array
      */
-    protected $params = array();
+    protected $params = [];
+
+    /**
+     * @var array
+     */
+    protected $filters = [];
 
     /**
      * Constructor
@@ -48,6 +56,25 @@ class View
     public function __construct($path = '')
     {
         $this->setPath($path);
+
+        $this
+            ->addFilter(self::FILTER_ESCAPE, function ($value) {
+                return htmlentities($value, ENT_QUOTES, 'UTF-8');
+            })
+            ->addFilter(self::FILTER_NL2P, function ($value) {
+                $paragraphs = '';
+
+                foreach (explode("\n\n", $value) as $line) {
+                    if (trim($line)) {
+                        $paragraphs .= '<p>' . $line . '</p>';
+                    }
+                }
+
+                $paragraphs = str_replace("\n", '<br />', $paragraphs);
+
+                return $paragraphs;
+            })
+        ;
     }
 
     /**
@@ -74,7 +101,7 @@ class View
     /**
      * Set parent View object conatining this object
      *
-     * @param View $view
+     * @param self $view
      * @return View
      */
     public function setParent(self $view)
@@ -165,6 +192,51 @@ class View
     public function isRendered()
     {
         return (bool) $this->rendered;
+    }
+
+    /**
+     * Add Filter
+     *
+     * @param $name
+     * @param $callback
+     * @return View
+     */
+    public function addFilter($name, $callback)
+    {
+        $this->filters[$name] = $callback;
+        return $this;
+    }
+
+    /**
+     * Output and filter value
+     *
+     * @param mixed $value
+     * @param string|string[] $filter
+     * @return string
+     * @throws Exception
+     */
+    public function print($value, $filter = '')
+    {
+        if(!empty($filter)) {
+            if(is_array($filter)) {
+                foreach ($filter as $callback) {
+                    if(!isset($this->filters[$callback])) {
+                        throw new Exception('Filter "' . $callback . '"" is not registered');
+                    }
+
+                    $value = $this->filters[$callback]($value);
+                }
+            }
+            else {
+                if(!isset($this->filters[$filter])) {
+                    throw new Exception('Filter "' . $filter . '"" is not registered');
+                }
+
+                $value = $this->filters[$filter]($value);
+            }
+        }
+
+        return $value;
     }
 
     /**
@@ -265,6 +337,7 @@ class View
      *
      * @param  string $str
      * @return string
+     * @deprecated Use print method with escape filter
      */
     public function escape($str)
     {
@@ -281,6 +354,7 @@ class View
      *
      * @param string $string
      * @return string
+     * @deprecated Use print method with nl2p filter
      */
     public function nl2p($string)
     {

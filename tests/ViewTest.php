@@ -99,6 +99,12 @@ class ViewTest extends TestCase
     public function testEscape()
     {
         // Assertions
-        $this->assertEquals('&amp;&quot;', $this->view->escape('&"'));
+        $this->assertEquals('&amp;&quot;', $this->view->print('&"', View::FILTER_ESCAPE));
+    }
+
+    public function testNl2p()
+    {
+        // Assertions
+        $this->assertEquals('<p>line1</p><p>line2</p>', $this->view->print("line1\n\nline2", View::FILTER_NL2P));
     }
 }
