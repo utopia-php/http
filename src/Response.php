@@ -20,6 +20,7 @@ class Response
     /**
      * HTTP content types
      */
+    const CONTENT_TYPE_TEXT         = 'text/plain';
     const CONTENT_TYPE_HTML         = 'text/html';
     const CONTENT_TYPE_JSON         = 'application/json';
     const CONTENT_TYPE_XML          = 'text/xml';
