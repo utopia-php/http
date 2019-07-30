@@ -435,6 +435,23 @@ class Response
     }
 
     /**
+     * Text
+     *
+     * This helper is for sending plain text HTTP response and sets relevant content type header ('text/plain').
+     *
+     * @see http://en.wikipedia.org/wiki/JSON
+     *
+     * @param string $data
+     */
+    public function text($data)
+    {
+        $this
+            ->setContentType(Response::CONTENT_TYPE_TEXT)
+            ->send($data)
+        ;
+    }
+
+    /**
      * JSON
      *
      * This helper is for sending JSON HTTP response.
