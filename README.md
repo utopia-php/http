@@ -25,7 +25,7 @@ use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
 
-$app        = new App('America/New_York', true /* is production */);
+$app        = new App('America/New_York' /* timezone */, true /* is production */);
 $request    = new Request();
 $response   = new Response();
 
