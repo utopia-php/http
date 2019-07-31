@@ -49,6 +49,10 @@ Utopia Framework requires PHP 7.1 or later. We recommend using the latest PHP ve
 
 ## More from Utopia
 
+Our ecosystem support other thin PHP projects aiming to extend the core PHP Utopia framework.
+
+Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project. 
+
 Library | Description
 --- | ---
 **[Utopia AB](https://github.com/utopia-php/ab)** | Simple PHP library for managing AB testing on the server side.
