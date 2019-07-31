@@ -25,10 +25,11 @@ use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
 
+$app        = new App('America/New_York', true /* is production */);
 $request    = new Request();
 $response   = new Response();
 
-$utopia->get('/hello-world')
+$app->get('/hello-world')
     ->action(
         function() use ($request, $response) {
             $response
