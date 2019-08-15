@@ -390,6 +390,7 @@ class App
                 foreach($route->getParams() as $key => $param) {
                     // Get value from route or request object
                     $value = isset($values[$key]) ? $values[$key] : $request->getParam($key, $param['default']);
+                    $value = ($value === '') ? $param['default'] : $value;
 
                     $this->validate($key, $param, $value);
 
