@@ -120,6 +120,10 @@ class Response
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED       => 'HTTP Version Not Supported',
     );
 
+    const COOKIE_SAMESITE_NONE      = 'None';
+    const COOKIE_SAMESITE_STRICT    = 'Strict';
+    const COOKIE_SAMESITE_LAX       = 'Lax';
+
     /**
      * @var int
      */
@@ -283,9 +287,10 @@ class Response
      * @param string $domain   [optional]
      * @param bool   $secure   [optional]
      * @param bool   $httponly [optional]
+     * @param string $sameSite [optional]
      * @return self
      */
-    public function addCookie($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null)
+    public function addCookie($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null, $sameSite = null)
     {
         $this->cookies[$name] = array(
             'name'		=> $name,
@@ -295,6 +300,7 @@ class Response
             'domain' 	=> $domain,
             'secure' 	=> $secure,
             'httponly'	=> $httponly,
+            'sameSite'	=> $sameSite,
         );
 
         return $this;
@@ -397,7 +403,20 @@ class Response
     private function appendCookies()
     {
         foreach ($this->cookies as $cookie) {
-            setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
+            
+            if (version_compare(PHP_VERSION, '7.3.0', '<')) {
+                setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
+            }
+            else {
+                setcookie($cookie['name'], $cookie['value'], [
+                    'expires' => $cookie['expire'],
+                    'path' => $cookie['path'],
+                    'domain' => $cookie['domain'],
+                    'secure' => $cookie['secure'],
+                    'httponly' => $cookie['httponly'],
+                    'samesite' => $cookie['samesite'],
+                ]);
+            }
         }
 
         return $this;
