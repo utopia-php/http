@@ -300,7 +300,7 @@ class Response
             'domain' 	=> $domain,
             'secure' 	=> $secure,
             'httponly'	=> $httponly,
-            'sameSite'	=> $sameSite,
+            'samesite'	=> $sameSite,
         );
 
         return $this;
