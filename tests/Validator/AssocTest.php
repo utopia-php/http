@@ -1,0 +1,43 @@
+<?php
+/**
+ * Utopia PHP Framework
+ *
+ * @package Framework
+ * @subpackage Tests
+ *
+ * @link https://github.com/utopia-php/framework
+ * @author Eldad Fux <eldad@appwrite.io>
+ * @version 1.0 RC4
+ * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
+ */
+
+namespace Utopia\Validator;
+
+use PHPUnit\Framework\TestCase;
+
+class AssocTest extends TestCase
+{
+    /**
+     * @var Numeric
+     */
+    protected $assoc = null;
+
+    public function setUp()
+    {
+        $this->assoc = new Assoc();
+    }
+
+    public function tearDown()
+    {
+        $this->assoc = null;
+    }
+
+    public function testIsValid()
+    {
+        // Assertions
+        $this->assertEquals(false, $this->assoc->isValid(['a', 'b', 'c']));
+        $this->assertEquals(false, $this->assoc->isValid(["0" => 'a', "1" => 'b', "2" => 'c']));
+        $this->assertEquals(true, $this->assoc->isValid(["1" => 'a', "0" => 'b', "2" => 'c']));
+        $this->assertEquals(true, $this->assoc->isValid(["a" => 'a', "b" => 'b', "c" => 'c']));
+    }
+}
