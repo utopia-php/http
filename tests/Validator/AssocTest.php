@@ -35,9 +35,12 @@ class AssocTest extends TestCase
     public function testIsValid()
     {
         // Assertions
+        $this->assertEquals(false, $this->assoc->isValid([0 => 'string', 1 => 'string']));
+        $this->assertEquals(false, $this->assoc->isValid(['a']));
         $this->assertEquals(false, $this->assoc->isValid(['a', 'b', 'c']));
         $this->assertEquals(false, $this->assoc->isValid(["0" => 'a', "1" => 'b', "2" => 'c']));
         $this->assertEquals(true, $this->assoc->isValid(["1" => 'a', "0" => 'b', "2" => 'c']));
         $this->assertEquals(true, $this->assoc->isValid(["a" => 'a', "b" => 'b', "c" => 'c']));
+        $this->assertEquals(true, $this->assoc->isValid([]));
     }
 }
