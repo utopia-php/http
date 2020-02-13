@@ -534,6 +534,6 @@ class Response
     {
         $this
             ->setStatusCode(self::STATUS_CODE_NOCONTENT)
-            ->send('', 0);
+            ->send('');
     }
 }
