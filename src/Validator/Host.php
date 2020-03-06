@@ -61,11 +61,9 @@ class Host extends Validator
         if(!$urlValidator->isValid($value)) {
             return false;
         }
-
-        foreach ($this->whitelist as $host) {
-            if(substr($value, 0, strlen($host)) === $host) {
-                return true;
-            }
+var_dump(parse_url($value, PHP_URL_HOST));
+        if(in_array(parse_url($value, PHP_URL_HOST), $this->whitelist)) {
+            return true;
         }
 
         return false;
