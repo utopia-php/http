@@ -61,7 +61,7 @@ Library | Description
 **[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
 **[Utopia CLI](https://github.com/utopia-php/cli)** | Simple PHP library for for building simple command line tools.
 **[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for for managing your app configuration.
-**[Utopia Domains](https://github.com/utopia-php/locale)** | Simple PHP library for parsing domain names.
+**[Utopia Domains](https://github.com/utopia-php/domains)** | Simple PHP library for parsing domain names.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
 **[Utopia Registry](https://github.com/utopia-php/registry)** | Simple PHP library for dependency injection and lazy loading of objects or resources.
 
