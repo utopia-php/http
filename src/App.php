@@ -111,7 +111,7 @@ class App
      * @param string $timezone
      * @param bool $mode Current mode
      */
-    public function __construct($timezone, $mode)
+    public function __construct($timezone, $mode = self::MODE_TYPE_PRODUCTION)
     {
         date_default_timezone_set($timezone);
 
