@@ -31,11 +31,15 @@ class JSON extends Validator
      */
     public function isValid($value)
     {
-        if(!is_string($value)) {
-            return false;
+        if(is_array($value)) {
+            return true;
         }
 
-        json_decode($value);
-        return (json_last_error() == JSON_ERROR_NONE);
+        if(is_string($value)) {
+            json_decode($value);
+            return (json_last_error() == JSON_ERROR_NONE);
+        }
+        
+        return false;
     }
 }
