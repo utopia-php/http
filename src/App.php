@@ -247,6 +247,20 @@ class App
     }
 
     /**
+     * Get env var
+     *
+     * Method for querying env varialbles. If $key is not found $default value will be returned.
+     *
+     * @param  string $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function getEnv($key, $default = null)
+    {
+        return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
+    }
+
+    /**
      * Get Mode
      *
      * Get current defined mode

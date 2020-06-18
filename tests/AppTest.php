@@ -50,6 +50,15 @@ class AppTest extends TestCase
         $this->assertEquals(true, $app->isStage());
     }
 
+    public function testGetEnv()
+    {
+        // Mock
+        $_SERVER['key'] = 'value';
+
+        $this->assertEquals($this->app->getEnv('key'), 'value');
+        $this->assertEquals($this->app->getEnv('unknown', 'test'), 'test');
+    }
+
     public function tearDown()
     {
         $this->view = null;
