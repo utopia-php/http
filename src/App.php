@@ -25,12 +25,11 @@ class App
     const REQUEST_METHOD_HEAD       = 'HEAD';
 
     /**
-     * Env Type
+     * Mode Type
      */
-    const ENV_TYPE_DEVELOPMENT  = 'development';
-    const ENV_TYPE_BUILD        = 'build';
-    const ENV_TYPE_STAGE        = 'stage';
-    const ENV_TYPE_PRODUCTION   = 'production';
+    const MODE_TYPE_DEVELOPMENT  = 'development';
+    const MODE_TYPE_STAGE        = 'stage';
+    const MODE_TYPE_PRODUCTION   = 'production';
 
     /**
      * Routes
@@ -46,11 +45,11 @@ class App
     ];
 
     /**
-     * Current running environment
+     * Current running mode
      *
      * @var string
      */
-    protected $env = '';
+    protected $mode = '';
 
     /**
      * Error
@@ -110,20 +109,20 @@ class App
      * App
      *
      * @param string $timezone
-     * @param bool $env When current environment
+     * @param bool $mode Current mode
      */
-    public function __construct($timezone, $env)
+    public function __construct($timezone, $mode)
     {
         date_default_timezone_set($timezone);
 
         // Turn errors on when not in production or stage
-        if($env != self::ENV_TYPE_PRODUCTION && $env != self::ENV_TYPE_STAGE) {
+        if($mode != self::MODE_TYPE_PRODUCTION && $mode != self::MODE_TYPE_STAGE) {
             ini_set('display_errors', 1);
             ini_set('display_startup_errors', 1);
             error_reporting(E_ALL);
         }
 
-        $this->env = $env;
+        $this->mode = $mode;
     }
 
     /**
@@ -248,15 +247,39 @@ class App
     }
 
     /**
-     * Get Env
+     * Get Mode
      *
-     * Get current defined environment
+     * Get current defined mode
      *
      * @return string
      */
-    public function getEnv()
+    public function getMode()
     {
-        return $this->env;
+        return $this->mode;
+    }
+
+    /**
+     * Is app in production mode?
+     */
+    public function isProduction(): bool
+    {
+        return (self::MODE_TYPE_PRODUCTION === $this->mode);
+    }
+
+    /**
+     * Is app in development mode?
+     */
+    public function isDevelopment(): bool
+    {
+        return (self::MODE_TYPE_DEVELOPMENT === $this->mode);
+    }
+
+    /**
+     * Is app in stage mode?
+     */
+    public function isStage(): bool
+    {
+        return (self::MODE_TYPE_STAGE === $this->mode);
     }
 
     /**
