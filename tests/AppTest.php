@@ -28,26 +28,32 @@ class AppTest extends TestCase
     }
 
     public function testIsMode() {
-        $app = new App('Asia/Tel_Aviv', App::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(App::MODE_TYPE_PRODUCTION, $app->getMode());
-        $this->assertEquals(true, $app->isProduction());
-        $this->assertEquals(false, $app->isDevelopment());
-        $this->assertEquals(false, $app->isStage());
+        $this->assertEquals(App::MODE_TYPE_PRODUCTION, $this->app->getMode());
+        $this->assertEquals(true, $this->app->isProduction());
+        $this->assertEquals(false, $this->app->isDevelopment());
+        $this->assertEquals(false, $this->app->isStage());
 
-        $app = new App('Asia/Tel_Aviv', App::MODE_TYPE_DEVELOPMENT);
+        $this->app->setMode(App::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(App::MODE_TYPE_DEVELOPMENT, $app->getMode());
-        $this->assertEquals(false, $app->isProduction());
-        $this->assertEquals(true, $app->isDevelopment());
-        $this->assertEquals(false, $app->isStage());
+        $this->assertEquals(App::MODE_TYPE_PRODUCTION, $this->app->getMode());
+        $this->assertEquals(true, $this->app->isProduction());
+        $this->assertEquals(false, $this->app->isDevelopment());
+        $this->assertEquals(false, $this->app->isStage());
 
-        $app = new App('Asia/Tel_Aviv', App::MODE_TYPE_STAGE);
+        $this->app->setMode(App::MODE_TYPE_DEVELOPMENT);
 
-        $this->assertEquals(App::MODE_TYPE_STAGE, $app->getMode());
-        $this->assertEquals(false, $app->isProduction());
-        $this->assertEquals(false, $app->isDevelopment());
-        $this->assertEquals(true, $app->isStage());
+        $this->assertEquals(App::MODE_TYPE_DEVELOPMENT, $this->app->getMode());
+        $this->assertEquals(false, $this->app->isProduction());
+        $this->assertEquals(true, $this->app->isDevelopment());
+        $this->assertEquals(false, $this->app->isStage());
+
+        $this->app->setMode(App::MODE_TYPE_STAGE);
+
+        $this->assertEquals(App::MODE_TYPE_STAGE, $this->app->getMode());
+        $this->assertEquals(false, $this->app->isProduction());
+        $this->assertEquals(false, $this->app->isDevelopment());
+        $this->assertEquals(true, $this->app->isStage());
     }
 
     public function testGetEnv()

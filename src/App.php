@@ -263,13 +263,27 @@ class App
     /**
      * Get Mode
      *
-     * Get current defined mode
+     * Get current mode
      *
      * @return string
      */
     public function getMode()
     {
         return $this->mode;
+    }
+
+    /**
+     * Set Mode
+     *
+     * Set current mode
+     *
+     * @return string
+     */
+    public function setMode($value)
+    {
+        $this->mode = $value;
+
+        return $this;
     }
 
     /**
