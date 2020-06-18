@@ -57,8 +57,11 @@ Library | Description
 --- | ---
 **[Utopia AB](https://github.com/utopia-php/ab)** | Simple PHP library for managing AB testing on the server side.
 **[Utopia Abuse](https://github.com/utopia-php/abuse)** | Simple PHP library for rate limiting usage of different features in your app or API.
+**[Utopia Audit](https://github.com/utopia-php/audit)** | Simple PHP library for audit logging users actions and system events 
 **[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
-**[Utopia CLI](https://github.com/utopia-php/abuse)** | Simple PHP library for for building simple command line tools.
+**[Utopia CLI](https://github.com/utopia-php/cli)** | Simple PHP library for for building simple command line tools.
+**[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for for managing your app configuration.
+**[Utopia Domains](https://github.com/utopia-php/domains)** | Simple PHP library for parsing domain names.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
 **[Utopia Registry](https://github.com/utopia-php/registry)** | Simple PHP library for dependency injection and lazy loading of objects or resources.
 
