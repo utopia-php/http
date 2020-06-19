@@ -33,14 +33,14 @@ class Request
      *
      * @var array
      */
-    private $payload = null;
+    protected $payload = null;
 
     /**
      * Container for parsed headers
      *
      * @var array
      */
-    private $headers = null;
+    protected $headers = null;
 
     /**
      * Get Param
@@ -260,7 +260,7 @@ class Request
      *
      * @return array
      */
-    private function generateInput()
+    protected function generateInput()
     {
         if (null === $this->payload) {
             $contentType    = $this->getHeader('Content-Type');
@@ -295,7 +295,7 @@ class Request
      *
      * @return array
      */
-    private function generateHeaders()
+    protected function generateHeaders()
     {
         if (null === $this->headers) {
             $fallback = null;

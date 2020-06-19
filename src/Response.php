@@ -75,7 +75,7 @@ class Response
     /**
      * @var array
      */
-    private $statusCodes = Array(
+    protected $statusCodes = Array(
         self::STATUS_CODE_CONTINUE                         => 'Continue',
         self::STATUS_CODE_SWITCHING_PROTOCOLS              => 'Switching Protocols',
         self::STATUS_CODE_OK                               => 'OK',
@@ -127,37 +127,37 @@ class Response
     /**
      * @var int
      */
-    private $statusCode = self::STATUS_CODE_OK;
+    protected $statusCode = self::STATUS_CODE_OK;
 
     /**
      * @var string
      */
-    private $contentType = self::CONTENT_TYPE_HTML;
+    protected $contentType = self::CONTENT_TYPE_HTML;
 
     /**
      * @var bool
      */
-    private $disablePayload = false;
+    protected $disablePayload = false;
 
     /**
      * @var array
      */
-    private $headers = array();
+    protected $headers = array();
 
     /**
      * @var array
      */
-    private $cookies = array();
+    protected $cookies = array();
 
     /**
      * @var int
      */
-    private $startTime = 0;
+    protected $startTime = 0;
 
     /**
      * @var int
      */
-    private $size = 0;
+    protected $size = 0;
 
     /**
      * Response constructor.
@@ -375,7 +375,7 @@ class Response
      *
      * @return self
      */
-    private function appendHeaders()
+    protected function appendHeaders()
     {
         // Send status code header
         http_response_code($this->statusCode);
@@ -400,7 +400,7 @@ class Response
      *
      * @return self
      */
-    private function appendCookies()
+    protected function appendCookies()
     {
         foreach ($this->cookies as $cookie) {
             
