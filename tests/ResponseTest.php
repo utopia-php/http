@@ -111,7 +111,7 @@ class ResponseTest extends TestCase
     {
         ob_start(); //Start of build
 
-        @$this->response->json(array('key' => 'value'));
+        @$this->response->json(['key' => 'value']);
 
         $html = ob_get_contents();
         ob_end_clean(); //End of build
@@ -123,7 +123,7 @@ class ResponseTest extends TestCase
     {
         ob_start(); //Start of build
 
-        @$this->response->jsonp('test', array('key' => 'value'));
+        @$this->response->jsonp('test', ['key' => 'value']);
 
         $html = ob_get_contents();
         ob_end_clean(); //End of build
@@ -135,7 +135,7 @@ class ResponseTest extends TestCase
     {
         ob_start(); //Start of build
 
-        @$this->response->iframe('test', array('key' => 'value'));
+        @$this->response->iframe('test', ['key' => 'value']);
 
         $html = ob_get_contents();
         ob_end_clean(); //End of build

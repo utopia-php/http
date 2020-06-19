@@ -27,7 +27,7 @@ class Multiple extends Validator
     /**
      * @var Validator[]
      */
-    protected $rules = array();
+    protected $rules = [];
 
     /**
      * Constructor

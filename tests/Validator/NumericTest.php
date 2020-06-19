@@ -42,6 +42,6 @@ class NumericTest extends TestCase
         $this->assertEquals($this->numeric->isValid(1337e0), true);
         $this->assertEquals($this->numeric->isValid(9.1), true);
         $this->assertEquals($this->numeric->isValid('not numeric'), false);
-        $this->assertEquals($this->numeric->isValid(array()), false);
+        $this->assertEquals($this->numeric->isValid([]), false);
     }
 }

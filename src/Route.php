@@ -55,7 +55,7 @@ class Route
      *
      * @var array
      */
-    protected $params = array();
+    protected $params = [];
 
     /**
      * Labels
@@ -64,7 +64,7 @@ class Route
      *
      * @var array
      */
-    protected $labels = array();
+    protected $labels = [];
 
     /**
      * @var int
@@ -133,13 +133,13 @@ class Route
      */
     public function param($key, $default, $validator, $description = '', $optional = false)
     {
-        $this->params[$key] = array(
+        $this->params[$key] = [
             'default'       => $default,
             'validator'     => $validator,
             'description'   => $description,
             'optional'      => $optional,
             'value'         => null,
-        );
+        ];
 
         return $this;
     }

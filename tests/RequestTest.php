@@ -49,16 +49,6 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getPayload('unknown', 'test'), 'test');
     }
 
-    public function testGetRequest()
-    {
-        // Mock
-        $_REQUEST['key'] = 'value';
-
-        // Assertions
-        $this->assertEquals($this->request->getRequest('key'), 'value');
-        $this->assertEquals($this->request->getRequest('unknown', 'test'), 'test');
-    }
-
     public function testGetServer()
     {
         // Mock

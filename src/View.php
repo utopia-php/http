@@ -280,17 +280,17 @@ class View
             $html = str_replace($foundPre[0], array_map(function($el){ return '<pre>'.$el.'</pre>'; }, array_keys($foundPre[0])), $html);
 
             // your stuff
-            $search = array(
+            $search = [
                 '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
                 '/[^\S ]+\</s',  // strip whitespaces before tags, except space
                 '/(\s)+/s'       // shorten multiple whitespace sequences
-            );
+            ];
 
-            $replace = array(
+            $replace = [
                 '>',
                 '<',
                 '\\1'
-            );
+            ];
 
             $html = preg_replace($search, $replace, $html);
 

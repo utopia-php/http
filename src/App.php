@@ -67,7 +67,7 @@ class App
      *
      * @var callback[]
      */
-    protected $init = array();
+    protected $init = [];
 
     /**
      * Shutdown
@@ -76,7 +76,7 @@ class App
      *
      * @var callback[]
      */
-    protected $shutdown = array();
+    protected $shutdown = [];
 
     /**
      * Options
@@ -85,7 +85,7 @@ class App
      *
      * @var callback[]
      */
-    protected $options = array();
+    protected $options = [];
 
     /**
      * Route
@@ -103,7 +103,7 @@ class App
      *
      * @var null
      */
-    protected $matches = array();
+    protected $matches = [];
 
     /**
      * App
@@ -361,7 +361,7 @@ class App
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
         if(!isset($this->routes[$method])) {
-            $this->routes[$method] = array();
+            $this->routes[$method] = [];
         }
 
         /*
@@ -413,8 +413,8 @@ class App
      */
     public function run(Request $request, Response $response)
     {
-        $keys       = array();
-        $params     = array();
+        $keys       = [];
+        $params     = [];
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
 
@@ -435,7 +435,7 @@ class App
 
             try {
                 foreach($this->init as $init) {
-                    call_user_func_array($init, array());
+                    call_user_func_array($init, []);
                 }
 
                 foreach($route->getParams() as $key => $param) {
@@ -452,11 +452,11 @@ class App
                 call_user_func_array($route->getAction(), $params);
 
                 foreach($this->shutdown as $shutdown) {
-                    call_user_func_array($shutdown, array());
+                    call_user_func_array($shutdown, []);
                 }
             }
             catch (\Exception $e) {
-                call_user_func_array($this->error, array($e));
+                call_user_func_array($this->error, [$e]);
             }
 
             return $this;
@@ -464,15 +464,15 @@ class App
         elseif(self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach($this->options as $option) {
-                    call_user_func_array($option, array());
+                    call_user_func_array($option, []);
                 }
             }
             catch (\Exception $e) {
-                call_user_func_array($this->error, array($e));
+                call_user_func_array($this->error, [$e]);
             }
         }
         else {
-            call_user_func_array($this->error, array(new Exception('Not Found', 404)));
+            call_user_func_array($this->error, [new Exception('Not Found', 404)]);
         }
 
         return $this;

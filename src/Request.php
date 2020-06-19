@@ -51,7 +51,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getParam($key, $default = null)
+    public function getParam(string $key, $default = null)
     {
         switch($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
@@ -75,7 +75,7 @@ class Request
      *
      * @return array
      */
-    public function getParams()
+    public function getParams(): array
     {
         switch($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
@@ -100,7 +100,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getQuery($key, $default = null)
+    public function getQuery(string $key, $default = null)
     {
         return (isset($_GET[$key])) ? $_GET[$key] : $default;
     }
@@ -114,52 +114,11 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getPayload($key, $default = null)
+    public function getPayload(string $key, $default = null)
     {
         $payload = $this->generateInput();
 
         return (isset($payload[$key])) ? $payload[$key] : $default;
-    }
-
-    /**
-     * Get request
-     *
-     * Method for querying HTTP request parameters whether carried with GET, POST or cookie. If $key is not found $default value will be returned.
-     *
-     * @param  string $key
-     * @param  mixed $default
-     * @param array $priority The later will overwrite $key value if set
-     * @throws Exception
-     * @return mixed
-     */
-    public function getRequest($key, $default = null, $priority = ['get', 'post', 'cookie', 'header'])
-    {
-        $value = $default;
-
-        foreach ($priority as $method) {
-            switch ($method) {
-                case 'get':
-                    $temp = $this->getQuery($key, null);
-                    $value = (null !== $temp) ? $temp : $value;
-                    break;
-                case 'post':
-                    $temp = $this->getPayload($key, null);
-                    $value = (null !== $temp) ? $temp : $value;
-                    break;
-                case 'cookie':
-                    $temp = $this->getCookie($key, null);
-                    $value = (null !== $temp) ? $temp : $value;
-                    break;
-                case 'header':
-                    $temp = $this->getHeader($key, null);
-                    $value = (null !== $temp) ? $temp : $value;
-                    break;
-                default:
-                    throw new Exception($method . ' method not supported');
-            }
-        }
-
-        return $value;
     }
 
     /**
@@ -171,7 +130,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getServer($key, $default = null)
+    public function getServer(string $key, $default = null)
     {
         return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
@@ -182,8 +141,11 @@ class Request
      * Returns users IP address.
      * Support HTTP_X_FORWARDED_FOR header usually return
      *  from different proxy servers or PHP default REMOTE_ADDR
+     * 
+     * @return string
      */
-    public function getIP() {
+    public function getIP(): string
+    {
         return $this->getServer('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0'));
     }
 
@@ -194,7 +156,8 @@ class Request
      *
      * @return string
      */
-    public function getMethod() {
+    public function getMethod(): string
+    {
         return $this->getServer('REQUEST_METHOD', 'UNKNOWN');
     }
 
@@ -206,9 +169,9 @@ class Request
      * @param  string $key
      * @return array
      */
-    public function getFiles($key)
+    public function getFiles(string $key): array
     {
-        return (isset($_FILES[$key])) ? $_FILES[$key] : array();
+        return (isset($_FILES[$key])) ? $_FILES[$key] : [];
     }
 
     /**
@@ -220,7 +183,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getCookie($key, $default = null)
+    public function getCookie(string $key, string $default = '')
     {
         return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
     }
@@ -231,10 +194,10 @@ class Request
      * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
      *
      * @param  string $key
-     * @param  mixed  $default
-     * @return mixed
+     * @param  string  $default
+     * @return string
      */
-    public function getHeader($key, $default = null)
+    public function getHeader(string $key, string $default = ''): string
     {
         $headers = $this->generateHeaders();
 
@@ -248,7 +211,7 @@ class Request
      *
      * @return int
      */
-    public function getSize()
+    public function getSize(): int
     {
         return mb_strlen(implode("\n", $this->generateHeaders()), '8bit') + mb_strlen(file_get_contents('php://input'), '8bit');
     }
@@ -260,7 +223,7 @@ class Request
      *
      * @return array
      */
-    protected function generateInput()
+    protected function generateInput(): array
     {
         if (null === $this->payload) {
             $contentType    = $this->getHeader('Content-Type');
@@ -295,11 +258,9 @@ class Request
      *
      * @return array
      */
-    protected function generateHeaders()
+    protected function generateHeaders(): array
     {
         if (null === $this->headers) {
-            $fallback = null;
-
             /**
              * Fallback for older PHP versions
              * that do not support generateHeaders

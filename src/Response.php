@@ -75,7 +75,7 @@ class Response
     /**
      * @var array
      */
-    protected $statusCodes = Array(
+    protected $statusCodes = [
         self::STATUS_CODE_CONTINUE                         => 'Continue',
         self::STATUS_CODE_SWITCHING_PROTOCOLS              => 'Switching Protocols',
         self::STATUS_CODE_OK                               => 'OK',
@@ -118,7 +118,7 @@ class Response
         self::STATUS_CODE_SERVICE_UNAVAILABLE              => 'Service Unavailable',
         self::STATUS_CODE_GATEWAY_TIMEOUT                  => 'Gateway Timeout',
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED       => 'HTTP Version Not Supported',
-    );
+    ];
 
     const COOKIE_SAMESITE_NONE      = 'None';
     const COOKIE_SAMESITE_STRICT    = 'Strict';
@@ -142,12 +142,12 @@ class Response
     /**
      * @var array
      */
-    protected $headers = array();
+    protected $headers = [];
 
     /**
      * @var array
      */
-    protected $cookies = array();
+    protected $cookies = [];
 
     /**
      * @var int
@@ -175,7 +175,7 @@ class Response
      * @param  string   $type
      * @return self
      */
-    public function setContentType($type)
+    public function setContentType(string $type): self
     {
         $this->contentType = $type;
 
@@ -191,7 +191,7 @@ class Response
      * @return self
      * @throws Exception
      */
-    public function setStatusCode($code = 200)
+    public function setStatusCode(int $code = 200): self
     {
         if (!array_key_exists($code, $this->statusCodes)) {
             throw new Exception('Unknown HTTP status code');
@@ -209,7 +209,7 @@ class Response
      *
      * @return int
      */
-    public function getSize()
+    public function getSize(): int
     {
         return $this->size;
     }
@@ -217,7 +217,8 @@ class Response
     /**
      * Don't allow payload on response output
      */
-    public function disablePayload() {
+    public function disablePayload(): self
+    {
         $this->disablePayload = true;
         return $this;
     }
@@ -225,7 +226,8 @@ class Response
     /**
      * Allow payload on response output
      */
-    public function enablePayload() {
+    public function enablePayload(): self
+    {
         $this->disablePayload = false;
         return $this;
     }
@@ -239,7 +241,7 @@ class Response
      * @param string $value
      * @return self
      */
-    public function addHeader($key, $value)
+    public function addHeader(string $key, string $value): self
     {
         $this->headers[$key] = $value;
 
@@ -254,7 +256,7 @@ class Response
      * @param string $key
      * @return self
      */
-    public function removeHeader($key)
+    public function removeHeader(string $key): self
     {
         if(isset($this->headers[$key])) {
             unset($this->headers[$key]);
@@ -270,7 +272,7 @@ class Response
      *
      * @return array
      */
-    public function getHeaders()
+    public function getHeaders(): array
     {
         return $this->headers;
     }
@@ -290,9 +292,9 @@ class Response
      * @param string $sameSite [optional]
      * @return self
      */
-    public function addCookie($name, $value = null, $expire = null, $path = null, $domain = null, $secure = null, $httponly = null, $sameSite = null)
+    public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): self
     {
-        $this->cookies[$name] = array(
+        $this->cookies[$name] = [
             'name'		=> $name,
             'value'		=> $value,
             'expire'	=> $expire,
@@ -301,7 +303,7 @@ class Response
             'secure' 	=> $secure,
             'httponly'	=> $httponly,
             'samesite'	=> $sameSite,
-        );
+        ];
 
         return $this;
     }
@@ -314,7 +316,7 @@ class Response
      * @param string $name
      * @return self
      */
-    public function removeCookie($name)
+    public function removeCookie(string $name): self
     {
         if(isset($this->headers[$name])) {
             unset($this->cookies[$name]);
@@ -330,7 +332,7 @@ class Response
      *
      * @return array
      */
-    public function getCookies()
+    public function getCookies(): array
     {
         return $this->cookies;
     }
@@ -345,7 +347,7 @@ class Response
      *
      * @return self
      */
-    public function send($body = '', $exit = null)
+    public function send(string $body = '', int $exit = null): void
     {
         if(!$this->disablePayload) {
             $this->addHeader('X-Debug-Speed', microtime(true) - $this->startTime);
@@ -375,7 +377,7 @@ class Response
      *
      * @return self
      */
-    protected function appendHeaders()
+    protected function appendHeaders(): self
     {
         // Send status code header
         http_response_code($this->statusCode);
@@ -400,7 +402,7 @@ class Response
      *
      * @return self
      */
-    protected function appendCookies()
+    protected function appendCookies(): self
     {
         foreach ($this->cookies as $cookie) {
             
@@ -434,13 +436,13 @@ class Response
      * @see https://bugs.webkit.org/show_bug.cgi?id=47425
      *
      * @param string $url complete absolute URI for redirection as required by the internet standard RFC 2616 (HTTP 1.1)
-     * @param int $statusCode valid HTTP/1.1 status code
-     *
+     * @param int $statusCode valid HTTP status code
      * @param null $exit
+     * 
      * @throws Exception
      * @see http://tools.ietf.org/html/rfc2616
      */
-    public function redirect($url, $statusCode = 301, $exit = null)
+    public function redirect(string $url, int $statusCode = 301, int $exit = null): void
     {
         if (300 == $statusCode) {
             trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
@@ -462,7 +464,7 @@ class Response
      *
      * @param string $data
      */
-    public function text($data)
+    public function text(string $data): void
     {
         $this
             ->setContentType(Response::CONTENT_TYPE_TEXT)
@@ -480,7 +482,7 @@ class Response
      *
      * @param array $data
      */
-    public function json(array $data)
+    public function json(array $data): void
     {
         $this
             ->setContentType(Response::CONTENT_TYPE_JSON)
@@ -499,7 +501,7 @@ class Response
      * @param string $callback
      * @param array  $data
      */
-    public function jsonp($callback, array $data)
+    public function jsonp(string $callback, array $data): void
     {
         $this
             ->setContentType(Response::CONTENT_TYPE_JAVASCRIPT)
@@ -516,7 +518,7 @@ class Response
      * @param string $callback
      * @param array  $data
      */
-    public function iframe($callback, array $data)
+    public function iframe(string $callback, array $data): void
     {
         $this
             ->send('<script type="text/javascript">window.parent.' . $callback . '(' . json_encode($data) . ');</script>');
@@ -530,7 +532,7 @@ class Response
      * The server has successfully fulfilled the request
      *  and that there is no additional content to send in the response payload body.
      */
-    public function noContent()
+    public function noContent(): void
     {
         $this
             ->setStatusCode(self::STATUS_CODE_NOCONTENT)
