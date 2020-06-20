@@ -213,7 +213,7 @@ class Request
      */
     public function getSize(): int
     {
-        return mb_strlen(implode("\n", $this->generateHeaders()), '8bit') + mb_strlen(file_get_contents('php://input'), '8bit');
+        return \mb_strlen(\implode("\n", $this->generateHeaders()), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
     }
 
     /**
@@ -229,13 +229,13 @@ class Request
             $contentType    = $this->getHeader('Content-Type');
 
             // Get content-type without the charset
-            $length         = strpos($contentType, ';');
-            $length         = (empty($length)) ? strlen($contentType) : $length;
-            $contentType    = substr($contentType, 0, $length);
+            $length         = \strpos($contentType, ';');
+            $length         = (empty($length)) ? \strlen($contentType) : $length;
+            $contentType    = \substr($contentType, 0, $length);
 
             switch ($contentType) {
                 case 'application/json':
-                    $this->payload = json_decode(file_get_contents('php://input'), true);
+                    $this->payload = \json_decode(\file_get_contents('php://input'), true);
                     break;
 
                 default:
@@ -265,12 +265,12 @@ class Request
              * Fallback for older PHP versions
              * that do not support generateHeaders
              */
-            if (!function_exists('getallheaders')) {
+            if (!\function_exists('getallheaders')) {
                 $headers = [];
 
                 foreach ($_SERVER as $name => $value) {
-                    if (substr($name, 0, 5) == 'HTTP_') {
-                        $headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+                    if (\substr($name, 0, 5) == 'HTTP_') {
+                        $headers[\str_replace(' ', '-', \ucwords(\strtolower(\str_replace('_', ' ', \substr($name, 5)))))] = $value;
                     }
                 }
 

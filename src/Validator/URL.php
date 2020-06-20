@@ -46,7 +46,7 @@ class URL extends Validator
      */
     public function isValid($value)
     {
-        if (filter_var($value, FILTER_VALIDATE_URL) === false) {
+        if (\filter_var($value, FILTER_VALIDATE_URL) === false) {
             return false;
         }
 

@@ -63,7 +63,7 @@ class ArrayList extends Validator
      */
     public function isValid($value)
     {
-        if(!is_array($value)) {
+        if(!\is_array($value)) {
             return false;
         }
 

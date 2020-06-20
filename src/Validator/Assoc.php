@@ -46,10 +46,10 @@ class Assoc extends Validator
      */
     public function isValid($value)
     {
-        if (!is_array($value)) {
+        if (!\is_array($value)) {
             return false;
         }
 
-        return array_keys($value) !== range(0, count($value) - 1);
+        return \array_keys($value) !== \range(0, \count($value) - 1);
     }
 }

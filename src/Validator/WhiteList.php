@@ -65,7 +65,7 @@ class WhiteList extends Validator
      */
     public function getDescription()
     {
-        return 'Value must be one of (' . implode(', ', $this->list) . ')';
+        return 'Value must be one of (' . \implode(', ', $this->list) . ')';
     }
 
     /**
@@ -78,7 +78,7 @@ class WhiteList extends Validator
      */
     public function isValid($value)
     {
-        if (!in_array($value, $this->list, $this->strict)) {
+        if (!\in_array($value, $this->list, $this->strict)) {
             return false;
         }
 

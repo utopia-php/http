@@ -43,7 +43,7 @@ class Host extends Validator
      */
     public function getDescription()
     {
-        return 'URL host must be one of: ' . implode(', ', $this->whitelist);
+        return 'URL host must be one of: ' . \implode(', ', $this->whitelist);
     }
 
     /**
@@ -62,7 +62,7 @@ class Host extends Validator
             return false;
         }
 
-        if(in_array(parse_url($value, PHP_URL_HOST), $this->whitelist)) {
+        if(\in_array(\parse_url($value, PHP_URL_HOST), $this->whitelist)) {
             return true;
         }
 

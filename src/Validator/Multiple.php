@@ -41,7 +41,7 @@ class Multiple extends Validator
     public function __construct()
     {
         // array of all method arguments
-        $rules = func_get_args();
+        $rules = \func_get_args();
 
         foreach ($rules as $rule) {
             $this->addRule($rule);

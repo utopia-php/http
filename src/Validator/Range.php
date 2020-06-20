@@ -69,7 +69,7 @@ class Range extends Numeric
      */
     public function getDescription()
     {
-        return 'Value must be in range between ' . number_format($this->min) . ' and ' . number_format($this->max);
+        return 'Value must be in range between ' . \number_format($this->min) . ' and ' . \number_format($this->max);
     }
 
     /**

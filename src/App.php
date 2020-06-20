@@ -113,13 +113,13 @@ class App
      */
     public function __construct($timezone, $mode = self::MODE_TYPE_PRODUCTION)
     {
-        date_default_timezone_set($timezone);
+        \date_default_timezone_set($timezone);
 
         // Turn errors on when not in production or stage
         if($mode != self::MODE_TYPE_PRODUCTION && $mode != self::MODE_TYPE_STAGE) {
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
-            error_reporting(E_ALL);
+            \ini_set('display_errors', 1);
+            \ini_set('display_startup_errors', 1);
+            \error_reporting(E_ALL);
         }
 
         $this->mode = $mode;
@@ -356,7 +356,7 @@ class App
             return $this->route;
         }
 
-        $url    = parse_url($request->getServer('REQUEST_URI', ''), PHP_URL_PATH);
+        $url    = \parse_url($request->getServer('REQUEST_URI', ''), PHP_URL_PATH);
         $method = $request->getServer('REQUEST_METHOD', '');
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
@@ -370,26 +370,26 @@ class App
          * For route to work with similar links where one is shorter than other
          *  but both might match given pattern
          */
-        uksort($this->routes[$method], function($a, $b) {
-            return strlen($b) - strlen($a);
+        \uksort($this->routes[$method], function($a, $b) {
+            return \strlen($b) - \strlen($a);
         });
 
-        uksort($this->routes[$method], function($a, $b) {
-            return count(explode('/', $b)) - count(explode('/', $a));
+        \uksort($this->routes[$method], function($a, $b) {
+            return \count(\explode('/', $b)) - \count(\explode('/', $a));
         });
 
         foreach($this->routes[$method] as  $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
-            $regex = '@' . preg_replace('@:[^/]+@', '([^/]+)', $route->getURL()) . '@';
+            $regex = '@' . \preg_replace('@:[^/]+@', '([^/]+)', $route->getURL()) . '@';
 
             // Check if the current request matches the expression
-            if (!preg_match($regex, $url, $this->matches)) {
+            if (!\preg_match($regex, $url, $this->matches)) {
                 continue;
             }
 
-            array_shift($this->matches);
+            \array_shift($this->matches);
             $this->route = $route;
             break;
         }
@@ -424,18 +424,18 @@ class App
 
         if(null !== $route) {
             // Extract keys from URL
-            $keyRegex = '@^' . preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
-            preg_match($keyRegex, $route->getURL(), $keys);
+            $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
+            \preg_match($keyRegex, $route->getURL(), $keys);
 
             // Remove the first key and value ( corresponding to full regex match )
-            array_shift($keys);
+            \array_shift($keys);
 
             // combine keys and values to one array
-            $values = array_combine($keys, $this->matches);
+            $values = \array_combine($keys, $this->matches);
 
             try {
                 foreach($this->init as $init) {
-                    call_user_func_array($init, []);
+                    \call_user_func_array($init, []);
                 }
 
                 foreach($route->getParams() as $key => $param) {
@@ -449,14 +449,14 @@ class App
                 }
 
                 // Call the callback with the matched positions as params
-                call_user_func_array($route->getAction(), $params);
+                \call_user_func_array($route->getAction(), $params);
 
                 foreach($this->shutdown as $shutdown) {
-                    call_user_func_array($shutdown, []);
+                    \call_user_func_array($shutdown, []);
                 }
             }
             catch (\Exception $e) {
-                call_user_func_array($this->error, [$e]);
+                \call_user_func_array($this->error, [$e]);
             }
 
             return $this;
@@ -464,15 +464,15 @@ class App
         elseif(self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach($this->options as $option) {
-                    call_user_func_array($option, []);
+                    \call_user_func_array($option, []);
                 }
             }
             catch (\Exception $e) {
-                call_user_func_array($this->error, [$e]);
+                \call_user_func_array($this->error, [$e]);
             }
         }
         else {
-            call_user_func_array($this->error, [new Exception('Not Found', 404)]);
+            \call_user_func_array($this->error, [new Exception('Not Found', 404)]);
         }
 
         return $this;
@@ -494,7 +494,7 @@ class App
             // checking whether the class exists
             $validator = $param['validator'];
 
-            if(is_callable($validator)) {
+            if(\is_callable($validator)) {
                 $validator = $validator();
             }
 

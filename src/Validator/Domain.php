@@ -49,7 +49,7 @@ class Domain extends Validator
      */
     public function isValid($value)
     {
-        if (filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false) {
+        if (\filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false) {
             return false;
         }
 

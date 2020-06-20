@@ -53,7 +53,7 @@ class Length extends Validator
      */
     public function getDescription()
     {
-        return 'Value must be between ' . number_format($this->min) . ' and ' . number_format($this->max) . ' chars';
+        return 'Value must be between ' . \number_format($this->min) . ' and ' . \number_format($this->max) . ' chars';
     }
 
     /**
@@ -66,7 +66,7 @@ class Length extends Validator
      */
     public function isValid($value)
     {
-        $length = mb_strlen($value);
+        $length = \mb_strlen($value);
 
         if ($this->min <= $length && $this->max >= $length) {
             return true;

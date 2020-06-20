@@ -164,7 +164,7 @@ class Response
      */
     public function __construct()
     {
-        $this->startTime = microtime(true);
+        $this->startTime = \microtime(true);
     }
 
     /**
@@ -193,7 +193,7 @@ class Response
      */
     public function setStatusCode(int $code = 200): self
     {
-        if (!array_key_exists($code, $this->statusCodes)) {
+        if (!\array_key_exists($code, $this->statusCodes)) {
             throw new Exception('Unknown HTTP status code');
         }
 
@@ -350,21 +350,21 @@ class Response
     public function send(string $body = '', int $exit = null): void
     {
         if(!$this->disablePayload) {
-            $this->addHeader('X-Debug-Speed', microtime(true) - $this->startTime);
+            $this->addHeader('X-Debug-Speed', \microtime(true) - $this->startTime);
 
             $this
                 ->appendCookies()
                 ->appendHeaders()
             ;
 
-            $this->size = $this->size + mb_strlen(implode("\n", headers_list())) + mb_strlen($body, '8bit');
+            $this->size = $this->size + \mb_strlen(\implode("\n", \headers_list())) + \mb_strlen($body, '8bit');
 
             echo $body;
 
             $this->disablePayload();
         }
 
-        if(!is_null($exit)) {
+        if(!\is_null($exit)) {
             exit($exit); // Exit with code
         }
     }
@@ -380,7 +380,7 @@ class Response
     protected function appendHeaders(): self
     {
         // Send status code header
-        http_response_code($this->statusCode);
+        \http_response_code($this->statusCode);
 
         // Send content type header
         $this
@@ -389,7 +389,7 @@ class Response
 
         // Set application headers
         foreach ($this->headers as $key => $value) {
-            header($key . ': ' . $value);
+            \header($key . ': ' . $value);
         }
 
         return $this;
@@ -406,11 +406,11 @@ class Response
     {
         foreach ($this->cookies as $cookie) {
             
-            if (version_compare(PHP_VERSION, '7.3.0', '<')) {
-                setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
+            if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
+                \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
             }
             else {
-                setcookie($cookie['name'], $cookie['value'], [
+                \setcookie($cookie['name'], $cookie['value'], [
                     'expires' => $cookie['expire'],
                     'path' => $cookie['path'],
                     'domain' => $cookie['domain'],
@@ -445,7 +445,7 @@ class Response
     public function redirect(string $url, int $statusCode = 301, int $exit = null): void
     {
         if (300 == $statusCode) {
-            trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
+            \trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
         }
 
         $this
@@ -486,7 +486,7 @@ class Response
     {
         $this
             ->setContentType(Response::CONTENT_TYPE_JSON)
-            ->send(json_encode($data, JSON_UNESCAPED_UNICODE))
+            ->send(\json_encode($data, JSON_UNESCAPED_UNICODE))
         ;
     }
 
@@ -505,7 +505,7 @@ class Response
     {
         $this
             ->setContentType(Response::CONTENT_TYPE_JAVASCRIPT)
-            ->send('parent.' . $callback . '(' . json_encode($data) . ');')
+            ->send('parent.' . $callback . '(' . \json_encode($data) . ');')
         ;
     }
 
@@ -521,7 +521,7 @@ class Response
     public function iframe(string $callback, array $data): void
     {
         $this
-            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . json_encode($data) . ');</script>');
+            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>');
     }
 
     /**

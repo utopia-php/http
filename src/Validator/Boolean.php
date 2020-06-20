@@ -46,7 +46,7 @@ class Boolean extends Validator
      */
     public function isValid($value)
     {
-        if (!is_bool($value)) {
+        if (!\is_bool($value)) {
             return false;
         }
 

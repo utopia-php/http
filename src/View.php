@@ -59,18 +59,18 @@ class View
 
         $this
             ->addFilter(self::FILTER_ESCAPE, function ($value) {
-                return htmlentities($value, ENT_QUOTES, 'UTF-8');
+                return \htmlentities($value, ENT_QUOTES, 'UTF-8');
             })
             ->addFilter(self::FILTER_NL2P, function ($value) {
                 $paragraphs = '';
 
-                foreach (explode("\n\n", $value) as $line) {
-                    if (trim($line)) {
+                foreach (\explode("\n\n", $value) as $line) {
+                    if (\trim($line)) {
                         $paragraphs .= '<p>' . $line . '</p>';
                     }
                 }
 
-                $paragraphs = str_replace("\n", '<br />', $paragraphs);
+                $paragraphs = \str_replace("\n", '<br />', $paragraphs);
 
                 return $paragraphs;
             })
@@ -89,7 +89,7 @@ class View
      */
     public function setParam($key, $value)
     {
-        if(strpos($key, '.') !== false) {
+        if(\strpos($key, '.') !== false) {
             throw new Exception('$key can\'t contain a dot "." character');
         }
 
@@ -135,7 +135,7 @@ class View
      */
     public function getParam($path, $default = null)
     {
-        $path   = explode('.', $path);
+        $path   = \explode('.', $path);
         $temp   = $this->params;
 
         foreach ($path as $key) {
@@ -218,7 +218,7 @@ class View
     public function print($value, $filter = '')
     {
         if(!empty($filter)) {
-            if(is_array($filter)) {
+            if(\is_array($filter)) {
                 foreach ($filter as $callback) {
                     if(!isset($this->filters[$callback])) {
                         throw new Exception('Filter "' . $callback . '"" is not registered');
@@ -257,27 +257,27 @@ class View
             return '';
         }
 
-        ob_start(); //Start of build
+        \ob_start(); //Start of build
 
-        if (is_readable($this->path)) {
+        if (\is_readable($this->path)) {
             include $this->path; // Include template file
         } else {
-            ob_end_clean();
+            \ob_end_clean();
             throw new Exception('"' . $this->path . '" view template is not readable');
         }
 
-        $html = ob_get_contents();
+        $html = \ob_get_contents();
 
-        ob_end_clean(); //End of build
+        \ob_end_clean(); //End of build
 
         if($minify) {
             // Searching textarea and pre
-            preg_match_all('#\<textarea.*\>.*\<\/textarea\>#Uis', $html, $foundTxt);
-            preg_match_all('#\<pre.*\>.*\<\/pre\>#Uis', $html, $foundPre);
+            \preg_match_all('#\<textarea.*\>.*\<\/textarea\>#Uis', $html, $foundTxt);
+            \preg_match_all('#\<pre.*\>.*\<\/pre\>#Uis', $html, $foundPre);
 
             // replacing both with <textarea>$index</textarea> / <pre>$index</pre>
-            $html = str_replace($foundTxt[0], array_map(function($el){ return '<textarea>'.$el.'</textarea>'; }, array_keys($foundTxt[0])), $html);
-            $html = str_replace($foundPre[0], array_map(function($el){ return '<pre>'.$el.'</pre>'; }, array_keys($foundPre[0])), $html);
+            $html = \str_replace($foundTxt[0], \array_map(function($el){ return '<textarea>'.$el.'</textarea>'; }, \array_keys($foundTxt[0])), $html);
+            $html = \str_replace($foundPre[0], \array_map(function($el){ return '<pre>'.$el.'</pre>'; }, \array_keys($foundPre[0])), $html);
 
             // your stuff
             $search = [
@@ -292,11 +292,11 @@ class View
                 '\\1'
             ];
 
-            $html = preg_replace($search, $replace, $html);
+            $html = \preg_replace($search, $replace, $html);
 
             // Replacing back with content
-            $html = str_replace(array_map(function($el){ return '<textarea>'.$el.'</textarea>'; }, array_keys($foundTxt[0])), $foundTxt[0], $html);
-            $html = str_replace(array_map(function($el){ return '<pre>'.$el.'</pre>'; }, array_keys($foundPre[0])), $foundPre[0], $html);
+            $html = \str_replace(\array_map(function($el){ return '<textarea>'.$el.'</textarea>'; }, \array_keys($foundTxt[0])), $foundTxt[0], $html);
+            $html = \str_replace(\array_map(function($el){ return '<pre>'.$el.'</pre>'; }, \array_keys($foundPre[0])), $foundPre[0], $html);
         }
 
         return $html;
@@ -317,7 +317,7 @@ class View
     {
         $output = '';
 
-        if(is_array($view)) {
+        if(\is_array($view)) {
             foreach($view as $node) { /* @var $node self */
                 if($node instanceof self) {
                     $node->setParent($this);
@@ -344,7 +344,7 @@ class View
      */
     public function escape($str)
     {
-        return htmlentities($str, ENT_QUOTES, 'UTF-8');
+        return \htmlentities($str, ENT_QUOTES, 'UTF-8');
     }
 
     /**
@@ -363,13 +363,13 @@ class View
     {
         $paragraphs = '';
 
-        foreach (explode("\n\n", $string) as $line) {
-            if (trim($line)) {
+        foreach (\explode("\n\n", $string) as $line) {
+            if (\trim($line)) {
                 $paragraphs .= '<p>' . $line . '</p>';
             }
         }
 
-        $paragraphs = str_replace("\n", '<br />', $paragraphs);
+        $paragraphs = \str_replace("\n", '<br />', $paragraphs);
 
         return $paragraphs;
     }

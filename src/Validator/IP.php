@@ -46,7 +46,7 @@ class IP extends Validator
      */
     public function isValid($value)
     {
-        if (!filter_var($value, FILTER_VALIDATE_IP)) {
+        if (!\filter_var($value, FILTER_VALIDATE_IP)) {
             return false;
         }
 
