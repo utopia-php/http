@@ -30,7 +30,10 @@ class Boolean extends Validator
     protected $strings = false;
 
     /**
-     * @param array $strings
+     * Pass true to accept true and false strings as valid booleans
+     * This option is good for validating query string params.
+     * 
+     * @param bool $strings
      */
     public function __construct(bool $strings = false)
     {
