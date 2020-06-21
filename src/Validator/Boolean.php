@@ -25,6 +25,19 @@ use Utopia\Validator;
 class Boolean extends Validator
 {
     /**
+     * @var bool
+     */
+    protected $strings = false;
+
+    /**
+     * @param array $strings
+     */
+    public function __construct(bool $strings = false)
+    {
+        $this->strings = $strings;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
@@ -46,10 +59,14 @@ class Boolean extends Validator
      */
     public function isValid($value)
     {
-        if (!\is_bool($value)) {
-            return false;
+        if($this->strings && ($value === 'true' || $value === 'false')) {
+            return true;
         }
 
-        return true;
+        if (\is_bool($value)) {
+            return true;
+        }
+
+        return false;
     }
 }

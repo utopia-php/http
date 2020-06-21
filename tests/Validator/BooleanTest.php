@@ -24,7 +24,6 @@ class BooleanTest extends TestCase
 
     public function setUp()
     {
-        $this->boolean = new Boolean();
     }
 
     public function tearDown()
@@ -34,9 +33,23 @@ class BooleanTest extends TestCase
 
     public function testIsValid()
     {
-        // Assertions
+        $this->boolean = new Boolean();
+        
         $this->assertEquals(true, $this->boolean->isValid(true));
         $this->assertEquals(true, $this->boolean->isValid(false));
+        $this->assertEquals(false, $this->boolean->isValid('false'));
+        $this->assertEquals(false, $this->boolean->isValid('true'));
+        $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
+        $this->assertEquals(false, $this->boolean->isValid('string'));
+        $this->assertEquals(false, $this->boolean->isValid(1));
+        $this->assertEquals(false, $this->boolean->isValid(1.2));
+
+        $this->boolean = new Boolean(true);
+
+        $this->assertEquals(true, $this->boolean->isValid(true));
+        $this->assertEquals(true, $this->boolean->isValid(false));
+        $this->assertEquals(true, $this->boolean->isValid('false'));
+        $this->assertEquals(true, $this->boolean->isValid('true'));
         $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
         $this->assertEquals(false, $this->boolean->isValid('string'));
         $this->assertEquals(false, $this->boolean->isValid(1));
