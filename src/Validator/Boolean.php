@@ -27,17 +27,17 @@ class Boolean extends Validator
     /**
      * @var bool
      */
-    protected $strings = false;
+    protected $loose = false;
 
     /**
-     * Pass true to accept true and false strings as valid booleans
+     * Pass true to accept true and false strings and integers 0 and 1 as valid boolean values
      * This option is good for validating query string params.
      * 
-     * @param bool $strings
+     * @param bool $loose
      */
-    public function __construct(bool $strings = false)
+    public function __construct(bool $loose = false)
     {
-        $this->strings = $strings;
+        $this->loose = $loose;
     }
 
     /**
@@ -62,7 +62,11 @@ class Boolean extends Validator
      */
     public function isValid($value)
     {
-        if($this->strings && ($value === 'true' || $value === 'false')) {
+        if($this->loose && ($value === 'true' || $value === 'false')) { // Accept strings
+            return true;
+        }
+
+        if($this->loose && ($value === 1 || $value === 0)) { // Accept integers
             return true;
         }
 
