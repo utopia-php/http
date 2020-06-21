@@ -34,14 +34,17 @@ class BooleanTest extends TestCase
     public function testIsValid()
     {
         $this->boolean = new Boolean();
-        
+
         $this->assertEquals(true, $this->boolean->isValid(true));
         $this->assertEquals(true, $this->boolean->isValid(false));
         $this->assertEquals(false, $this->boolean->isValid('false'));
         $this->assertEquals(false, $this->boolean->isValid('true'));
+        $this->assertEquals(false, $this->boolean->isValid('0'));
+        $this->assertEquals(false, $this->boolean->isValid('1'));
+        $this->assertEquals(false, $this->boolean->isValid(0));
+        $this->assertEquals(false, $this->boolean->isValid(1));
         $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
         $this->assertEquals(false, $this->boolean->isValid('string'));
-        $this->assertEquals(false, $this->boolean->isValid(1));
         $this->assertEquals(false, $this->boolean->isValid(1.2));
 
         $this->boolean = new Boolean(true);
@@ -50,9 +53,12 @@ class BooleanTest extends TestCase
         $this->assertEquals(true, $this->boolean->isValid(false));
         $this->assertEquals(true, $this->boolean->isValid('false'));
         $this->assertEquals(true, $this->boolean->isValid('true'));
+        $this->assertEquals(true, $this->boolean->isValid('0'));
+        $this->assertEquals(true, $this->boolean->isValid('1'));
+        $this->assertEquals(true, $this->boolean->isValid(0));
+        $this->assertEquals(true, $this->boolean->isValid(1));
         $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
         $this->assertEquals(false, $this->boolean->isValid('string'));
-        $this->assertEquals(false, $this->boolean->isValid(1));
         $this->assertEquals(false, $this->boolean->isValid(1.2));
     }
 }
