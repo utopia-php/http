@@ -6,8 +6,7 @@
  * @subpackage Validator
  *
  * @link https://github.com/utopia-php/framework
- * @author Eldad Fux <eldad@appwrite.io>
- * @version 2.0
+ * @author Appwrite Team <team@appwrite.io>
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 

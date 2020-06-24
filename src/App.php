@@ -6,7 +6,7 @@
  * @subpackage Core
  *
  * @link https://github.com/utopia-php/framework
- * @author Eldad Fux <eldad@appwrite.io>
+ * @author Appwrite Team <team@appwrite.io>
  */
 
 namespace Utopia;
@@ -101,7 +101,7 @@ class App
      *
      * Parameters matched from URL regex
      *
-     * @var null
+     * @var array
      */
     protected $matches = [];
 
