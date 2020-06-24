@@ -402,6 +402,56 @@ class App
     }
 
     /**
+     * Execute a given route with middlewares and error handling
+     * 
+     * @param Route $route
+     * @return self
+     */
+    public function execute(Route $route, array $args = []): self
+    {
+        $keys       = [];
+        $params     = [];
+
+        // Extract keys from URL
+        $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
+        \preg_match($keyRegex, $route->getURL(), $keys);
+
+        // Remove the first key and value ( corresponding to full regex match )
+        \array_shift($keys);
+
+        // combine keys and values to one array
+        $values = \array_combine($keys, $this->matches);
+
+        try {
+            foreach ($this->init as $init) {
+                \call_user_func_array($init, []);
+            }
+
+            foreach ($route->getParams() as $key => $param) {
+                // Get value from route or request object
+                $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
+                $value = isset($values[$key]) ? $values[$key] : $arg;
+                $value = ($value === '') ? $param['default'] : $value;
+
+                $this->validate($key, $param, $value);
+
+                $params[$key] = $value;
+            }
+
+            // Call the callback with the matched positions as params
+            \call_user_func_array($route->getAction(), $params);
+
+            foreach ($this->shutdown as $shutdown) {
+                \call_user_func_array($shutdown, []);
+            }
+        } catch (\Exception $e) {
+            \call_user_func_array($this->error, [$e]);
+        }
+
+        return $this;
+    }
+
+    /**
      * Run
      *
      * This is the place to initialize any pre routing logic.
@@ -409,12 +459,10 @@ class App
      *
      * @param Request $request
      * @param Response $response
-     * @return mixed
+     * @return self
      */
     public function run(Request $request, Response $response)
     {
-        $keys       = [];
-        $params     = [];
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
 
@@ -423,42 +471,7 @@ class App
         }
 
         if (null !== $route) {
-            // Extract keys from URL
-            $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
-            \preg_match($keyRegex, $route->getURL(), $keys);
-
-            // Remove the first key and value ( corresponding to full regex match )
-            \array_shift($keys);
-
-            // combine keys and values to one array
-            $values = \array_combine($keys, $this->matches);
-
-            try {
-                foreach ($this->init as $init) {
-                    \call_user_func_array($init, []);
-                }
-
-                foreach ($route->getParams() as $key => $param) {
-                    // Get value from route or request object
-                    $value = isset($values[$key]) ? $values[$key] : $request->getParam($key, $param['default']);
-                    $value = ($value === '') ? $param['default'] : $value;
-
-                    $this->validate($key, $param, $value);
-
-                    $params[$key] = $value;
-                }
-
-                // Call the callback with the matched positions as params
-                \call_user_func_array($route->getAction(), $params);
-
-                foreach ($this->shutdown as $shutdown) {
-                    \call_user_func_array($shutdown, []);
-                }
-            } catch (\Exception $e) {
-                \call_user_func_array($this->error, [$e]);
-            }
-
-            return $this;
+            return $this->execute($route, $request->getParams());
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($this->options as $option) {
