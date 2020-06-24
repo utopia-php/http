@@ -88,7 +88,7 @@ class View
      */
     public function setParam($key, $value)
     {
-        if(\strpos($key, '.') !== false) {
+        if (\strpos($key, '.') !== false) {
             throw new Exception('$key can\'t contain a dot "." character');
         }
 
@@ -116,7 +116,7 @@ class View
      */
     public function getParent()
     {
-        if(!empty($this->parent)) {
+        if (!empty($this->parent)) {
             return $this->parent;
         }
 
@@ -216,18 +216,17 @@ class View
      */
     public function print($value, $filter = '')
     {
-        if(!empty($filter)) {
-            if(\is_array($filter)) {
+        if (!empty($filter)) {
+            if (\is_array($filter)) {
                 foreach ($filter as $callback) {
-                    if(!isset($this->filters[$callback])) {
+                    if (!isset($this->filters[$callback])) {
                         throw new Exception('Filter "' . $callback . '"" is not registered');
                     }
 
                     $value = $this->filters[$callback]($value);
                 }
-            }
-            else {
-                if(!isset($this->filters[$filter])) {
+            } else {
+                if (!isset($this->filters[$filter])) {
                     throw new Exception('Filter "' . $filter . '"" is not registered');
                 }
 
@@ -245,7 +244,7 @@ class View
      * In case path is not readable throws Exception.
      *
      * @var boolean $minify
-     * 
+     *
      * @return string
      * @throws Exception
      */
@@ -269,14 +268,18 @@ class View
 
         \ob_end_clean(); //End of build
 
-        if($minify) {
+        if ($minify) {
             // Searching textarea and pre
             \preg_match_all('#\<textarea.*\>.*\<\/textarea\>#Uis', $html, $foundTxt);
             \preg_match_all('#\<pre.*\>.*\<\/pre\>#Uis', $html, $foundPre);
 
             // replacing both with <textarea>$index</textarea> / <pre>$index</pre>
-            $html = \str_replace($foundTxt[0], \array_map(function($el){ return '<textarea>'.$el.'</textarea>'; }, \array_keys($foundTxt[0])), $html);
-            $html = \str_replace($foundPre[0], \array_map(function($el){ return '<pre>'.$el.'</pre>'; }, \array_keys($foundPre[0])), $html);
+            $html = \str_replace($foundTxt[0], \array_map(function ($el) {
+                return '<textarea>'.$el.'</textarea>';
+            }, \array_keys($foundTxt[0])), $html);
+            $html = \str_replace($foundPre[0], \array_map(function ($el) {
+                return '<pre>'.$el.'</pre>';
+            }, \array_keys($foundPre[0])), $html);
 
             // your stuff
             $search = [
@@ -294,8 +297,12 @@ class View
             $html = \preg_replace($search, $replace, $html);
 
             // Replacing back with content
-            $html = \str_replace(\array_map(function($el){ return '<textarea>'.$el.'</textarea>'; }, \array_keys($foundTxt[0])), $foundTxt[0], $html);
-            $html = \str_replace(\array_map(function($el){ return '<pre>'.$el.'</pre>'; }, \array_keys($foundPre[0])), $foundPre[0], $html);
+            $html = \str_replace(\array_map(function ($el) {
+                return '<textarea>'.$el.'</textarea>';
+            }, \array_keys($foundTxt[0])), $foundTxt[0], $html);
+            $html = \str_replace(\array_map(function ($el) {
+                return '<pre>'.$el.'</pre>';
+            }, \array_keys($foundPre[0])), $foundPre[0], $html);
         }
 
         return $html;
@@ -316,15 +323,14 @@ class View
     {
         $output = '';
 
-        if(\is_array($view)) {
-            foreach($view as $node) { /* @var $node self */
-                if($node instanceof self) {
+        if (\is_array($view)) {
+            foreach ($view as $node) { /* @var $node self */
+                if ($node instanceof self) {
                     $node->setParent($this);
                     $output .= $node->render();
                 }
             }
-        }
-        else if ($view instanceof self) {
+        } elseif ($view instanceof self) {
             $view->setParent($this);
             $output = $view->render();
         }

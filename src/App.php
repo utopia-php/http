@@ -116,7 +116,7 @@ class App
         \date_default_timezone_set($timezone);
 
         // Turn errors on when not in production or stage
-        if($mode != self::MODE_TYPE_PRODUCTION && $mode != self::MODE_TYPE_STAGE) {
+        if ($mode != self::MODE_TYPE_PRODUCTION && $mode != self::MODE_TYPE_STAGE) {
             \ini_set('display_errors', 1);
             \ini_set('display_startup_errors', 1);
             \error_reporting(E_ALL);
@@ -350,9 +350,9 @@ class App
      * @param Request $request
      * @return null|Route
      */
-    public function match(Request $request) {
-
-        if(null !== $this->route) {
+    public function match(Request $request)
+    {
+        if (null !== $this->route) {
             return $this->route;
         }
 
@@ -360,7 +360,7 @@ class App
         $method = $request->getServer('REQUEST_METHOD', '');
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        if(!isset($this->routes[$method])) {
+        if (!isset($this->routes[$method])) {
             $this->routes[$method] = [];
         }
 
@@ -370,15 +370,15 @@ class App
          * For route to work with similar links where one is shorter than other
          *  but both might match given pattern
          */
-        \uksort($this->routes[$method], function($a, $b) {
+        \uksort($this->routes[$method], function ($a, $b) {
             return \strlen($b) - \strlen($a);
         });
 
-        \uksort($this->routes[$method], function($a, $b) {
+        \uksort($this->routes[$method], function ($a, $b) {
             return \count(\explode('/', $b)) - \count(\explode('/', $a));
         });
 
-        foreach($this->routes[$method] as  $route) {
+        foreach ($this->routes[$method] as  $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
@@ -394,7 +394,7 @@ class App
             break;
         }
 
-        if(!empty($this->route) && ('/' === $this->route->getURL()) && ($url != $this->route->getURL())) {
+        if (!empty($this->route) && ('/' === $this->route->getURL()) && ($url != $this->route->getURL())) {
             return null;
         }
 
@@ -418,11 +418,11 @@ class App
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
 
-        if(self::REQUEST_METHOD_HEAD == $method) {
+        if (self::REQUEST_METHOD_HEAD == $method) {
             $response->disablePayload();
         }
 
-        if(null !== $route) {
+        if (null !== $route) {
             // Extract keys from URL
             $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
             \preg_match($keyRegex, $route->getURL(), $keys);
@@ -434,11 +434,11 @@ class App
             $values = \array_combine($keys, $this->matches);
 
             try {
-                foreach($this->init as $init) {
+                foreach ($this->init as $init) {
                     \call_user_func_array($init, []);
                 }
 
-                foreach($route->getParams() as $key => $param) {
+                foreach ($route->getParams() as $key => $param) {
                     // Get value from route or request object
                     $value = isset($values[$key]) ? $values[$key] : $request->getParam($key, $param['default']);
                     $value = ($value === '') ? $param['default'] : $value;
@@ -451,27 +451,23 @@ class App
                 // Call the callback with the matched positions as params
                 \call_user_func_array($route->getAction(), $params);
 
-                foreach($this->shutdown as $shutdown) {
+                foreach ($this->shutdown as $shutdown) {
                     \call_user_func_array($shutdown, []);
                 }
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 \call_user_func_array($this->error, [$e]);
             }
 
             return $this;
-        }
-        elseif(self::REQUEST_METHOD_OPTIONS == $method) {
+        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
-                foreach($this->options as $option) {
+                foreach ($this->options as $option) {
                     \call_user_func_array($option, []);
                 }
-            }
-            catch (\Exception $e) {
+            } catch (\Exception $e) {
                 \call_user_func_array($this->error, [$e]);
             }
-        }
-        else {
+        } else {
             \call_user_func_array($this->error, [new Exception('Not Found', 404)]);
         }
 
@@ -494,7 +490,7 @@ class App
             // checking whether the class exists
             $validator = $param['validator'];
 
-            if(\is_callable($validator)) {
+            if (\is_callable($validator)) {
                 $validator = $validator();
             }
 
@@ -506,8 +502,7 @@ class App
             if (!$validator->isValid($value)) {
                 throw new Exception('Invalid ' .$key . ': ' . $validator->getDescription(), 400);
             }
-        }
-        else if (!$param['optional']) {
+        } elseif (!$param['optional']) {
             throw new Exception('Param "' . $key . '" is not optional.', 400);
         }
     }

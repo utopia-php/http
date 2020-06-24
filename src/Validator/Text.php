@@ -51,7 +51,7 @@ class Text extends Validator
     {
         $message = 'Value must be a string';
 
-        if($this->length) {
+        if ($this->length) {
             $message .= ' and no longer than ' . $this->length . ' chars';
         }
         return $message;
@@ -67,11 +67,11 @@ class Text extends Validator
      */
     public function isValid($value)
     {
-        if(!\is_string($value)) {
+        if (!\is_string($value)) {
             return false;
         }
 
-        if(\mb_strlen($value) > $this->length && $this->length != 0) {
+        if (\mb_strlen($value) > $this->length && $this->length != 0) {
             return false;
         }
 

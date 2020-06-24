@@ -24,7 +24,7 @@ use Utopia\Validator;
 class ArrayList extends Validator
 {
     /**
-     * @var int
+     * @var Validator
      */
     protected $validator = null;
 
@@ -62,12 +62,12 @@ class ArrayList extends Validator
      */
     public function isValid($value)
     {
-        if(!\is_array($value)) {
+        if (!\is_array($value)) {
             return false;
         }
 
-        foreach($value as $element) {
-            if(!$this->validator->isValid($element)) {
+        foreach ($value as $element) {
+            if (!$this->validator->isValid($element)) {
                 return false;
             }
         }

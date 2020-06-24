@@ -57,11 +57,11 @@ class Host extends Validator
     {
         $urlValidator = new URL();
 
-        if(!$urlValidator->isValid($value)) {
+        if (!$urlValidator->isValid($value)) {
             return false;
         }
 
-        if(\in_array(\parse_url($value, PHP_URL_HOST), $this->whitelist)) {
+        if (\in_array(\parse_url($value, PHP_URL_HOST), $this->whitelist)) {
             return true;
         }
 

@@ -81,7 +81,7 @@ class Range extends Numeric
      */
     public function isValid($value)
     {
-        if(!parent::isValid($value)) {
+        if (!parent::isValid($value)) {
             return false;
         }
 

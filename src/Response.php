@@ -257,7 +257,7 @@ class Response
      */
     public function removeHeader(string $key): self
     {
-        if(isset($this->headers[$key])) {
+        if (isset($this->headers[$key])) {
             unset($this->headers[$key]);
         }
 
@@ -317,7 +317,7 @@ class Response
      */
     public function removeCookie(string $name): self
     {
-        if(isset($this->headers[$name])) {
+        if (isset($this->headers[$name])) {
             unset($this->cookies[$name]);
         }
 
@@ -348,7 +348,7 @@ class Response
      */
     public function send(string $body = '', int $exit = null): void
     {
-        if(!$this->disablePayload) {
+        if (!$this->disablePayload) {
             $this->addHeader('X-Debug-Speed', \microtime(true) - $this->startTime);
 
             $this
@@ -363,7 +363,7 @@ class Response
             $this->disablePayload();
         }
 
-        if(!\is_null($exit)) {
+        if (!\is_null($exit)) {
             exit($exit); // Exit with code
         }
     }
@@ -404,11 +404,9 @@ class Response
     protected function appendCookies(): self
     {
         foreach ($this->cookies as $cookie) {
-            
             if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
                 \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
-            }
-            else {
+            } else {
                 \setcookie($cookie['name'], $cookie['value'], [
                     'expires' => $cookie['expire'],
                     'path' => $cookie['path'],
@@ -437,7 +435,7 @@ class Response
      * @param string $url complete absolute URI for redirection as required by the internet standard RFC 2616 (HTTP 1.1)
      * @param int $statusCode valid HTTP status code
      * @param null $exit
-     * 
+     *
      * @throws Exception
      * @see http://tools.ietf.org/html/rfc2616
      */

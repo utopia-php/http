@@ -234,7 +234,7 @@ class Route
      */
     public function setParamValue($key, $value)
     {
-        if(!isset($this->params[$key])) {
+        if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
         }
 
@@ -252,7 +252,7 @@ class Route
      */
     public function getParamValue($key)
     {
-        if(!isset($this->params[$key])) {
+        if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
         }
 

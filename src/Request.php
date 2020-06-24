@@ -52,7 +52,7 @@ class Request
      */
     public function getParam(string $key, $default = null)
     {
-        switch($this->getServer('REQUEST_METHOD', '')) {
+        switch ($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
                 return $this->getQuery($key, $default);
                 break;
@@ -76,7 +76,7 @@ class Request
      */
     public function getParams(): array
     {
-        switch($this->getServer('REQUEST_METHOD', '')) {
+        switch ($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
                 return $_GET;
                 break;
@@ -140,7 +140,7 @@ class Request
      * Returns users IP address.
      * Support HTTP_X_FORWARDED_FOR header usually return
      *  from different proxy servers or PHP default REMOTE_ADDR
-     * 
+     *
      * @return string
      */
     public function getIP(): string
@@ -242,7 +242,7 @@ class Request
                     break;
             }
 
-            if(empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
+            if (empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
                 $this->payload = [];
             }
         }
