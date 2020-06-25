@@ -134,18 +134,46 @@ class AppTest extends TestCase
         $this->app->init(function() {
             echo 'init-';
         });
-
+        
         $this->app->shutdown(function() {
             echo '-shutdown';
         });
 
+        $this->app->init(function() {
+            echo '(init-api)-';
+        }, 'api');
+
+        $this->app->shutdown(function() {
+            echo '-(shutdown-api)';
+        }, 'api');
+
+        $this->app->init(function() {
+            echo '(init-homepage)-';
+        }, 'homepage');
+
+        $this->app->shutdown(function() {
+            echo '-(shutdown-homepage)';
+        }, 'homepage');
+
         $route = new Route('GET', '/path');
 
         $route
+            ->groups(['api'])
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function($x, $y) {
                 echo $x.'-',$y;
+            })
+        ;
+
+        $homepage = new Route('GET', '/path');
+
+        $homepage
+            ->groups(['homepage'])
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->action(function($x, $y) {
+                echo $x.'*',$y;
             })
         ;
 
@@ -154,7 +182,14 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-param-x-param-y-shutdown', $result);
+        $this->assertEquals('init-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+
+        \ob_start();
+        $this->app->execute($homepage, ['x' => 'param-x', 'y' => 'param-y']);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('init-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function tearDown()

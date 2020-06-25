@@ -38,9 +38,9 @@ class Route
     /**
      * Group
      *
-     * @var string
+     * @var array
      */
-    protected $group = [];
+    protected $groups = [];
 
     /**
      * Action Callback
@@ -122,7 +122,7 @@ class Route
      */
     public function groups(array $groups): self
     {
-        $this->group = $groups;
+        $this->groups = $groups;
         return $this;
     }
 

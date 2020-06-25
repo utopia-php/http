@@ -52,13 +52,15 @@ class App
     protected $mode = '';
 
     /**
-     * Error
+     * Errors
      *
-     * An error callback
+     * Errors callbacks
      *
      * @var callback
      */
-    protected $error = null;
+    protected $errors = [
+        '*' => [],
+    ];
 
     /**
      * Init
@@ -67,7 +69,9 @@ class App
      *
      * @var callback[]
      */
-    protected $init = [];
+    protected $init = [
+        '*' => [],
+    ];
 
     /**
      * Shutdown
@@ -76,7 +80,9 @@ class App
      *
      * @var callback[]
      */
-    protected $shutdown = [];
+    protected $shutdown = [
+        '*' => [],
+    ];
 
     /**
      * Options
@@ -85,7 +91,9 @@ class App
      *
      * @var callback[]
      */
-    protected $options = [];
+    protected $options = [
+        '*' => [],
+    ];
 
     /**
      * Route
@@ -133,7 +141,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public function get($url)
+    public function get($url): Route
     {
         return $this->addRoute(self::REQUEST_METHOD_GET, $url);
     }
@@ -146,7 +154,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public function post($url)
+    public function post($url): Route
     {
         return $this->addRoute(self::REQUEST_METHOD_POST, $url);
     }
@@ -159,7 +167,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public function put($url)
+    public function put($url): Route
     {
         return $this->addRoute(self::REQUEST_METHOD_PUT, $url);
     }
@@ -172,7 +180,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public function patch($url)
+    public function patch($url): Route
     {
         return $this->addRoute(self::REQUEST_METHOD_PATCH, $url);
     }
@@ -185,7 +193,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public function delete($url)
+    public function delete($url): Route
     {
         return $this->addRoute(self::REQUEST_METHOD_DELETE, $url);
     }
@@ -195,12 +203,18 @@ class App
      *
      * Set a callback function that will be initialized on application start
      *
-     * @param $callback
+     * @param callable $callback
+     * @param string $group Pass "*" for all
      * @return $this
      */
-    public function init($callback)
+    public function init(callable $callback, string $group = '*'): self
     {
-        $this->init[] = $callback;
+        if(!isset($this->init[$group])) {
+            $this->init[$group] = [];
+        }
+
+        $this->init[$group][] = $callback;
+        
         return $this;
     }
 
@@ -209,12 +223,18 @@ class App
      *
      * Set a callback function that will be initialized on application end
      *
-     * @param $callback
+     * @param callable $callback
+     * @param string $group Use "*" for all
      * @return $this
      */
-    public function shutdown($callback)
+    public function shutdown(callable $callback, string $group = '*'): self
     {
-        $this->shutdown[] = $callback;
+        if(!isset($this->shutdown[$group])) {
+            $this->shutdown[$group] = [];
+        }
+
+        $this->shutdown[$group][] = $callback;
+
         return $this;
     }
 
@@ -223,12 +243,18 @@ class App
      *
      * Set a callback function for all request with options method
      *
-     * @param $callback
+     * @param callable $callback
+     * @param string $group Use "*" for all
      * @return $this
      */
-    public function options($callback)
+    public function options(callable $callback, string $group = '*'): self
     {
-        $this->options[] = $callback;
+        if(!isset($this->options[$group])) {
+            $this->options[$group] = [];
+        }
+
+        $this->options[$group][] = $callback;
+
         return $this;
     }
 
@@ -237,12 +263,18 @@ class App
      *
      * An error callback for failed or no matched requests
      *
-     * @param $callback
+     * @param callbale $callback
+     * @param string $group Use "*" for all
      * @return $this
      */
-    public function error($callback)
+    public function error(callable $callback, string $group = '*'): self
     {
-        $this->error = $callback;
+        if(!isset($this->errors[$group])) {
+            $this->errors[$group] = [];
+        }
+
+        $this->errors[$group][] = $callback;
+
         return $this;
     }
 
@@ -411,6 +443,7 @@ class App
     {
         $keys       = [];
         $params     = [];
+        $groups     = $route->getGroups();
 
         // Extract keys from URL
         $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
@@ -423,8 +456,16 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
-            foreach ($this->init as $init) {
+            foreach ($this->init['*'] as $init) { // Global init hooks
                 \call_user_func_array($init, []);
+            }
+
+            foreach ($groups as $group) {
+                if(isset($this->init[$group])) {
+                    foreach ($this->init[$group] as $init) { // Group init hooks
+                        \call_user_func_array($init, []);
+                    }
+                }
             }
 
             foreach ($route->getParams() as $key => $param) {
@@ -440,12 +481,30 @@ class App
 
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $params);
+            
+            foreach ($groups as $group) {
+                if(isset($this->shutdown[$group])) {
+                    foreach ($this->shutdown[$group] as $shutdown) { // Group shutdown hooks
+                        \call_user_func_array($shutdown, []);
+                    }
+                }
+            }
 
-            foreach ($this->shutdown as $shutdown) {
+            foreach ($this->shutdown['*'] as $shutdown) { // Global shutdown hooks
                 \call_user_func_array($shutdown, []);
             }
         } catch (\Exception $e) {
-            \call_user_func_array($this->error, [$e]);
+            foreach ($groups as $group) {
+                if(isset($this->errors[$group])) {
+                    foreach ($this->errors[$group] as $error) { // Group shutdown hooks
+                        \call_user_func_array($error, [$e]);
+                    }
+                }
+            }
+
+            foreach ($this->errors['*'] as $error) { // Global error hooks
+                \call_user_func_array($error, [$e]);
+            }
         }
 
         return $this;
@@ -465,6 +524,7 @@ class App
     {
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
+        $groups     = $route->getGroups();
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $response->disablePayload();
@@ -474,14 +534,26 @@ class App
             return $this->execute($route, $request->getParams());
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
-                foreach ($this->options as $option) {
+                foreach ($groups as $group) {
+                    if(isset($this->options[$group])) {
+                        foreach ($this->options[$group] as $option) { // Group options hooks
+                            \call_user_func_array($option, []);
+                        }
+                    }
+                }
+
+                foreach ($this->options['*'] as $option) { // Global options hooks
                     \call_user_func_array($option, []);
                 }
             } catch (\Exception $e) {
-                \call_user_func_array($this->error, [$e]);
+                foreach ($this->errors['*'] as $error) { // Global error hooks
+                    \call_user_func_array($error, [$e]);
+                }
             }
         } else {
-            \call_user_func_array($this->error, [new Exception('Not Found', 404)]);
+            foreach ($this->errors['*'] as $error) { // Global error hooks
+                \call_user_func_array($error, [new Exception('Not Found', 404)]);
+            }
         }
 
         return $this;
