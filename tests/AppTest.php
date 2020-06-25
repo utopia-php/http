@@ -194,6 +194,6 @@ class AppTest extends TestCase
 
     public function tearDown()
     {
-        $this->view = null;
+        $this->app = null;
     }
 }
