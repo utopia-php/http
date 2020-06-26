@@ -36,6 +36,13 @@ class Route
     protected $desc = '';
 
     /**
+     * Group
+     *
+     * @var array
+     */
+    protected $groups = [];
+
+    /**
      * Action Callback
      *
      * @var null|callback
@@ -89,7 +96,7 @@ class Route
      * @param string $URL
      * @return $this
      */
-    public function URL($URL)
+    public function URL($URL): self
     {
         $this->URL = $URL;
         return $this;
@@ -101,9 +108,21 @@ class Route
      * @param string $desc
      * @return $this
      */
-    public function desc($desc)
+    public function desc($desc): self
     {
         $this->desc = $desc;
+        return $this;
+    }
+
+    /**
+     * Add Group
+     *
+     * @param array $group
+     * @return $this
+     */
+    public function groups(array $groups): self
+    {
+        $this->groups = $groups;
         return $this;
     }
 
@@ -113,7 +132,7 @@ class Route
      * @param $action
      * @return $this
      */
-    public function action($action)
+    public function action($action): self
     {
         $this->action = $action;
         return $this;
@@ -130,7 +149,7 @@ class Route
      *
      * @return $this
      */
-    public function param($key, $default, $validator, $description = '', $optional = false)
+    public function param($key, $default, $validator, $description = '', $optional = false): self
     {
         $this->params[$key] = [
             'default'       => $default,
@@ -151,10 +170,9 @@ class Route
      *
      * @return $this
      */
-    public function label($key, $value)
+    public function label($key, $value): self
     {
         $this->labels[$key] = $value;
-
         return $this;
     }
 
@@ -163,7 +181,7 @@ class Route
      *
      * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
@@ -173,7 +191,7 @@ class Route
      *
      * @return string
      */
-    public function getURL()
+    public function getURL(): string
     {
         return $this->URL;
     }
@@ -183,9 +201,19 @@ class Route
      *
      * @return string
      */
-    public function getDesc()
+    public function getDesc(): string
     {
         return $this->desc;
+    }
+
+    /**
+     * Get Groups
+     *
+     * @return array
+     */
+    public function getGroups(): array
+    {
+        return $this->groups;
     }
 
     /**
@@ -203,7 +231,7 @@ class Route
      *
      * @return array
      */
-    public function getParams()
+    public function getParams(): array
     {
         return $this->params;
     }
@@ -213,7 +241,7 @@ class Route
      *
      * @return array
      */
-    public function getParamsValues()
+    public function getParamsValues(): array
     {
         $values = [];
 
@@ -232,7 +260,7 @@ class Route
      * @return mixed
      * @throws Exception
      */
-    public function setParamValue($key, $value)
+    public function setParamValue($key, $value): self
     {
         if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
@@ -278,7 +306,7 @@ class Route
      *
      * @return mixed
      */
-    public function getOrder()
+    public function getOrder(): int
     {
         return $this->order;
     }
