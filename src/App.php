@@ -36,7 +36,7 @@ class App
      *
      * @var array
      */
-    protected $routes = [
+    protected static $routes = [
         self::REQUEST_METHOD_GET       => [],
         self::REQUEST_METHOD_POST      => [],
         self::REQUEST_METHOD_PUT       => [],
@@ -49,7 +49,7 @@ class App
      *
      * @var string
      */
-    protected $mode = '';
+    protected static $mode = '';
 
     /**
      * Errors
@@ -58,7 +58,7 @@ class App
      *
      * @var callback
      */
-    protected $errors = [
+    protected static $errors = [
         '*' => [],
     ];
 
@@ -69,7 +69,7 @@ class App
      *
      * @var callback[]
      */
-    protected $init = [
+    protected static $init = [
         '*' => [],
     ];
 
@@ -80,7 +80,7 @@ class App
      *
      * @var callback[]
      */
-    protected $shutdown = [
+    protected static $shutdown = [
         '*' => [],
     ];
 
@@ -91,7 +91,7 @@ class App
      *
      * @var callback[]
      */
-    protected $options = [
+    protected static $options = [
         '*' => [],
     ];
 
@@ -119,18 +119,9 @@ class App
      * @param string $timezone
      * @param bool $mode Current mode
      */
-    public function __construct($timezone, $mode = self::MODE_TYPE_PRODUCTION)
+    public function __construct($timezone)
     {
         \date_default_timezone_set($timezone);
-
-        // Turn errors on when not in production or stage
-        if ($mode != self::MODE_TYPE_PRODUCTION && $mode != self::MODE_TYPE_STAGE) {
-            \ini_set('display_errors', 1);
-            \ini_set('display_startup_errors', 1);
-            \error_reporting(E_ALL);
-        }
-
-        $this->mode = $mode;
     }
 
     /**
@@ -141,9 +132,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function get($url): Route
+    public static function get($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_GET, $url);
+        return self::addRoute(self::REQUEST_METHOD_GET, $url);
     }
 
     /**
@@ -154,9 +145,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function post($url): Route
+    public static function post($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_POST, $url);
+        return self::addRoute(self::REQUEST_METHOD_POST, $url);
     }
 
     /**
@@ -167,9 +158,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function put($url): Route
+    public static function put($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_PUT, $url);
+        return self::addRoute(self::REQUEST_METHOD_PUT, $url);
     }
 
     /**
@@ -180,9 +171,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function patch($url): Route
+    public static function patch($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_PATCH, $url);
+        return self::addRoute(self::REQUEST_METHOD_PATCH, $url);
     }
 
     /**
@@ -193,9 +184,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function delete($url): Route
+    public static function delete($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_DELETE, $url);
+        return self::addRoute(self::REQUEST_METHOD_DELETE, $url);
     }
 
     /**
@@ -207,15 +198,13 @@ class App
      * @param string $group Pass "*" for all
      * @return $this
      */
-    public function init(callable $callback, string $group = '*'): self
+    public static function init(callable $callback, string $group = '*')
     {
-        if(!isset($this->init[$group])) {
-            $this->init[$group] = [];
+        if(!isset(self::$init[$group])) {
+            self::$init[$group] = [];
         }
 
-        $this->init[$group][] = $callback;
-        
-        return $this;
+        self::$init[$group][] = $callback;
     }
 
     /**
@@ -227,15 +216,13 @@ class App
      * @param string $group Use "*" for all
      * @return $this
      */
-    public function shutdown(callable $callback, string $group = '*'): self
+    public static function shutdown(callable $callback, string $group = '*')
     {
-        if(!isset($this->shutdown[$group])) {
-            $this->shutdown[$group] = [];
+        if(!isset(self::$shutdown[$group])) {
+            self::$shutdown[$group] = [];
         }
 
-        $this->shutdown[$group][] = $callback;
-
-        return $this;
+        self::$shutdown[$group][] = $callback;
     }
 
     /**
@@ -247,15 +234,13 @@ class App
      * @param string $group Use "*" for all
      * @return $this
      */
-    public function options(callable $callback, string $group = '*'): self
+    public static function options(callable $callback, string $group = '*')
     {
-        if(!isset($this->options[$group])) {
-            $this->options[$group] = [];
+        if(!isset(self::$options[$group])) {
+            self::$options[$group] = [];
         }
 
-        $this->options[$group][] = $callback;
-
-        return $this;
+        self::$options[$group][] = $callback;
     }
 
     /**
@@ -267,15 +252,13 @@ class App
      * @param string $group Use "*" for all
      * @return $this
      */
-    public function error(callable $callback, string $group = '*'): self
+    public static function error(callable $callback, string $group = '*')
     {
-        if(!isset($this->errors[$group])) {
-            $this->errors[$group] = [];
+        if(!isset(self::$errors[$group])) {
+            self::$errors[$group] = [];
         }
 
-        $this->errors[$group][] = $callback;
-
-        return $this;
+        self::$errors[$group][] = $callback;
     }
 
     /**
@@ -287,7 +270,7 @@ class App
      * @param  mixed  $default
      * @return mixed
      */
-    public function getEnv($key, $default = null)
+    public static function getEnv($key, $default = null)
     {
         return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
@@ -299,9 +282,9 @@ class App
      *
      * @return string
      */
-    public function getMode()
+    public static function getMode(): string
     {
-        return $this->mode;
+        return self::$mode;
     }
 
     /**
@@ -311,35 +294,33 @@ class App
      *
      * @return string
      */
-    public function setMode($value)
+    public static function setMode($value): void
     {
-        $this->mode = $value;
-
-        return $this;
+        self::$mode = $value;
     }
 
     /**
      * Is app in production mode?
      */
-    public function isProduction(): bool
+    public static function isProduction(): bool
     {
-        return (self::MODE_TYPE_PRODUCTION === $this->mode);
+        return (self::MODE_TYPE_PRODUCTION === self::$mode);
     }
 
     /**
      * Is app in development mode?
      */
-    public function isDevelopment(): bool
+    public static function isDevelopment(): bool
     {
-        return (self::MODE_TYPE_DEVELOPMENT === $this->mode);
+        return (self::MODE_TYPE_DEVELOPMENT === self::$mode);
     }
 
     /**
      * Is app in stage mode?
      */
-    public function isStage(): bool
+    public static function isStage(): bool
     {
-        return (self::MODE_TYPE_STAGE === $this->mode);
+        return (self::MODE_TYPE_STAGE === self::$mode);
     }
 
     /**
@@ -349,9 +330,9 @@ class App
      *
      * @return array
      */
-    public function getRoutes()
+    public static function getRoutes(): array
     {
-        return $this->routes;
+        return self::$routes;
     }
 
     /**
@@ -363,16 +344,14 @@ class App
      * @param string $url
      * @return Route
      */
-    protected function addRoute($method, $url)
+    protected static function addRoute($method, $url): Route
     {
         $route = new Route($method, $url);
 
-        $this->routes[$method][$url] = $route;
+        self::$routes[$method][$url] = $route;
 
         return $route;
     }
-
-    //TODO consider adding support to middlewares
 
     /**
      * Match
@@ -392,8 +371,8 @@ class App
         $method = $request->getServer('REQUEST_METHOD', '');
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        if (!isset($this->routes[$method])) {
-            $this->routes[$method] = [];
+        if (!isset(self::$routes[$method])) {
+            self::$routes[$method] = [];
         }
 
         /*
@@ -402,15 +381,15 @@ class App
          * For route to work with similar links where one is shorter than other
          *  but both might match given pattern
          */
-        \uksort($this->routes[$method], function ($a, $b) {
+        \uksort(self::$routes[$method], function ($a, $b) {
             return \strlen($b) - \strlen($a);
         });
 
-        \uksort($this->routes[$method], function ($a, $b) {
+        \uksort(self::$routes[$method], function ($a, $b) {
             return \count(\explode('/', $b)) - \count(\explode('/', $a));
         });
 
-        foreach ($this->routes[$method] as  $route) {
+        foreach (self::$routes[$method] as  $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
@@ -456,13 +435,13 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
-            foreach ($this->init['*'] as $init) { // Global init hooks
+            foreach (self::$init['*'] as $init) { // Global init hooks
                 \call_user_func_array($init, []);
             }
 
             foreach ($groups as $group) {
-                if(isset($this->init[$group])) {
-                    foreach ($this->init[$group] as $init) { // Group init hooks
+                if(isset(self::$init[$group])) {
+                    foreach (self::$init[$group] as $init) { // Group init hooks
                         \call_user_func_array($init, []);
                     }
                 }
@@ -483,26 +462,26 @@ class App
             \call_user_func_array($route->getAction(), $params);
             
             foreach ($groups as $group) {
-                if(isset($this->shutdown[$group])) {
-                    foreach ($this->shutdown[$group] as $shutdown) { // Group shutdown hooks
+                if(isset(self::$shutdown[$group])) {
+                    foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
                         \call_user_func_array($shutdown, []);
                     }
                 }
             }
 
-            foreach ($this->shutdown['*'] as $shutdown) { // Global shutdown hooks
+            foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
                 \call_user_func_array($shutdown, []);
             }
         } catch (\Exception $e) {
             foreach ($groups as $group) {
-                if(isset($this->errors[$group])) {
-                    foreach ($this->errors[$group] as $error) { // Group shutdown hooks
+                if(isset(self::$errors[$group])) {
+                    foreach (self::$errors[$group] as $error) { // Group shutdown hooks
                         \call_user_func_array($error, [$e]);
                     }
                 }
             }
 
-            foreach ($this->errors['*'] as $error) { // Global error hooks
+            foreach (self::$errors['*'] as $error) { // Global error hooks
                 \call_user_func_array($error, [$e]);
             }
         }
@@ -520,7 +499,7 @@ class App
      * @param Response $response
      * @return self
      */
-    public function run(Request $request, Response $response)
+    public function run(Request $request, Response $response): self
     {
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
@@ -535,23 +514,23 @@ class App
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
-                    if(isset($this->options[$group])) {
-                        foreach ($this->options[$group] as $option) { // Group options hooks
+                    if(isset(self::$options[$group])) {
+                        foreach (self::$options[$group] as $option) { // Group options hooks
                             \call_user_func_array($option, []);
                         }
                     }
                 }
 
-                foreach ($this->options['*'] as $option) { // Global options hooks
+                foreach (self::$options['*'] as $option) { // Global options hooks
                     \call_user_func_array($option, []);
                 }
             } catch (\Exception $e) {
-                foreach ($this->errors['*'] as $error) { // Global error hooks
+                foreach (self::$errors['*'] as $error) { // Global error hooks
                     \call_user_func_array($error, [$e]);
                 }
             }
         } else {
-            foreach ($this->errors['*'] as $error) { // Global error hooks
+            foreach (self::$errors['*'] as $error) { // Global error hooks
                 \call_user_func_array($error, [new Exception('Not Found', 404)]);
             }
         }
