@@ -25,11 +25,7 @@ use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
 
-$app        = new App('America/New_York' /* timezone */, true /* is production */);
-$request    = new Request();
-$response   = new Response();
-
-$app->get('/hello-world')
+App::get('/hello-world') // Define Route
     ->action(
         function() use ($request, $response) {
             $response
@@ -39,6 +35,12 @@ $app->get('/hello-world')
               ->json(['Hello' => 'World']);
         }
     );
+
+App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+
+$app        = new App('America/New_York');
+$request    = new Request();
+$response   = new Response();
 
 $utopia->run($request, $response);
 ```
