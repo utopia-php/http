@@ -36,7 +36,7 @@ class App
      *
      * @var array
      */
-    protected $routes = [
+    protected static $routes = [
         self::REQUEST_METHOD_GET       => [],
         self::REQUEST_METHOD_POST      => [],
         self::REQUEST_METHOD_PUT       => [],
@@ -49,7 +49,7 @@ class App
      *
      * @var string
      */
-    protected $mode = '';
+    protected static $mode = '';
 
     /**
      * Error
@@ -58,7 +58,7 @@ class App
      *
      * @var callback
      */
-    protected $error = null;
+    protected static $error = null;
 
     /**
      * Init
@@ -67,7 +67,7 @@ class App
      *
      * @var callback[]
      */
-    protected $init = [];
+    protected static $init = [];
 
     /**
      * Shutdown
@@ -76,7 +76,7 @@ class App
      *
      * @var callback[]
      */
-    protected $shutdown = [];
+    protected static $shutdown = [];
 
     /**
      * Options
@@ -85,7 +85,7 @@ class App
      *
      * @var callback[]
      */
-    protected $options = [];
+    protected static $options = [];
 
     /**
      * Route
@@ -111,18 +111,9 @@ class App
      * @param string $timezone
      * @param bool $mode Current mode
      */
-    public function __construct($timezone, $mode = self::MODE_TYPE_PRODUCTION)
+    public function __construct($timezone)
     {
         \date_default_timezone_set($timezone);
-
-        // Turn errors on when not in production or stage
-        if ($mode != self::MODE_TYPE_PRODUCTION && $mode != self::MODE_TYPE_STAGE) {
-            \ini_set('display_errors', 1);
-            \ini_set('display_startup_errors', 1);
-            \error_reporting(E_ALL);
-        }
-
-        $this->mode = $mode;
     }
 
     /**
@@ -133,9 +124,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function get($url)
+    public static function get($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_GET, $url);
+        return self::addRoute(self::REQUEST_METHOD_GET, $url);
     }
 
     /**
@@ -146,9 +137,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function post($url)
+    public static function post($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_POST, $url);
+        return self::addRoute(self::REQUEST_METHOD_POST, $url);
     }
 
     /**
@@ -159,9 +150,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function put($url)
+    public static function put($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_PUT, $url);
+        return self::addRoute(self::REQUEST_METHOD_PUT, $url);
     }
 
     /**
@@ -172,9 +163,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function patch($url)
+    public static function patch($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_PATCH, $url);
+        return self::addRoute(self::REQUEST_METHOD_PATCH, $url);
     }
 
     /**
@@ -185,9 +176,9 @@ class App
      * @param string $url
      * @return Route
      */
-    public function delete($url)
+    public static function delete($url): Route
     {
-        return $this->addRoute(self::REQUEST_METHOD_DELETE, $url);
+        return self::addRoute(self::REQUEST_METHOD_DELETE, $url);
     }
 
     /**
@@ -198,10 +189,9 @@ class App
      * @param $callback
      * @return $this
      */
-    public function init($callback)
+    public static function init(callable $callback)
     {
-        $this->init[] = $callback;
-        return $this;
+        self::$init[] = $callback;
     }
 
     /**
@@ -212,10 +202,9 @@ class App
      * @param $callback
      * @return $this
      */
-    public function shutdown($callback)
+    public static function shutdown(callable $callback)
     {
-        $this->shutdown[] = $callback;
-        return $this;
+        self::$shutdown[] = $callback;
     }
 
     /**
@@ -226,10 +215,9 @@ class App
      * @param $callback
      * @return $this
      */
-    public function options($callback)
+    public static function options(callable $callback)
     {
-        $this->options[] = $callback;
-        return $this;
+        self::$options[] = $callback;
     }
 
     /**
@@ -240,10 +228,9 @@ class App
      * @param $callback
      * @return $this
      */
-    public function error($callback)
+    public static function error(callable $callback)
     {
-        $this->error = $callback;
-        return $this;
+        self::$error = $callback;
     }
 
     /**
@@ -255,7 +242,7 @@ class App
      * @param  mixed  $default
      * @return mixed
      */
-    public function getEnv($key, $default = null)
+    public static function getEnv($key, $default = null)
     {
         return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
@@ -267,9 +254,9 @@ class App
      *
      * @return string
      */
-    public function getMode()
+    public static function getMode(): string
     {
-        return $this->mode;
+        return self::$mode;
     }
 
     /**
@@ -279,35 +266,33 @@ class App
      *
      * @return string
      */
-    public function setMode($value)
+    public static function setMode($value): void
     {
-        $this->mode = $value;
-
-        return $this;
+        self::$mode = $value;
     }
 
     /**
      * Is app in production mode?
      */
-    public function isProduction(): bool
+    public static function isProduction(): bool
     {
-        return (self::MODE_TYPE_PRODUCTION === $this->mode);
+        return (self::MODE_TYPE_PRODUCTION === self::$mode);
     }
 
     /**
      * Is app in development mode?
      */
-    public function isDevelopment(): bool
+    public static function isDevelopment(): bool
     {
-        return (self::MODE_TYPE_DEVELOPMENT === $this->mode);
+        return (self::MODE_TYPE_DEVELOPMENT === self::$mode);
     }
 
     /**
      * Is app in stage mode?
      */
-    public function isStage(): bool
+    public static function isStage(): bool
     {
-        return (self::MODE_TYPE_STAGE === $this->mode);
+        return (self::MODE_TYPE_STAGE === self::$mode);
     }
 
     /**
@@ -317,9 +302,9 @@ class App
      *
      * @return array
      */
-    public function getRoutes()
+    public static function getRoutes(): array
     {
-        return $this->routes;
+        return self::$routes;
     }
 
     /**
@@ -331,16 +316,14 @@ class App
      * @param string $url
      * @return Route
      */
-    protected function addRoute($method, $url)
+    protected static function addRoute($method, $url): Route
     {
         $route = new Route($method, $url);
 
-        $this->routes[$method][$url] = $route;
+        self::$routes[$method][$url] = $route;
 
         return $route;
     }
-
-    //TODO consider adding support to middlewares
 
     /**
      * Match
@@ -360,8 +343,8 @@ class App
         $method = $request->getServer('REQUEST_METHOD', '');
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        if (!isset($this->routes[$method])) {
-            $this->routes[$method] = [];
+        if (!isset(self::$routes[$method])) {
+            self::$routes[$method] = [];
         }
 
         /*
@@ -370,15 +353,15 @@ class App
          * For route to work with similar links where one is shorter than other
          *  but both might match given pattern
          */
-        \uksort($this->routes[$method], function ($a, $b) {
+        \uksort(self::$routes[$method], function ($a, $b) {
             return \strlen($b) - \strlen($a);
         });
 
-        \uksort($this->routes[$method], function ($a, $b) {
+        \uksort(self::$routes[$method], function ($a, $b) {
             return \count(\explode('/', $b)) - \count(\explode('/', $a));
         });
 
-        foreach ($this->routes[$method] as  $route) {
+        foreach (self::$routes[$method] as  $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
@@ -411,7 +394,7 @@ class App
      * @param Response $response
      * @return mixed
      */
-    public function run(Request $request, Response $response)
+    public function run(Request $request, Response $response): self
     {
         $keys       = [];
         $params     = [];
@@ -434,7 +417,7 @@ class App
             $values = \array_combine($keys, $this->matches);
 
             try {
-                foreach ($this->init as $init) {
+                foreach (self::$init as $init) {
                     \call_user_func_array($init, []);
                 }
 
@@ -451,24 +434,24 @@ class App
                 // Call the callback with the matched positions as params
                 \call_user_func_array($route->getAction(), $params);
 
-                foreach ($this->shutdown as $shutdown) {
+                foreach (self::$shutdown as $shutdown) {
                     \call_user_func_array($shutdown, []);
                 }
             } catch (\Exception $e) {
-                \call_user_func_array($this->error, [$e]);
+                \call_user_func_array(self::$error, [$e]);
             }
 
             return $this;
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
-                foreach ($this->options as $option) {
+                foreach (self::$options as $option) {
                     \call_user_func_array($option, []);
                 }
             } catch (\Exception $e) {
-                \call_user_func_array($this->error, [$e]);
+                \call_user_func_array(self::$error, [$e]);
             }
         } else {
-            \call_user_func_array($this->error, [new Exception('Not Found', 404)]);
+            \call_user_func_array(self::$error, [new Exception('Not Found', 404)]);
         }
 
         return $this;

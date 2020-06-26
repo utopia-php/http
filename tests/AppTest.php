@@ -24,36 +24,36 @@ class AppTest extends TestCase
 
     public function setUp()
     {
-        $this->app = new App('Asia/Tel_Aviv', App::MODE_TYPE_PRODUCTION);
+        $this->app = new App('Asia/Tel_Aviv');
     }
 
     public function testIsMode() {
 
-        $this->assertEquals(App::MODE_TYPE_PRODUCTION, $this->app->getMode());
-        $this->assertEquals(true, $this->app->isProduction());
-        $this->assertEquals(false, $this->app->isDevelopment());
-        $this->assertEquals(false, $this->app->isStage());
+        $this->assertEquals(null, App::getMode());
+        $this->assertEquals(false, App::isProduction());
+        $this->assertEquals(false, App::isDevelopment());
+        $this->assertEquals(false, App::isStage());
 
-        $this->app->setMode(App::MODE_TYPE_PRODUCTION);
+        App::setMode(App::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(App::MODE_TYPE_PRODUCTION, $this->app->getMode());
-        $this->assertEquals(true, $this->app->isProduction());
-        $this->assertEquals(false, $this->app->isDevelopment());
-        $this->assertEquals(false, $this->app->isStage());
+        $this->assertEquals(App::MODE_TYPE_PRODUCTION, App::getMode());
+        $this->assertEquals(true, App::isProduction());
+        $this->assertEquals(false, App::isDevelopment());
+        $this->assertEquals(false, App::isStage());
 
-        $this->app->setMode(App::MODE_TYPE_DEVELOPMENT);
+        App::setMode(App::MODE_TYPE_DEVELOPMENT);
 
-        $this->assertEquals(App::MODE_TYPE_DEVELOPMENT, $this->app->getMode());
-        $this->assertEquals(false, $this->app->isProduction());
-        $this->assertEquals(true, $this->app->isDevelopment());
-        $this->assertEquals(false, $this->app->isStage());
+        $this->assertEquals(App::MODE_TYPE_DEVELOPMENT, App::getMode());
+        $this->assertEquals(false, App::isProduction());
+        $this->assertEquals(true, App::isDevelopment());
+        $this->assertEquals(false, App::isStage());
 
-        $this->app->setMode(App::MODE_TYPE_STAGE);
+        App::setMode(App::MODE_TYPE_STAGE);
 
-        $this->assertEquals(App::MODE_TYPE_STAGE, $this->app->getMode());
-        $this->assertEquals(false, $this->app->isProduction());
-        $this->assertEquals(false, $this->app->isDevelopment());
-        $this->assertEquals(true, $this->app->isStage());
+        $this->assertEquals(App::MODE_TYPE_STAGE, App::getMode());
+        $this->assertEquals(false, App::isProduction());
+        $this->assertEquals(false, App::isDevelopment());
+        $this->assertEquals(true, App::isStage());
     }
 
     public function testGetEnv()
@@ -61,8 +61,8 @@ class AppTest extends TestCase
         // Mock
         $_SERVER['key'] = 'value';
 
-        $this->assertEquals($this->app->getEnv('key'), 'value');
-        $this->assertEquals($this->app->getEnv('unknown', 'test'), 'test');
+        $this->assertEquals(App::getEnv('key'), 'value');
+        $this->assertEquals(App::getEnv('unknown', 'test'), 'test');
     }
 
     public function tearDown()
