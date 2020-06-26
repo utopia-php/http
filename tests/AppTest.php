@@ -14,6 +14,7 @@
 namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Validator\Text;
 
 class AppTest extends TestCase
 {
@@ -27,7 +28,8 @@ class AppTest extends TestCase
         $this->app = new App('Asia/Tel_Aviv');
     }
 
-    public function testIsMode() {
+    public function testIsMode()
+    {
 
         $this->assertEquals(null, App::getMode());
         $this->assertEquals(false, App::isProduction());
@@ -65,8 +67,133 @@ class AppTest extends TestCase
         $this->assertEquals(App::getEnv('unknown', 'test'), 'test');
     }
 
+    public function testExecute()
+    {
+        $this->app->error(function() {
+            echo 'error';
+        });
+
+        // Default Params
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->action(function($x, $y) {
+                echo $x.'-',$y;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, []);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('x-def-y-def', $result);
+
+        // With Params
+
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->action(function($x, $y) {
+                echo $x.'-',$y;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, ['x' => 'param-x', 'y' => 'param-y']);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('param-x-param-y', $result);
+
+        // With Error
+
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', 'x-def', new Text(1), 'x param', false)
+            ->param('y', 'y-def', new Text(1), 'y param', false)
+            ->action(function($x, $y) {
+                echo $x.'-',$y;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, ['x' => 'param-x', 'y' => 'param-y']);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('error', $result);
+
+        // With Hooks
+
+        $this->app->init(function() {
+            echo 'init-';
+        });
+        
+        $this->app->shutdown(function() {
+            echo '-shutdown';
+        });
+
+        $this->app->init(function() {
+            echo '(init-api)-';
+        }, 'api');
+
+        $this->app->shutdown(function() {
+            echo '-(shutdown-api)';
+        }, 'api');
+
+        $this->app->init(function() {
+            echo '(init-homepage)-';
+        }, 'homepage');
+
+        $this->app->shutdown(function() {
+            echo '-(shutdown-homepage)';
+        }, 'homepage');
+
+        $route = new Route('GET', '/path');
+
+        $route
+            ->groups(['api'])
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->action(function($x, $y) {
+                echo $x.'-',$y;
+            })
+        ;
+
+        $homepage = new Route('GET', '/path');
+
+        $homepage
+            ->groups(['homepage'])
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->action(function($x, $y) {
+                echo $x.'*',$y;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, ['x' => 'param-x', 'y' => 'param-y']);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('init-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+
+        \ob_start();
+        $this->app->execute($homepage, ['x' => 'param-x', 'y' => 'param-y']);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('init-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+    }
+
     public function tearDown()
     {
-        $this->view = null;
+        $this->app = null;
     }
 }

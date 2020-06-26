@@ -83,6 +83,7 @@ class Request
             case self::METHOD_POST:
             case self::METHOD_PUT:
             case self::METHOD_PATCH:
+            case self::METHOD_DELETE:
                 return $this->generateInput();
                 break;
             default:

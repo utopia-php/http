@@ -52,13 +52,15 @@ class App
     protected static $mode = '';
 
     /**
-     * Error
+     * Errors
      *
-     * An error callback
+     * Errors callbacks
      *
      * @var callback
      */
-    protected static $error = null;
+    protected static $errors = [
+        '*' => [],
+    ];
 
     /**
      * Init
@@ -67,7 +69,9 @@ class App
      *
      * @var callback[]
      */
-    protected static $init = [];
+    protected static $init = [
+        '*' => [],
+    ];
 
     /**
      * Shutdown
@@ -76,7 +80,9 @@ class App
      *
      * @var callback[]
      */
-    protected static $shutdown = [];
+    protected static $shutdown = [
+        '*' => [],
+    ];
 
     /**
      * Options
@@ -85,7 +91,9 @@ class App
      *
      * @var callback[]
      */
-    protected static $options = [];
+    protected static $options = [
+        '*' => [],
+    ];
 
     /**
      * Route
@@ -186,12 +194,17 @@ class App
      *
      * Set a callback function that will be initialized on application start
      *
-     * @param $callback
+     * @param callable $callback
+     * @param string $group Pass "*" for all
      * @return $this
      */
-    public static function init(callable $callback)
+    public static function init(callable $callback, string $group = '*')
     {
-        self::$init[] = $callback;
+        if(!isset(self::$init[$group])) {
+            self::$init[$group] = [];
+        }
+
+        self::$init[$group][] = $callback;
     }
 
     /**
@@ -199,12 +212,17 @@ class App
      *
      * Set a callback function that will be initialized on application end
      *
-     * @param $callback
+     * @param callable $callback
+     * @param string $group Use "*" for all
      * @return $this
      */
-    public static function shutdown(callable $callback)
+    public static function shutdown(callable $callback, string $group = '*')
     {
-        self::$shutdown[] = $callback;
+        if(!isset(self::$shutdown[$group])) {
+            self::$shutdown[$group] = [];
+        }
+
+        self::$shutdown[$group][] = $callback;
     }
 
     /**
@@ -212,12 +230,17 @@ class App
      *
      * Set a callback function for all request with options method
      *
-     * @param $callback
+     * @param callable $callback
+     * @param string $group Use "*" for all
      * @return $this
      */
-    public static function options(callable $callback)
+    public static function options(callable $callback, string $group = '*')
     {
-        self::$options[] = $callback;
+        if(!isset(self::$options[$group])) {
+            self::$options[$group] = [];
+        }
+
+        self::$options[$group][] = $callback;
     }
 
     /**
@@ -225,12 +248,17 @@ class App
      *
      * An error callback for failed or no matched requests
      *
-     * @param $callback
+     * @param callbale $callback
+     * @param string $group Use "*" for all
      * @return $this
      */
-    public static function error(callable $callback)
+    public static function error(callable $callback, string $group = '*')
     {
-        self::$error = $callback;
+        if(!isset(self::$errors[$group])) {
+            self::$errors[$group] = [];
+        }
+
+        self::$errors[$group][] = $callback;
     }
 
     /**
@@ -385,6 +413,83 @@ class App
     }
 
     /**
+     * Execute a given route with middlewares and error handling
+     * 
+     * @param Route $route
+     * @return self
+     */
+    public function execute(Route $route, array $args = []): self
+    {
+        $keys       = [];
+        $params     = [];
+        $groups     = $route->getGroups();
+
+        // Extract keys from URL
+        $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
+        \preg_match($keyRegex, $route->getURL(), $keys);
+
+        // Remove the first key and value ( corresponding to full regex match )
+        \array_shift($keys);
+
+        // combine keys and values to one array
+        $values = \array_combine($keys, $this->matches);
+
+        try {
+            foreach (self::$init['*'] as $init) { // Global init hooks
+                \call_user_func_array($init, []);
+            }
+
+            foreach ($groups as $group) {
+                if(isset(self::$init[$group])) {
+                    foreach (self::$init[$group] as $init) { // Group init hooks
+                        \call_user_func_array($init, []);
+                    }
+                }
+            }
+
+            foreach ($route->getParams() as $key => $param) {
+                // Get value from route or request object
+                $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
+                $value = isset($values[$key]) ? $values[$key] : $arg;
+                $value = ($value === '') ? $param['default'] : $value;
+
+                $this->validate($key, $param, $value);
+
+                $params[$key] = $value;
+            }
+
+            // Call the callback with the matched positions as params
+            \call_user_func_array($route->getAction(), $params);
+            
+            foreach ($groups as $group) {
+                if(isset(self::$shutdown[$group])) {
+                    foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
+                        \call_user_func_array($shutdown, []);
+                    }
+                }
+            }
+
+            foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
+                \call_user_func_array($shutdown, []);
+            }
+        } catch (\Exception $e) {
+            foreach ($groups as $group) {
+                if(isset(self::$errors[$group])) {
+                    foreach (self::$errors[$group] as $error) { // Group shutdown hooks
+                        \call_user_func_array($error, [$e]);
+                    }
+                }
+            }
+
+            foreach (self::$errors['*'] as $error) { // Global error hooks
+                \call_user_func_array($error, [$e]);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Run
      *
      * This is the place to initialize any pre routing logic.
@@ -392,66 +497,42 @@ class App
      *
      * @param Request $request
      * @param Response $response
-     * @return mixed
+     * @return self
      */
     public function run(Request $request, Response $response): self
     {
-        $keys       = [];
-        $params     = [];
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
+        $groups     = $route->getGroups();
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $response->disablePayload();
         }
 
         if (null !== $route) {
-            // Extract keys from URL
-            $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
-            \preg_match($keyRegex, $route->getURL(), $keys);
-
-            // Remove the first key and value ( corresponding to full regex match )
-            \array_shift($keys);
-
-            // combine keys and values to one array
-            $values = \array_combine($keys, $this->matches);
-
-            try {
-                foreach (self::$init as $init) {
-                    \call_user_func_array($init, []);
-                }
-
-                foreach ($route->getParams() as $key => $param) {
-                    // Get value from route or request object
-                    $value = isset($values[$key]) ? $values[$key] : $request->getParam($key, $param['default']);
-                    $value = ($value === '') ? $param['default'] : $value;
-
-                    $this->validate($key, $param, $value);
-
-                    $params[$key] = $value;
-                }
-
-                // Call the callback with the matched positions as params
-                \call_user_func_array($route->getAction(), $params);
-
-                foreach (self::$shutdown as $shutdown) {
-                    \call_user_func_array($shutdown, []);
-                }
-            } catch (\Exception $e) {
-                \call_user_func_array(self::$error, [$e]);
-            }
-
-            return $this;
+            return $this->execute($route, $request->getParams());
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
-                foreach (self::$options as $option) {
+                foreach ($groups as $group) {
+                    if(isset(self::$options[$group])) {
+                        foreach (self::$options[$group] as $option) { // Group options hooks
+                            \call_user_func_array($option, []);
+                        }
+                    }
+                }
+
+                foreach (self::$options['*'] as $option) { // Global options hooks
                     \call_user_func_array($option, []);
                 }
             } catch (\Exception $e) {
-                \call_user_func_array(self::$error, [$e]);
+                foreach (self::$errors['*'] as $error) { // Global error hooks
+                    \call_user_func_array($error, [$e]);
+                }
             }
         } else {
-            \call_user_func_array(self::$error, [new Exception('Not Found', 404)]);
+            foreach (self::$errors['*'] as $error) { // Global error hooks
+                \call_user_func_array($error, [new Exception('Not Found', 404)]);
+            }
         }
 
         return $this;
