@@ -67,6 +67,18 @@ class AppTest extends TestCase
         $this->assertEquals(App::getEnv('unknown', 'test'), 'test');
     }
 
+    public function testResources()
+    {
+        App::setResource('rand', function () {return rand();});
+
+        $resource = $this->app->getResource('rand');
+
+        $this->assertNotEmpty($resource);
+        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $this->app->getResource('rand'));
+    }
+
     public function testExecute()
     {
         $this->app->error(function() {

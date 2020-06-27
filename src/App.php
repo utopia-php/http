@@ -45,6 +45,16 @@ class App
     ];
 
     /**
+     * @var array
+     */
+    protected $resources = [];
+
+    /**
+     * @var array
+     */
+    protected static $resourcesCallbacks = [];
+
+    /**
      * Current running mode
      *
      * @var string
@@ -297,6 +307,44 @@ class App
     public static function setMode($value): void
     {
         self::$mode = $value;
+    }
+
+    /**
+     * If a resource has been created returns it, otherwise create and than return it
+     *
+     * @param string $name
+     * @param bool $fresh
+     * @return mixed
+     * @throws Exception
+     */
+    public function getResource(string $name, $fresh = false)
+    {
+        if(!\array_key_exists($name, $this->resources) || $fresh) {
+            if(!\array_key_exists($name, self::$resourcesCallbacks)) {
+                throw new Exception('Faild to find resource: "' . $name . '"');
+            }
+
+            $this->resources[$name] = self::$resourcesCallbacks[$name]();
+        }
+
+        return $this->resources[$name];
+    }
+
+    /**
+     * Set a new resource callback
+     *
+     * @param string $name
+     * @param callable $callback
+     * @return $this
+     * @throws Exception
+     */
+    public static function setResource(string $name, callable $callback)
+    {
+        if(\array_key_exists($name, self::$resourcesCallbacks)) {
+            throw new Exception('Callback with the name "' . $name . '" already exists');
+        }
+
+        self::$resourcesCallbacks[$name] = $callback;
     }
 
     /**

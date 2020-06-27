@@ -64,6 +64,15 @@ class Route
     protected $params = [];
 
     /**
+     * Injections
+     *
+     * List of route required injection
+     *
+     * @var array
+     */
+    protected $injections = [];
+
+    /**
      * Labels
      *
      * List of route label names
@@ -163,6 +172,19 @@ class Route
     }
 
     /**
+     * Add Injection
+     * 
+     * @param string $resource
+     *
+     * @return $this
+     */
+    public function inject(string $resource): self
+    {
+        $this->injections[] = $resource;
+        return $this;
+    }
+
+    /**
      * Add Label
      *
      * @param string $key
@@ -234,6 +256,16 @@ class Route
     public function getParams(): array
     {
         return $this->params;
+    }
+
+    /**
+     * Get Injections
+     *
+     * @return array
+     */
+    public function getInjections(): array
+    {
+        return $this->injections;
     }
 
     /**
