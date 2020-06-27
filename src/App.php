@@ -470,7 +470,7 @@ class App
     {
         $keys       = [];
         $params     = [];
-        $groups     = $route->getGroups();
+        $groups     = ($route instanceof Route) ? $route->getGroups() : [];
 
         // Extract keys from URL
         $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
