@@ -77,6 +77,25 @@ class AppTest extends TestCase
         $this->assertEquals($resource, $this->app->getResource('rand'));
         $this->assertEquals($resource, $this->app->getResource('rand'));
         $this->assertEquals($resource, $this->app->getResource('rand'));
+
+        // Default Params
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->inject('rand')
+            ->action(function($x, $y, $rand) {
+                echo $x.'-'.$y.'-'.$rand;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, []);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('x-def-y-def-'.$resource, $result);
     }
 
     public function testExecute()
@@ -92,7 +111,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function($x, $y) {
-                echo $x.'-',$y;
+                echo $x.'-'.$y;
             })
         ;
 

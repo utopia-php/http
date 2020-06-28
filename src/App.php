@@ -506,6 +506,10 @@ class App
                 $params[$key] = $value;
             }
 
+            foreach ($route->getInjections() as $injection) {
+                $params[$injection] = $this->getResource($injection);
+            }
+
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $params);
             
