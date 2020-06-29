@@ -611,7 +611,7 @@ class App
         } else {
             foreach (self::$errors['*'] as $error) { // Global error hooks
                 $this->resources['error'] = new Exception('Not Found', 404);
-                \call_user_func_array($error, $this->getResources($error['resources']));
+                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
             }
         }
 
