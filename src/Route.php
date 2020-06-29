@@ -64,13 +64,13 @@ class Route
     protected $params = [];
 
     /**
-     * Injections
+     * Resources
      *
-     * List of route required injection
+     * List of route required resources for action callback
      *
      * @var array
      */
-    protected $injections = [];
+    protected $resources = [];
 
     /**
      * Labels
@@ -138,12 +138,14 @@ class Route
     /**
      * Add Action
      *
-     * @param $action
+     * @param callable $action
+     * @param array $resources
      * @return $this
      */
-    public function action($action): self
+    public function action(callable $action, array $resources = []): self
     {
         $this->action = $action;
+        $this->resources = $resources;
         return $this;
     }
 
@@ -155,32 +157,21 @@ class Route
      * @param string $validator
      * @param string $description
      * @param bool $optional
+     * @param array $resources
      *
      * @return $this
      */
-    public function param($key, $default, $validator, $description = '', $optional = false): self
+    public function param($key, $default, $validator, $description = '', $optional = false, array $resources = []): self
     {
         $this->params[$key] = [
             'default'       => $default,
             'validator'     => $validator,
             'description'   => $description,
             'optional'      => $optional,
+            'resources'     => $resources,
             'value'         => null,
         ];
 
-        return $this;
-    }
-
-    /**
-     * Add Injection
-     * 
-     * @param string $resource
-     *
-     * @return $this
-     */
-    public function inject(string $resource): self
-    {
-        $this->injections[] = $resource;
         return $this;
     }
 
@@ -259,13 +250,13 @@ class Route
     }
 
     /**
-     * Get Injections
+     * Get Resources
      *
      * @return array
      */
-    public function getInjections(): array
+    public function getResources(): array
     {
-        return $this->injections;
+        return $this->resources;
     }
 
     /**

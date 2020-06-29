@@ -81,18 +81,17 @@ class RouteTest extends TestCase
         $this->assertCount(2, $this->route->getParams());
     }
 
-    public function testInjection()
+    public function testResources()
     {
-        $this->assertEquals([], $this->route->getInjections());
+        $this->assertEquals([], $this->route->getResources());
         
         $this->route
-            ->inject('user')
-            ->inject('consoleDB')
+            ->action(function() {}, ['user', 'time'])
         ;
 
-        $this->assertCount(2, $this->route->getInjections());
-        $this->assertEquals('user', $this->route->getInjections()[0]);
-        $this->assertEquals('consoleDB', $this->route->getInjections()[1]);
+        $this->assertCount(2, $this->route->getResources());
+        $this->assertEquals('user', $this->route->getResources()[0]);
+        $this->assertEquals('time', $this->route->getResources()[1]);
     }
 
     public function testLabel()

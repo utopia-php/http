@@ -91,10 +91,9 @@ class AppTest extends TestCase
         $route
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
-            ->inject('rand')
             ->action(function($x, $y, $rand) {
                 echo $x.'-'.$y.'-'.$rand;
-            })
+            }, ['rand'])
         ;
 
         \ob_start();
@@ -138,11 +137,10 @@ class AppTest extends TestCase
         $route
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
-            ->param('z', 'z-def', function($rand) { echo $rand.'-'; return new Text(200); }, 'z param', false)
-            ->inject('rand')
+            ->param('z', 'z-def', function($rand) { echo $rand.'-'; return new Text(200); }, 'z param', false, ['rand'])
             ->action(function($x, $y, $z, $rand) {
                 echo $x.'-',$y;
-            })
+            }, ['rand'])
         ;
 
         \ob_start();

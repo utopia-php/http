@@ -494,7 +494,6 @@ class App
     {
         $keys       = [];
         $params     = [];
-        $injections = [];
         $groups     = ($route instanceof Route) ? $route->getGroups() : [];
 
         // Extract keys from URL
@@ -520,23 +519,19 @@ class App
                 }
             }
 
-            foreach ($route->getInjections() as $injection) {
-                $injections[$injection] = $this->getResource($injection);
-            }
-
             foreach ($route->getParams() as $key => $param) {
                 // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
                 $value = isset($values[$key]) ? $values[$key] : $arg;
                 $value = ($value === '') ? $param['default'] : $value;
 
-                $this->validate($key, $param, $value, $injections);
+                $this->validate($key, $param, $value);
 
                 $params[$key] = $value;
             }
 
             // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), array_merge($params, $injections));
+            \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getResources())));
             
             foreach ($groups as $group) {
                 if(isset(self::$shutdown[$group])) {
@@ -633,14 +628,14 @@ class App
      * @param array $resources
      * @throws Exception
      */
-    protected function validate(string $key, array $param, $value, array $resources)
+    protected function validate(string $key, array $param, $value)
     {
         if ('' !== $value) {
             // checking whether the class exists
             $validator = $param['validator'];
 
             if (\is_callable($validator)) {
-                $validator = \call_user_func_array($validator, $resources);
+                $validator = \call_user_func_array($validator, $this->getResources($param['resources']));
             }
 
             // is the validator object an instance of the Validator class
