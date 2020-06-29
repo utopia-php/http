@@ -133,6 +133,7 @@ class App
      */
     public function __construct($timezone)
     {
+        $this->resources['utopia'] = $this;
         \date_default_timezone_set($timezone);
     }
 
@@ -579,6 +580,9 @@ class App
      */
     public function run(Request $request, Response $response): self
     {
+        $this->resources['request'] = $request;
+        $this->resources['response'] = $response;
+        
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
         $groups     = ($route instanceof Route) ? $route->getGroups() : [];
