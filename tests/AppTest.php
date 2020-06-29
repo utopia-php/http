@@ -16,6 +16,8 @@ namespace Utopia;
 use PHPUnit\Framework\TestCase;
 use Utopia\Validator\Text;
 
+App::setResource('rand', function () {return rand();});
+
 class AppTest extends TestCase
 {
     /**
@@ -69,8 +71,6 @@ class AppTest extends TestCase
 
     public function testResources()
     {
-        App::setResource('rand', function () {return rand();});
-
         $resource = $this->app->getResource('rand');
 
         $this->assertNotEmpty($resource);
@@ -100,9 +100,11 @@ class AppTest extends TestCase
 
     public function testExecute()
     {
-        $this->app->error(function() {
-            echo 'error';
-        });
+        $resource = $this->app->getResource('rand');
+
+        $this->app->error(function($error) {
+            echo 'error: '.$error->getMessage();
+        }, ['error']);
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -129,7 +131,9 @@ class AppTest extends TestCase
         $route
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
-            ->action(function($x, $y) {
+            ->param('z', 'z-def', function($rand) { echo $rand.'-'; return new Text(200); }, 'z param', false)
+            ->inject('rand')
+            ->action(function($x, $y, $z, $rand) {
                 echo $x.'-',$y;
             })
         ;
@@ -139,7 +143,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('param-x-param-y', $result);
+        $this->assertEquals($resource.'-param-x-param-y', $result);
 
         // With Error
 
@@ -158,13 +162,13 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error', $result);
+        $this->assertEquals('error: Invalid x: Value must be a string and no longer than 1 chars', $result);
 
         // With Hooks
 
-        $this->app->init(function() {
-            echo 'init-';
-        });
+        $this->app->init(function($rand) {
+            echo 'init-'.$rand.'-';
+        }, ['rand']);
         
         $this->app->shutdown(function() {
             echo '-shutdown';
@@ -172,19 +176,19 @@ class AppTest extends TestCase
 
         $this->app->init(function() {
             echo '(init-api)-';
-        }, 'api');
+        }, [], 'api');
 
         $this->app->shutdown(function() {
             echo '-(shutdown-api)';
-        }, 'api');
+        }, [], 'api');
 
         $this->app->init(function() {
             echo '(init-homepage)-';
-        }, 'homepage');
+        }, [], 'homepage');
 
         $this->app->shutdown(function() {
             echo '-(shutdown-homepage)';
-        }, 'homepage');
+        }, [], 'homepage');
 
         $route = new Route('GET', '/path');
 
@@ -213,14 +217,14 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+        $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         \ob_start();
         $this->app->execute($homepage, ['x' => 'param-x', 'y' => 'param-y']);
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+        $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function tearDown()
