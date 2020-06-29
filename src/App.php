@@ -327,10 +327,11 @@ class App
     {
         if(!\array_key_exists($name, $this->resources) || $fresh) {
             if(!\array_key_exists($name, self::$resourcesCallbacks)) {
-                throw new Exception('Faild to find resource: "' . $name . '"');
+                throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
-            $this->resources[$name] = self::$resourcesCallbacks[$name]();
+            $this->resources[$name] = \call_user_func_array(self::$resourcesCallbacks[$name]['callback'],
+                $this->getResources(self::$resourcesCallbacks[$name]['injections']));
         }
 
         return $this->resources[$name];
@@ -358,16 +359,15 @@ class App
      *
      * @param string $name
      * @param callable $callback
-     * @return $this
      * @throws Exception
      */
-    public static function setResource(string $name, callable $callback)
+    public static function setResource(string $name, callable $callback, array $injections = [])
     {
         if(\array_key_exists($name, self::$resourcesCallbacks)) {
             throw new Exception('Callback with the name "' . $name . '" already exists');
         }
 
-        self::$resourcesCallbacks[$name] = $callback;
+        self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections];
     }
 
     /**

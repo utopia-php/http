@@ -17,6 +17,8 @@ use PHPUnit\Framework\TestCase;
 use Utopia\Validator\Text;
 
 App::setResource('rand', function () {return rand();});
+App::setResource('first', function ($second) {return 'first-'.$second;}, ['second']);
+App::setResource('second', function () {return 'second';});
 
 class AppTest extends TestCase
 {
@@ -71,6 +73,11 @@ class AppTest extends TestCase
 
     public function testResources()
     {
+        $second = $this->app->getResource('second');
+        $first = $this->app->getResource('first');
+        $this->assertEquals('second', $second);
+        $this->assertEquals('first-second', $first);
+
         $resource = $this->app->getResource('rand');
 
         $this->assertNotEmpty($resource);
