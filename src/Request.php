@@ -150,6 +150,44 @@ class Request
     }
 
     /**
+     * Get Protocol
+     *
+     * Returns request protocol.
+     * Support HTTP_X_FORWARDED_PROTO header usually return
+     *  from different proxy servers or PHP default REQUEST_SCHEME
+     *
+     * @return string
+     */
+    public function getProtocol(): string
+    {
+        return $this->getServer('HTTP_X_FORWARDED_PROTO', $this->getServer('REQUEST_SCHEME', 'https'));
+    }
+
+    /**
+     * Get Port
+     *
+     * Returns request port.
+     *
+     * @return string
+     */
+    public function getPort(): string
+    {
+        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
+    }
+
+    /**
+     * Get Hostname
+     *
+     * Returns request hostname.
+     *
+     * @return string
+     */
+    public function getHostname(): string
+    {
+        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
+    }
+
+    /**
      * Get Method
      *
      * Return HTTP request method

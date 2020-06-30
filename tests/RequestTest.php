@@ -69,6 +69,56 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getCookie('unknown', 'test'), 'test');
     }
 
+    public function testGetProtocol()
+    {
+        // Mock
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['REQUEST_SCHEME'] = 'http';
+
+        // Assertions
+        $this->assertEquals('https', $this->request->getProtocol());
+
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = null;
+        $_SERVER['REQUEST_SCHEME'] = 'http';
+
+        // Assertions
+        $this->assertEquals('http', $this->request->getProtocol());
+    }
+
+    public function testGetPort()
+    {
+        // Mock
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_HOST'] = 'localhost:8080';
+
+        // Assertions
+        $this->assertEquals('8080', $this->request->getPort());
+        
+        // Mock
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_HOST'] = 'localhost';
+
+        // Assertions
+        $this->assertEquals('', $this->request->getPort());
+    }
+
+    public function testGetHostname()
+    {
+        // Mock
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_HOST'] = 'localhost:8080';
+
+        // Assertions
+        $this->assertEquals('localhost', $this->request->getHostname());
+        
+        // Mock
+        $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
+        $_SERVER['HTTP_HOST'] = 'localhost';
+
+        // Assertions
+        $this->assertEquals('localhost', $this->request->getHostname());
+    }
+
 /*    public function testGetHeader()
     {
         // Assertions
