@@ -544,7 +544,7 @@ class App
             foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
                 \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             foreach ($groups as $group) {
                 if(isset(self::$errors[$group])) {
                     foreach (self::$errors[$group] as $error) { // Group shutdown hooks
@@ -601,7 +601,7 @@ class App
                 foreach (self::$options['*'] as $option) { // Global options hooks
                     \call_user_func_array($option['callback'], $this->getResources($option['resources']));
                 }
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 foreach (self::$errors['*'] as $error) { // Global error hooks
                     $this->resources['error'] = $e;
                     \call_user_func_array($error['callback'], $this->getResources($error['resources']));
