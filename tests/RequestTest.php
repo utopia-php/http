@@ -119,9 +119,38 @@ class RequestTest extends TestCase
         $this->assertEquals('localhost', $this->request->getHostname());
     }
 
-/*    public function testGetHeader()
+    public function testGetReferer()
     {
+        $this->assertEquals('default', $this->request->getReferer('default'));
+
+        // Mock
+        $_SERVER['HTTP_REFERER'] = 'referer';
+
         // Assertions
-        //$this->assertEquals($this->request->getHeader('key', 'value'), 'value');
-    }*/
+        $this->assertEquals('referer', $this->request->getReferer('default'));
+    }
+
+    public function testGetOrigin()
+    {
+        $this->assertEquals('default', $this->request->getOrigin('default'));
+
+        // Mock
+        $_SERVER['HTTP_ORIGIN'] = 'origin';
+
+        // Assertions
+        $this->assertEquals('origin', $this->request->getOrigin('default'));
+    }
+
+
+    public function testGetUserAgent()
+    {
+        $this->assertEquals('default', $this->request->getUserAgent('default'));
+
+        // Mock
+        $_SERVER['HTTP_USER_AGENT'] = 'user-agent';
+
+        // Assertions
+        $this->assertEquals('user-agent', $this->request->getUserAgent('default'));
+    }
+
 }

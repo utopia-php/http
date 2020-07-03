@@ -213,6 +213,42 @@ class Request
     }
 
     /**
+     * Get Referer
+     *
+     * Return HTTP referer header
+     *
+     * @return string
+     */
+    public function getReferer(string $default = ''): string
+    {
+        return $this->getServer('HTTP_REFERER', $default);
+    }
+
+    /**
+     * Get Origin
+     *
+     * Return HTTP origin header
+     *
+     * @return string
+     */
+    public function getOrigin(string $default = ''): string
+    {
+        return $this->getServer('HTTP_ORIGIN', $default);
+    }
+
+    /**
+     * Get User Agent
+     *
+     * Return HTTP origin header
+     *
+     * @return string
+     */
+    public function getUserAgent(string $default = ''): string
+    {
+        return $this->getServer('HTTP_USER_AGENT', $default);
+    }
+
+    /**
      * Get cookie
      *
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
