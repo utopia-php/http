@@ -239,13 +239,25 @@ class Request
     /**
      * Get User Agent
      *
-     * Return HTTP origin header
+     * Return HTTP user agent header
      *
      * @return string
      */
     public function getUserAgent(string $default = ''): string
     {
         return $this->getServer('HTTP_USER_AGENT', $default);
+    }
+
+    /**
+     * Get Accept
+     *
+     * Return HTTP accept header
+     *
+     * @return string
+     */
+    public function getAccept(string $default = ''): string
+    {
+        return $this->getServer('HTTP_ACCEPT', $default);
     }
 
     /**

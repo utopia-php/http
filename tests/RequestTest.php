@@ -141,7 +141,6 @@ class RequestTest extends TestCase
         $this->assertEquals('origin', $this->request->getOrigin('default'));
     }
 
-
     public function testGetUserAgent()
     {
         $this->assertEquals('default', $this->request->getUserAgent('default'));
@@ -151,6 +150,17 @@ class RequestTest extends TestCase
 
         // Assertions
         $this->assertEquals('user-agent', $this->request->getUserAgent('default'));
+    }
+
+    public function testGetAccept()
+    {
+        $this->assertEquals('default', $this->request->getAccept('default'));
+
+        // Mock
+        $_SERVER['HTTP_ACCEPT'] = 'accept';
+
+        // Assertions
+        $this->assertEquals('accept', $this->request->getAccept('default'));
     }
 
 }
