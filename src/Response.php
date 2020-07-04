@@ -160,10 +160,12 @@ class Response
 
     /**
      * Response constructor.
+     * 
+     * @param int $time response start time
      */
-    public function __construct()
+    public function __construct(int $time = 0)
     {
-        $this->startTime = \microtime(true);
+        $this->startTime = (!empty($time)) ? $time : \microtime(true);
     }
 
     /**
