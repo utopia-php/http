@@ -108,6 +108,13 @@ class App
     ];
 
     /**
+     * Is Sorted?
+     *
+     * @var bool
+     */
+    protected static $sorted = false;
+
+    /**
      * Route
      *
      * Memory cached result for chosen route
@@ -422,6 +429,8 @@ class App
 
         self::$routes[$method][$url] = $route;
 
+        self::$sorted = false;
+
         return $route;
     }
 
@@ -446,20 +455,6 @@ class App
         if (!isset(self::$routes[$method])) {
             self::$routes[$method] = [];
         }
-
-        /*
-         * Re-order array
-         *
-         * For route to work with similar links where one is shorter than other
-         *  but both might match given pattern
-         */
-        \uksort(self::$routes[$method], function ($a, $b) {
-            return \strlen($b) - \strlen($a);
-        });
-
-        \uksort(self::$routes[$method], function ($a, $b) {
-            return \count(\explode('/', $b)) - \count(\explode('/', $a));
-        });
 
         foreach (self::$routes[$method] as  $route) {
             /* @var $route Route */
@@ -577,6 +572,26 @@ class App
     {
         $this->resources['request'] = $request;
         $this->resources['response'] = $response;
+        
+        /*
+         * Re-order array
+         *
+         * For route to work with similar links where one is shorter than other
+         *  but both might match given pattern
+         */
+        if(!self::$sorted) {
+            foreach (self::$routes as $method => $list) {
+                \uksort(self::$routes[$method], function ($a, $b) {
+                    return \strlen($b) - \strlen($a);
+                });
+                
+                \uksort(self::$routes[$method], function ($a, $b) {
+                    return \count(\explode('/', $b)) - \count(\explode('/', $a));
+                });
+            }
+
+            self::$sorted = true;
+        }
         
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
