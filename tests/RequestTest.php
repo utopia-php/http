@@ -85,6 +85,28 @@ class RequestTest extends TestCase
         $this->assertEquals('http', $this->request->getProtocol());
     }
 
+    public function testGetMethod()
+    {
+        $this->assertEquals('UNKNOWN', $this->request->getMethod());
+
+        // Mock
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        // Assertions
+        $this->assertEquals('GET', $this->request->getMethod());
+    }
+
+    public function testGetURI()
+    {
+        $this->assertEquals('', $this->request->getURI());
+
+        // Mock
+        $_SERVER['REQUEST_URI'] = '/index.html';
+
+        // Assertions
+        $this->assertEquals('/index.html', $this->request->getURI());
+    }
+
     public function testGetPort()
     {
         // Mock

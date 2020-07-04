@@ -200,6 +200,18 @@ class Request
     }
 
     /**
+     * Get URI
+     *
+     * Return HTTP request URI
+     *
+     * @return string
+     */
+    public function getURI(): string
+    {
+        return $this->getServer('REQUEST_URI', '');
+    }
+
+    /**
      * Get files
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.

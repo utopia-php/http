@@ -448,8 +448,8 @@ class App
             return $this->route;
         }
 
-        $url    = \parse_url($request->getServer('REQUEST_URI', ''), PHP_URL_PATH);
-        $method = $request->getServer('REQUEST_METHOD', '');
+        $url    = \parse_url($request->getURI(), PHP_URL_PATH);
+        $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
         if (!isset(self::$routes[$method])) {
@@ -593,7 +593,7 @@ class App
             self::$sorted = true;
         }
         
-        $method     = $request->getServer('REQUEST_METHOD', '');
+        $method     = $request->getMethod();
         $route      = $this->match($request);
         $groups     = ($route instanceof Route) ? $route->getGroups() : [];
 
