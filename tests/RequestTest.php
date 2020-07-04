@@ -33,6 +33,17 @@ class RequestTest extends TestCase
         $this->request = null;
     }
 
+    public function testHeader()
+    {
+        // Mock
+        $_SERVER['HTTP_CUSTOM'] = 'value1';
+        $_SERVER['HTTP_CUSTOM_NEW'] = 'value2';
+
+        // Assertions
+        $this->assertEquals('value1', $this->request->getHeader('custom'));
+        $this->assertEquals('value2', $this->request->getHeader('custom-new'));
+    }
+
     public function testGetQuery()
     {
         // Mock

@@ -368,7 +368,7 @@ class Request
 
                 foreach ($_SERVER as $name => $value) {
                     if (\substr($name, 0, 5) == 'HTTP_') {
-                        $headers[\str_replace(' ', '-', \ucwords(\strtolower(\str_replace('_', ' ', \substr($name, 5)))))] = $value;
+                        $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
                     }
                 }
 
@@ -377,7 +377,7 @@ class Request
                 return $this->headers;
             }
 
-            $this->headers = getallheaders();
+            $this->headers = array_change_key_case(getallheaders());
         }
 
         return $this->headers;
