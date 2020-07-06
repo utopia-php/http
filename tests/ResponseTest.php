@@ -34,7 +34,7 @@ class ResponseTest extends TestCase
 
     public function testSetContentType()
     {
-        $contentType = $this->response->setContentType(Response::CONTENT_TYPE_HTML);
+        $contentType = $this->response->setContentType(Response::CONTENT_TYPE_HTML, Response::CHARSET_UTF8);
 
         // Assertions
         $this->assertInstanceOf('Utopia\Response', $contentType);

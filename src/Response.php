@@ -26,6 +26,11 @@ class Response
     const CONTENT_TYPE_JAVASCRIPT   = 'text/javascript';
 
     /**
+     * Chrsets
+     */
+    const CHARSET_UTF8 = 'UTF-8';
+
+    /**
      * HTTP response status codes
      */
     const STATUS_CODE_CONTINUE                          = 100;
@@ -176,9 +181,9 @@ class Response
      * @param  string   $type
      * @return self
      */
-    public function setContentType(string $type): self
+    public function setContentType(string $type, string $charset = ''): self
     {
-        $this->contentType = $type;
+        $this->contentType = $type . ((!empty($charset) ? '; charset='.$charset : ''));
 
         return $this;
     }
@@ -385,7 +390,7 @@ class Response
 
         // Send content type header
         $this
-            ->addHeader('Content-Type', $this->contentType . '; charset=UTF-8')
+            ->addHeader('Content-Type', $this->contentType)
         ;
 
         // Set application headers
@@ -466,7 +471,7 @@ class Response
     public function text(string $data): void
     {
         $this
-            ->setContentType(Response::CONTENT_TYPE_TEXT)
+            ->setContentType(self::CONTENT_TYPE_TEXT, self::CHARSET_UTF8)
             ->send($data)
         ;
     }
@@ -484,7 +489,7 @@ class Response
     public function json(array $data): void
     {
         $this
-            ->setContentType(Response::CONTENT_TYPE_JSON)
+            ->setContentType(self::CONTENT_TYPE_JSON, self::CHARSET_UTF8)
             ->send(\json_encode($data, JSON_UNESCAPED_UNICODE))
         ;
     }
@@ -503,7 +508,7 @@ class Response
     public function jsonp(string $callback, array $data): void
     {
         $this
-            ->setContentType(Response::CONTENT_TYPE_JAVASCRIPT)
+            ->setContentType(self::CONTENT_TYPE_JAVASCRIPT, self::CHARSET_UTF8)
             ->send('parent.' . $callback . '(' . \json_encode($data) . ');')
         ;
     }
