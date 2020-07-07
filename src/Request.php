@@ -324,7 +324,7 @@ class Request
     protected function generateInput(): array
     {
         if (null === $this->payload) {
-            $contentType    = $this->getHeader('Content-Type');
+            $contentType    = $this->getHeader('content-type');
 
             // Get content-type without the charset
             $length         = \strpos($contentType, ';');
