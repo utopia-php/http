@@ -136,7 +136,7 @@ class Response
     /**
      * @var string
      */
-    protected $contentType = self::CONTENT_TYPE_HTML;
+    protected $contentType = '';
 
     /**
      * @var bool
@@ -186,6 +186,19 @@ class Response
         $this->contentType = $type . ((!empty($charset) ? '; charset='.$charset : ''));
 
         return $this;
+    }
+
+    /**
+     * Get content type
+     *
+     * Get HTTP content type header.
+     *
+     * @param  string   $type
+     * @return self
+     */
+    public function getContentType(): string
+    {
+        return $this->contentType;
     }
 
     /**
@@ -389,9 +402,11 @@ class Response
         \http_response_code($this->statusCode);
 
         // Send content type header
-        $this
-            ->addHeader('Content-Type', $this->contentType)
-        ;
+        if(!empty($this->contentType)) {
+            $this
+                ->addHeader('Content-Type', $this->contentType)
+            ;
+        }
 
         // Set application headers
         foreach ($this->headers as $key => $value) {
@@ -456,6 +471,23 @@ class Response
             ->addHeader('Location', $url)
             ->setStatusCode($statusCode)
             ->send('', $exit)
+        ;
+    }
+
+    /**
+     * HTML
+     *
+     * This helper is for sending an HTML HTTP response and sets relevant content type header ('text/html').
+     *
+     * @see http://en.wikipedia.org/wiki/JSON
+     *
+     * @param string $data
+     */
+    public function html(string $data): void
+    {
+        $this
+            ->setContentType(self::CONTENT_TYPE_HTML, self::CHARSET_UTF8)
+            ->send($data)
         ;
     }
 
@@ -525,6 +557,7 @@ class Response
     public function iframe(string $callback, array $data): void
     {
         $this
+            ->setContentType(self::CONTENT_TYPE_HTML, self::CHARSET_UTF8)
             ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>');
     }
 

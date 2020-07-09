@@ -107,6 +107,32 @@ class ResponseTest extends TestCase
         $this->assertEquals('', $html);
     }
 
+    public function testText()
+    {
+        ob_start(); //Start of build
+
+        @$this->response->text('HELLO WORLD');
+
+        $html = ob_get_contents();
+        ob_end_clean(); //End of build
+
+        $this->assertEquals('HELLO WORLD', $html);
+        $this->assertEquals('text/plain; charset=UTF-8', $this->response->getContentType());
+    }
+
+    public function testHTML()
+    {
+        ob_start(); //Start of build
+
+        @$this->response->html('<html></html>');
+
+        $html = ob_get_contents();
+        ob_end_clean(); //End of build
+
+        $this->assertEquals('<html></html>', $html);
+        $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
+    }
+
     public function testJson()
     {
         ob_start(); //Start of build
@@ -117,6 +143,7 @@ class ResponseTest extends TestCase
         ob_end_clean(); //End of build
 
         $this->assertEquals('{"key":"value"}', $html);
+        $this->assertEquals('application/json; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testJsonp()
@@ -129,6 +156,7 @@ class ResponseTest extends TestCase
         ob_end_clean(); //End of build
 
         $this->assertEquals('parent.test({"key":"value"});', $html);
+        $this->assertEquals('text/javascript; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testIframe()
@@ -141,5 +169,6 @@ class ResponseTest extends TestCase
         ob_end_clean(); //End of build
 
         $this->assertEquals('<script type="text/javascript">window.parent.test({"key":"value"});</script>', $html);
+        $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
     }
 }
