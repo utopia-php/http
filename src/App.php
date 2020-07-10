@@ -443,7 +443,7 @@ class App
     {
         $keys       = [];
         $params     = [];
-        $groups     = $route->getGroups();
+        $groups     = ($route instanceof Route) ? $route->getGroups() : [];
 
         // Extract keys from URL
         $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
@@ -524,7 +524,7 @@ class App
     {
         $method     = $request->getServer('REQUEST_METHOD', '');
         $route      = $this->match($request);
-        $groups     = $route->getGroups();
+        $groups     = ($route instanceof Route) ? $route->getGroups() : [];
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $response->disablePayload();
