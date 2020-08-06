@@ -12,8 +12,6 @@
 
 namespace Utopia;
 
-use Exception;
-
 class Response
 {
     /**
@@ -518,10 +516,14 @@ class Response
      *
      * @param array $data
      */
-    public function json(array $data): void
+    public function json($data): void
     {
+        if(!is_array($data) && !$data instanceof \stdClass) {
+            throw new \Exception('Invalid JSON input var');
+        }
+
         $this
-            ->setContentType(self::CONTENT_TYPE_JSON, self::CHARSET_UTF8)
+            ->setContentType(Response::CONTENT_TYPE_JSON, self::CHARSET_UTF8)
             ->send(\json_encode($data, JSON_UNESCAPED_UNICODE))
         ;
     }
