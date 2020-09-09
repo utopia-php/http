@@ -39,12 +39,18 @@ class WhiteList extends Validator
      * Sets a white list array and strict mode.
      *
      * @param array $list
-     * @param bool  $strict
+     * @param bool  $strict disable type check and be case insensetive
      */
     public function __construct(array $list, $strict = false)
     {
         $this->list 	= $list;
         $this->strict 	= $strict;
+
+        if(!$this->strict) {
+            foreach($list as $key => &$value) {
+                $list[$key] = \strtolower($value);
+            }
+        }
     }
 
     /**
@@ -77,6 +83,8 @@ class WhiteList extends Validator
      */
     public function isValid($value)
     {
+        $value = ($this->strict) ? $value : \strtolower($value);
+        
         if (!\in_array($value, $this->list, $this->strict)) {
             return false;
         }

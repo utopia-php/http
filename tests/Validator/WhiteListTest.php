@@ -17,28 +17,26 @@ use PHPUnit\Framework\TestCase;
 
 class WhiteListTest extends TestCase
 {
-    /**
-     * @var WhiteList
-     */
-    protected $whiteList = null;
-
-    public function setUp()
-    {
-        $this->whiteList = new WhiteList(['string1', 'string2', 3, 4], true);
-    }
-
-    public function tearDown()
-    {
-        $this->whiteList = null;
-    }
-
     public function testIsValid()
     {
+        $whiteList = new WhiteList(['string1', 'string2', 3, 4], true);
+
         // Assertions
-        $this->assertEquals($this->whiteList->isValid('string3'), false);
-        $this->assertEquals($this->whiteList->isValid('3'), false);
-        $this->assertEquals($this->whiteList->isValid(3), true);
-        $this->assertEquals($this->whiteList->isValid(5), false);
-        $this->assertEquals($this->whiteList->getList(), ['string1', 'string2', 3, 4]);
+        $this->assertEquals($whiteList->isValid('string3'), false);
+        $this->assertEquals($whiteList->isValid('3'), false);
+        $this->assertEquals($whiteList->isValid(3), true);
+        $this->assertEquals($whiteList->isValid(5), false);
+        $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
+        
+        $whiteList = new WhiteList(['string1', 'string2', 3, 4], false);
+
+        // Assertions
+        $this->assertEquals($whiteList->isValid('string3'), false);
+        $this->assertEquals($whiteList->isValid('STRING1'), true);
+        $this->assertEquals($whiteList->isValid('strIng1'), true);
+        $this->assertEquals($whiteList->isValid('3'), true);
+        $this->assertEquals($whiteList->isValid(3), true);
+        $this->assertEquals($whiteList->isValid(5), false);
+        $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
     }
 }
