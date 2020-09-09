@@ -23,6 +23,8 @@ class WhiteListTest extends TestCase
 
         // Assertions
         $this->assertEquals($whiteList->isValid('string3'), false);
+        $this->assertEquals($whiteList->isValid('STRING1'), false);
+        $this->assertEquals($whiteList->isValid('strIng1'), false);
         $this->assertEquals($whiteList->isValid('3'), false);
         $this->assertEquals($whiteList->isValid(3), true);
         $this->assertEquals($whiteList->isValid(5), false);
