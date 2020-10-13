@@ -15,7 +15,7 @@
         "psr-4": {"Utopia\\": "src/"}
     },
     "require": {
-        "php": ">=7.0.0"
+        "php": ">=7.3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.4"
