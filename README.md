@@ -4,7 +4,7 @@
 
 [![Build Status](https://travis-ci.org/utopia-php/framework.svg?branch=master)](https://travis-ci.org/utopia-php/framework)
 ![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/framework.svg)
-[![Chat With Us](https://img.shields.io/gitter/room/utopia-php/community.svg)](https://gitter.im/utopia-php/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+[![Discord](https://img.shields.io/discord/564160730845151244?label=discord)](https://discord.gg/GSeTUeA)
 
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development.
 
