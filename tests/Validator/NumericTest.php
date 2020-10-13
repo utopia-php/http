@@ -22,12 +22,12 @@ class NumericTest extends TestCase
      */
     protected $numeric = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->numeric = new Numeric();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->numeric = null;
     }

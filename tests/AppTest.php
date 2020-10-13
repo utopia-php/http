@@ -27,7 +27,7 @@ class AppTest extends TestCase
      */
     protected $app = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->app = new App('Asia/Tel_Aviv');
     }
@@ -232,7 +232,7 @@ class AppTest extends TestCase
         $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->app = null;
     }

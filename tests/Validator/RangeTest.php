@@ -22,12 +22,12 @@ class RangeTest extends TestCase
      */
     protected $range = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->range = new Range(0, 5);
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->range = null;
     }

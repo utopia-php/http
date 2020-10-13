@@ -23,7 +23,7 @@ class RouteTest extends TestCase
      */
     protected $route = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->route = new Route('GET', '/');
     }
@@ -103,7 +103,7 @@ class RouteTest extends TestCase
         $this->assertEquals('value', $this->route->getLabel('key', 'default'));
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->route = null;
     }

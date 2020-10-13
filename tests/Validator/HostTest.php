@@ -22,12 +22,12 @@ class HostTest extends TestCase
      */
     protected $host = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->host = new Host(['appwrite.io', 'subdomain.appwrite.test', 'localhost']);
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->host = null;
     }

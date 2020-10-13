@@ -22,12 +22,12 @@ class FloatValidatorTest extends TestCase
      */
     protected $validator = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->validator = new FloatValidator();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->validator = null;
     }

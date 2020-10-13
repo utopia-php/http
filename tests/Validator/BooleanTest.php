@@ -22,11 +22,11 @@ class BooleanTest extends TestCase
      */
     protected $boolean = null;
 
-    public function setUp()
+    public function setUp():void
     {
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->boolean = null;
     }

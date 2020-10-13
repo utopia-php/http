@@ -22,12 +22,12 @@ class EmailTest extends TestCase
      */
     protected $email = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->email = new Email();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->email = null;
     }

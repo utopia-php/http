@@ -22,12 +22,12 @@ class ViewTest extends TestCase
      */
     protected $view = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->view = new View(__DIR__ . '/mocks/View/template.phtml');
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->view = null;
     }

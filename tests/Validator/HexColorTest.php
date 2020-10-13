@@ -22,12 +22,12 @@ class HexColorTest extends TestCase
      */
     protected $hexColor = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->hexColor = new HexColor();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->hexColor = null;
     }

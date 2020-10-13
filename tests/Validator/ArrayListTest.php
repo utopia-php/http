@@ -27,13 +27,13 @@ class ArrayListTest extends TestCase
      */
     protected $arrayList2 = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->arrayList1 = new ArrayList(new Text(100));
         $this->arrayList2 = new ArrayList(new Numeric());
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->arrayList1 = null;
         $this->arrayList2 = null;

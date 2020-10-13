@@ -23,12 +23,12 @@ class RequestTest extends TestCase
      */
     protected $request = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->request = new Request();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->request = null;
     }

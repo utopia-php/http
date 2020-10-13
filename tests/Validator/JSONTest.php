@@ -22,12 +22,12 @@ class JSONTest extends TestCase
      */
     protected $json = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->json = new JSON();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->json = null;
     }

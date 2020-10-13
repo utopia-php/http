@@ -22,12 +22,12 @@ class ResponseTest extends TestCase
      */
     protected $response = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->response = new Response();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->response = null;
     }

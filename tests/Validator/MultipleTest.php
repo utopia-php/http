@@ -22,13 +22,13 @@ class MultipleTest extends TestCase
      */
     protected $multiple = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->multiple = new Multiple(new Range(10, 20));
         $this->multiple->addRule(new Numeric());
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->multiple = null;
     }

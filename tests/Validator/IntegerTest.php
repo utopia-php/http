@@ -22,12 +22,12 @@ class IntegerTest extends TestCase
      */
     protected $validator = null;
 
-    public function setUp()
+    public function setUp():void
     {
         $this->validator = new Integer();
     }
 
-    public function tearDown()
+    public function tearDown():void
     {
         $this->validator = null;
     }
