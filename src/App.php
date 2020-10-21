@@ -47,7 +47,7 @@ class App
     /**
      * @var array
      */
-    protected $resources = [
+    protected static $resources = [
         'error' => null,
     ];
 
@@ -140,7 +140,7 @@ class App
      */
     public function __construct($timezone)
     {
-        $this->resources['utopia'] = $this;
+        self::$resources['utopia'] = $this;
         \date_default_timezone_set($timezone);
     }
 
@@ -331,18 +331,18 @@ class App
      * @return mixed
      * @throws Exception
      */
-    public function getResource(string $name, $fresh = false)
+    public static function getResource(string $name, $fresh = false)
     {
-        if(!\array_key_exists($name, $this->resources) || $fresh) {
+        if(!\array_key_exists($name, self::$resources) || $fresh) {
             if(!\array_key_exists($name, self::$resourcesCallbacks)) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
-            $this->resources[$name] = \call_user_func_array(self::$resourcesCallbacks[$name]['callback'],
-                $this->getResources(self::$resourcesCallbacks[$name]['injections']));
+            self::$resources[$name] = \call_user_func_array(self::$resourcesCallbacks[$name]['callback'],
+                self::getResources(self::$resourcesCallbacks[$name]['injections']));
         }
 
-        return $this->resources[$name];
+        return self::$resources[$name];
     }
 
     /**
@@ -351,12 +351,12 @@ class App
      * @param array $list
      * @return array
      */
-    public function getResources(array $list): array
+    public static function getResources(array $list): array
     {
         $resources = [];
         
         foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name);
+            $resources[$name] = self::getResource($name);
         }
 
         return $resources;
@@ -371,10 +371,10 @@ class App
      */
     public static function setResource(string $name, callable $callback, array $injections = [])
     {
-        if(\array_key_exists($name, self::$resourcesCallbacks)) {
-            throw new Exception('Callback with the name "' . $name . '" already exists');
+        if(!\array_key_exists($name, self::$resources)) {
+            unset(self::$resources[$name]);
         }
-
+        
         self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections];
     }
 
@@ -503,13 +503,13 @@ class App
 
         try {
             foreach (self::$init['*'] as $init) { // Global init hooks
-                \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+                \call_user_func_array($init['callback'], self::getResources($init['resources']));
             }
 
             foreach ($groups as $group) {
                 if(isset(self::$init[$group])) {
                     foreach (self::$init[$group] as $init) { // Group init hooks
-                        \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+                        \call_user_func_array($init['callback'], self::getResources($init['resources']));
                     }
                 }
             }
@@ -526,32 +526,32 @@ class App
             }
 
             // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getResources())));
+            \call_user_func_array($route->getAction(), array_merge($params, self::getResources($route->getResources())));
             
             foreach ($groups as $group) {
                 if(isset(self::$shutdown[$group])) {
                     foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
-                        \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+                        \call_user_func_array($shutdown['callback'], self::getResources($shutdown['resources']));
                     }
                 }
             }
 
             foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
-                \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+                \call_user_func_array($shutdown['callback'], self::getResources($shutdown['resources']));
             }
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
                 if(isset(self::$errors[$group])) {
                     foreach (self::$errors[$group] as $error) { // Group shutdown hooks
-                        $this->resources['error'] = $e;
-                        \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                        self::$resources['error'] = $e;
+                        \call_user_func_array($error['callback'], self::getResources($error['resources']));
                     }
                 }
             }
 
             foreach (self::$errors['*'] as $error) { // Global error hooks
-                $this->resources['error'] = $e;
-                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                self::$resources['error'] = $e;
+                \call_user_func_array($error['callback'], self::getResources($error['resources']));
             }
         }
 
@@ -570,8 +570,8 @@ class App
      */
     public function run(Request $request, Response $response): self
     {
-        $this->resources['request'] = $request;
-        $this->resources['response'] = $response;
+        self::$resources['request'] = $request;
+        self::$resources['response'] = $response;
         
         /*
          * Re-order array
@@ -608,24 +608,24 @@ class App
                 foreach ($groups as $group) {
                     if(isset(self::$options[$group])) {
                         foreach (self::$options[$group] as $option) { // Group options hooks
-                            \call_user_func_array($option['callback'], $this->getResources($option['resources']));
+                            \call_user_func_array($option['callback'], self::getResources($option['resources']));
                         }
                     }
                 }
 
                 foreach (self::$options['*'] as $option) { // Global options hooks
-                    \call_user_func_array($option['callback'], $this->getResources($option['resources']));
+                    \call_user_func_array($option['callback'], self::getResources($option['resources']));
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors['*'] as $error) { // Global error hooks
-                    $this->resources['error'] = $e;
-                    \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                    self::$resources['error'] = $e;
+                    \call_user_func_array($error['callback'], self::getResources($error['resources']));
                 }
             }
         } else {
             foreach (self::$errors['*'] as $error) { // Global error hooks
-                $this->resources['error'] = new Exception('Not Found', 404);
-                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                self::$resources['error'] = new Exception('Not Found', 404);
+                \call_user_func_array($error['callback'], self::getResources($error['resources']));
             }
         }
 
@@ -650,7 +650,7 @@ class App
             $validator = $param['validator'];
 
             if (\is_callable($validator)) {
-                $validator = \call_user_func_array($validator, $this->getResources($param['resources']));
+                $validator = \call_user_func_array($validator, self::getResources($param['resources']));
             }
 
             // is the validator object an instance of the Validator class
