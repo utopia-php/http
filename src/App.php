@@ -140,7 +140,10 @@ class App
      */
     public function __construct($timezone)
     {
-        $this->resources['utopia'] = $this;
+        self::setResource('utopia', function() {
+            return $this;
+        });
+
         \date_default_timezone_set($timezone);
     }
 
@@ -541,14 +544,18 @@ class App
             foreach ($groups as $group) {
                 if(isset(self::$errors[$group])) {
                     foreach (self::$errors[$group] as $error) { // Group shutdown hooks
-                        $this->resources['error'] = $e;
+                        self::setResource('error', function() use ($e) {
+                            return $e;
+                        });
                         \call_user_func_array($error['callback'], $this->getResources($error['resources']));
                     }
                 }
             }
 
             foreach (self::$errors['*'] as $error) { // Global error hooks
-                $this->resources['error'] = $e;
+                self::setResource('error', function() use ($e) {
+                    return $e;
+                });
                 \call_user_func_array($error['callback'], $this->getResources($error['resources']));
             }
         }
@@ -568,8 +575,13 @@ class App
      */
     public function run(Request $request, Response $response): self
     {
-        $this->resources['request'] = $request;
-        $this->resources['response'] = $response;
+        self::setResource('request', function() use ($request) {
+            return $request;
+        });
+        
+        self::setResource('response', function() use ($response) {
+            return $response;
+        });
         
         /*
          * Re-order array
@@ -616,13 +628,17 @@ class App
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors['*'] as $error) { // Global error hooks
-                    $this->resources['error'] = $e;
+                    self::setResource('error', function() use ($e) {
+                        return $e;
+                    });
                     \call_user_func_array($error['callback'], $this->getResources($error['resources']));
                 }
             }
         } else {
             foreach (self::$errors['*'] as $error) { // Global error hooks
-                $this->resources['error'] = new Exception('Not Found', 404);
+                self::setResource('error', function() {
+                    return new Exception('Not Found', 404);
+                });
                 \call_user_func_array($error['callback'], $this->getResources($error['resources']));
             }
         }
