@@ -73,17 +73,17 @@ class AppTest extends TestCase
 
     public function testResources()
     {
-        $second = App::getResource('second');
-        $first = App::getResource('first');
+        $second = $this->app->getResource('second');
+        $first = $this->app->getResource('first');
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        $resource = App::getResource('rand');
+        $resource = $this->app->getResource('rand');
 
         $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, App::getResource('rand'));
-        $this->assertEquals($resource, App::getResource('rand'));
-        $this->assertEquals($resource, App::getResource('rand'));
+        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $this->app->getResource('rand'));
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -106,7 +106,7 @@ class AppTest extends TestCase
 
     public function testExecute()
     {
-        $resource = App::getResource('rand');
+        $resource = $this->app->getResource('rand');
 
         $this->app->error(function($error) {
             echo 'error: '.$error->getMessage();
