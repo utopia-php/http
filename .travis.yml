@@ -9,7 +9,7 @@ notifications:
   email:
   - team@appwrite.io
 
-before_script: composer install
+before_script: composer install --ignore-platform-reqs
 
 script:
 - vendor/bin/phpunit --configuration phpunit.xml
