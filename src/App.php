@@ -220,9 +220,10 @@ class App
      * @param callable $callback
      * @param array $resources
      * @param string $group Pass "*" for all
-     * @return $this
+     *
+     * @return void
      */
-    public static function init(callable $callback, array $resources = [], string $group = '*')
+    public static function init(callable $callback, array $resources = [], string $group = '*'): void
     {
         if(!isset(self::$init[$group])) {
             self::$init[$group] = [];
@@ -239,9 +240,10 @@ class App
      * @param callable $callback
      * @param array $resources
      * @param string $group Use "*" for all
-     * @return $this
+     *
+     * @return void
      */
-    public static function shutdown(callable $callback, array $resources = [], string $group = '*')
+    public static function shutdown(callable $callback, array $resources = [], string $group = '*'): void
     {
         if(!isset(self::$shutdown[$group])) {
             self::$shutdown[$group] = [];
@@ -258,9 +260,10 @@ class App
      * @param callable $callback
      * @param array $resources
      * @param string $group Use "*" for all
-     * @return $this
+     *
+     * @return void
      */
-    public static function options(callable $callback, array $resources = [], string $group = '*')
+    public static function options(callable $callback, array $resources = [], string $group = '*'): void
     {
         if(!isset(self::$options[$group])) {
             self::$options[$group] = [];
@@ -274,12 +277,13 @@ class App
      *
      * An error callback for failed or no matched requests
      *
-     * @param callbale $callback
+     * @param callable $callback
      * @param array $resources
      * @param string $group Use "*" for all
-     * @return $this
+     *
+     * @return void
      */
-    public static function error(callable $callback, array $resources = [], string $group = '*')
+    public static function error(callable $callback, array $resources = [], string $group = '*'): void
     {
         if(!isset(self::$errors[$group])) {
             self::$errors[$group] = [];
@@ -319,7 +323,7 @@ class App
      *
      * Set current mode
      *
-     * @return string
+     * @return void
      */
     public static function setMode($value): void
     {
@@ -372,9 +376,12 @@ class App
      *
      * @param string $name
      * @param callable $callback
+     *
      * @throws Exception
+     *
+     * @return void
      */
-    public static function setResource(string $name, callable $callback, array $injections = [])
+    public static function setResource(string $name, callable $callback, array $injections = []): void
     {
         self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
     }
@@ -655,9 +662,12 @@ class App
      * @param array $param
      * @param mixed $value
      * @param array $resources
+     *
      * @throws Exception
+     *
+     * @return void
      */
-    protected function validate(string $key, array $param, $value)
+    protected function validate(string $key, array $param, $value): void
     {
         if ('' !== $value) {
             // checking whether the class exists

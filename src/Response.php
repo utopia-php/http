@@ -191,8 +191,9 @@ class Response
      *
      * Get HTTP content type header.
      *
-     * @param  string   $type
-     * @return self
+     * @param string $type
+     *
+     * @return string
      */
     public function getContentType(): string
     {
@@ -362,7 +363,7 @@ class Response
      * @param string $body
      * @param int $exit exit code or don't exit if code is null
      *
-     * @return self
+     * @return void
      */
     public function send(string $body = '', int $exit = null): void
     {

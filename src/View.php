@@ -196,11 +196,12 @@ class View
     /**
      * Add Filter
      *
-     * @param $name
-     * @param $callback
+     * @param string $name
+     * @param callable $callback
+     *
      * @return View
      */
-    public function addFilter($name, $callback)
+    public function addFilter(string $name, $callback)
     {
         $this->filters[$name] = $callback;
         return $this;

@@ -55,8 +55,10 @@ class WhiteList extends Validator
 
     /**
      * Get List of All Allowed Values
+     *
+     * @return array
      */
-    public function getList()
+    public function getList(): array
     {
         return $this->list;
     }

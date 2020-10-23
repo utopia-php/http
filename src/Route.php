@@ -232,7 +232,7 @@ class Route
     /**
      * Get Action
      *
-     * @return callable|null
+     * @return callback
      */
     public function getAction()
     {
@@ -280,7 +280,9 @@ class Route
      *
      * @param $key
      * @param $value
-     * @return mixed
+     *
+     * @return self
+     *
      * @throws Exception
      */
     public function setParamValue($key, $value): self
@@ -327,7 +329,7 @@ class Route
     /**
      * Get Route Order ID
      *
-     * @return mixed
+     * @return int
      */
     public function getOrder(): int
     {
