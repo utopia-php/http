@@ -68,7 +68,7 @@ class App
      *
      * Errors callbacks
      *
-     * @var callback
+     * @var array
      */
     protected static $errors = [
         '*' => [],
@@ -79,7 +79,7 @@ class App
      *
      * A callback function that is initialized on application start
      *
-     * @var callback[]
+     * @var array
      */
     protected static $init = [
         '*' => [],
@@ -90,7 +90,7 @@ class App
      *
      * A callback function that is initialized on application end
      *
-     * @var callback[]
+     * @var array
      */
     protected static $shutdown = [
         '*' => [],
@@ -101,7 +101,7 @@ class App
      *
      * A callback function for options method requests
      *
-     * @var callback[]
+     * @var array
      */
     protected static $options = [
         '*' => [],
@@ -323,9 +323,11 @@ class App
      *
      * Set current mode
      *
+     * @param string $value
+     * 
      * @return void
      */
-    public static function setMode($value): void
+    public static function setMode(string $value): void
     {
         self::$mode = $value;
     }

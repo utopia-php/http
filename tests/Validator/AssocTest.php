@@ -20,7 +20,7 @@ class AssocTest extends TestCase
     /**
      * @var Numeric
      */
-    protected $assoc = null;
+    protected $assoc;
 
     public function setUp():void
     {

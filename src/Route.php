@@ -45,9 +45,9 @@ class Route
     /**
      * Action Callback
      *
-     * @var null|callback
+     * @var callable
      */
-    protected $action = null;
+    protected $action;
 
     /**
      * @var int
@@ -84,13 +84,13 @@ class Route
     /**
      * @var int
      */
-    protected $order = null;
+    protected $order;
 
     /**
-     * @param $method
-     * @param $URL
+     * @param string $method
+     * @param string $URL
      */
-    public function __construct($method, $URL)
+    public function __construct(string $method, string $URL)
     {
         self::$counter++;
 
@@ -126,7 +126,7 @@ class Route
     /**
      * Add Group
      *
-     * @param array $group
+     * @param array $groups
      * @return $this
      */
     public function groups(array $groups): self
@@ -232,7 +232,7 @@ class Route
     /**
      * Get Action
      *
-     * @return callback
+     * @return callable
      */
     public function getAction()
     {

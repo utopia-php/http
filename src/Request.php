@@ -39,7 +39,7 @@ class Request
      *
      * @var array
      */
-    protected $headers = null;
+    protected $headers = [];
 
     /**
      * Get Param
@@ -298,6 +298,8 @@ class Request
     public function getHeader(string $key, string $default = ''): string
     {
         $headers = $this->generateHeaders();
+
+        var_dump($headers);
 
         return (isset($headers[$key])) ? $headers[$key] : $default;
     }

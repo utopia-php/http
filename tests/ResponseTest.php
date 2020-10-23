@@ -20,7 +20,7 @@ class ResponseTest extends TestCase
     /**
      * @var Response
      */
-    protected $response = null;
+    protected $response;
 
     public function setUp():void
     {

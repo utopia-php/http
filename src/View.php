@@ -57,10 +57,10 @@ class View
         $this->setPath($path);
 
         $this
-            ->addFilter(self::FILTER_ESCAPE, function ($value) {
+            ->addFilter(self::FILTER_ESCAPE, function (string $value) {
                 return \htmlentities($value, ENT_QUOTES, 'UTF-8');
             })
-            ->addFilter(self::FILTER_NL2P, function ($value) {
+            ->addFilter(self::FILTER_NL2P, function (string $value) {
                 $paragraphs = '';
 
                 foreach (\explode("\n\n", $value) as $line) {
@@ -201,7 +201,7 @@ class View
      *
      * @return View
      */
-    public function addFilter(string $name, $callback)
+    public function addFilter(string $name, callable $callback)
     {
         $this->filters[$name] = $callback;
         return $this;
@@ -244,12 +244,12 @@ class View
      * Render view .phtml template file if template has not been set as rendered yet using $this->setRendered(true).
      * In case path is not readable throws Exception.
      *
-     * @var boolean $minify
+     * @var bool $minify
      *
      * @return string
      * @throws Exception
      */
-    public function render($minify = true)
+    public function render(bool $minify = true)
     {
         if ($this->rendered) { // Don't render any template
 

@@ -26,7 +26,7 @@ class ArrayList extends Validator
     /**
      * @var Validator
      */
-    protected $validator = null;
+    protected $validator;
 
     /**
      * Text constructor.

@@ -20,7 +20,7 @@ class BooleanTest extends TestCase
     /**
      * @var Boolean
      */
-    protected $boolean = null;
+    protected $boolean;
 
     public function setUp():void
     {

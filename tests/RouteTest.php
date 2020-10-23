@@ -21,7 +21,7 @@ class RouteTest extends TestCase
     /**
      * @var Route
      */
-    protected $route = null;
+    protected $route;
 
     public function setUp():void
     {
