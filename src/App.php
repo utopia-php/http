@@ -119,7 +119,7 @@ class App
      *
      * Memory cached result for chosen route
      *
-     * @var null
+     * @var Route|null
      */
     protected $route = null;
 
@@ -225,7 +225,7 @@ class App
      */
     public static function init(callable $callback, array $resources = [], string $group = '*'): void
     {
-        if(!isset(self::$init[$group])) {
+        if (!isset(self::$init[$group])) {
             self::$init[$group] = [];
         }
 
@@ -245,7 +245,7 @@ class App
      */
     public static function shutdown(callable $callback, array $resources = [], string $group = '*'): void
     {
-        if(!isset(self::$shutdown[$group])) {
+        if (!isset(self::$shutdown[$group])) {
             self::$shutdown[$group] = [];
         }
 
@@ -265,7 +265,7 @@ class App
      */
     public static function options(callable $callback, array $resources = [], string $group = '*'): void
     {
-        if(!isset(self::$options[$group])) {
+        if (!isset(self::$options[$group])) {
             self::$options[$group] = [];
         }
 
@@ -285,7 +285,7 @@ class App
      */
     public static function error(callable $callback, array $resources = [], string $group = '*'): void
     {
-        if(!isset(self::$errors[$group])) {
+        if (!isset(self::$errors[$group])) {
             self::$errors[$group] = [];
         }
 
@@ -342,8 +342,8 @@ class App
      */
     public function getResource(string $name, $fresh = false)
     {
-        if(!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
-            if(!\array_key_exists($name, self::$resourcesCallbacks)) {
+        if (!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
+            if (!\array_key_exists($name, self::$resourcesCallbacks)) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
@@ -499,7 +499,7 @@ class App
     {
         $keys       = [];
         $params     = [];
-        $groups     = ($route instanceof Route) ? $route->getGroups() : [];
+        $groups     = $route->getGroups();
 
         // Extract keys from URL
         $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
@@ -517,7 +517,7 @@ class App
             }
 
             foreach ($groups as $group) {
-                if(isset(self::$init[$group])) {
+                if (isset(self::$init[$group])) {
                     foreach (self::$init[$group] as $init) { // Group init hooks
                         \call_user_func_array($init['callback'], $this->getResources($init['resources']));
                     }
@@ -539,7 +539,7 @@ class App
             \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getResources())));
             
             foreach ($groups as $group) {
-                if(isset(self::$shutdown[$group])) {
+                if (isset(self::$shutdown[$group])) {
                     foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
                         \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
                     }
@@ -551,7 +551,7 @@ class App
             }
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
-                if(isset(self::$errors[$group])) {
+                if (isset(self::$errors[$group])) {
                     foreach (self::$errors[$group] as $error) { // Group shutdown hooks
                         self::setResource('error', function() use ($e) {
                             return $e;
@@ -598,13 +598,13 @@ class App
          * For route to work with similar links where one is shorter than other
          *  but both might match given pattern
          */
-        if(!self::$sorted) {
+        if (!self::$sorted) {
             foreach (self::$routes as $method => $list) {
-                \uksort(self::$routes[$method], function ($a, $b) {
+                \uksort(self::$routes[$method], function (string $a, string $b) {
                     return \strlen($b) - \strlen($a);
                 });
                 
-                \uksort(self::$routes[$method], function ($a, $b) {
+                \uksort(self::$routes[$method], function (string $a, string $b) {
                     return \count(\explode('/', $b)) - \count(\explode('/', $a));
                 });
             }
@@ -625,7 +625,7 @@ class App
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
-                    if(isset(self::$options[$group])) {
+                    if (isset(self::$options[$group])) {
                         foreach (self::$options[$group] as $option) { // Group options hooks
                             \call_user_func_array($option['callback'], $this->getResources($option['resources']));
                         }

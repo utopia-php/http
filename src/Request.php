@@ -30,16 +30,16 @@ class Request
     /**
      * Container for php://input parsed stream
      *
-     * @var array
+     * @var array|null
      */
     protected $payload = null;
 
     /**
      * Container for parsed headers
      *
-     * @var array
+     * @var array|null
      */
-    protected $headers;
+    protected $headers = null;
 
     /**
      * Get Param

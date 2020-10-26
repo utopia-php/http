@@ -20,7 +20,7 @@ class View
     const FILTER_NL2P   = 'nl2p';
 
     /**
-     * @var self
+     * @var self|null
      */
     protected $parent = null;
 
@@ -331,7 +331,9 @@ class View
                     $output .= $node->render();
                 }
             }
-        } elseif ($view instanceof self) {
+        }
+        
+        if ($view instanceof self) {
             $view->setParent($this);
             $output = $view->render();
         }

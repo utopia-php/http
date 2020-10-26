@@ -62,7 +62,7 @@ class RouteTest extends TestCase
 
     public function testAction()
     {
-        $this->assertEquals(null, $this->route->getAction());
+        $this->assertEquals(function(): void {}, $this->route->getAction());
         
         $this->route->action(function() {return 'hello world';});
 

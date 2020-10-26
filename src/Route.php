@@ -97,6 +97,7 @@ class Route
         $this->URL($URL);
         $this->method = $method;
         $this->order = self::$counter;
+        $this->action = function(): void {};
     }
 
     /**
@@ -278,14 +279,14 @@ class Route
     /**
      * Set Param Value
      *
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param mixed $value
      *
      * @return self
      *
      * @throws Exception
      */
-    public function setParamValue($key, $value): self
+    public function setParamValue(string $key, $value): self
     {
         if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
@@ -299,11 +300,11 @@ class Route
     /**
      * Get Param Value
      *
-     * @param $key
+     * @param string $key
      * @return mixed
      * @throws Exception
      */
-    public function getParamValue($key)
+    public function getParamValue(string $key)
     {
         if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');

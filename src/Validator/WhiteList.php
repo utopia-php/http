@@ -46,8 +46,8 @@ class WhiteList extends Validator
         $this->list 	= $list;
         $this->strict 	= $strict;
 
-        if(!$this->strict) {
-            foreach($list as $key => &$value) {
+        if (!$this->strict) {
+            foreach ($list as $key => &$value) {
                 $list[$key] = \strtolower($value);
             }
         }

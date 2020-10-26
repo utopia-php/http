@@ -28,6 +28,9 @@ class IP extends Validator
     const V4 = 'ipv4';
     const V6 = 'ipv6';
 
+    /**
+     * @var string
+     */
     protected $type = self::ALL;
 
     /**
@@ -39,7 +42,7 @@ class IP extends Validator
      */
     public function __construct(string $type = self::ALL)
     {
-        if(!in_array($type, [self::ALL, self::V4, self::V6])) {
+        if (!in_array($type, [self::ALL, self::V4, self::V6])) {
             throw new Exception('Unsupported IP type');
         }
 

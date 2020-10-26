@@ -152,7 +152,7 @@ class Response
     protected $cookies = [];
 
     /**
-     * @var int
+     * @var float
      */
     protected $startTime = 0;
 
@@ -164,9 +164,9 @@ class Response
     /**
      * Response constructor.
      * 
-     * @param int $time response start time
+     * @param float $time response start time
      */
-    public function __construct(int $time = 0)
+    public function __construct(float $time = 0)
     {
         $this->startTime = (!empty($time)) ? $time : \microtime(true);
     }
@@ -401,7 +401,7 @@ class Response
         \http_response_code($this->statusCode);
 
         // Send content type header
-        if(!empty($this->contentType)) {
+        if (!empty($this->contentType)) {
             $this
                 ->addHeader('Content-Type', $this->contentType)
             ;
@@ -515,11 +515,11 @@ class Response
      *
      * @see http://en.wikipedia.org/wiki/JSON
      *
-     * @param array|\stdClass $data
+     * @param mixed $data
      */
     public function json($data): void
     {
-        if(!is_array($data) && !$data instanceof \stdClass) {
+        if (!is_array($data) && !$data instanceof \stdClass) {
             throw new \Exception('Invalid JSON input var');
         }
 
