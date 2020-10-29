@@ -278,10 +278,10 @@ class Request
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
      *
      * @param  string $key
-     * @param  mixed  $default
-     * @return mixed
+     * @param  string  $default
+     * @return string
      */
-    public function getCookie(string $key, string $default = '')
+    public function getCookie(string $key, string $default = ''): string
     {
         return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
     }
