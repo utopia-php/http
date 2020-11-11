@@ -22,7 +22,14 @@ class Response
     const CONTENT_TYPE_JSON         = 'application/json';
     const CONTENT_TYPE_XML          = 'text/xml';
     const CONTENT_TYPE_JAVASCRIPT   = 'text/javascript';
-
+    const CONTENT_TYPE_IMAGE        = 'image/*';
+    const CONTENT_TYPE_IMAGE_JPEG   = 'image/jpeg';
+    const CONTENT_TYPE_IMAGE_PNG    = 'image/png';
+    const CONTENT_TYPE_IMAGE_GIF    = 'image/gif';
+    const CONTENT_TYPE_IMAGE_SVG    = 'image/svg+xml';
+    const CONTENT_TYPE_IMAGE_WEBP   = 'image/webp';
+    const CONTENT_TYPE_IMAGE_ICON   = 'image/x-icon';
+    const CONTENT_TYPE_IMAGE_BMP    = 'image/bmp';
     /**
      * Chrsets
      */
