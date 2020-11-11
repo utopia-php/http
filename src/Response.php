@@ -30,6 +30,7 @@ class Response
     const CONTENT_TYPE_IMAGE_WEBP   = 'image/webp';
     const CONTENT_TYPE_IMAGE_ICON   = 'image/x-icon';
     const CONTENT_TYPE_IMAGE_BMP    = 'image/bmp';
+    
     /**
      * Chrsets
      */
