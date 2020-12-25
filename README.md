@@ -44,7 +44,7 @@ $app        = new App('America/New_York');
 $request    = new Request();
 $response   = new Response();
 
-$utopia->run($request, $response);
+$app->run($request, $response);
 ```
 
 ## System Requirements
