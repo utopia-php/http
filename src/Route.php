@@ -64,13 +64,13 @@ class Route
     protected $params = [];
 
     /**
-     * Resources
+     * Injections
      *
-     * List of route required resources for action callback
+     * List of route required injections for action callback
      *
      * @var array
      */
-    protected $resources = [];
+    protected $injections = [];
 
     /**
      * Labels
@@ -140,13 +140,11 @@ class Route
      * Add Action
      *
      * @param callable $action
-     * @param array $resources
      * @return $this
      */
-    public function action(callable $action, array $resources = []): self
+    public function action(callable $action): self
     {
         $this->action = $action;
-        $this->resources = $resources;
         return $this;
     }
 
@@ -158,21 +156,34 @@ class Route
      * @param string $validator
      * @param string $description
      * @param bool $optional
-     * @param array $resources
+     * @param array $injections
      *
      * @return $this
      */
-    public function param($key, $default, $validator, $description = '', $optional = false, array $resources = []): self
+    public function param($key, $default, $validator, $description = '', $optional = false, array $injections = []): self
     {
         $this->params[$key] = [
             'default'       => $default,
             'validator'     => $validator,
             'description'   => $description,
             'optional'      => $optional,
-            'resources'     => $resources,
+            'injections'     => $injections,
             'value'         => null,
         ];
 
+        return $this;
+    }
+
+    /**
+     * Inject
+     *
+     * @param string $injection
+     *
+     * @return $this
+     */
+    public function inject($injection): self
+    {
+        $this->injections[] = $injection;
         return $this;
     }
 
@@ -251,13 +262,13 @@ class Route
     }
 
     /**
-     * Get Resources
+     * Get Injections
      *
      * @return array
      */
-    public function getResources(): array
+    public function getInjections(): array
     {
-        return $this->resources;
+        return $this->injections;
     }
 
     /**

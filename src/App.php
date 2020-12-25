@@ -333,7 +333,7 @@ class App
     }
 
     /**
-     * If a resource has been created returns it, otherwise create and than return it
+     * If a resource has been created return it, otherwise create it and then return it
      *
      * @param string $name
      * @param bool $fresh
@@ -536,7 +536,7 @@ class App
             }
 
             // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getResources())));
+            \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getInjections())));
             
             foreach ($groups as $group) {
                 if (isset(self::$shutdown[$group])) {
@@ -672,15 +672,13 @@ class App
     protected function validate(string $key, array $param, $value): void
     {
         if ('' !== $value) {
-            // checking whether the class exists
-            $validator = $param['validator'];
+            $validator = $param['validator']; // checking whether the class exists
 
             if (\is_callable($validator)) {
-                $validator = \call_user_func_array($validator, $this->getResources($param['resources']));
+                $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
             }
 
-            // is the validator object an instance of the Validator class
-            if (!$validator instanceof Validator) {
+            if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
                 throw new Exception('Validator object is not an instance of the Validator class', 500);
             }
 
