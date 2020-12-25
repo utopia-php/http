@@ -92,8 +92,8 @@ class RouteTest extends TestCase
         ;
 
         $this->assertCount(2, $this->route->getInjections());
-        $this->assertEquals('user', $this->route->getInjections()[0]);
-        $this->assertEquals('time', $this->route->getInjections()[1]);
+        $this->assertEquals('user', $this->route->getInjections()['user']['name']);
+        $this->assertEquals('time', $this->route->getInjections()['time']['name']);
     }
 
     public function testLabel()

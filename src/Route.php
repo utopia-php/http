@@ -12,6 +12,8 @@
 
 namespace Utopia;
 
+use Exception;
+
 class Route
 {
     /**
@@ -167,8 +169,9 @@ class Route
             'validator'     => $validator,
             'description'   => $description,
             'optional'      => $optional,
-            'injections'     => $injections,
+            'injections'    => $injections,
             'value'         => null,
+            'order'         => count($this->params) + count($this->injections),
         ];
 
         return $this;
@@ -183,7 +186,15 @@ class Route
      */
     public function inject($injection): self
     {
-        $this->injections[] = $injection;
+        if(array_key_exists($injection, $this->injections)) {
+            throw new Exception('Injection already declared for '.$injection);
+        }
+
+        $this->injections[$injection] = [
+            'name'  => $injection,
+            'order' => count($this->params) + count($this->injections),
+        ];
+        
         return $this;
     }
 

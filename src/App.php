@@ -498,7 +498,7 @@ class App
     public function execute(Route $route, array $args = []): self
     {
         $keys       = [];
-        $params     = [];
+        $arguments  = [];
         $groups     = $route->getGroups();
 
         // Extract keys from URL
@@ -524,19 +524,22 @@ class App
                 }
             }
 
-            foreach ($route->getParams() as $key => $param) {
-                // Get value from route or request object
+            foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
                 $value = isset($values[$key]) ? $values[$key] : $arg;
                 $value = ($value === '') ? $param['default'] : $value;
 
                 $this->validate($key, $param, $value);
 
-                $params[$key] = $value;
+                $arguments[$param['order']] = $value;
+            }
+
+            foreach ($route->getInjections() as $key => $injection) {
+                $arguments[$injection['order']] = $this->getResource($injection['name']);
             }
 
             // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getInjections())));
+            \call_user_func_array($route->getAction(), $arguments);
             
             foreach ($groups as $group) {
                 if (isset(self::$shutdown[$group])) {
