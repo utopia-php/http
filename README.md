@@ -26,8 +26,10 @@ use Utopia\Request;
 use Utopia\Response;
 
 App::get('/hello-world') // Define Route
+    ->inject('request')
+    ->inject('response')
     ->action(
-        function() use ($request, $response) {
+        function($request, $response) {
             $response
               ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
               ->addHeader('Expires', '0')
@@ -42,7 +44,7 @@ $app        = new App('America/New_York');
 $request    = new Request();
 $response   = new Response();
 
-$utopia->run($request, $response);
+$app->run($request, $response);
 ```
 
 ## System Requirements

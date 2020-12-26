@@ -333,7 +333,7 @@ class App
     }
 
     /**
-     * If a resource has been created returns it, otherwise create and than return it
+     * If a resource has been created return it, otherwise create it and then return it
      *
      * @param string $name
      * @param bool $fresh
@@ -498,7 +498,7 @@ class App
     public function execute(Route $route, array $args = []): self
     {
         $keys       = [];
-        $params     = [];
+        $arguments  = [];
         $groups     = $route->getGroups();
 
         // Extract keys from URL
@@ -524,19 +524,22 @@ class App
                 }
             }
 
-            foreach ($route->getParams() as $key => $param) {
-                // Get value from route or request object
+            foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
                 $value = isset($values[$key]) ? $values[$key] : $arg;
                 $value = ($value === '') ? $param['default'] : $value;
 
                 $this->validate($key, $param, $value);
 
-                $params[$key] = $value;
+                $arguments[$param['order']] = $value;
+            }
+
+            foreach ($route->getInjections() as $key => $injection) {
+                $arguments[$injection['order']] = $this->getResource($injection['name']);
             }
 
             // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), array_merge($params, $this->getResources($route->getResources())));
+            \call_user_func_array($route->getAction(), $arguments);
             
             foreach ($groups as $group) {
                 if (isset(self::$shutdown[$group])) {
@@ -672,15 +675,13 @@ class App
     protected function validate(string $key, array $param, $value): void
     {
         if ('' !== $value) {
-            // checking whether the class exists
-            $validator = $param['validator'];
+            $validator = $param['validator']; // checking whether the class exists
 
             if (\is_callable($validator)) {
-                $validator = \call_user_func_array($validator, $this->getResources($param['resources']));
+                $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
             }
 
-            // is the validator object an instance of the Validator class
-            if (!$validator instanceof Validator) {
+            if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
                 throw new Exception('Validator object is not an instance of the Validator class', 500);
             }
 
