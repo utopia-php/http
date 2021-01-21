@@ -68,6 +68,7 @@ Library | Description
 **[Utopia Domains](https://github.com/utopia-php/domains)** | Simple PHP library for parsing domain names.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
 **[Utopia Registry](https://github.com/utopia-php/registry)** | Simple PHP library for dependency injection and lazy loading of objects or resources.
+**[Utopia System](https://github.com/utopia-php/system)** | Simple PHP library for obtaining information about the host's system.
 
 ## Authors
 
