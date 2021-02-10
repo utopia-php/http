@@ -146,7 +146,8 @@ class Request
      */
     public function getIP(): string
     {
-        return $this->getServer('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0'));
+        $ips = explode(',',$this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0')));
+        return trim($ips[0] ?? '');
     }
 
     /**
