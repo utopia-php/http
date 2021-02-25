@@ -36,6 +36,18 @@ class Email extends Validator
     }
 
     /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_STRING;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value is valid email address.

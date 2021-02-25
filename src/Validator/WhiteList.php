@@ -76,6 +76,18 @@ class WhiteList extends Validator
     }
 
     /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_ARRAY;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass if $value is in the white list array.

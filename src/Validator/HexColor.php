@@ -23,6 +23,17 @@ class HexColor extends Validator
     {
         return 'Value must be a valid Hex color code';
     }
+    /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_STRING;
+    }
 
     /**
      * @param mixed $value

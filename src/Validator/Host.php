@@ -46,6 +46,18 @@ class Host extends Validator
     }
 
     /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_STRING;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value starts with one of the given hosts

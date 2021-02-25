@@ -36,6 +36,18 @@ class Integer extends Validator
     }
 
     /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_INTEGER;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value is integer.

@@ -25,6 +25,18 @@ class JSON extends Validator
     }
 
     /**
+     * Get Type
+     *
+     * Returns validator type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_OBJECT;
+    }
+
+    /**
      * @param mixed $value
      * @return bool
      */

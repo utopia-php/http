@@ -81,6 +81,18 @@ class Multiple extends Validator
     }
 
     /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_ARRAY;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when all rules are valid if only one of the rules is invalid validation will fail.
