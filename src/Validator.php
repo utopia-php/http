@@ -14,6 +14,16 @@ namespace Utopia;
 
 abstract class Validator
 {
+
+    const TYPE_BOOLEAN = "boolean";
+    const TYPE_INTEGER = "integer";
+    const TYPE_FLOAT = "double"; /* gettype() returns "double" for historical reasons */
+    const TYPE_STRING = "string";
+    const TYPE_ARRAY = "array";
+    const TYPE_OBJECT = "object";
+    const TYPE_RESOURCE = "resource";
+    const TYPE_RESOURCE_CLOSED = "resource (closed)";
+
     /**
      * Get Description
      *
