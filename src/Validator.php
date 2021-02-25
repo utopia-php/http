@@ -32,4 +32,13 @@ abstract class Validator
      * @return bool
      */
     abstract public function isValid($value);
+
+    /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    abstract public function getType();
 }
