@@ -51,5 +51,6 @@ class ArrayListTest extends TestCase
         $this->assertEquals(false, $this->arrayList2->isValid('string'));
         $this->assertEquals(true, $this->arrayList2->isValid([1, 2, 3]));
         $this->assertEquals(false, $this->arrayList2->isValid(1, '2', 3));
+        $this->assertEquals($this->arrayList1->getType(), 'array');
     }
 }

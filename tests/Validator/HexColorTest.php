@@ -44,5 +44,6 @@ class HexColorTest extends TestCase
         $this->assertEquals($this->hexColor->isValid('ffffff'), true);
         $this->assertEquals($this->hexColor->isValid('fff'), true);
         $this->assertEquals($this->hexColor->isValid('000000'), true);
+        $this->assertEquals($this->hexColor->getType(), 'string');
     }
 }

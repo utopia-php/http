@@ -40,5 +40,6 @@ class HostTest extends TestCase
         $this->assertEquals($this->host->isValid('localhost'), false);
         $this->assertEquals($this->host->isValid('http://subdomain.appwrite.test/path'), true);
         $this->assertEquals($this->host->isValid('http://test.subdomain.appwrite.test/path'), false);
+        $this->assertEquals($this->host->getType(), 'string');
     }
 }

@@ -43,5 +43,6 @@ class FloatValidatorTest extends TestCase
         $this->assertEquals($this->validator->isValid(true), false);
         $this->assertEquals($this->validator->isValid('23.5'), false);
         $this->assertEquals($this->validator->isValid('23'), false);
+        $this->assertEquals($this->validator->getType(), 'double');
     }
 }

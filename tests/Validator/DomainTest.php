@@ -45,5 +45,6 @@ class DomainTest extends TestCase
         //$this->assertEquals(false, $this->domain->isValid('string'));
         //$this->assertEquals(false, $this->domain->isValid(1));
         //$this->assertEquals(false, $this->domain->isValid(1.2));
+        $this->assertEquals($this->domain->getType(), 'string');
     }
 }

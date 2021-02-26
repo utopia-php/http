@@ -34,6 +34,7 @@ class IPTest extends TestCase
         $this->assertEquals($validator->isValid(null), false);
         $this->assertEquals($validator->isValid(true), false);
         $this->assertEquals($validator->isValid(false), false);
+        $this->assertEquals($validator->getType(), 'string');
     }
 
     public function testIsValidIPALL()

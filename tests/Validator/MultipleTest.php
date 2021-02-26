@@ -41,5 +41,6 @@ class MultipleTest extends TestCase
         $this->assertEquals($this->multiple->isValid(1), false);
         $this->assertEquals($this->multiple->isValid(-1), false);
         $this->assertEquals($this->multiple->isValid('-1'), false);
+        $this->assertEquals($this->multiple->getType(), 'array');
     }
 }
