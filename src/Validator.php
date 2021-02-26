@@ -23,6 +23,7 @@ abstract class Validator
     const TYPE_OBJECT = "object";
     const TYPE_RESOURCE = "resource";
     const TYPE_RESOURCE_CLOSED = "resource (closed)";
+    const TYPE_MIXED = "mixed";
 
     /**
      * Get Description

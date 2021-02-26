@@ -36,9 +36,21 @@ class Mock extends Validator
     }
 
     /**
+     * Get Type 
+     *
+     * Returns validator type 
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_MIXED; 
+    }
+
+    /**
      * Is valid
      *
-     * Validation will pass when $value is numeric.
+     * Validation will pass with any input. 
      *
      * @param  mixed $value
      * @return bool
