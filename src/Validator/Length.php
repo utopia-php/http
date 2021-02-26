@@ -56,6 +56,18 @@ class Length extends Validator
     }
 
     /**
+     * Get Type 
+     *
+     * Returns validator type 
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_INTEGER;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value number is bigger or equal than $min number and lower or equal than $max.
