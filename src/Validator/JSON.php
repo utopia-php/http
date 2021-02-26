@@ -33,7 +33,7 @@ class JSON extends Validator
      */
     public function getType()
     {
-        return self::TYPE_OBJECT;
+        return self::TYPE_STRING;
     }
 
     /**
