@@ -607,8 +607,14 @@ class App
                     return \strlen($b) - \strlen($a);
                 });
                 
-                \uksort(self::$routes[$method], function (string $a, string $b) {
-                    return \count(\explode('/', $b)) - \count(\explode('/', $a));
+                \uksort(self::$routes[$method], function ($a, $b) {                    
+                    $result = \count(\explode('/', $b)) - \count(\explode('/', $a));
+                    
+                    if($result === 0) {
+                        return \substr_count($a, ':') - \substr_count($b, ':');
+                    }
+
+                    return $result;
                 });
             }
 
