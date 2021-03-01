@@ -61,16 +61,18 @@ Library | Description
 --- | ---
 **[Utopia AB](https://github.com/utopia-php/ab)** | Simple PHP library for managing AB testing on the server side.
 **[Utopia Abuse](https://github.com/utopia-php/abuse)** | Simple PHP library for rate limiting usage of different features in your app or API.
+**[Utopia Analytics](https://github.com/utopia-php/analytics)** | Simple PHP library to send information about events or pageviews to Google Analytics.
 **[Utopia Audit](https://github.com/utopia-php/audit)** | Simple PHP library for audit logging users actions and system events 
 **[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
 **[Utopia CLI](https://github.com/utopia-php/cli)** | Simple PHP library for for building simple command line tools.
 **[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for for managing your app configuration.
 **[Utopia Domains](https://github.com/utopia-php/domains)** | Simple PHP library for parsing domain names.
+**[Utopia Image](https://github.com/utopia-php/image)** | Simple PHP library for creating common image manipulations that is easy to use.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
+**[Utopia Preloader](https://github.com/utopia-php/preloader)** | Simple PHP library for managing PHP preloading configuration.
 **[Utopia Registry](https://github.com/utopia-php/registry)** | Simple PHP library for dependency injection and lazy loading of objects or resources.
 **[Utopia System](https://github.com/utopia-php/system)** | Simple PHP library for obtaining information about the host's system.
 **[Utopia Storage](https://github.com/utopia-php/storage)** | Simple and lite PHP library for managing application storage. It supports multiple storage adapters.
-**[Utopia Image](https://github.com/utopia-php/image)** | Simple PHP library for creating common image manipulations that is easy to use.
 
 ## Authors
 
