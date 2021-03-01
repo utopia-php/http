@@ -69,6 +69,8 @@ Library | Description
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
 **[Utopia Registry](https://github.com/utopia-php/registry)** | Simple PHP library for dependency injection and lazy loading of objects or resources.
 **[Utopia System](https://github.com/utopia-php/system)** | Simple PHP library for obtaining information about the host's system.
+**[Utopia Storage](https://github.com/utopia-php/storage)** | Simple and lite PHP library for managing application storage. It supports multiple storage adapters.
+**[Utopia Image](https://github.com/utopia-php/image)** | Simple PHP library for creating common image manipulations that is easy to use.
 
 ## Authors
 
