@@ -189,7 +189,7 @@ class Route
      *
      * @return bool
      */
-    public function middleware($useMiddleware = true)
+    public function middleware($useMiddleware = true): self
     {
         $this->useMiddleware = $useMiddleware;
 

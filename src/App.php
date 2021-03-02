@@ -702,4 +702,27 @@ class App
             throw new Exception('Param "' . $key . '" is not optional.', 400);
         }
     }
+
+    /**
+     * Reset all the static variables 
+     */
+    public static function reset(): void
+    {
+        self::$resourcesCallbacks = [];
+        self::$mode = '';
+        self::$errors = [
+            '*' => [],
+        ];
+        self::$init = [
+            '*' => [],
+        ];
+        self::$shutdown = [
+            '*' => [],
+        ];
+        self::$options = [
+            '*' => [],
+        ];
+        self::$sorted = false;
+    }
+
 }
