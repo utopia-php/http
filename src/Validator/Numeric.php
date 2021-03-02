@@ -44,7 +44,7 @@ class Numeric extends Validator
      */
     public function getType()
     {
-        return self::TYPE_INTEGER; /* Could be a string or float though  */
+        return self::TYPE_MIXED;
     }
 
     /**
