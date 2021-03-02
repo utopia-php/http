@@ -107,11 +107,11 @@ class RouteTest extends TestCase
 
     public function testMiddleWare()
     {
-        $this->assertTrue($this->route->useMiddleWare());
+        $this->assertTrue($this->route->getMiddleware());
         $this->route->middleware(true);
-        $this->assertTrue($this->route->useMiddleWare());
+        $this->assertTrue($this->route->getMiddleware());
         $this->route->middleware(false);
-        $this->assertFalse($this->route->useMiddleWare());
+        $this->assertFalse($this->route->getMiddleware());
     }
 
     public function tearDown():void

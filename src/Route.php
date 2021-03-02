@@ -28,7 +28,7 @@ class Route
      *
      * @var bool
      */
-    protected $useMiddleware = true;
+    protected $middleware = true;
 
     /**
      * URL
@@ -189,9 +189,9 @@ class Route
      *
      * @return bool
      */
-    public function middleware($useMiddleware = true): self
+    public function middleware($middleware = true): self
     {
-        $this->useMiddleware = $useMiddleware;
+        $this->middleware = $middleware;
 
         return $this;
     }
@@ -383,8 +383,8 @@ class Route
      *
      * @return bool
      */
-    public function useMiddleWare(): bool
+    public function getMiddleware(): bool
     {
-        return $this->useMiddleware;
+        return $this->middleware;
     }
 }

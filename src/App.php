@@ -512,7 +512,7 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
-            if ($route->useMiddleWare()) {
+            if ($route->getMiddleware()) {
                 foreach (self::$init['*'] as $init) { // Global init hooks
                     \call_user_func_array($init['callback'], $this->getResources($init['resources']));
                 }
@@ -551,7 +551,7 @@ class App
                 }
             }
 
-            if ($route->useMiddleWare()) {
+            if ($route->getMiddleware()) {
                 foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
                     \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
                 }
