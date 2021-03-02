@@ -241,6 +241,10 @@ class AppTest extends TestCase
             echo '(init)-';    
         });
 
+        $this->app->shutdown(function() {
+            echo '-(shutdown)';    
+        });
+
         // Default Params
         $route = new Route('GET', '/path');
         $route
@@ -256,7 +260,7 @@ class AppTest extends TestCase
         \ob_end_clean();
 
         // var_dump($result);
-        $this->assertEquals('(init)-x-def', $result);
+        $this->assertEquals('(init)-x-def-(shutdown)', $result);
 
         // Default Params
         $route = new Route('GET', '/path');
