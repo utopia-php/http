@@ -105,6 +105,15 @@ class RouteTest extends TestCase
         $this->assertEquals('value', $this->route->getLabel('key', 'default'));
     }
 
+    public function testMiddleWare()
+    {
+        $this->assertTrue($this->route->useMiddleWare());
+        $this->route->middleware(true);
+        $this->assertTrue($this->route->useMiddleWare());
+        $this->route->middleware(false);
+        $this->assertFalse($this->route->useMiddleWare());
+    }
+
     public function tearDown():void
     {
         $this->route = null;
