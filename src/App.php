@@ -425,6 +425,29 @@ class App
     }
 
     /**
+     * Get the current route
+     *
+     * @return null|Route
+     */
+    public function getRoute(): ?Route  
+    {
+        return $this->route ?? null; 
+    }
+
+    /**
+     * Set the current route
+     *
+     * @param Route $route 
+     *
+     * @return self
+     */
+    public function setRoute(Route $route): self 
+    {
+        $this->route = $route;
+        return $this;
+    }
+
+    /**
      * Add Route
      *
      * Add routing route method, path and callback

@@ -281,6 +281,16 @@ class AppTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
+    public function testSetRoute() {
+        App::reset();
+
+        $route = new Route('GET', '/path');
+
+        $this->assertEquals($this->app->getRoute(), null);
+        $this->app->setRoute($route);
+        $this->assertEquals($this->app->getRoute(), $route);
+    }
+
     public function tearDown():void
     {
         $this->app = null;
