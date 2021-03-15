@@ -21,8 +21,6 @@ abstract class Validator
     const TYPE_STRING = "string";
     const TYPE_ARRAY = "array";
     const TYPE_OBJECT = "object";
-    const TYPE_RESOURCE = "resource";
-    const TYPE_RESOURCE_CLOSED = "resource (closed)";
     const TYPE_MIXED = "mixed";
 
     /**
