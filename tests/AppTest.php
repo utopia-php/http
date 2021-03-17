@@ -291,6 +291,34 @@ class AppTest extends TestCase
         $this->assertEquals($this->app->getRoute(), $route);
     }
 
+    public function testRun()
+    {
+        // Test head requests
+
+        $method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
+        $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
+
+        $_SERVER['REQUEST_METHOD'] = 'HEAD';
+        $_SERVER['REQUEST_URI'] = '/path';
+
+        App::get('/path')
+            ->inject('response')
+            ->action(function($response) {
+                $response->send('HELLO');
+            })
+        ;
+
+        \ob_start();
+        $this->app->run(new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $_SERVER['REQUEST_METHOD'] = $method;
+        $_SERVER['REQUEST_URI'] = $uri;
+
+        $this->assertStringNotContainsString('HELLO', $result);
+    }
+
     public function tearDown():void
     {
         $this->app = null;
