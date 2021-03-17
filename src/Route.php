@@ -24,6 +24,13 @@ class Route
     protected $method = '';
 
     /**
+     * Whether to use middleware
+     *
+     * @var bool
+     */
+    protected $middleware = true;
+
+    /**
      * URL
      *
      * @var string
@@ -173,6 +180,18 @@ class Route
             'value'         => null,
             'order'         => count($this->params) + count($this->injections),
         ];
+
+        return $this;
+    }
+
+    /**
+     * Set middleware status
+     *
+     * @return bool
+     */
+    public function middleware($middleware = true): self
+    {
+        $this->middleware = $middleware;
 
         return $this;
     }
@@ -357,5 +376,15 @@ class Route
     public function getOrder(): int
     {
         return $this->order;
+    }
+
+    /**
+     * Get middleware status
+     *
+     * @return bool
+     */
+    public function getMiddleware(): bool
+    {
+        return $this->middleware;
     }
 }

@@ -234,6 +234,63 @@ class AppTest extends TestCase
         $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
+    public function testMiddleWare() {
+        App::reset();
+
+        $this->app->init(function() {
+            echo '(init)-';    
+        });
+
+        $this->app->shutdown(function() {
+            echo '-(shutdown)';    
+        });
+
+        // Default Params
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->action(function($x) {
+                echo $x;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, []);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        // var_dump($result);
+        $this->assertEquals('(init)-x-def-(shutdown)', $result);
+
+        // Default Params
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->middleware(false)
+            ->action(function($x) {
+                echo $x;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, []);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        // var_dump($result);
+        $this->assertEquals('x-def', $result);
+    }
+
+    public function testSetRoute() {
+        App::reset();
+
+        $route = new Route('GET', '/path');
+
+        $this->assertEquals($this->app->getRoute(), null);
+        $this->app->setRoute($route);
+        $this->assertEquals($this->app->getRoute(), $route);
+    }
+
     public function testRun()
     {
         // Test head requests

@@ -425,6 +425,29 @@ class App
     }
 
     /**
+     * Get the current route
+     *
+     * @return null|Route
+     */
+    public function getRoute(): ?Route  
+    {
+        return $this->route ?? null; 
+    }
+
+    /**
+     * Set the current route
+     *
+     * @param Route $route 
+     *
+     * @return self
+     */
+    public function setRoute(Route $route): self 
+    {
+        $this->route = $route;
+        return $this;
+    }
+
+    /**
      * Add Route
      *
      * Add routing route method, path and callback
@@ -512,8 +535,10 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
-            foreach (self::$init['*'] as $init) { // Global init hooks
-                \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+            if ($route->getMiddleware()) {
+                foreach (self::$init['*'] as $init) { // Global init hooks
+                    \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+                }
             }
 
             foreach ($groups as $group) {
@@ -549,8 +574,10 @@ class App
                 }
             }
 
-            foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
-                \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+            if ($route->getMiddleware()) {
+                foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
+                    \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+                }
             }
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
@@ -607,8 +634,14 @@ class App
                     return \strlen($b) - \strlen($a);
                 });
                 
-                \uksort(self::$routes[$method], function (string $a, string $b) {
-                    return \count(\explode('/', $b)) - \count(\explode('/', $a));
+                \uksort(self::$routes[$method], function ($a, $b) {                    
+                    $result = \count(\explode('/', $b)) - \count(\explode('/', $a));
+                    
+                    if($result === 0) {
+                        return \substr_count($a, ':') - \substr_count($b, ':');
+                    }
+
+                    return $result;
                 });
             }
 
@@ -693,4 +726,27 @@ class App
             throw new Exception('Param "' . $key . '" is not optional.', 400);
         }
     }
+
+    /**
+     * Reset all the static variables 
+     */
+    public static function reset(): void
+    {
+        self::$resourcesCallbacks = [];
+        self::$mode = '';
+        self::$errors = [
+            '*' => [],
+        ];
+        self::$init = [
+            '*' => [],
+        ];
+        self::$shutdown = [
+            '*' => [],
+        ];
+        self::$options = [
+            '*' => [],
+        ];
+        self::$sorted = false;
+    }
+
 }
