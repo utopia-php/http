@@ -295,8 +295,8 @@ class AppTest extends TestCase
     {
         // Test head requests
 
-        $method = $_SERVER['REQUEST_METHOD'];
-        $uri = $_SERVER['REQUEST_URI'];
+        $method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
+        $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
 
         $_SERVER['REQUEST_METHOD'] = 'HEAD';
         $_SERVER['REQUEST_URI'] = '/path';
