@@ -375,14 +375,14 @@ class Response
      */
     public function send(string $body = '', int $exit = null): void
     {
+        $this->addHeader('X-Debug-Speed', (string)(\microtime(true) - $this->startTime));
+
+        $this
+            ->appendCookies()
+            ->appendHeaders()
+        ;
+
         if (!$this->disablePayload) {
-            $this->addHeader('X-Debug-Speed', (string)(\microtime(true) - $this->startTime));
-
-            $this
-                ->appendCookies()
-                ->appendHeaders()
-            ;
-
             $this->size = $this->size + \mb_strlen(\implode("\n", \headers_list())) + \mb_strlen($body, '8bit');
 
             echo $body;

@@ -620,6 +620,7 @@ class App
         $groups     = ($route instanceof Route) ? $route->getGroups() : [];
 
         if (self::REQUEST_METHOD_HEAD == $method) {
+            $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
         }
 
