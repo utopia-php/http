@@ -150,6 +150,11 @@ class Response
     protected $disablePayload = false;
 
     /**
+     * @var bool
+     */
+    protected $sent = false;
+
+    /**
      * @var array
      */
     protected $headers = [];
@@ -375,6 +380,12 @@ class Response
      */
     public function send(string $body = '', int $exit = null): void
     {
+        if($this->sent) {
+            return;
+        }
+
+        $this->sent = true;
+        
         $this->addHeader('X-Debug-Speed', (string)(\microtime(true) - $this->startTime));
 
         $this
