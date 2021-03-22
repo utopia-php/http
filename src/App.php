@@ -552,7 +552,7 @@ class App
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
                 $value = isset($values[$key]) ? $values[$key] : $arg;
-                $value = ($value === '') ? $param['default'] : $value;
+                $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
 
                 $this->validate($key, $param, $value);
 
@@ -708,7 +708,7 @@ class App
      */
     protected function validate(string $key, array $param, $value): void
     {
-        if ('' !== $value) {
+        if ('' !== $value && !is_null($value)) {
             $validator = $param['validator']; // checking whether the class exists
 
             if (\is_callable($validator)) {
