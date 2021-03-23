@@ -30,7 +30,7 @@ class ArrayListTest extends TestCase
     public function setUp():void
     {
         $this->arrayList1 = new ArrayList(new Text(100));
-        $this->arrayList2 = new ArrayList(new Numeric());
+        $this->arrayList2 = new ArrayList(new Integer());
     }
 
     public function tearDown():void
@@ -51,6 +51,6 @@ class ArrayListTest extends TestCase
         $this->assertEquals(false, $this->arrayList2->isValid('string'));
         $this->assertEquals(true, $this->arrayList2->isValid([1, 2, 3]));
         $this->assertEquals(false, $this->arrayList2->isValid(1, '2', 3));
-        $this->assertEquals($this->arrayList1->getType(), 'array');
+        $this->assertEquals($this->arrayList1->getType(), 'string');
     }
 }

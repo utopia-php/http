@@ -73,7 +73,7 @@ class ArrayList extends Validator
      */
     public function getType()
     {
-        return self::TYPE_ARRAY;
+        return $this->validator->getType();
     }
 
     /**
