@@ -23,6 +23,19 @@ class HexColor extends Validator
     {
         return 'Value must be a valid Hex color code';
     }
+
+    /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return false;
+    }
+
     /**
      * Get Type
      *

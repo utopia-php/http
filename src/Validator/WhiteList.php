@@ -64,6 +64,18 @@ class WhiteList extends Validator
     }
 
     /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return true;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
@@ -84,7 +96,7 @@ class WhiteList extends Validator
      */
     public function getType()
     {
-        return self::TYPE_ARRAY;
+        return self::TYPE_STRING;
     }
 
     /**

@@ -19,7 +19,7 @@ namespace Utopia\Validator;
  *
  * @package Utopia\Validator
  */
-class Range extends Numeric
+class Range extends Integer 
 {
     /**
      * @var int
@@ -69,6 +69,30 @@ class Range extends Numeric
     public function getDescription()
     {
         return 'Value must be in range between ' . \number_format($this->min) . ' and ' . \number_format($this->max);
+    }
+
+    /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return self::TYPE_INTEGER;
     }
 
     /**

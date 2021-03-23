@@ -33,6 +33,15 @@ abstract class Validator
     abstract public function getDescription();
 
     /**
+     * Is array 
+     *
+     * Returns true if an array or false if not.
+     *
+     * @return bool
+     */
+    abstract public function isArray();
+
+    /**
      * Is valid
      *
      * Returns true if valid or false if not.

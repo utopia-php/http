@@ -52,6 +52,18 @@ class Boolean extends Validator
     }
 
     /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return false;
+    }
+
+    /**
      * Get Type
      *
      * Returns validator type.
