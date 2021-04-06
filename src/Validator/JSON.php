@@ -33,7 +33,7 @@ class JSON extends Validator
      */
     public function isArray(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -45,7 +45,7 @@ class JSON extends Validator
      */
     public function getType()
     {
-        return self::TYPE_ARRAY;
+        return self::TYPE_OBJECT;
     }
 
     /**
