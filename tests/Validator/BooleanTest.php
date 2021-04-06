@@ -61,5 +61,6 @@ class BooleanTest extends TestCase
         $this->assertEquals(false, $this->boolean->isValid('string'));
         $this->assertEquals(false, $this->boolean->isValid(1.2));
         $this->assertEquals($this->boolean->getType(), 'boolean');
+        $this->assertEquals($this->boolean->isArray(), false);
     }
 }

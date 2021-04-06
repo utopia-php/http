@@ -42,5 +42,7 @@ class TextTest extends TestCase
         $this->assertEquals(false, $this->text->isValid(["seven"]));
         $this->assertEquals(false, $this->text->isValid(["seven", 8, 9.0]));
         $this->assertEquals(false, $this->text->isValid(false));
+        $this->assertEquals(false, $this->text->isArray());
+        $this->assertEquals('string', $this->text->getType());
     }
 }

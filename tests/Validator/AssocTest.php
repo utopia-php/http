@@ -43,5 +43,6 @@ class AssocTest extends TestCase
         $this->assertEquals(true, $this->assoc->isValid(["a" => 'a', "b" => 'b', "c" => 'c']));
         $this->assertEquals(true, $this->assoc->isValid([]));
         $this->assertEquals($this->assoc->getType(), 'array');
+        $this->assertEquals($this->assoc->isArray(), true);
     }
 }
