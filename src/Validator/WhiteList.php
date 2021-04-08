@@ -49,8 +49,8 @@ class WhiteList extends Validator
      */
     public function __construct(array $list, $strict = false, $type = self::TYPE_STRING)
     {
-        $this->list 	= $list;
-        $this->strict 	= $strict;
+        $this->list     = $list;
+        $this->strict   = $strict;
         $this->type     = $type;
 
         if (!$this->strict) {
