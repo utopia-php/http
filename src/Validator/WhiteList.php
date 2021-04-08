@@ -101,7 +101,7 @@ class WhiteList extends Validator
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return $this->type;
     }
