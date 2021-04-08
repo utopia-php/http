@@ -19,7 +19,7 @@ namespace Utopia\Validator;
  *
  * @package Utopia\Validator
  */
-class Range extends Integer 
+class Range extends Numeric
 {
     /**
      * @var int

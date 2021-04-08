@@ -39,7 +39,7 @@ class RangeTest extends TestCase
         $this->assertEquals($this->range->isValid(1), true);
         $this->assertEquals($this->range->isValid(4), true);
         $this->assertEquals($this->range->isValid(5), true);
-        $this->assertEquals($this->range->isValid('5'), false);
+        $this->assertEquals($this->range->isValid('5'), true);
         $this->assertEquals($this->range->isValid(6), false);
         $this->assertEquals($this->range->isValid(-1), false);
         $this->assertEquals($this->range->getMin(), 0);

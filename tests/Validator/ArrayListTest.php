@@ -30,7 +30,7 @@ class ArrayListTest extends TestCase
     public function setUp():void
     {
         $this->arrayList1 = new ArrayList(new Text(100));
-        $this->arrayList2 = new ArrayList(new Integer());
+        $this->arrayList2 = new ArrayList(new Numeric());
     }
 
     public function tearDown():void
