@@ -26,7 +26,7 @@ class Text extends Validator
     /**
      * @var int
      */
-    protected $length = 0;
+    protected int $length = 0;
 
     /**
      * Text constructor.

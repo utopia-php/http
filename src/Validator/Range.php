@@ -24,18 +24,18 @@ class Range extends Numeric
     /**
      * @var int
      */
-    protected $min;
+    protected int $min;
 
     /**
      * @var int
      */
-    protected $max;
+    protected int $max;
 
     /**
      * @param int $min
      * @param int $max
      */
-    public function __construct($min, $max)
+    public function __construct(int $min, int $max)
     {
         $this->min = $min;
         $this->max = $max;
@@ -45,7 +45,7 @@ class Range extends Numeric
      * Get Range Minimum Value
      * @return int
      */
-    public function getMin()
+    public function getMin(): int
     {
         return $this->min;
     }
@@ -54,7 +54,7 @@ class Range extends Numeric
      * Get Range Maximum Value
      * @return int
      */
-    public function getMax()
+    public function getMax(): int
     {
         return $this->max;
     }
