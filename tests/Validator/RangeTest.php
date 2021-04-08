@@ -45,6 +45,6 @@ class RangeTest extends TestCase
         $this->assertEquals($this->range->getMin(), 0);
         $this->assertEquals($this->range->getMax(), 5);
         $this->assertEquals($this->range->isArray(), false);
-        $this->assertEquals($this->range->getType(), 'integer');
+        $this->assertEquals($this->range->getType(), \Utopia\Validator::TYPE_INTEGER);
     }
 }

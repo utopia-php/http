@@ -47,7 +47,7 @@ class JSONTest extends TestCase
         $this->assertEquals(true, $this->json->isValid(['test']));
         $this->assertEquals(true, $this->json->isValid(['test' => 'demo']));
         $this->assertEquals(true, $this->json->isValid('{"test": "demo"}'));
-        $this->assertEquals($this->json->getType(), 'object');
+        $this->assertEquals($this->json->getType(), \Utopia\Validator::TYPE_OBJECT);
         $this->assertEquals($this->json->isArray(), false);
     }
 }

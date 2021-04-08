@@ -43,7 +43,7 @@ class NumericTest extends TestCase
         $this->assertEquals($this->numeric->isValid(9.1), true);
         $this->assertEquals($this->numeric->isValid('not numeric'), false);
         $this->assertEquals($this->numeric->isValid([]), false);
-        $this->assertEquals($this->numeric->getType(), 'mixed');
+        $this->assertEquals($this->numeric->getType(), \Utopia\Validator::TYPE_MIXED);
         $this->assertEquals($this->numeric->isArray(), false);
     }
 }
