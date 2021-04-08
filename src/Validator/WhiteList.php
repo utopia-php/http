@@ -47,7 +47,7 @@ class WhiteList extends Validator
      * @param bool  $strict disable type check and be case insensetive
      * @param string $type of $list items
      */
-    public function __construct(array $list, $strict = false, $type = self::TYPE_STRING)
+    public function __construct(array $list, bool $strict = false, string $type = self::TYPE_STRING)
     {
         $this->list     = $list;
         $this->strict   = $strict;
