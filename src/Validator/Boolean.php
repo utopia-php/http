@@ -26,7 +26,7 @@ class Boolean extends Validator
     /**
      * @var bool
      */
-    protected bool $loose = false;
+    protected $loose = false;
 
     /**
      * Pass true to accept true and false strings and integers 0 and 1 as valid boolean values

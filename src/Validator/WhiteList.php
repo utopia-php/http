@@ -26,17 +26,17 @@ class WhiteList extends Validator
     /**
      * @var array
      */
-    protected array $list;
+    protected $list;
 
     /**
      * @var bool
      */
-    protected bool $strict;
+    protected $strict;
 
     /**
      * @var string
      */
-    protected string $type;
+    protected $type;
 
     /**
      * Constructor
