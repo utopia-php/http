@@ -34,17 +34,24 @@ class WhiteList extends Validator
     protected $strict;
 
     /**
+     * @var string
+     */
+    protected $type;
+
+    /**
      * Constructor
      *
      * Sets a white list array and strict mode.
      *
      * @param array $list
      * @param bool  $strict disable type check and be case insensetive
+     * @param string $type of $list items
      */
-    public function __construct(array $list, $strict = false)
+    public function __construct(array $list, bool $strict = false, string $type = self::TYPE_STRING)
     {
-        $this->list 	= $list;
-        $this->strict 	= $strict;
+        $this->list     = $list;
+        $this->strict   = $strict;
+        $this->type     = $type;
 
         if (!$this->strict) {
             foreach ($list as $key => &$value) {
@@ -73,6 +80,30 @@ class WhiteList extends Validator
     public function getDescription()
     {
         return 'Value must be one of (' . \implode(', ', $this->list) . ')';
+    }
+
+    /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->type;
     }
 
     /**

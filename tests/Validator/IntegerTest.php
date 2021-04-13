@@ -42,5 +42,7 @@ class IntegerTest extends TestCase
         $this->assertEquals($this->validator->isValid(null), false);
         $this->assertEquals($this->validator->isValid(true), false);
         $this->assertEquals($this->validator->isValid(false), false);
+        $this->assertEquals($this->validator->getType(), \Utopia\Validator::TYPE_INTEGER);
+        $this->assertEquals($this->validator->isArray(), false);
     }
 }

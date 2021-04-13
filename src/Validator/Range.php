@@ -72,6 +72,30 @@ class Range extends Numeric
     }
 
     /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return self::TYPE_INTEGER;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value number is bigger or equal than $min number and lower or equal than $max.

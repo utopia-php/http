@@ -29,6 +29,8 @@ class WhiteListTest extends TestCase
         $this->assertEquals($whiteList->isValid(3), true);
         $this->assertEquals($whiteList->isValid(5), false);
         $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
+        $this->assertEquals($whiteList->getType(), \Utopia\Validator::TYPE_STRING); //string by default
+        $this->assertEquals($whiteList->isArray(), true);
         
         $whiteList = new WhiteList(['string1', 'string2', 3, 4], false);
 

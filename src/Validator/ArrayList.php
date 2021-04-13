@@ -53,6 +53,30 @@ class ArrayList extends Validator
     }
 
     /**
+     * Is array
+     *
+     * Function will return true if object is array.
+     *
+     * @return bool
+     */
+    public function isArray(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Get Type
+     *
+     * Returns validator type.
+     *
+     * @return string
+     */
+    public function getType(): string
+    {
+        return $this->validator->getType();
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value is valid array and validator is valid.
