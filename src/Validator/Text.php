@@ -84,7 +84,7 @@ class Text extends Validator
     /**
      * Is valid
      *
-     * Validation will pass when $value is valid email address.
+     * Validation will pass when $value is text with valid length.
      *
      * @param  mixed $value
      * @return bool
