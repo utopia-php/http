@@ -17,31 +17,29 @@ use PHPUnit\Framework\TestCase;
 
 class WildcardTest extends TestCase
 {
-    /**
-     * @var Numeric
-     */
-    protected $assoc;
+
+    protected $wildcard;
 
     public function setUp():void
     {
-        $this->assoc = new Wildcard();
+        $this->wildcard = new Wildcard();
     }
 
     public function tearDown():void
     {
-        $this->assoc = null;
+        $this->wildcard = null;
     }
 
     public function testIsValid()
     {
         // Assertions
-        $this->assertEquals(true, $this->assoc->isValid([0 => 'string', 1 => 'string']));
-        $this->assertEquals(true, $this->assoc->isValid(""));
-        $this->assertEquals(true, $this->assoc->isValid([]));
-        $this->assertEquals(true, $this->assoc->isValid(1));
-        $this->assertEquals(true, $this->assoc->isValid(true));
-        $this->assertEquals(true, $this->assoc->isValid(false));
-        $this->assertEquals($this->assoc->getType(), \Utopia\Validator::TYPE_STRING);
-        $this->assertEquals($this->assoc->isArray(), false);
+        $this->assertEquals(true, $this->wildcard->isValid([0 => 'string', 1 => 'string']));
+        $this->assertEquals(true, $this->wildcard->isValid(""));
+        $this->assertEquals(true, $this->wildcard->isValid([]));
+        $this->assertEquals(true, $this->wildcard->isValid(1));
+        $this->assertEquals(true, $this->wildcard->isValid(true));
+        $this->assertEquals(true, $this->wildcard->isValid(false));
+        $this->assertEquals($this->wildcard->getType(), \Utopia\Validator::TYPE_STRING);
+        $this->assertEquals($this->wildcard->isArray(), false);
     }
 }
