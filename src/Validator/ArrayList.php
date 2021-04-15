@@ -29,9 +29,9 @@ class ArrayList extends Validator
     protected $validator;
 
     /**
-     * Text constructor.
+     * Array constructor.
      *
-     * Get a limit param for maximum text length, when 0 length is unlimited
+     * Pass a validator that must be applied to each element in this array
      *
      * @param Validator $validator
      */

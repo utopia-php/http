@@ -31,7 +31,7 @@ class Text extends Validator
     /**
      * Text constructor.
      *
-     * Get a limit param for maximum text length, when 0 length is unlimited
+     * Validate text with maximum length $length. Use $length = 0 for unlimited length
      *
      * @param int $length
      */
