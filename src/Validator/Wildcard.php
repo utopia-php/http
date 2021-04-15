@@ -38,7 +38,7 @@ class Wildcard extends Validator
     /**
      * Is valid
      *
-     * Validation will pass when $value is numeric.
+     * Validation will always pass irrespective of input
      *
      * @param  mixed $value
      * @return bool
