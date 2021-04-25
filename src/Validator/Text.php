@@ -49,7 +49,7 @@ class Text extends Validator
      */
     public function getDescription()
     {
-        $message = 'Value must be a string';
+        $message = 'Value must be a valid string';
 
         if ($this->length) {
             $message .= ' and no longer than ' . $this->length . ' chars';

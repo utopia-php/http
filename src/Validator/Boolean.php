@@ -48,7 +48,7 @@ class Boolean extends Validator
      */
     public function getDescription()
     {
-        return 'Value must be a boolean';
+        return 'Value must be a valid boolean';
     }
 
     /**

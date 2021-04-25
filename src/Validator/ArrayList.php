@@ -49,7 +49,7 @@ class ArrayList extends Validator
      */
     public function getDescription()
     {
-        return 'Value must be an array and ' . $this->validator->getDescription();
+        return 'Value must a valid array and ' . $this->validator->getDescription();
     }
 
     /**
