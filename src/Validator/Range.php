@@ -32,13 +32,20 @@ class Range extends Numeric
     protected $max;
 
     /**
+     * @var string
+     */
+    protected $format;
+
+    /**
      * @param int $min
      * @param int $max
+     * @param string $format
      */
-    public function __construct($min, $max)
+    public function __construct($min, $max, $format='int32')
     {
         $this->min = $min;
         $this->max = $max;
+        $this->format = $format;
     }
 
     /**
@@ -57,6 +64,15 @@ class Range extends Numeric
     public function getMax()
     {
         return $this->max;
+    }
+
+    /**
+     * Get Range Format
+     * @return int
+     */
+    public function getFormat()
+    {
+        return $this->format;
     }
 
     /**
@@ -92,6 +108,11 @@ class Range extends Numeric
      */
     public function getType(): string
     {
+        if($this->format === 'int32') {
+            return self::TYPE_INTEGER;
+        } else if($this->format === 'float') {
+            return self::TYPE_FLOAT;
+        }
         return self::TYPE_INTEGER;
     }
 
