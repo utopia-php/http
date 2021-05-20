@@ -127,11 +127,13 @@ class Range extends Numeric
             return false;
         }
 
-        switch($this->format) {
+        switch ($this->format) {
             case self::TYPE_INTEGER:
                 $value = (int) $value;
+                break;
             case self::TYPE_FLOAT:
                 $value = (float) $value;
+                break;
             default:
                 return false;
         }

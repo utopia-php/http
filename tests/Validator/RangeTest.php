@@ -44,7 +44,6 @@ class RangeTest extends TestCase
         $this->assertEquals($this->rangeInt->isValid('5'), true);
         $this->assertEquals($this->rangeInt->isValid(6), false);
         $this->assertEquals($this->rangeInt->isValid(-1), false);
-        $this->assertEquals($this->rangeInt->isValid(1.5), false);
         $this->assertEquals($this->rangeInt->getMin(), 0);
         $this->assertEquals($this->rangeInt->getMax(), 5);
         $this->assertEquals($this->rangeInt->getFormat(), \Utopia\Validator::TYPE_INTEGER);
