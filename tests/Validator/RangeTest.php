@@ -24,7 +24,7 @@ class RangeTest extends TestCase
 
     public function setUp():void
     {
-        $this->range = new Range(0, 5);
+        $this->range = new Range(0, 5, \Utopia\Validator::TYPE_FLOAT);
     }
 
     public function tearDown():void
@@ -44,7 +44,8 @@ class RangeTest extends TestCase
         $this->assertEquals($this->range->isValid(-1), false);
         $this->assertEquals($this->range->getMin(), 0);
         $this->assertEquals($this->range->getMax(), 5);
+        $this->assertEquals($this->range->getFormat(), \Utopia\Validator::TYPE_FLOAT);
         $this->assertEquals($this->range->isArray(), false);
-        $this->assertEquals($this->range->getType(), \Utopia\Validator::TYPE_INTEGER);
+        $this->assertEquals($this->range->getType(), \Utopia\Validator::TYPE_FLOAT);
     }
 }
