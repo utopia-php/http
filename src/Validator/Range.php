@@ -125,6 +125,15 @@ class Range extends Numeric
             return false;
         }
 
+        switch($this->format) {
+            case self::TYPE_INTEGER:
+                return \is_int($value);
+            case self::TYPE_FLOAT:
+                return \is_float($value);
+            default:
+                return false;
+        }
+
         if ($this->min <= $value && $this->max >= $value) {
             return true;
         }
