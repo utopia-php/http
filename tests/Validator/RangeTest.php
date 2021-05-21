@@ -42,6 +42,7 @@ class RangeTest extends TestCase
         $this->assertEquals($this->rangeInt->isValid(4), true);
         $this->assertEquals($this->rangeInt->isValid(5), true);
         $this->assertEquals($this->rangeInt->isValid('5'), true);
+        $this->assertEquals($this->rangeInt->isValid('1.5'), false);
         $this->assertEquals($this->rangeInt->isValid(6), false);
         $this->assertEquals($this->rangeInt->isValid(-1), false);
         $this->assertEquals($this->rangeInt->getMin(), 0);
@@ -51,9 +52,10 @@ class RangeTest extends TestCase
         $this->assertEquals($this->rangeInt->getType(), \Utopia\Validator::TYPE_INTEGER);
 
         // Assertions for float
-        $this->assertEquals($this->rangeFloat->isValid(0), true);
-        $this->assertEquals($this->rangeFloat->isValid(1), true);
+        $this->assertEquals($this->rangeFloat->isValid(0.0), true);
+        $this->assertEquals($this->rangeFloat->isValid(1.0), true);
         $this->assertEquals($this->rangeFloat->isValid(0.5), true);
+        $this->assertEquals($this->rangeFloat->isValid('0.5'), true);
         $this->assertEquals($this->rangeFloat->isValid(4), false);
         $this->assertEquals($this->rangeFloat->isValid('0.6'), true);
         $this->assertEquals($this->rangeFloat->isValid(1.5), false);

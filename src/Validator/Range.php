@@ -115,8 +115,7 @@ class Range extends Numeric
      * Is valid
      *
      * Validation will pass when $value number is bigger or equal than $min number and lower or equal than $max.
-     * Doesn't strictly check for the Format, this validator will attempt to cast it to the right format given
-     * in the constructor.
+     * Not strict, considers any valid integer to be a valid float
      *
      * @param  mixed $value
      * @return bool
@@ -129,10 +128,16 @@ class Range extends Numeric
 
         switch ($this->format) {
             case self::TYPE_INTEGER:
-                $value = (int) $value;
+                $value = $value+0;
+                if(!is_int($value)) {
+                    return false;
+                }
                 break;
             case self::TYPE_FLOAT:
-                $value = (float) $value;
+                $value = $value+0;
+                if(!is_float($value) && !is_int($value)) {
+                    return false;
+                }
                 break;
             default:
                 return false;
