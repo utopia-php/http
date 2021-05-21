@@ -20,11 +20,13 @@ class RangeTest extends TestCase
     /**
      * @var Range
      */
-    protected $range = null;
+    protected $rangeFloat = null;
+    protected $rangeInt = null;
 
     public function setUp():void
     {
-        $this->range = new Range(0, 5);
+        $this->rangeFloat = new Range(0, 1, \Utopia\Validator::TYPE_FLOAT);
+        $this->rangeInt = new Range(0, 5, \Utopia\Validator::TYPE_INTEGER);
     }
 
     public function tearDown():void
@@ -34,17 +36,34 @@ class RangeTest extends TestCase
 
     public function testIsValid()
     {
-        // Assertions
-        $this->assertEquals($this->range->isValid(0), true);
-        $this->assertEquals($this->range->isValid(1), true);
-        $this->assertEquals($this->range->isValid(4), true);
-        $this->assertEquals($this->range->isValid(5), true);
-        $this->assertEquals($this->range->isValid('5'), true);
-        $this->assertEquals($this->range->isValid(6), false);
-        $this->assertEquals($this->range->isValid(-1), false);
-        $this->assertEquals($this->range->getMin(), 0);
-        $this->assertEquals($this->range->getMax(), 5);
-        $this->assertEquals($this->range->isArray(), false);
-        $this->assertEquals($this->range->getType(), \Utopia\Validator::TYPE_INTEGER);
+        // Assertions for integer
+        $this->assertEquals($this->rangeInt->isValid(0), true);
+        $this->assertEquals($this->rangeInt->isValid(1), true);
+        $this->assertEquals($this->rangeInt->isValid(4), true);
+        $this->assertEquals($this->rangeInt->isValid(5), true);
+        $this->assertEquals($this->rangeInt->isValid('5'), true);
+        $this->assertEquals($this->rangeInt->isValid('1.5'), false);
+        $this->assertEquals($this->rangeInt->isValid(6), false);
+        $this->assertEquals($this->rangeInt->isValid(-1), false);
+        $this->assertEquals($this->rangeInt->getMin(), 0);
+        $this->assertEquals($this->rangeInt->getMax(), 5);
+        $this->assertEquals($this->rangeInt->getFormat(), \Utopia\Validator::TYPE_INTEGER);
+        $this->assertEquals($this->rangeInt->isArray(), false);
+        $this->assertEquals($this->rangeInt->getType(), \Utopia\Validator::TYPE_INTEGER);
+
+        // Assertions for float
+        $this->assertEquals($this->rangeFloat->isValid(0.0), true);
+        $this->assertEquals($this->rangeFloat->isValid(1.0), true);
+        $this->assertEquals($this->rangeFloat->isValid(0.5), true);
+        $this->assertEquals($this->rangeFloat->isValid('0.5'), true);
+        $this->assertEquals($this->rangeFloat->isValid(4), false);
+        $this->assertEquals($this->rangeFloat->isValid('0.6'), true);
+        $this->assertEquals($this->rangeFloat->isValid(1.5), false);
+        $this->assertEquals($this->rangeFloat->isValid(-1), false);
+        $this->assertEquals($this->rangeFloat->getMin(), 0);
+        $this->assertEquals($this->rangeFloat->getMax(), 1);
+        $this->assertEquals($this->rangeFloat->getFormat(), \Utopia\Validator::TYPE_FLOAT);
+        $this->assertEquals($this->rangeFloat->isArray(), false);
+        $this->assertEquals($this->rangeFloat->getType(), \Utopia\Validator::TYPE_FLOAT);
     }
 }

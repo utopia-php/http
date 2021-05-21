@@ -32,20 +32,27 @@ class Range extends Numeric
     protected $max;
 
     /**
+     * @var string
+     */
+    protected $format;
+
+    /**
      * @param int $min
      * @param int $max
+     * @param string $format
      */
-    public function __construct($min, $max)
+    public function __construct($min, $max, $format = self::TYPE_INTEGER)
     {
         $this->min = $min;
         $this->max = $max;
+        $this->format = $format;
     }
 
     /**
      * Get Range Minimum Value
      * @return int
      */
-    public function getMin()
+    public function getMin(): int
     {
         return $this->min;
     }
@@ -54,9 +61,18 @@ class Range extends Numeric
      * Get Range Maximum Value
      * @return int
      */
-    public function getMax()
+    public function getMax(): int
     {
         return $this->max;
+    }
+
+    /**
+     * Get Range Format
+     * @return string
+     */
+    public function getFormat(): string
+    {
+        return $this->format;
     }
 
     /**
@@ -66,7 +82,7 @@ class Range extends Numeric
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid range between ' . \number_format($this->min) . ' and ' . \number_format($this->max);
     }
@@ -92,21 +108,39 @@ class Range extends Numeric
      */
     public function getType(): string
     {
-        return self::TYPE_INTEGER;
+        return $this->format;
     }
 
     /**
      * Is valid
      *
      * Validation will pass when $value number is bigger or equal than $min number and lower or equal than $max.
+     * Not strict, considers any valid integer to be a valid float
      *
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid($value): bool
     {
         if (!parent::isValid($value)) {
             return false;
+        }
+
+        switch ($this->format) {
+            case self::TYPE_INTEGER:
+                $value = $value+0;
+                if(!is_int($value)) {
+                    return false;
+                }
+                break;
+            case self::TYPE_FLOAT:
+                $value = $value+0;
+                if(!is_float($value) && !is_int($value)) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
         }
 
         if ($this->min <= $value && $this->max >= $value) {
