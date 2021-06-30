@@ -139,9 +139,10 @@ class Route
      * Add alias
      *
      * @param string $URL
+     * @param array $params
      * @return $this
      */
-    public function alias($URL, $params): self
+    public function alias($URL, $params = []): self
     {
         $this->aliasURL = $URL;
         $this->aliasParams = $params;
