@@ -518,7 +518,7 @@ class App
      * @param Route $route
      * @return self
      */
-    public function execute(Route $route, array $args = []): self
+    public function execute(Route $route, array $args = [], string $url=''): self
     {
         $keys       = [];
         $arguments  = [];
@@ -552,7 +552,11 @@ class App
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
                 $value = isset($values[$key]) ? $values[$key] : $arg;
-                $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
+                if($route->getAliasURL() && $route->getAliasURL() == $url) {
+                    $value = $route->getAliasParams()[$key] ? $route->getAliasParams()[$key] : $value;
+                } else {
+                    $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
+                }
 
                 $this->validate($key, $param, $value);
 
@@ -629,6 +633,13 @@ class App
          *  but both might match given pattern
          */
         if (!self::$sorted) {
+            foreach (self::$routes as $method => $list) { //adding route alias in $routes
+                foreach ($list as $key => $route) {
+                    if($route->getAliasURL()) {
+                        self::$routes[$method][$route->getAliasURL()] = $route;
+                    }
+                }
+            }
             foreach (self::$routes as $method => $list) {
                 \uksort(self::$routes[$method], function (string $a, string $b) {
                     return \strlen($b) - \strlen($a);
@@ -658,7 +669,7 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request->getParams());
+            return $this->execute($route, $request->getParams(), $request->getURI());
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {

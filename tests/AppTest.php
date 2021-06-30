@@ -117,6 +117,7 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
+            ->alias('/path1',['x' => 'x-def-1', 'y' => 'y-def-1'])
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function($x, $y) {
@@ -128,8 +129,15 @@ class AppTest extends TestCase
         $this->app->execute($route, []);
         $result = \ob_get_contents();
         \ob_end_clean();
+        
+        // test alias with param override
+        \ob_start();
+        $this->app->execute($route, [], '/path1');
+        $result1 = \ob_get_contents();
+        \ob_end_clean();
 
         $this->assertEquals('x-def-y-def', $result);
+        $this->assertEquals('x-def-1-y-def-1', $result1);
 
         // With Params
 
@@ -302,6 +310,7 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/path';
 
         App::get('/path')
+            ->alias('/path1')
             ->inject('response')
             ->action(function($response) {
                 $response->send('HELLO');
@@ -313,10 +322,18 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        // Test Alias
+        \ob_start();
+        $_SERVER['REQUEST_URI'] = '/path1';
+        $this->app->run(new Request(), new Response());
+        $result1 = \ob_get_contents();
+        \ob_end_clean();
+
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
+        $this->assertStringNotContainsString('HELLO', $result1);
     }
 
     public function tearDown():void
