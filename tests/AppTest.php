@@ -324,18 +324,11 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        // Test Alias
-        \ob_start();
-        $_SERVER['REQUEST_URI'] = '/path1';
-        $this->app->run(new Request(), new Response());
-        $result1 = \ob_get_contents();
-        \ob_end_clean();
-
+        
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
-        $this->assertStringNotContainsString('HELLO', $result1);
     }
 
     public function testRunAlias()
