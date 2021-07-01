@@ -312,7 +312,6 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/path';
 
         App::get('/path')
-            ->alias('/path1')
             ->inject('response')
             ->action(function($response) {
                 $response->send('HELLO');
