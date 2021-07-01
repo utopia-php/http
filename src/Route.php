@@ -52,6 +52,12 @@ class Route
     protected $aliasParams = [];
 
     /**
+     * is Alias route?
+     * @var bool
+     */
+    protected $isAlias = false;
+
+    /**
      * Description
      *
      * @var string
@@ -148,6 +154,15 @@ class Route
         $this->aliasParams = $params;
         return $this;
     }
+
+    /**
+     * Set isAlias
+     * @param bool $isAlias
+     */
+    public function setIsAlias($isAlias) {
+        $this->isAlias = $isAlias;
+    }
+
 
     /**
      * Add Description
@@ -297,6 +312,16 @@ class Route
     public function getAliasParams(): array
     {
         return $this->aliasParams;
+    }
+    
+    /**
+     * Get is Alias
+     *
+     * @return bool
+     */
+    public function getIsAlias(): bool
+    {
+        return $this->isAlias;
     }
 
     /**
