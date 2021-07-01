@@ -489,11 +489,11 @@ class App
             self::$routes[$method] = [];
         }
 
-        foreach (self::$routes[$method] as  $route) {
+        foreach (self::$routes[$method] as  $routeUrl => $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
-            $regex = '@' . \preg_replace('@:[^/]+@', '([^/]+)', $route->getURL()) . '@';
+            $regex = '@' . \preg_replace('@:[^/]+@', '([^/]+)', $routeUrl) . '@';
 
             // Check if the current request matches the expression
             if (!\preg_match($regex, $url, $this->matches)) {
@@ -502,6 +502,13 @@ class App
 
             \array_shift($this->matches);
             $this->route = $route;
+
+            if($routeUrl == $route->getAliasURL()) {
+                $this->route->setIsAlias(true);
+            } else {
+                $this->route->setIsAlias(false);
+            }
+
             break;
         }
 
@@ -518,15 +525,16 @@ class App
      * @param Route $route
      * @return self
      */
-    public function execute(Route $route, array $args = [], string $url=''): self
+    public function execute(Route $route, array $args = []): self
     {
         $keys       = [];
         $arguments  = [];
         $groups     = $route->getGroups();
 
         // Extract keys from URL
-        $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
-        \preg_match($keyRegex, $route->getURL(), $keys);
+        $url = $route->getIsAlias() ? $route->getAliasURL() : $route->getURL();
+        $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $url) . '$@';
+        \preg_match($keyRegex, $url, $keys);
 
         // Remove the first key and value ( corresponding to full regex match )
         \array_shift($keys);
@@ -551,15 +559,15 @@ class App
 
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
-                $value = isset($values[$key]) ? $values[$key] : $arg;
-                if($route->getAliasURL() && $route->getAliasURL() == $url) {
-                    $value = $route->getAliasParams()[$key] ? $route->getAliasParams()[$key] : $value;
-                } else {
-                    $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
+                $value = (isset($values[$key])) ? $values[$key] : $arg;
+
+                if($route->getIsAlias() && isset($route->getAliasParams()[$key])) {
+                    $value = $route->getAliasParams()[$key];
                 }
-
+                
+                $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
+                
                 $this->validate($key, $param, $value);
-
                 $arguments[$param['order']] = $value;
             }
 
@@ -669,7 +677,7 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request->getParams(), $request->getURI());
+            return $this->execute($route, $request->getParams());
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
