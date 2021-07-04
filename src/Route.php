@@ -36,6 +36,26 @@ class Route
      * @var string
      */
     protected $URL = '';
+    
+    /**
+     * Alias URL
+     *
+     * @var string
+     */
+    protected $aliasURL = '';
+    
+    /**
+     * Alias Params
+     *
+     * @var array
+     */
+    protected $aliasParams = [];
+
+    /**
+     * Is Alias Route?
+     * @var bool
+     */
+    protected $isAlias = false;
 
     /**
      * Description
@@ -120,6 +140,29 @@ class Route
         $this->URL = $URL;
         return $this;
     }
+
+    /**
+     * Add alias
+     *
+     * @param string $URL
+     * @param array $params
+     * @return $this
+     */
+    public function alias($URL, $params = []): self
+    {
+        $this->aliasURL = $URL;
+        $this->aliasParams = $params;
+        return $this;
+    }
+
+    /**
+     * Set isAlias
+     * @param bool $isAlias
+     */
+    public function setIsAlias($isAlias) {
+        $this->isAlias = $isAlias;
+    }
+
 
     /**
      * Add Description
@@ -249,6 +292,36 @@ class Route
     public function getURL(): string
     {
         return $this->URL;
+    }
+    
+    /**
+     * Get Alias URL
+     *
+     * @return string
+     */
+    public function getAliasURL(): string
+    {
+        return $this->aliasURL;
+    }
+    
+    /**
+     * Get Alias Params
+     *
+     * @return array
+     */
+    public function getAliasParams(): array
+    {
+        return $this->aliasParams;
+    }
+    
+    /**
+     * Get is Alias
+     *
+     * @return bool
+     */
+    public function getIsAlias(): bool
+    {
+        return $this->isAlias;
     }
 
     /**

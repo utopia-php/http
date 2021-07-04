@@ -117,6 +117,7 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
+            ->alias('/path1',['x' => 'x-def-1', 'y' => 'y-def-1'])
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function($x, $y) {
@@ -128,8 +129,17 @@ class AppTest extends TestCase
         $this->app->execute($route, []);
         $result = \ob_get_contents();
         \ob_end_clean();
+        
+        // test alias with param override
+        $route->setIsAlias(true);
+        
+        \ob_start();
+        $this->app->execute($route, []);
+        $result1 = \ob_get_contents();
+        \ob_end_clean();
 
         $this->assertEquals('x-def-y-def', $result);
+        $this->assertEquals('x-def-1-y-def-1', $result1);
 
         // With Params
 
@@ -313,10 +323,45 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
+    }
+
+    public function testRunAlias()
+    {
+        // Test head requests
+
+        $method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
+        $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
+
+        App::get('/storage/buckets/:bucketId/files/:fileId')
+            ->alias('/storage/files/:fileId',[
+                "bucketId" => "default",
+            ])
+            ->param('bucketId','bucketid', new Text(100), 'My id', false)
+            ->param('fileId','fileId', new Text(100), 'My id', false)
+            ->inject('response')
+            ->action(function($bucketId, $fileId, $response) {
+                $response->send("HELLO");
+            })
+        ;
+
+        $_SERVER['REQUEST_METHOD'] = 'HEAD';
+        $_SERVER['REQUEST_URI'] = '/storage/files/myfileid';
+
+        // Test Alias
+        \ob_start();
+        $this->app->run(new Request(), new Response());
+        $result1 = \ob_get_contents();
+        \ob_end_clean();
+
+        $_SERVER['REQUEST_METHOD'] = $method;
+        $_SERVER['REQUEST_URI'] = $uri;
+
+        $this->assertStringNotContainsString('HELLO', $result1);
     }
 
     public function tearDown():void

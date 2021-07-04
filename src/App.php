@@ -489,11 +489,11 @@ class App
             self::$routes[$method] = [];
         }
 
-        foreach (self::$routes[$method] as  $route) {
+        foreach (self::$routes[$method] as $routeUrl => $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
-            $regex = '@' . \preg_replace('@:[^/]+@', '([^/]+)', $route->getURL()) . '@';
+            $regex = '@' . \preg_replace('@:[^/]+@', '([^/]+)', $routeUrl) . '@';
 
             // Check if the current request matches the expression
             if (!\preg_match($regex, $url, $this->matches)) {
@@ -502,6 +502,13 @@ class App
 
             \array_shift($this->matches);
             $this->route = $route;
+
+            if($routeUrl == $route->getAliasURL()) {
+                $this->route->setIsAlias(true);
+            } else {
+                $this->route->setIsAlias(false);
+            }
+
             break;
         }
 
@@ -525,8 +532,9 @@ class App
         $groups     = $route->getGroups();
 
         // Extract keys from URL
-        $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $route->getURL()) . '$@';
-        \preg_match($keyRegex, $route->getURL(), $keys);
+        $url = $route->getIsAlias() ? $route->getAliasURL() : $route->getURL();
+        $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $url) . '$@';
+        \preg_match($keyRegex, $url, $keys);
 
         // Remove the first key and value ( corresponding to full regex match )
         \array_shift($keys);
@@ -551,11 +559,15 @@ class App
 
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
-                $value = isset($values[$key]) ? $values[$key] : $arg;
+                $value = (isset($values[$key])) ? $values[$key] : $arg;
+
+                if($route->getIsAlias() && isset($route->getAliasParams()[$key])) {
+                    $value = $route->getAliasParams()[$key];
+                }
+                
                 $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
-
+                
                 $this->validate($key, $param, $value);
-
                 $arguments[$param['order']] = $value;
             }
 
@@ -629,6 +641,13 @@ class App
          *  but both might match given pattern
          */
         if (!self::$sorted) {
+            foreach (self::$routes as $method => $list) { //adding route alias in $routes
+                foreach ($list as $key => $route) {
+                    if($route->getAliasURL()) {
+                        self::$routes[$method][$route->getAliasURL()] = $route;
+                    }
+                }
+            }
             foreach (self::$routes as $method => $list) {
                 \uksort(self::$routes[$method], function (string $a, string $b) {
                     return \strlen($b) - \strlen($a);
