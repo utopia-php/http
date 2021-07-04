@@ -489,7 +489,7 @@ class App
             self::$routes[$method] = [];
         }
 
-        foreach (self::$routes[$method] as  $routeUrl => $route) {
+        foreach (self::$routes[$method] as $routeUrl => $route) {
             /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression

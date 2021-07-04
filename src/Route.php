@@ -52,7 +52,7 @@ class Route
     protected $aliasParams = [];
 
     /**
-     * is Alias route?
+     * Is Alias Route?
      * @var bool
      */
     protected $isAlias = false;
