@@ -11,6 +11,8 @@
 
 namespace Utopia;
 
+use Error;
+
 class App
 {
     /**
@@ -385,6 +387,9 @@ class App
      */
     public static function setResource(string $name, callable $callback, array $injections = []): void
     {
+        if ($name === 'utopia') {
+            throw new Exception("'utopia' is a reserved keyword.", 500);
+        }
         self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
     }
 
