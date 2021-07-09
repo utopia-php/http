@@ -11,8 +11,6 @@
 
 namespace Utopia;
 
-use Error;
-
 class App
 {
     /**
