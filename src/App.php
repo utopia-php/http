@@ -140,10 +140,6 @@ class App
      */
     public function __construct($timezone)
     {
-        self::setResource('utopia', function() {
-            return $this;
-        });
-
         \date_default_timezone_set($timezone);
     }
 
@@ -367,6 +363,10 @@ class App
         $resources = [];
         
         foreach ($list as $name) {
+            if ($name === 'utopia') {
+                $resources[$name] = $this;
+                continue;
+            }
             $resources[$name] = $this->getResource($name);
         }
 
