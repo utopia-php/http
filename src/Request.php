@@ -470,6 +470,10 @@ class Request
 
             $data['unit'] = trim($contentRange[0]);
 
+            if(empty($data['unit'])) {
+                return null;
+            }
+
             $rangeData = explode("/", $contentRange[1]);
             if (count($rangeData) != 2) {
                 return null;

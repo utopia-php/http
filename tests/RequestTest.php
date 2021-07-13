@@ -204,6 +204,22 @@ class RequestTest extends TestCase
         $this->assertEquals(0, $this->request->getContentRangeStart());
         $this->assertEquals(499, $this->request->getContentRangeEnd());
         $this->assertEquals(2000, $this->request->getContentRangeSize());
-    }
 
+        $_SERVER['HTTP_CONTENT_RANGE'] = " 0-499/2000";
+        
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getContentRangeUnit());
+        $this->assertEquals(null, $this->request->getContentRangeStart());
+        $this->assertEquals(null, $this->request->getContentRangeEnd());
+        $this->assertEquals(null, $this->request->getContentRangeSize());
+
+        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499/";
+        
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getContentRangeUnit());
+        $this->assertEquals(null, $this->request->getContentRangeStart());
+        $this->assertEquals(null, $this->request->getContentRangeEnd());
+        $this->assertEquals(null, $this->request->getContentRangeSize());
+        
+    }
 }
