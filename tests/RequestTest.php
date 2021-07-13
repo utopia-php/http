@@ -196,4 +196,14 @@ class RequestTest extends TestCase
         $this->assertEquals('accept', $this->request->getAccept('default'));
     }
 
+    public function testContentRange()
+    {
+        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499/2000";
+        
+        $this->assertEquals('bytes', $this->request->getContentRangeUnit());
+        $this->assertEquals(0, $this->request->getContentRangeStart());
+        $this->assertEquals(499, $this->request->getContentRangeEnd());
+        $this->assertEquals(2000, $this->request->getContentRangeSize());
+    }
+
 }

@@ -322,7 +322,7 @@ class Request
      * 
      * @return int
      */
-    public function getContentRangeStart(): int
+    public function getContentRangeStart()
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -339,7 +339,7 @@ class Request
      * 
      * @return int
      */
-    public function getContentRangeEnd(): int
+    public function getContentRangeEnd()
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -356,7 +356,7 @@ class Request
      * 
      * @return int
      */
-    public function getContentRangeSize(): int
+    public function getContentRangeSize()
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -371,9 +371,9 @@ class Request
      * 
      * Returns the unit of content range
      * 
-     * @return int
+     * @return string
      */
-    public function getContentRangeUnit(): int
+    public function getContentRangeUnit()
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -457,38 +457,38 @@ class Request
      * 
      * Parse content-range request header for easy access
      * 
-     * @return array
+     * @return array|null
      */
-    protected function parseContentRange(): array {
+    protected function parseContentRange() {
         $contentRange = $this->getHeader('content-range','');
         $data = [];
         if (!empty($contentRange)) {
             $contentRange = explode(" ", $contentRange);
             if (count($contentRange) != 2) {
-                throw new Exception('Invalid content-range header', 400);
+                return null;
             }
 
             $data['unit'] = trim($contentRange[0]);
-            
+
             $rangeData = explode("/", $contentRange[1]);
             if (count($rangeData) != 2) {
-                throw new Exception('Invalid content-range header', 400);
+                return null;
             }
 
             $data['size'] = (int) $rangeData[1];
             $parts = explode("-", $rangeData[0]);
             if (count($parts) != 2) {
-                throw new Exception('Invalid content-range header', 400);
+                return null;
             }
 
             $data['start'] = (int) $parts[0];
             $data['end'] = (int) $parts[1];
             if ($data['start'] > $data['end'] || $data['end'] > $data['size']) {
-                throw new Exception('Invalid content-range header', 400);
+                return null;
             }
             return $data;
         }
-        return $data;
+        return null;
     }
 
 }
