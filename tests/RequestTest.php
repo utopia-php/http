@@ -214,12 +214,38 @@ class RequestTest extends TestCase
         $this->assertEquals(null, $this->request->getContentRangeSize());
 
         $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499/";
-        
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
-        
+
+        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0--499/2000";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getContentRangeUnit());
+        $this->assertEquals(null, $this->request->getContentRangeStart());
+        $this->assertEquals(null, $this->request->getContentRangeEnd());
+        $this->assertEquals(null, $this->request->getContentRangeSize());
+
+        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499test/2000";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getContentRangeUnit());
+        $this->assertEquals(null, $this->request->getContentRangeStart());
+        $this->assertEquals(null, $this->request->getContentRangeEnd());
+        $this->assertEquals(null, $this->request->getContentRangeSize());
+
+        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-49.9/200.0";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getContentRangeUnit());
+        $this->assertEquals(null, $this->request->getContentRangeStart());
+        $this->assertEquals(null, $this->request->getContentRangeEnd());
+        $this->assertEquals(null, $this->request->getContentRangeSize());
+
+        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-49,9/200,0";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getContentRangeUnit());
+        $this->assertEquals(null, $this->request->getContentRangeStart());
+        $this->assertEquals(null, $this->request->getContentRangeEnd());
+        $this->assertEquals(null, $this->request->getContentRangeSize());
     }
 }

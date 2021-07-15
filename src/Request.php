@@ -479,9 +479,17 @@ class Request
                 return null;
             }
 
+            if(!ctype_digit($rangeData[1])) {
+                return null;
+            }
+
             $data['size'] = (int) $rangeData[1];
             $parts = explode("-", $rangeData[0]);
             if (count($parts) != 2) {
+                return null;
+            }
+
+            if(!ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
                 return null;
             }
 
