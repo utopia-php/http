@@ -316,6 +316,74 @@ class Request
     }
 
     /**
+     * Get Content Range Start
+     * 
+     * Returns the start of content range
+     * 
+     * @return int
+     */
+    public function getContentRangeStart()
+    {
+        $data = $this->parseContentRange();
+        if(!empty($data)) {
+            return $data['start'];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Content Range End
+     * 
+     * Returns the end of content range
+     * 
+     * @return int
+     */
+    public function getContentRangeEnd()
+    {
+        $data = $this->parseContentRange();
+        if(!empty($data)) {
+            return $data['end'];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Content Range Size
+     * 
+     * Returns the size of content range
+     * 
+     * @return int
+     */
+    public function getContentRangeSize()
+    {
+        $data = $this->parseContentRange();
+        if(!empty($data)) {
+            return $data['size'];
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get Content Range Unit
+     * 
+     * Returns the unit of content range
+     * 
+     * @return string
+     */
+    public function getContentRangeUnit()
+    {
+        $data = $this->parseContentRange();
+        if(!empty($data)) {
+            return $data['unit'];
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Generate input
      *
      * Generate PHP input stream and parse it as an array in order to handle different content type of requests
@@ -383,4 +451,56 @@ class Request
 
         return $this->headers;
     }
+
+    /**
+     * Content Range Parser
+     * 
+     * Parse content-range request header for easy access
+     * 
+     * @return array|null
+     */
+    protected function parseContentRange() {
+        $contentRange = $this->getHeader('content-range','');
+        $data = [];
+        if (!empty($contentRange)) {
+            $contentRange = explode(" ", $contentRange);
+            if (count($contentRange) != 2) {
+                return null;
+            }
+
+            $data['unit'] = trim($contentRange[0]);
+
+            if(empty($data['unit'])) {
+                return null;
+            }
+
+            $rangeData = explode("/", $contentRange[1]);
+            if (count($rangeData) != 2) {
+                return null;
+            }
+
+            if(!ctype_digit($rangeData[1])) {
+                return null;
+            }
+
+            $data['size'] = (int) $rangeData[1];
+            $parts = explode("-", $rangeData[0]);
+            if (count($parts) != 2) {
+                return null;
+            }
+
+            if(!ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
+                return null;
+            }
+
+            $data['start'] = (int) $parts[0];
+            $data['end'] = (int) $parts[1];
+            if ($data['start'] > $data['end'] || $data['end'] > $data['size']) {
+                return null;
+            }
+            return $data;
+        }
+        return null;
+    }
+
 }
