@@ -374,11 +374,10 @@ class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param string $body
-     * @param int $exit exit code or don't exit if code is null
      *
      * @return void
      */
-    public function send(string $body = '', int $exit = null): void
+    public function send(string $body = ''): void
     {
         if($this->sent) {
             return;
@@ -394,16 +393,39 @@ class Response
         ;
 
         if (!$this->disablePayload) {
-            $this->size = $this->size + \mb_strlen(\implode("\n", \headers_list())) + \mb_strlen($body, '8bit');
+            $chunk = 2000000; // Max chunk of 2 mb
+            $length = strlen($body);
 
-            echo $body;
+            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
+
+            if(array_key_exists(
+                $this->contentType,
+                $this->compressed
+                ) && ($length <= $chunk)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+                $this->end($body);
+            }
+            else {
+                for ($i=0; $i < ceil($length / $chunk); $i++) {
+                    $this->write(substr($body, ($i * $chunk), min($chunk, $length - ($i * $chunk))));
+                }
+
+                $this->end();
+            }
 
             $this->disablePayload();
         }
+    }
 
-        if (!\is_null($exit)) {
-            exit($exit); // Exit with code
+    protected function write($content) {
+        echo $content;
+    }
+
+    protected function end($content = null)
+    {
+        if(!is_null($content)) {
+            echo $content;
         }
+        exit(0);
     }
 
     /**
