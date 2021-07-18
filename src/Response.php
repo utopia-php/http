@@ -130,6 +130,25 @@ class Response
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED       => 'HTTP Version Not Supported',
     ];
 
+    /**
+     * Mime Types
+     *  with compression support
+     * 
+     * @var array
+     */
+    protected $compressed = [
+        'text/plain' => true,
+        'text/css' => true,
+        'text/javascript' => true,
+        'application/javascript' => true,
+        'text/html' => true,
+        'text/html; charset=UTF-8' => true,
+        'application/json' => true,
+        'application/json; charset=UTF-8' => true,
+        'image/svg+xml' => true,
+        'application/xml+rss' => true,
+    ];
+
     const COOKIE_SAMESITE_NONE      = 'None';
     const COOKIE_SAMESITE_STRICT    = 'Strict';
     const COOKIE_SAMESITE_LAX       = 'Lax';
