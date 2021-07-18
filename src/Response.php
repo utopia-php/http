@@ -438,13 +438,13 @@ class Response
      *
      * @return void
      */
-    public function chunk(string $body = '', bool $last = false): void
+    public function chunk(string $body = '', bool $end = false): void
     {
         if ($this->sent) {
             return;
         }
 
-        if ($last) {
+        if ($end) {
             $this->sent = true;
         }
 
@@ -457,7 +457,7 @@ class Response
 
         if (!$this->disablePayload) {
             $this->write($body);
-            if ($last) {
+            if ($end) {
                 $this->disablePayload();
                 $this->end();
             }
