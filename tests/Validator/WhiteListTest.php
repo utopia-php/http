@@ -42,5 +42,16 @@ class WhiteListTest extends TestCase
         $this->assertEquals($whiteList->isValid(3), true);
         $this->assertEquals($whiteList->isValid(5), false);
         $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
+        
+        $whiteList = new WhiteList(['STRING1', 'STRING2', 3, 4], false);
+
+        // Assertions
+        $this->assertEquals($whiteList->isValid('string3'), false);
+        $this->assertEquals($whiteList->isValid('STRING1'), true);
+        $this->assertEquals($whiteList->isValid('strIng1'), true);
+        $this->assertEquals($whiteList->isValid('3'), true);
+        $this->assertEquals($whiteList->isValid(3), true);
+        $this->assertEquals($whiteList->isValid(5), false);
+        $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
     }
 }
