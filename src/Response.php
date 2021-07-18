@@ -417,7 +417,7 @@ class Response
     protected function appendHeaders(): self
     {
         // Send status code header
-        \http_response_code($this->statusCode);
+        $this->addHeader('status', $this->statusCode);
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -428,10 +428,30 @@ class Response
 
         // Set application headers
         foreach ($this->headers as $key => $value) {
-            \header($key . ': ' . $value);
+            $this->sendHeader($key, $value);
         }
 
         return $this;
+    }
+
+    protected function sendHeader(string $key, string $value)
+    {
+        \header($key . ': ' . $value);
+    }
+
+    protected function sendCookie(array $cookie) {
+        if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
+            \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
+        } else {
+            \setcookie($cookie['name'], $cookie['value'], [
+                'expires' => $cookie['expire'],
+                'path' => $cookie['path'],
+                'domain' => $cookie['domain'],
+                'secure' => $cookie['secure'],
+                'httponly' => $cookie['httponly'],
+                'samesite' => $cookie['samesite'],
+            ]);
+        }
     }
 
     /**
@@ -444,18 +464,7 @@ class Response
     protected function appendCookies(): self
     {
         foreach ($this->cookies as $cookie) {
-            if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
-                \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
-            } else {
-                \setcookie($cookie['name'], $cookie['value'], [
-                    'expires' => $cookie['expire'],
-                    'path' => $cookie['path'],
-                    'domain' => $cookie['domain'],
-                    'secure' => $cookie['secure'],
-                    'httponly' => $cookie['httponly'],
-                    'samesite' => $cookie['samesite'],
-                ]);
-            }
+            $this->sendCookie($cookie);
         }
 
         return $this;
