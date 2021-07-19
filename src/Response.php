@@ -445,7 +445,7 @@ class Response
      * 
      * @return void
      */
-    protected function write(mixed $content): void
+    protected function write($content): void
     {
         echo $content;
     }
