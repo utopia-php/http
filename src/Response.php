@@ -553,22 +553,18 @@ class Response
      * 
      * Output Cookie
      * 
-     * @param $cookie
+     * @param string $name
+     * @param string $value
+     * @param array $options
      * 
      * @return void
      */
-    protected function sendCookie(array $cookie) {
+    protected function sendCookie(string $name, string $value, array $options)
+    {
         if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
-            \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
+            \setcookie($name, $value, $options['expire'], $options['path'], $options['domain'], $options['secure'], $options['httponly']);
         } else {
-            \setcookie($cookie['name'], $cookie['value'], [
-                'expires' => $cookie['expire'],
-                'path' => $cookie['path'],
-                'domain' => $cookie['domain'],
-                'secure' => $cookie['secure'],
-                'httponly' => $cookie['httponly'],
-                'samesite' => $cookie['samesite'],
-            ]);
+            \setcookie($name, $value, $options);
         }
     }
 
