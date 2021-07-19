@@ -436,11 +436,30 @@ class Response
         }
     }
 
-    protected function write($content) {
+    /**
+     * Write
+     * 
+     * Send output
+     * 
+     * @param mixed $content
+     * 
+     * @return void
+     */
+    protected function write(mixed $content): void
+    {
         echo $content;
     }
 
-    protected function end($content = null)
+    /**
+     * End
+     * 
+     * Send optional content and end
+     * 
+     * @param mixed $content
+     * 
+     * @return void
+     */
+    protected function end($content = null): void
     {
         if(!is_null($content)) {
             echo $content;
@@ -518,8 +537,8 @@ class Response
      * 
      * Output Header
      * 
-     * @param $key
-     * @param $value
+     * @param string $key
+     * @param string $value
      * 
      * @return void
      * 
