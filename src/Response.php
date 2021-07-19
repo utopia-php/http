@@ -578,7 +578,14 @@ class Response
     protected function appendCookies(): self
     {
         foreach ($this->cookies as $cookie) {
-            $this->sendCookie($cookie);
+            $this->sendCookie($cookie['name'], $cookie['value'], [
+                'expire'	=> $cookie['expire'],
+                'path' 		=> $cookie['path'],
+                'domain' 	=> $cookie['domain'],
+                'secure' 	=> $cookie['secure'],
+                'httponly'	=> $cookie['httponly'],
+                'samesite'	=> $cookie['sameSite'],
+            ]);
         }
 
         return $this;
