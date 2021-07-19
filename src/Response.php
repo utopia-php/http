@@ -153,6 +153,8 @@ class Response
     const COOKIE_SAMESITE_STRICT    = 'Strict';
     const COOKIE_SAMESITE_LAX       = 'Lax';
 
+    const CHUNK_SIZE = 2000000; //2mb
+
     /**
      * @var int
      */
@@ -412,7 +414,6 @@ class Response
         ;
 
         if (!$this->disablePayload) {
-            $chunk = 2000000; // Max chunk of 2 mb
             $length = strlen($body);
 
             $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
@@ -420,12 +421,12 @@ class Response
             if(array_key_exists(
                 $this->contentType,
                 $this->compressed
-                ) && ($length <= $chunk)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+                ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
                 $this->end($body);
             }
             else {
-                for ($i=0; $i < ceil($length / $chunk); $i++) {
-                    $this->write(substr($body, ($i * $chunk), min($chunk, $length - ($i * $chunk))));
+                for ($i=0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
+                    $this->write(substr($body, ($i * self::CHUNK_SIZE), min(self::CHUNK_SIZE, $length - ($i * self::CHUNK_SIZE))));
                 }
 
                 $this->end();
@@ -512,11 +513,31 @@ class Response
         return $this;
     }
 
-    protected function sendHeader(string $key, string $value)
+    /**
+     * Send Header
+     * 
+     * Output Header
+     * 
+     * @param $key
+     * @param $value
+     * 
+     * @return void
+     * 
+     */
+    protected function sendHeader(string $key, string $value): void
     {
         \header($key . ': ' . $value);
     }
 
+    /**
+     * Send Cookie
+     * 
+     * Output Cookie
+     * 
+     * @param $cookie
+     * 
+     * @return void
+     */
     protected function sendCookie(array $cookie) {
         if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
             \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
