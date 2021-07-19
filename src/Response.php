@@ -579,7 +579,7 @@ class Response
     {
         foreach ($this->cookies as $cookie) {
             $this->sendCookie($cookie['name'], $cookie['value'], [
-                'expire'	=> $cookie['expire'],
+                'expires'	=> $cookie['expire'],
                 'path' 		=> $cookie['path'],
                 'domain' 	=> $cookie['domain'],
                 'secure' 	=> $cookie['secure'],
