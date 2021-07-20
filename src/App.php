@@ -367,10 +367,6 @@ class App
         $resources = [];
         
         foreach ($list as $name) {
-            if ($name === 'utopia') {
-                $resources[$name] = $this;
-                continue;
-            }
             $resources[$name] = $this->getResource($name);
         }
 
