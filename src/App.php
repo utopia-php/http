@@ -338,6 +338,10 @@ class App
      */
     public function getResource(string $name, $fresh = false)
     {
+        if ($name === 'utopia') {
+            return $this;
+        }
+
         if (!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
             if (!\array_key_exists($name, self::$resourcesCallbacks)) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
