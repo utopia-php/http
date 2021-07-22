@@ -441,11 +441,11 @@ class Response
      * 
      * Send output
      * 
-     * @param mixed $content
+     * @param string $content
      * 
      * @return void
      */
-    protected function write($content): void
+    protected function write(string $content): void
     {
         echo $content;
     }
@@ -455,11 +455,11 @@ class Response
      * 
      * Send optional content and end
      * 
-     * @param mixed $content
+     * @param string $content
      * 
      * @return void
      */
-    protected function end($content = null): void
+    protected function end(string $content = null): void
     {
         if(!is_null($content)) {
             echo $content;
