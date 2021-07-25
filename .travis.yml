@@ -16,9 +16,9 @@ services:
 
 before_install:
   - sudo apt-get update
-  - sudo apt-get install php-cli php-mbstring git unzip
+  - sudo apt-get install php-cli php-mbstring unzip
   - curl -sS https://getcomposer.org/installer -o composer-setup.php
-  - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  - sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - composer install --ignore-platform-reqs
   - curl -fsSL https://get.docker.com | sh
   - echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
