@@ -320,7 +320,7 @@ class Request
      * 
      * Returns the start of content range
      * 
-     * @return int
+     * @return ?int
      */
     public function getContentRangeStart()
     {
@@ -337,7 +337,7 @@ class Request
      * 
      * Returns the end of content range
      * 
-     * @return int
+     * @return ?int
      */
     public function getContentRangeEnd()
     {
@@ -354,7 +354,7 @@ class Request
      * 
      * Returns the size of content range
      * 
-     * @return int
+     * @return ?int
      */
     public function getContentRangeSize()
     {
@@ -371,7 +371,7 @@ class Request
      * 
      * Returns the unit of content range
      * 
-     * @return string
+     * @return ?string
      */
     public function getContentRangeUnit()
     {

@@ -515,7 +515,7 @@ class Response
     protected function appendHeaders(): self
     {
         // Send status code header
-        $this->addHeader('status', $this->statusCode);
+        $this->addHeader('status', strval($this->statusCode));
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -618,7 +618,7 @@ class Response
         $this
             ->addHeader('Location', $url)
             ->setStatusCode($statusCode)
-            ->send('', $exit)
+            ->send('')
         ;
     }
 
