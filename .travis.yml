@@ -14,9 +14,9 @@ notifications:
 services:
   - docker
 
-before_script:
-  - apt-get update
-  - apt-get install curl php-cli php-mbstring git unzip
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install php-cli php-mbstring git unzip
   - curl -sS https://getcomposer.org/installer -o composer-setup.php
   - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
   - composer install --ignore-platform-reqs
