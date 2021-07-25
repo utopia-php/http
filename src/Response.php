@@ -464,6 +464,7 @@ class Response
         if(!is_null($content)) {
             echo $content;
         }
+        exit(0);
     }
 
     /**

@@ -1,16 +1,38 @@
-language: php
+dist: xenial
 
-php:
-  - 7.4
-  - 8.0
-  - nightly
+arch:
+  - amd64
+
+os: linux
+
+language: shell
 
 notifications:
   email:
   - team@appwrite.io
 
-before_script: composer install --ignore-platform-reqs
+services:
+  - docker
+
+before_script:
+  - apt-get update
+  - apt-get install curl php-cli php-mbstring git unzip
+  - curl -sS https://getcomposer.org/installer -o composer-setup.php
+  - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  - curl -fsSL https://get.docker.com | sh
+  - echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
+  - mkdir -p $HOME/.docker
+  - echo '{"experimental":"enabled"}' | sudo tee $HOME/.docker/config.json
+  - sudo service docker start
+  - >
+    if [ ! -z "${DOCKERHUB_PULL_USERNAME:-}" ]; then
+      echo "${DOCKERHUB_PULL_PASSWORD}" | docker login --username "${DOCKERHUB_PULL_USERNAME}" --password-stdin
+    fi
+  - docker --version
+
+install:
+  - docker-compose up -d
 
 script:
-- vendor/bin/phpunit --configuration phpunit.xml
-- vendor/bin/psalm
+  - docker ps -a
+  - docker-compose logs php-cli
