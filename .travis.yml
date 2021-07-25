@@ -19,6 +19,7 @@ before_script:
   - apt-get install curl php-cli php-mbstring git unzip
   - curl -sS https://getcomposer.org/installer -o composer-setup.php
   - php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+  - composer install --ignore-platform-reqs
   - curl -fsSL https://get.docker.com | sh
   - echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
   - mkdir -p $HOME/.docker
@@ -32,6 +33,7 @@ before_script:
 
 install:
   - docker-compose up -d
+  - sleep 10
 
 script:
   - docker ps -a
