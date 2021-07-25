@@ -15,11 +15,6 @@ services:
   - docker
 
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install php-cli php-mbstring unzip
-  - curl -sS https://getcomposer.org/installer -o composer-setup.php
-  - sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-  - composer install --ignore-platform-reqs
   - curl -fsSL https://get.docker.com | sh
   - echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
   - mkdir -p $HOME/.docker
@@ -37,4 +32,5 @@ install:
 
 script:
   - docker ps -a
-  - docker-compose logs php-cli
+  - docker-compose exec web  vendor/bin/phpunit --configuration phpunit.phpunit.xml
+  - docker-compose exec web vendor/bin/psalm --show-info=true
