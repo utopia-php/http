@@ -157,9 +157,12 @@ class Route
 
     /**
      * Set isAlias
+     *
      * @param bool $isAlias
+     *
+     * @return void
      */
-    public function setIsAlias($isAlias) {
+    public function setIsAlias($isAlias): void {
         $this->isAlias = $isAlias;
     }
 
