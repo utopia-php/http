@@ -157,9 +157,13 @@ class Route
 
     /**
      * Set isAlias
+     *
      * @param bool $isAlias
+     *
+     * @return void
      */
-    public function setIsAlias($isAlias) {
+    public function setIsAlias($isAlias): void
+    {
         $this->isAlias = $isAlias;
     }
 
@@ -229,8 +233,10 @@ class Route
 
     /**
      * Set middleware status
-     *
-     * @return bool
+     * 
+     * @param boolean $middleware
+     * 
+     * @return self
      */
     public function middleware($middleware = true): self
     {

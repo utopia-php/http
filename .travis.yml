@@ -1,16 +1,36 @@
-language: php
+dist: xenial
 
-php:
-  - 7.4
-  - 8.0
-  - nightly
+arch:
+  - amd64
+
+os: linux
+
+language: shell
 
 notifications:
   email:
   - team@appwrite.io
 
-before_script: composer install --ignore-platform-reqs
+services:
+  - docker
+
+before_install:
+  - curl -fsSL https://get.docker.com | sh
+  - echo '{"experimental":"enabled"}' | sudo tee /etc/docker/daemon.json
+  - mkdir -p $HOME/.docker
+  - echo '{"experimental":"enabled"}' | sudo tee $HOME/.docker/config.json
+  - sudo service docker start
+  - >
+    if [ ! -z "${DOCKERHUB_PULL_USERNAME:-}" ]; then
+      echo "${DOCKERHUB_PULL_PASSWORD}" | docker login --username "${DOCKERHUB_PULL_USERNAME}" --password-stdin
+    fi
+  - docker --version
+
+install:
+  - docker-compose up -d
+  - sleep 10
 
 script:
-- vendor/bin/phpunit --configuration phpunit.xml
-- vendor/bin/psalm
+  - docker ps -a
+  - docker-compose exec web  vendor/bin/phpunit --configuration phpunit.xml
+  - docker-compose exec web vendor/bin/psalm --show-info=true

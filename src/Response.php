@@ -130,9 +130,30 @@ class Response
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED       => 'HTTP Version Not Supported',
     ];
 
+    /**
+     * Mime Types
+     *  with compression support
+     * 
+     * @var array
+     */
+    protected $compressed = [
+        'text/plain' => true,
+        'text/css' => true,
+        'text/javascript' => true,
+        'application/javascript' => true,
+        'text/html' => true,
+        'text/html; charset=UTF-8' => true,
+        'application/json' => true,
+        'application/json; charset=UTF-8' => true,
+        'image/svg+xml' => true,
+        'application/xml+rss' => true,
+    ];
+
     const COOKIE_SAMESITE_NONE      = 'None';
     const COOKIE_SAMESITE_STRICT    = 'Strict';
     const COOKIE_SAMESITE_LAX       = 'Lax';
+
+    const CHUNK_SIZE = 2000000; //2mb
 
     /**
      * @var int
@@ -374,11 +395,10 @@ class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param string $body
-     * @param int $exit exit code or don't exit if code is null
      *
      * @return void
      */
-    public function send(string $body = '', int $exit = null): void
+    public function send(string $body = ''): void
     {
         if($this->sent) {
             return;
@@ -394,15 +414,93 @@ class Response
         ;
 
         if (!$this->disablePayload) {
-            $this->size = $this->size + \mb_strlen(\implode("\n", \headers_list())) + \mb_strlen($body, '8bit');
+            $length = strlen($body);
 
-            echo $body;
+            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
+
+            if(array_key_exists(
+                $this->contentType,
+                $this->compressed
+                ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+                $this->end($body);
+            }
+            else {
+                for ($i=0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
+                    $this->write(substr($body, ($i * self::CHUNK_SIZE), min(self::CHUNK_SIZE, $length - ($i * self::CHUNK_SIZE))));
+                }
+
+                $this->end();
+            }
 
             $this->disablePayload();
         }
+    }
 
-        if (!\is_null($exit)) {
-            exit($exit); // Exit with code
+    /**
+     * Write
+     * 
+     * Send output
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    protected function write(string $content): void
+    {
+        echo $content;
+    }
+
+    /**
+     * End
+     * 
+     * Send optional content and end
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    protected function end(string $content = null): void
+    {
+        if(!is_null($content)) {
+            echo $content;
+        }
+    }
+
+    /**
+     * Output response
+     *
+     * Generate HTTP response output including the response header (+cookies) and body and prints them.
+     *
+     * @param string $body
+     * @param bool $last
+     *
+     * @return void
+     */
+    public function chunk(string $body = '', bool $end = false): void
+    {
+        if ($this->sent) {
+            return;
+        }
+
+        if ($end) {
+            $this->sent = true;
+        }
+
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+
+        $this
+            ->appendCookies()
+            ->appendHeaders()
+        ;
+
+        if (!$this->disablePayload) {
+            $this->write($body);
+            if ($end) {
+                $this->disablePayload();
+                $this->end();
+            }
+        } else {
+            $this->end();
         }
     }
 
@@ -417,7 +515,7 @@ class Response
     protected function appendHeaders(): self
     {
         // Send status code header
-        \http_response_code($this->statusCode);
+        $this->addHeader('status', strval($this->statusCode));
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -428,10 +526,52 @@ class Response
 
         // Set application headers
         foreach ($this->headers as $key => $value) {
-            \header($key . ': ' . $value);
+            $this->sendHeader($key, $value);
         }
 
         return $this;
+    }
+
+    /**
+     * Send Header
+     * 
+     * Output Header
+     * 
+     * @param string $key
+     * @param string $value
+     * 
+     * @return void
+     * 
+     */
+    protected function sendHeader(string $key, string $value): void
+    {
+        \header($key . ': ' . $value);
+    }
+
+    /**
+     * Send Cookie
+     * 
+     * Output Cookie
+     * 
+     * @param string $name
+     * @param string $value
+     * @param array $options
+     * 
+     * @return void
+     */
+    protected function sendCookie(string $name, string $value, array $options)
+    {
+        $expire = $options['expire'] ?? 0;
+        $path = $options['path'] ?? '';
+        $domain = $options['domain'] ?? '';
+        $secure = $options['secure'] ?? false;
+        $httponly = $options['httponly'] ?? false;
+
+        if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
+            \setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        } else {
+            \setcookie($name, $value, $options);
+        }
     }
 
     /**
@@ -444,18 +584,14 @@ class Response
     protected function appendCookies(): self
     {
         foreach ($this->cookies as $cookie) {
-            if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
-                \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
-            } else {
-                \setcookie($cookie['name'], $cookie['value'], [
-                    'expires' => $cookie['expire'],
-                    'path' => $cookie['path'],
-                    'domain' => $cookie['domain'],
-                    'secure' => $cookie['secure'],
-                    'httponly' => $cookie['httponly'],
-                    'samesite' => $cookie['samesite'],
-                ]);
-            }
+            $this->sendCookie($cookie['name'], $cookie['value'], [
+                'expires'	=> $cookie['expire'],
+                'path' 		=> $cookie['path'],
+                'domain' 	=> $cookie['domain'],
+                'secure' 	=> $cookie['secure'],
+                'httponly'	=> $cookie['httponly'],
+                'samesite'	=> $cookie['sameSite'],
+            ]);
         }
 
         return $this;
@@ -488,7 +624,7 @@ class Response
         $this
             ->addHeader('Location', $url)
             ->setStatusCode($statusCode)
-            ->send('', $exit)
+            ->send('')
         ;
     }
 
