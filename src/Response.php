@@ -561,8 +561,14 @@ class Response
      */
     protected function sendCookie(string $name, string $value, array $options)
     {
+        $expire = $options['expire'] ?? 0;
+        $path = $options['path'] ?? '';
+        $domain = $options['domain'] ?? '';
+        $secure = $options['secure'] ?? false;
+        $httponly = $options['httponly'] ?? false;
+
         if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
-            \setcookie($name, $value, $options['expire'], $options['path'], $options['domain'], $options['secure'], $options['httponly']);
+            \setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
         } else {
             \setcookie($name, $value, $options);
         }
