@@ -27,6 +27,13 @@ App::get('/chunked')
         }
     });
 
+App::get('/redirect')
+    ->inject('response')
+    ->action(function($response) {
+        /** @var Utopia/Response $response */
+        $response->redirect('/');
+    });
+
 $request    = new Request();
 $response   = new Response();
 
