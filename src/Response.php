@@ -627,7 +627,7 @@ class Response
      * @throws Exception
      * @see http://tools.ietf.org/html/rfc2616
      */
-    public function redirect(string $url, int $statusCode = 301, int $exit = null): void
+    public function redirect(string $url, int $statusCode = 301): void
     {
         if (300 == $statusCode) {
             \trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
