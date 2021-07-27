@@ -2,8 +2,8 @@
 
 namespace Utopia\Tests;
 
-use Tests\E2E\Client;
 use PHPUnit\Framework\TestCase;
+use Tests\E2E\Client;
 
 class ResponseTest extends TestCase
 {
@@ -16,7 +16,7 @@ class ResponseTest extends TestCase
     {
         $this->client = null;
     }
-    
+
     /**
      * @var Client $client
      */
@@ -25,16 +25,18 @@ class ResponseTest extends TestCase
     public function testResponse()
     {
         $response = $this->client->call(Client::METHOD_GET, '/');
-        
         $this->assertEquals('Hello World!', $response['body']);
-
     }
 
     public function testChunkResponse()
     {
         $response = $this->client->call(Client::METHOD_GET, '/chunked');
-        
         $this->assertEquals('Hello World!', $response['body']);
+    }
 
+    public function testRedirect()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/redirect');
+        $this->assertEquals('Hello World!', $response['body']);
     }
 }

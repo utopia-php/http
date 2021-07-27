@@ -515,7 +515,7 @@ class Response
     protected function appendHeaders(): self
     {
         // Send status code header
-        $this->addHeader('status', strval($this->statusCode));
+        $this->sendStatus($this->statusCode);
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -530,6 +530,18 @@ class Response
         }
 
         return $this;
+    }
+
+    /**
+     * Send Status Code
+     * 
+     * @param int $statusCode
+     * 
+     * @return void
+     */
+    protected function sendStatus($statusCode): void
+    {
+        http_response_code($statusCode);
     }
 
     /**
@@ -615,7 +627,7 @@ class Response
      * @throws Exception
      * @see http://tools.ietf.org/html/rfc2616
      */
-    public function redirect(string $url, int $statusCode = 301, int $exit = null): void
+    public function redirect(string $url, int $statusCode = 301): void
     {
         if (300 == $statusCode) {
             \trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
