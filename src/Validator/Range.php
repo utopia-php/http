@@ -132,7 +132,7 @@ class Range extends Numeric
                 // Accept infinity as an integer
                 // Since gettype(INF) === TYPE_FLOAT
                 if ($value === INF || $value === -INF) {
-                    return true;
+                    break; // move to check if value is within range
                 }
                 $value = $value+0;
                 if(!is_int($value)) {
