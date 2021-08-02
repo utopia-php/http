@@ -22,14 +22,21 @@ class FloatValidatorTest extends TestCase
      */
     protected $validator = null;
 
+    /**
+     * @var FloatValidator
+     */
+    protected $looseValidator = null;
+
     public function setUp():void
     {
         $this->validator = new FloatValidator();
+        $this->looseValidator = new FloatValidator(true);
     }
 
     public function tearDown():void
     {
         $this->validator = null;
+        $this->looseValidator = null;
     }
 
     public function testIsValid()
@@ -45,5 +52,17 @@ class FloatValidatorTest extends TestCase
         $this->assertEquals($this->validator->isValid('23'), false);
         $this->assertEquals($this->validator->getType(), \Utopia\Validator::TYPE_FLOAT);
         $this->assertEquals($this->validator->isArray(), false);
+
+        // Assertions Loose
+        $this->assertEquals($this->looseValidator->isValid(27.25), true);
+        $this->assertEquals($this->looseValidator->isValid('abc'), false);
+        $this->assertEquals($this->looseValidator->isValid(23), false);
+        $this->assertEquals($this->looseValidator->isValid(23.5), true);
+        $this->assertEquals($this->looseValidator->isValid(1e7), true);
+        $this->assertEquals($this->looseValidator->isValid(true), false);
+        $this->assertEquals($this->looseValidator->isValid('23.5'), true);
+        $this->assertEquals($this->looseValidator->isValid('23'), false);
+        $this->assertEquals($this->looseValidator->getType(), \Utopia\Validator::TYPE_FLOAT);
+        $this->assertEquals($this->looseValidator->isArray(), false);
     }
 }

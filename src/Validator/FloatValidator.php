@@ -24,6 +24,22 @@ use Utopia\Validator;
 class FloatValidator extends Validator
 {
     /**
+     * @var bool
+     */
+    protected $loose = false;
+
+    /**
+     * Pass true to accept float strings as valid float values
+     * This option is good for validating query string params.
+     *
+     * @param bool $loose
+     */
+    public function __construct(bool $loose = false)
+    {
+        $this->loose = $loose;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
@@ -69,6 +85,12 @@ class FloatValidator extends Validator
      */
     public function isValid($value)
     {
+        if($this->loose) {
+            if(!\is_numeric($value)) {
+                return false;
+            }
+            $value = $value+0;
+        }
         if (!\is_float($value)) {
             return false;
         }
