@@ -33,18 +33,18 @@ class RouteTest extends TestCase
         $this->assertEquals('GET', $this->route->getMethod());
     }
 
-    public function testURL()
+    public function testPath()
     {
-        $this->assertEquals('/', $this->route->getURL());
+        $this->assertEquals('/', $this->route->getPath());
         
-        $this->route->URL('/path');
+        $this->route->path('/path');
 
-        $this->assertEquals('/path', $this->route->getURL());
+        $this->assertEquals('/path', $this->route->getPath());
     }
 
     public function testAlias()
     {
-        $this->assertEquals('', $this->route->getAliasURL());
+        $this->assertEquals('', $this->route->getAliasPath());
         $this->assertEquals([], $this->route->getAliasParams());
         
         $params = [
@@ -52,7 +52,7 @@ class RouteTest extends TestCase
         ];
         $this->route->alias('/path1',$params);
 
-        $this->assertEquals('/path1', $this->route->getAliasURL());
+        $this->assertEquals('/path1', $this->route->getAliasPath());
         $this->assertEquals($params, $this->route->getAliasParams());
     }
 

@@ -31,19 +31,19 @@ class Route
     protected $middleware = true;
 
     /**
-     * URL
+     * Path
      *
      * @var string
      */
-    protected $URL = '';
-    
+    protected $path = '';
+
     /**
-     * Alias URL
+     * Alias path
      *
      * @var string
      */
-    protected $aliasURL = '';
-    
+    protected $aliasPath = '';
+
     /**
      * Alias Params
      *
@@ -117,40 +117,40 @@ class Route
 
     /**
      * @param string $method
-     * @param string $URL
+     * @param string $path
      */
-    public function __construct(string $method, string $URL)
+    public function __construct(string $method, string $path)
     {
         self::$counter++;
 
-        $this->URL($URL);
+        $this->path($path);
         $this->method = $method;
         $this->order = self::$counter;
-        $this->action = function(): void {};
+        $this->action = function (): void {};
     }
 
     /**
-     * Add URL
+     * Add path
      *
-     * @param string $URL
+     * @param string $path
      * @return $this
      */
-    public function URL($URL): self
+    public function path($path): self
     {
-        $this->URL = $URL;
+        $this->path = $path;
         return $this;
     }
 
     /**
      * Add alias
      *
-     * @param string $URL
+     * @param string $path
      * @param array $params
      * @return $this
      */
-    public function alias($URL, $params = []): self
+    public function alias($path, $params = []): self
     {
-        $this->aliasURL = $URL;
+        $this->aliasPath = $path;
         $this->aliasParams = $params;
         return $this;
     }
@@ -166,7 +166,6 @@ class Route
     {
         $this->isAlias = $isAlias;
     }
-
 
     /**
      * Add Description
@@ -219,13 +218,13 @@ class Route
     public function param($key, $default, $validator, $description = '', $optional = false, array $injections = []): self
     {
         $this->params[$key] = [
-            'default'       => $default,
-            'validator'     => $validator,
-            'description'   => $description,
-            'optional'      => $optional,
-            'injections'    => $injections,
-            'value'         => null,
-            'order'         => count($this->params) + count($this->injections),
+            'default' => $default,
+            'validator' => $validator,
+            'description' => $description,
+            'optional' => $optional,
+            'injections' => $injections,
+            'value' => null,
+            'order' => count($this->params) + count($this->injections),
         ];
 
         return $this;
@@ -233,9 +232,9 @@ class Route
 
     /**
      * Set middleware status
-     * 
+     *
      * @param boolean $middleware
-     * 
+     *
      * @return self
      */
     public function middleware($middleware = true): self
@@ -254,15 +253,15 @@ class Route
      */
     public function inject($injection): self
     {
-        if(array_key_exists($injection, $this->injections)) {
-            throw new Exception('Injection already declared for '.$injection);
+        if (array_key_exists($injection, $this->injections)) {
+            throw new Exception('Injection already declared for ' . $injection);
         }
 
         $this->injections[$injection] = [
-            'name'  => $injection,
+            'name' => $injection,
             'order' => count($this->params) + count($this->injections),
         ];
-        
+
         return $this;
     }
 
@@ -291,25 +290,25 @@ class Route
     }
 
     /**
-     * Get URL
+     * Get path
      *
      * @return string
      */
-    public function getURL(): string
+    public function getPath(): string
     {
-        return $this->URL;
+        return $this->path;
     }
-    
+
     /**
-     * Get Alias URL
+     * Get Alias path
      *
      * @return string
      */
-    public function getAliasURL(): string
+    public function getAliasPath(): string
     {
-        return $this->aliasURL;
+        return $this->aliasPath;
     }
-    
+
     /**
      * Get Alias Params
      *
@@ -319,7 +318,7 @@ class Route
     {
         return $this->aliasParams;
     }
-    
+
     /**
      * Get is Alias
      *

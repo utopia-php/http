@@ -506,7 +506,7 @@ class App
             \array_shift($this->matches);
             $this->route = $route;
 
-            if($routeUrl == $route->getAliasURL()) {
+            if($routeUrl == $route->getAliasPath()) {
                 $this->route->setIsAlias(true);
             } else {
                 $this->route->setIsAlias(false);
@@ -515,7 +515,7 @@ class App
             break;
         }
 
-        if (!empty($this->route) && ('/' === $this->route->getURL()) && ($url != $this->route->getURL())) {
+        if (!empty($this->route) && ('/' === $this->route->getPath()) && ($url != $this->route->getPath())) {
             return null;
         }
 
@@ -535,7 +535,7 @@ class App
         $groups     = $route->getGroups();
 
         // Extract keys from URL
-        $url = $route->getIsAlias() ? $route->getAliasURL() : $route->getURL();
+        $url = $route->getIsAlias() ? $route->getAliasPath() : $route->getPath();
         $keyRegex = '@^' . \preg_replace('@:[^/]+@', ':([^/]+)', $url) . '$@';
         \preg_match($keyRegex, $url, $keys);
 
@@ -646,8 +646,8 @@ class App
         if (!self::$sorted) {
             foreach (self::$routes as $method => $list) { //adding route alias in $routes
                 foreach ($list as $key => $route) {
-                    if($route->getAliasURL()) {
-                        self::$routes[$method][$route->getAliasURL()] = $route;
+                    if($route->getAliasPath()) {
+                        self::$routes[$method][$route->getAliasPath()] = $route;
                     }
                 }
             }
