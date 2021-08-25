@@ -65,7 +65,8 @@ Library | Description
 **[Utopia Audit](https://github.com/utopia-php/audit)** | Simple PHP library for audit logging users actions and system events 
 **[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
 **[Utopia CLI](https://github.com/utopia-php/cli)** | Simple PHP library for for building simple command line tools.
-**[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for for managing your app configuration.
+**[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for managing your app configuration.
+**[Utopia Database](https://github.com/utopia-php/database)** | Simple PHP library for managing application persistency. It supports multiple database adapters. 
 **[Utopia Domains](https://github.com/utopia-php/domains)** | Simple PHP library for parsing domain names.
 **[Utopia Image](https://github.com/utopia-php/image)** | Simple PHP library for creating common image manipulations that is easy to use.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
