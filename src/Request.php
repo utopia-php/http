@@ -382,6 +382,53 @@ class Request
             return null;
         }
     }
+    /**
+     * Get Range Start
+     * 
+     * Returns the start of range header
+     * 
+     * @return ?int
+     */
+    public function getRangeStart()
+    {
+        $data = $this->parseRange();
+        if(!empty($data)) {
+            return $data['start'];
+        }
+        return null;
+    }
+
+    /**
+     * Get Range End
+     * 
+     * Returns the end of range header
+     * 
+     * @return ?int
+     */
+    public function getRangeEnd()
+    {
+        $data = $this->parseRange();
+        if(!empty($data)) {
+            return $data['end'];
+        }
+        return null;
+    }
+
+    /**
+     * Get Range Unit
+     * 
+     * Returns the unit of range header
+     * 
+     * @return ?string
+     */
+    public function getRangeUnit()
+    {
+        $data = $this->parseRange();
+        if(!empty($data)) {
+            return $data['unit'];
+        }
+        return null;
+    }
 
     /**
      * Generate input
@@ -501,6 +548,44 @@ class Request
             return $data;
         }
         return null;
+    }
+
+    /**
+     * Range Parser
+     * 
+     * Parse range request header for easy access
+     * 
+     * @return array|null
+     */
+    protected function parseRange() {
+        $rangeHeader = $this->getHeader('range','');
+        if(empty($rangeHeader)) {
+            return null;
+        }
+        
+        $data = [];
+        list($unit, $range) = explode('=', $rangeHeader);
+        if($unit != 'bytes' || empty($range)) {
+            return null;
+        }
+        $data['unit'] = $unit;
+
+        list($rangeStart, $rangeEnd) = explode('-', $range);
+        if(strlen($rangeStart) == 0 || strstr($range, '-') === false) {
+            return null;
+        }
+        $data['start'] = (int) $rangeStart;
+        
+        if(strlen($rangeEnd) == 0) {
+            $data['end'] =  null;
+        } else {
+            $data['end'] = (int) $rangeEnd;
+        }
+
+        if(($data['start'] >= $data['end'])) {
+            return null;
+        }
+        return $data;
     }
 
 }
