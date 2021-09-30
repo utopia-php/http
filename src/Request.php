@@ -564,25 +564,33 @@ class Request
         }
         
         $data = [];
-        list($unit, $range) = explode('=', $rangeHeader);
-        if($unit != 'bytes' || empty($range)) {
+        $ranges = explode('=', $rangeHeader);
+        if(count($ranges) != 2 || empty($ranges[0]) || empty($ranges[1])) {
             return null;
         }
-        $data['unit'] = $unit;
+        $data['unit'] = $ranges[0];
 
-        list($rangeStart, $rangeEnd) = explode('-', $range);
-        if(strlen($rangeStart) == 0 || strstr($range, '-') === false) {
+        $ranges = explode('-', $ranges[1]);
+        if(count($ranges) != 2 || strlen($ranges[0]) == 0) {
             return null;
         }
-        $data['start'] = (int) $rangeStart;
         
-        if(strlen($rangeEnd) == 0) {
+        if(!ctype_digit($ranges[0])) {
+            return null;
+        }
+
+        $data['start'] = (int) $ranges[0];
+        
+        if(strlen($ranges[1]) == 0) {
             $data['end'] =  null;
         } else {
-            $data['end'] = (int) $rangeEnd;
+            if(!ctype_digit($ranges[1])) {
+                return null;
+            }
+            $data['end'] = (int) $ranges[1];
         }
 
-        if(($data['start'] >= $data['end'])) {
+        if( $data['end'] != null && $data['start'] >= $data['end']) {
             return null;
         }
         return $data;
