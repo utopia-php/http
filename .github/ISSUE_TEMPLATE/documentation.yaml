@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to fill out our bug report form 🙏
+        Thanks for taking the time to make our documentation better 🙏
   - type: textarea
     id: issue-description
     validations:
