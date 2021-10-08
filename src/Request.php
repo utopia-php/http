@@ -565,13 +565,13 @@ class Request
         
         $data = [];
         $ranges = explode('=', $rangeHeader);
-        if(count($ranges) != 2 || empty($ranges[0]) || empty($ranges[1])) {
+        if(count($ranges) !== 2 || empty($ranges[0]) || empty($ranges[1])) {
             return null;
         }
         $data['unit'] = $ranges[0];
 
         $ranges = explode('-', $ranges[1]);
-        if(count($ranges) != 2 || strlen($ranges[0]) == 0) {
+        if(count($ranges) !== 2 || strlen($ranges[0]) === 0) {
             return null;
         }
         
@@ -581,16 +581,16 @@ class Request
 
         $data['start'] = (int) $ranges[0];
         
-        if(strlen($ranges[1]) == 0) {
+        if(strlen($ranges[1]) === 0) {
             $data['end'] =  null;
         } else {
-            if(!ctype_digit($ranges[1])) {
+            if (!ctype_digit($ranges[1])) {
                 return null;
             }
             $data['end'] = (int) $ranges[1];
         }
 
-        if( $data['end'] != null && $data['start'] >= $data['end']) {
+        if ($data['end'] !== null && $data['start'] >= $data['end']) {
             return null;
         }
         return $data;
