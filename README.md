@@ -90,6 +90,12 @@ Fork the project, create a feature branch, and send us a pull request.
 
 For security issues, please email security@appwrite.io instead of posting a public issue in GitHub.
 
+### Testing
+
+  - `docker-compose up -d`
+  - `docker-compose exec web  vendor/bin/phpunit --configuration phpunit.xml`
+  - `docker-compose exec web vendor/bin/psalm --show-info=true`
+
 ## Copyright and license
 
 The MIT License (MIT) [http://www.opensource.org/licenses/mit-license.php](http://www.opensource.org/licenses/mit-license.php)
