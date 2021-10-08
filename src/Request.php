@@ -382,6 +382,53 @@ class Request
             return null;
         }
     }
+    /**
+     * Get Range Start
+     * 
+     * Returns the start of range header
+     * 
+     * @return ?int
+     */
+    public function getRangeStart()
+    {
+        $data = $this->parseRange();
+        if(!empty($data)) {
+            return $data['start'];
+        }
+        return null;
+    }
+
+    /**
+     * Get Range End
+     * 
+     * Returns the end of range header
+     * 
+     * @return ?int
+     */
+    public function getRangeEnd()
+    {
+        $data = $this->parseRange();
+        if(!empty($data)) {
+            return $data['end'];
+        }
+        return null;
+    }
+
+    /**
+     * Get Range Unit
+     * 
+     * Returns the unit of range header
+     * 
+     * @return ?string
+     */
+    public function getRangeUnit()
+    {
+        $data = $this->parseRange();
+        if(!empty($data)) {
+            return $data['unit'];
+        }
+        return null;
+    }
 
     /**
      * Generate input
@@ -501,6 +548,52 @@ class Request
             return $data;
         }
         return null;
+    }
+
+    /**
+     * Range Parser
+     * 
+     * Parse range request header for easy access
+     * 
+     * @return array|null
+     */
+    protected function parseRange() {
+        $rangeHeader = $this->getHeader('range','');
+        if(empty($rangeHeader)) {
+            return null;
+        }
+        
+        $data = [];
+        $ranges = explode('=', $rangeHeader);
+        if(count($ranges) !== 2 || empty($ranges[0]) || empty($ranges[1])) {
+            return null;
+        }
+        $data['unit'] = $ranges[0];
+
+        $ranges = explode('-', $ranges[1]);
+        if(count($ranges) !== 2 || strlen($ranges[0]) === 0) {
+            return null;
+        }
+        
+        if(!ctype_digit($ranges[0])) {
+            return null;
+        }
+
+        $data['start'] = (int) $ranges[0];
+        
+        if(strlen($ranges[1]) === 0) {
+            $data['end'] =  null;
+        } else {
+            if (!ctype_digit($ranges[1])) {
+                return null;
+            }
+            $data['end'] = (int) $ranges[1];
+        }
+
+        if ($data['end'] !== null && $data['start'] >= $data['end']) {
+            return null;
+        }
+        return $data;
     }
 
 }
