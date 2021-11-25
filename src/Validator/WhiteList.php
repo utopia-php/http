@@ -91,7 +91,7 @@ class WhiteList extends Validator
      */
     public function isArray(): bool
     {
-        return true;
+        return false;
     }
 
     /**
@@ -116,6 +116,10 @@ class WhiteList extends Validator
      */
     public function isValid($value)
     {
+        if (\is_array($value)) {
+            return false;
+        }
+
         $value = ($this->strict) ? $value : \strtolower($value);
         
         if (!\in_array($value, $this->list, $this->strict)) {
