@@ -50,7 +50,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getParam(string $key, $default = null)
+    public function getParam(string $key, mixed $default = null)
     {
         switch ($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
@@ -100,7 +100,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getQuery(string $key, $default = null)
+    public function getQuery(string $key, mixed $default = null): mixed
     {
         return (isset($_GET[$key])) ? $_GET[$key] : $default;
     }
@@ -114,7 +114,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getPayload(string $key, $default = null)
+    public function getPayload(string $key, mixed $default = null): mixed
     {
         $payload = $this->generateInput();
 
@@ -130,7 +130,7 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getServer(string $key, $default = null)
+    public function getServer(string $key, mixed $default = null): mixed
     {
         return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
@@ -230,11 +230,13 @@ class Request
      *
      * Return HTTP referer header
      *
+     * @param string $default
+     *
      * @return string
      */
     public function getReferer(string $default = ''): string
     {
-        return $this->getServer('HTTP_REFERER', $default);
+        return (string) $this->getServer('HTTP_REFERER', $default);
     }
 
     /**
@@ -242,11 +244,13 @@ class Request
      *
      * Return HTTP origin header
      *
+     * @param string $default
+     *
      * @return string
      */
     public function getOrigin(string $default = ''): string
     {
-        return $this->getServer('HTTP_ORIGIN', $default);
+        return (string) $this->getServer('HTTP_ORIGIN', $default);
     }
 
     /**
@@ -254,11 +258,13 @@ class Request
      *
      * Return HTTP user agent header
      *
+     * @param string $default
+     *
      * @return string
      */
     public function getUserAgent(string $default = ''): string
     {
-        return $this->getServer('HTTP_USER_AGENT', $default);
+        return (string) $this->getServer('HTTP_USER_AGENT', $default);
     }
 
     /**
@@ -266,11 +272,13 @@ class Request
      *
      * Return HTTP accept header
      *
+     * @param string $default
+     *
      * @return string
      */
     public function getAccept(string $default = ''): string
     {
-        return $this->getServer('HTTP_ACCEPT', $default);
+        return (string) $this->getServer('HTTP_ACCEPT', $default);
     }
 
     /**
@@ -278,8 +286,8 @@ class Request
      *
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
      *
-     * @param  string $key
-     * @param  string  $default
+     * @param string $key
+     * @param string $default
      * @return string
      */
     public function getCookie(string $key, string $default = ''): string
@@ -292,8 +300,8 @@ class Request
      *
      * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
      *
-     * @param  string $key
-     * @param  string  $default
+     * @param string $key
+     * @param string $default
      * @return string
      */
     public function getHeader(string $key, string $default = ''): string
@@ -317,12 +325,12 @@ class Request
 
     /**
      * Get Content Range Start
-     * 
+     *
      * Returns the start of content range
-     * 
-     * @return ?int
+     *
+     * @return int|null
      */
-    public function getContentRangeStart()
+    public function getContentRangeStart(): ?int
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -334,12 +342,12 @@ class Request
 
     /**
      * Get Content Range End
-     * 
+     *
      * Returns the end of content range
-     * 
-     * @return ?int
+     *
+     * @return int|null
      */
-    public function getContentRangeEnd()
+    public function getContentRangeEnd(): ?int
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -351,12 +359,12 @@ class Request
 
     /**
      * Get Content Range Size
-     * 
+     *
      * Returns the size of content range
-     * 
-     * @return ?int
+     *
+     * @return int|null
      */
-    public function getContentRangeSize()
+    public function getContentRangeSize(): ?int
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -368,12 +376,12 @@ class Request
 
     /**
      * Get Content Range Unit
-     * 
+     *
      * Returns the unit of content range
-     * 
-     * @return ?string
+     *
+     * @return string|null
      */
-    public function getContentRangeUnit()
+    public function getContentRangeUnit(): ?string
     {
         $data = $this->parseContentRange();
         if(!empty($data)) {
@@ -384,12 +392,12 @@ class Request
     }
     /**
      * Get Range Start
-     * 
+     *
      * Returns the start of range header
-     * 
-     * @return ?int
+     *
+     * @return int|null
      */
-    public function getRangeStart()
+    public function getRangeStart(): ?int
     {
         $data = $this->parseRange();
         if(!empty($data)) {
@@ -400,12 +408,12 @@ class Request
 
     /**
      * Get Range End
-     * 
+     *
      * Returns the end of range header
-     * 
-     * @return ?int
+     *
+     * @return int|null
      */
-    public function getRangeEnd()
+    public function getRangeEnd(): ?int
     {
         $data = $this->parseRange();
         if(!empty($data)) {
@@ -416,12 +424,12 @@ class Request
 
     /**
      * Get Range Unit
-     * 
+     *
      * Returns the unit of range header
-     * 
-     * @return ?string
+     *
+     * @return string|null
      */
-    public function getRangeUnit()
+    public function getRangeUnit(): ?string
     {
         $data = $this->parseRange();
         if(!empty($data)) {
@@ -501,42 +509,43 @@ class Request
 
     /**
      * Content Range Parser
-     * 
+     *
      * Parse content-range request header for easy access
-     * 
+     *
      * @return array|null
      */
-    protected function parseContentRange() {
-        $contentRange = $this->getHeader('content-range','');
+    protected function parseContentRange(): ?array
+    {
+        $contentRange = $this->getHeader('content-range', '');
         $data = [];
         if (!empty($contentRange)) {
-            $contentRange = explode(" ", $contentRange);
-            if (count($contentRange) != 2) {
+            $contentRange = explode(' ', $contentRange);
+            if (count($contentRange) !== 2) {
                 return null;
             }
 
             $data['unit'] = trim($contentRange[0]);
 
-            if(empty($data['unit'])) {
+            if (empty($data['unit'])) {
                 return null;
             }
 
-            $rangeData = explode("/", $contentRange[1]);
-            if (count($rangeData) != 2) {
+            $rangeData = explode('/', $contentRange[1]);
+            if (count($rangeData) !== 2) {
                 return null;
             }
 
-            if(!ctype_digit($rangeData[1])) {
+            if (!ctype_digit($rangeData[1])) {
                 return null;
             }
 
             $data['size'] = (int) $rangeData[1];
-            $parts = explode("-", $rangeData[0]);
+            $parts = explode('-', $rangeData[0]);
             if (count($parts) != 2) {
                 return null;
             }
 
-            if(!ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
+            if (!ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
                 return null;
             }
 
@@ -552,36 +561,37 @@ class Request
 
     /**
      * Range Parser
-     * 
+     *
      * Parse range request header for easy access
-     * 
+     *
      * @return array|null
      */
-    protected function parseRange() {
-        $rangeHeader = $this->getHeader('range','');
-        if(empty($rangeHeader)) {
+    protected function parseRange(): ?array
+    {
+        $rangeHeader = $this->getHeader('range', '');
+        if (empty($rangeHeader)) {
             return null;
         }
-        
+
         $data = [];
         $ranges = explode('=', $rangeHeader);
-        if(count($ranges) !== 2 || empty($ranges[0]) || empty($ranges[1])) {
+        if (count($ranges) !== 2 || empty($ranges[0]) || empty($ranges[1])) {
             return null;
         }
         $data['unit'] = $ranges[0];
 
         $ranges = explode('-', $ranges[1]);
-        if(count($ranges) !== 2 || strlen($ranges[0]) === 0) {
+        if (count($ranges) !== 2 || strlen($ranges[0]) === 0) {
             return null;
         }
-        
+
         if(!ctype_digit($ranges[0])) {
             return null;
         }
 
         $data['start'] = (int) $ranges[0];
-        
-        if(strlen($ranges[1]) === 0) {
+
+        if (strlen($ranges[1]) === 0) {
             $data['end'] =  null;
         } else {
             if (!ctype_digit($ranges[1])) {

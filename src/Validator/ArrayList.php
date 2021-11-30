@@ -26,7 +26,7 @@ class ArrayList extends Validator
     /**
      * @var Validator
      */
-    protected $validator;
+    protected Validator $validator;
 
     /**
      * Array constructor.
@@ -47,7 +47,7 @@ class ArrayList extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must a valid array and ' . $this->validator->getDescription();
     }
@@ -81,10 +81,10 @@ class ArrayList extends Validator
      *
      * Validation will pass when $value is valid array and validator is valid.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if (!\is_array($value)) {
             return false;

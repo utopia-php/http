@@ -30,7 +30,7 @@ class Response
     const CONTENT_TYPE_IMAGE_WEBP   = 'image/webp';
     const CONTENT_TYPE_IMAGE_ICON   = 'image/x-icon';
     const CONTENT_TYPE_IMAGE_BMP    = 'image/bmp';
-    
+
     /**
      * Chrsets
      */
@@ -131,9 +131,8 @@ class Response
     ];
 
     /**
-     * Mime Types
-     *  with compression support
-     * 
+     * Mime Types with compression support
+     *
      * @var array
      */
     protected $compressed = [
@@ -158,46 +157,46 @@ class Response
     /**
      * @var int
      */
-    protected $statusCode = self::STATUS_CODE_OK;
+    protected int $statusCode = self::STATUS_CODE_OK;
 
     /**
      * @var string
      */
-    protected $contentType = '';
+    protected string $contentType = '';
 
     /**
      * @var bool
      */
-    protected $disablePayload = false;
+    protected bool $disablePayload = false;
 
     /**
      * @var bool
      */
-    protected $sent = false;
+    protected bool $sent = false;
 
     /**
      * @var array
      */
-    protected $headers = [];
+    protected array $headers = [];
 
     /**
      * @var array
      */
-    protected $cookies = [];
+    protected array $cookies = [];
 
     /**
      * @var float
      */
-    protected $startTime = 0;
+    protected float $startTime = 0;
 
     /**
      * @var int
      */
-    protected $size = 0;
+    protected int $size = 0;
 
     /**
      * Response constructor.
-     * 
+     *
      * @param float $time response start time
      */
     public function __construct(float $time = 0)
@@ -210,7 +209,8 @@ class Response
      *
      * Set HTTP content type header.
      *
-     * @param  string   $type
+     * @param string $type
+     * @param string $charset
      * @return self
      */
     public function setContentType(string $type, string $charset = ''): self
@@ -224,8 +224,6 @@ class Response
      * Get content type
      *
      * Get HTTP content type header.
-     *
-     * @param string $type
      *
      * @return string
      */
@@ -272,6 +270,7 @@ class Response
     public function disablePayload(): self
     {
         $this->disablePayload = true;
+
         return $this;
     }
 
@@ -281,6 +280,7 @@ class Response
     public function enablePayload(): self
     {
         $this->disablePayload = false;
+
         return $this;
     }
 
@@ -335,13 +335,13 @@ class Response
      * Add an HTTP cookie to response header
      *
      * @param string $name
-     * @param string $value    [optional]
-     * @param int    $expire   [optional]
-     * @param string $path     [optional]
-     * @param string $domain   [optional]
-     * @param bool   $secure   [optional]
-     * @param bool   $httponly [optional]
-     * @param string $sameSite [optional]
+     * @param string $value
+     * @param int    $expire
+     * @param string $path
+     * @param string $domain
+     * @param bool   $secure
+     * @param bool   $httponly
+     * @param string $sameSite
      * @return self
      */
     public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): self
@@ -405,7 +405,7 @@ class Response
         }
 
         $this->sent = true;
-        
+
         $this->addHeader('X-Debug-Speed', (string)(\microtime(true) - $this->startTime));
 
         $this
@@ -438,11 +438,11 @@ class Response
 
     /**
      * Write
-     * 
+     *
      * Send output
-     * 
+     *
      * @param string $content
-     * 
+     *
      * @return void
      */
     protected function write(string $content): void
@@ -452,11 +452,11 @@ class Response
 
     /**
      * End
-     * 
+     *
      * Send optional content and end
-     * 
+     *
      * @param string $content
-     * 
+     *
      * @return void
      */
     protected function end(string $content = null): void
@@ -519,9 +519,7 @@ class Response
 
         // Send content type header
         if (!empty($this->contentType)) {
-            $this
-                ->addHeader('Content-Type', $this->contentType)
-            ;
+            $this->addHeader('Content-Type', $this->contentType);
         }
 
         // Set application headers
@@ -534,26 +532,25 @@ class Response
 
     /**
      * Send Status Code
-     * 
+     *
      * @param int $statusCode
-     * 
+     *
      * @return void
      */
-    protected function sendStatus($statusCode): void
+    protected function sendStatus(int $statusCode): void
     {
         http_response_code($statusCode);
     }
 
     /**
      * Send Header
-     * 
+     *
      * Output Header
-     * 
+     *
      * @param string $key
      * @param string $value
-     * 
+     *
      * @return void
-     * 
      */
     protected function sendHeader(string $key, string $value): void
     {
@@ -562,28 +559,18 @@ class Response
 
     /**
      * Send Cookie
-     * 
+     *
      * Output Cookie
-     * 
+     *
      * @param string $name
      * @param string $value
      * @param array $options
-     * 
+     *
      * @return void
      */
-    protected function sendCookie(string $name, string $value, array $options)
+    protected function sendCookie(string $name, string $value, array $options): void
     {
-        $expire = $options['expire'] ?? 0;
-        $path = $options['path'] ?? '';
-        $domain = $options['domain'] ?? '';
-        $secure = $options['secure'] ?? false;
-        $httponly = $options['httponly'] ?? false;
-
-        if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
-            \setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
-        } else {
-            \setcookie($name, $value, $options);
-        }
+        \setcookie($name, $value, $options);
     }
 
     /**
@@ -626,6 +613,8 @@ class Response
      *
      * @throws Exception
      * @see http://tools.ietf.org/html/rfc2616
+     *
+     * @return void
      */
     public function redirect(string $url, int $statusCode = 301): void
     {
@@ -648,6 +637,8 @@ class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param string $data
+     *
+     * @return void
      */
     public function html(string $data): void
     {
@@ -665,6 +656,8 @@ class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param string $data
+     *
+     * @return void
      */
     public function text(string $data): void
     {
@@ -683,6 +676,8 @@ class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param mixed $data
+     *
+     * @return void
      */
     public function json($data): void
     {
@@ -705,7 +700,9 @@ class Response
      * @see http://en.wikipedia.org/wiki/JSONP
      *
      * @param string $callback
-     * @param array  $data
+     * @param array $data
+     *
+     * @return void
      */
     public function jsonp(string $callback, array $data): void
     {
@@ -722,13 +719,16 @@ class Response
      * It sets relevant content type header ('text/html') and convert a PHP array ($data) to valid JSON using native json_encode
      *
      * @param string $callback
-     * @param array  $data
+     * @param array $data
+     *
+     * @return void
      */
     public function iframe(string $callback, array $data): void
     {
         $this
             ->setContentType(self::CONTENT_TYPE_HTML, self::CHARSET_UTF8)
-            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>');
+            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>')
+        ;
     }
 
     /**
@@ -738,11 +738,14 @@ class Response
      *
      * The server has successfully fulfilled the request
      *  and that there is no additional content to send in the response payload body.
+     *
+     * @return void
      */
     public function noContent(): void
     {
         $this
             ->setStatusCode(self::STATUS_CODE_NOCONTENT)
-            ->send('');
+            ->send('')
+        ;
     }
 }

@@ -26,17 +26,17 @@ class WhiteList extends Validator
     /**
      * @var array
      */
-    protected $list;
+    protected array $list;
 
     /**
      * @var bool
      */
-    protected $strict;
+    protected bool $strict;
 
     /**
      * @var string
      */
-    protected $type;
+    protected string $type;
 
     /**
      * Constructor
@@ -77,7 +77,7 @@ class WhiteList extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be one of (' . \implode(', ', $this->list) . ')';
     }
@@ -114,14 +114,14 @@ class WhiteList extends Validator
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if (\is_array($value)) {
             return false;
         }
 
         $value = ($this->strict) ? $value : \strtolower($value);
-        
+
         if (!\in_array($value, $this->list, $this->strict)) {
             return false;
         }

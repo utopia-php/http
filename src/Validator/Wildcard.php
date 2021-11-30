@@ -30,7 +30,7 @@ class Wildcard extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Every input is valid';
     }
@@ -43,7 +43,7 @@ class Wildcard extends Validator
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid($value): bool
     {
         return true;
     }

@@ -26,7 +26,7 @@ class FloatValidator extends Validator
     /**
      * @var bool
      */
-    protected $loose = false;
+    protected bool $loose = false;
 
     /**
      * Pass true to accept float strings as valid float values
@@ -46,7 +46,7 @@ class FloatValidator extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid float';
     }
@@ -80,10 +80,10 @@ class FloatValidator extends Validator
      *
      * Validation will pass when $value is float.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if($this->loose) {
             if(!\is_numeric($value)) {

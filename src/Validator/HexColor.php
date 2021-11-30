@@ -19,7 +19,7 @@ class HexColor extends Validator
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid Hex color code';
     }
@@ -52,7 +52,7 @@ class HexColor extends Validator
      * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if (\is_string($value) && \preg_match('/^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/', $value)) {
             return true;

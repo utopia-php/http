@@ -21,55 +21,55 @@ class Route
      *
      * @var string
      */
-    protected $method = '';
+    protected string $method = '';
 
     /**
      * Whether to use middleware
      *
      * @var bool
      */
-    protected $middleware = true;
+    protected bool $middleware = true;
 
     /**
      * Path
      *
      * @var string
      */
-    protected $path = '';
+    protected string $path = '';
 
     /**
      * Alias path
      *
      * @var string
      */
-    protected $aliasPath = '';
+    protected string $aliasPath = '';
 
     /**
      * Alias Params
      *
      * @var array
      */
-    protected $aliasParams = [];
+    protected array $aliasParams = [];
 
     /**
      * Is Alias Route?
      * @var bool
      */
-    protected $isAlias = false;
+    protected bool $isAlias = false;
 
     /**
      * Description
      *
      * @var string
      */
-    protected $desc = '';
+    protected string $desc = '';
 
     /**
      * Group
      *
      * @var array
      */
-    protected $groups = [];
+    protected array $groups = [];
 
     /**
      * Action Callback
@@ -81,7 +81,7 @@ class Route
     /**
      * @var int
      */
-    public static $counter = 0;
+    public static int $counter = 0;
 
     /**
      * Parameters
@@ -90,7 +90,7 @@ class Route
      *
      * @var array
      */
-    protected $params = [];
+    protected array $params = [];
 
     /**
      * Injections
@@ -99,7 +99,7 @@ class Route
      *
      * @var array
      */
-    protected $injections = [];
+    protected array $injections = [];
 
     /**
      * Labels
@@ -108,12 +108,12 @@ class Route
      *
      * @var array
      */
-    protected $labels = [];
+    protected array $labels = [];
 
     /**
      * @var int
      */
-    protected $order;
+    protected int $order;
 
     /**
      * @param string $method
@@ -133,11 +133,12 @@ class Route
      * Add path
      *
      * @param string $path
-     * @return $this
+     * @return self
      */
-    public function path($path): self
+    public function path(string $path): self
     {
         $this->path = $path;
+
         return $this;
     }
 
@@ -146,12 +147,13 @@ class Route
      *
      * @param string $path
      * @param array $params
-     * @return $this
+     * @return self
      */
-    public function alias($path, $params = []): self
+    public function alias(string $path, array $params = []): self
     {
         $this->aliasPath = $path;
         $this->aliasParams = $params;
+
         return $this;
     }
 
@@ -162,7 +164,7 @@ class Route
      *
      * @return void
      */
-    public function setIsAlias($isAlias): void
+    public function setIsAlias(bool $isAlias): void
     {
         $this->isAlias = $isAlias;
     }
@@ -171,11 +173,12 @@ class Route
      * Add Description
      *
      * @param string $desc
-     * @return $this
+     * @return self
      */
-    public function desc($desc): self
+    public function desc(string $desc): self
     {
         $this->desc = $desc;
+
         return $this;
     }
 
@@ -183,11 +186,12 @@ class Route
      * Add Group
      *
      * @param array $groups
-     * @return $this
+     * @return self
      */
     public function groups(array $groups): self
     {
         $this->groups = $groups;
+
         return $this;
     }
 
@@ -195,7 +199,7 @@ class Route
      * Add Action
      *
      * @param callable $action
-     * @return $this
+     * @return self
      */
     public function action(callable $action): self
     {
@@ -207,15 +211,15 @@ class Route
      * Add Param
      *
      * @param string $key
-     * @param null $default
-     * @param string $validator
+     * @param mixed $default
+     * @param Validator|callable $validator
      * @param string $description
      * @param bool $optional
      * @param array $injections
      *
-     * @return $this
+     * @return self
      */
-    public function param($key, $default, $validator, $description = '', $optional = false, array $injections = []): self
+    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): self
     {
         $this->params[$key] = [
             'default' => $default,
@@ -237,7 +241,7 @@ class Route
      *
      * @return self
      */
-    public function middleware($middleware = true): self
+    public function middleware(bool $middleware = true): self
     {
         $this->middleware = $middleware;
 
@@ -249,9 +253,11 @@ class Route
      *
      * @param string $injection
      *
-     * @return $this
+     * @throws Exception
+     *
+     * @return self
      */
-    public function inject($injection): self
+    public function inject(string $injection): self
     {
         if (array_key_exists($injection, $this->injections)) {
             throw new Exception('Injection already declared for ' . $injection);
@@ -273,9 +279,10 @@ class Route
      *
      * @return $this
      */
-    public function label($key, $value): self
+    public function label(string $key, mixed $value): self
     {
         $this->labels[$key] = $value;
+
         return $this;
     }
 
@@ -405,7 +412,7 @@ class Route
      *
      * @throws Exception
      */
-    public function setParamValue(string $key, $value): self
+    public function setParamValue(string $key, mixed $value): self
     {
         if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
@@ -420,10 +427,12 @@ class Route
      * Get Param Value
      *
      * @param string $key
+     *
      * @return mixed
+     *
      * @throws Exception
      */
-    public function getParamValue(string $key)
+    public function getParamValue(string $key): mixed
     {
         if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
@@ -439,9 +448,10 @@ class Route
      *
      * @param string $key
      * @param mixed $default
+     *
      * @return mixed
      */
-    public function getLabel($key, $default)
+    public function getLabel(string $key, mixed $default): mixed
     {
         return (isset($this->labels[$key])) ? $this->labels[$key] : $default;
     }

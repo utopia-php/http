@@ -26,7 +26,7 @@ class Text extends Validator
     /**
      * @var int
      */
-    protected $length = 0;
+    protected int $length = 0;
 
     /**
      * Text constructor.
@@ -47,7 +47,7 @@ class Text extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         $message = 'Value must be a valid string';
 
@@ -86,16 +86,16 @@ class Text extends Validator
      *
      * Validation will pass when $value is text with valid length.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if (!\is_string($value)) {
             return false;
         }
 
-        if (\mb_strlen($value) > $this->length && $this->length != 0) {
+        if (\mb_strlen($value) > $this->length && $this->length !== 0) {
             return false;
         }
 
