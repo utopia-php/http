@@ -347,7 +347,7 @@ class Response
     public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): self
     {
         $this->cookies[$name] = [
-            'name'		=> $name,
+            'name'		=> strtolower($name),
             'value'		=> $value,
             'expire'	=> $expire,
             'path' 		=> $path,
