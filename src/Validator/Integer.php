@@ -25,7 +25,7 @@ class Integer extends Validator
     /**
      * @var bool
      */
-    protected $loose = false;
+    protected bool $loose = false;
 
     /**
      * Pass true to accept integer strings as valid integer values
@@ -45,7 +45,7 @@ class Integer extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid integer';
     }
@@ -82,7 +82,7 @@ class Integer extends Validator
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if($this->loose) {
             if(!\is_numeric($value)) {

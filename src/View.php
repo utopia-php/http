@@ -22,27 +22,27 @@ class View
     /**
      * @var self|null
      */
-    protected $parent = null;
+    protected ?self $parent = null;
 
     /**
      * @var string
      */
-    protected $path = '';
+    protected string $path = '';
 
     /**
      * @var bool
      */
-    protected $rendered = false;
+    protected bool $rendered = false;
 
     /**
      * @var array
      */
-    protected $params = [];
+    protected array $params = [];
 
     /**
      * @var array
      */
-    protected $filters = [];
+    protected array $filters = [];
 
     /**
      * Constructor
@@ -50,9 +50,10 @@ class View
      * You can optionally initialize the View object with a template path, although this can also be set later using the $this->setPath($path) method
      *
      * @param string $path
+     *
      * @throws Exception
      */
-    public function __construct($path = '')
+    public function __construct(string $path = '')
     {
         $this->setPath($path);
 
@@ -83,10 +84,12 @@ class View
      *
      * @param string $key
      * @param mixed $value
-     * @return $this
+     *
+     * @return self
+     *
      * @throws Exception
      */
-    public function setParam($key, $value)
+    public function setParam(string $key, mixed $value): self
     {
         if (\strpos($key, '.') !== false) {
             throw new Exception('$key can\'t contain a dot "." character');
@@ -101,9 +104,10 @@ class View
      * Set parent View object conatining this object
      *
      * @param self $view
-     * @return View
+     *
+     * @return self
      */
-    public function setParent(self $view)
+    public function setParent(self $view): self
     {
         $this->parent = $view;
         return $this;
@@ -112,9 +116,9 @@ class View
     /**
      * Return a View instance of the parent view containing this view
      *
-     * @return View|null
+     * @return self|null
      */
-    public function getParent()
+    public function getParent(): ?self
     {
         if (!empty($this->parent)) {
             return $this->parent;
@@ -130,9 +134,10 @@ class View
      *
      * @param string $path
      * @param mixed $default (optional)
+     *
      * @return mixed
      */
-    public function getParam($path, $default = null)
+    public function getParam(string $path, mixed $default = null): mixed
     {
         $path   = \explode('.', $path);
         $temp   = $this->params;
@@ -155,11 +160,13 @@ class View
      *
      * Set object template path that will be used to render view output
      *
-     * @param  string    $path
+     * @param string $path
+     *
      * @throws Exception
-     * @return $this
+     *
+     * @return self
      */
-    public function setPath($path)
+    public function setPath(string $path): self
     {
         $this->path = $path;
 
@@ -172,9 +179,9 @@ class View
      * By enabling rendered state to true, the object will not render its template and will return an empty string instead
      *
      * @param bool $state
-     * @return $this
+     * @return self
      */
-    public function setRendered($state = true)
+    public function setRendered(bool $state = true): self
     {
         $this->rendered = $state;
 
@@ -188,9 +195,9 @@ class View
      *
      * @return bool
      */
-    public function isRendered()
+    public function isRendered(): bool
     {
-        return (bool) $this->rendered;
+        return $this->rendered;
     }
 
     /**
@@ -199,9 +206,9 @@ class View
      * @param string $name
      * @param callable $callback
      *
-     * @return View
+     * @return self
      */
-    public function addFilter(string $name, callable $callback)
+    public function addFilter(string $name, callable $callback): self
     {
         $this->filters[$name] = $callback;
         return $this;
@@ -211,24 +218,26 @@ class View
      * Output and filter value
      *
      * @param mixed $value
-     * @param string|string[] $filter
-     * @return string
+     * @param string|array $filter
+     *
+     * @return mixed
+     *
      * @throws Exception
      */
-    public function print($value, $filter = '')
+    public function print(mixed $value, string|array $filter = ''): mixed
     {
         if (!empty($filter)) {
             if (\is_array($filter)) {
                 foreach ($filter as $callback) {
                     if (!isset($this->filters[$callback])) {
-                        throw new Exception('Filter "' . $callback . '"" is not registered');
+                        throw new Exception('Filter "' . $callback . '" is not registered');
                     }
 
                     $value = $this->filters[$callback]($value);
                 }
             } else {
                 if (!isset($this->filters[$filter])) {
-                    throw new Exception('Filter "' . $filter . '"" is not registered');
+                    throw new Exception('Filter "' . $filter . '" is not registered');
                 }
 
                 $value = $this->filters[$filter]($value);
@@ -244,22 +253,27 @@ class View
      * Render view .phtml template file if template has not been set as rendered yet using $this->setRendered(true).
      * In case path is not readable throws Exception.
      *
-     * @var bool $minify
+     * @param bool $minify
      *
      * @return string
+     *
      * @throws Exception
      */
-    public function render(bool $minify = true)
+    public function render(bool $minify = true): string
     {
         if ($this->rendered) { // Don't render any template
-
             return '';
         }
 
         \ob_start(); //Start of build
 
         if (\is_readable($this->path)) {
-            include $this->path; // Include template file
+            /**
+             * Include template file
+             *
+             * @psalm-suppress UnresolvableInclude
+             */
+            include $this->path; 
         } else {
             \ob_end_clean();
             throw new Exception('"' . $this->path . '" view template is not readable');
@@ -317,10 +331,12 @@ class View
      * Exec child View components
      *
      * @param array|self $view
+     *
      * @return string
+     *
      * @throws Exception
      */
-    public function exec($view)
+    public function exec($view): string
     {
         $output = '';
 
@@ -332,53 +348,12 @@ class View
                 }
             }
         }
-        
+
         if ($view instanceof self) {
             $view->setParent($this);
             $output = $view->render();
         }
 
         return $output;
-    }
-
-    /**
-     * Escape
-     *
-     * Convert all applicable characters to HTML entities
-     *
-     * @param  string $str
-     * @return string
-     * @deprecated Use print method with escape filter
-     */
-    public function escape($str)
-    {
-        return \htmlentities($str, ENT_QUOTES, 'UTF-8');
-    }
-
-    /**
-     * nl2p
-     *
-     * Convert new line breaks text to HTML paragraphs
-     *
-     * @note This function will remove any single line-breaks.
-     * @see http://stackoverflow.com/a/14467470
-     *
-     * @param string $string
-     * @return string
-     * @deprecated Use print method with nl2p filter
-     */
-    public function nl2p($string)
-    {
-        $paragraphs = '';
-
-        foreach (\explode("\n\n", $string) as $line) {
-            if (\trim($line)) {
-                $paragraphs .= '<p>' . $line . '</p>';
-            }
-        }
-
-        $paragraphs = \str_replace("\n", '<br />', $paragraphs);
-
-        return $paragraphs;
     }
 }
