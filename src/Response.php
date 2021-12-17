@@ -590,7 +590,7 @@ class Response
                 'domain' 	=> $cookie['domain'],
                 'secure' 	=> $cookie['secure'],
                 'httponly'	=> $cookie['httponly'],
-                'samesite'	=> $cookie['sameSite'],
+                'samesite'	=> $cookie['samesite'],
             ]);
         }
 
