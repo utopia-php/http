@@ -606,7 +606,7 @@ class App
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
                 if (isset(self::$errors[$group])) {
-                    foreach (self::$errors[$group] as $error) { // Group shutdown hooks
+                    foreach (self::$errors[$group] as $error) { // Group error hooks
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
