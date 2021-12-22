@@ -73,6 +73,13 @@ class Assoc extends Validator
             return false;
         }
 
+        $jsonString = \json_encode($value);
+        $jsonStringSize = \strlen($jsonString);
+
+        if($jsonStringSize > 65535) {
+            return false;
+        }
+
         return \array_keys($value) !== \range(0, \count($value) - 1);
     }
 }
