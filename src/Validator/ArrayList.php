@@ -29,15 +29,22 @@ class ArrayList extends Validator
     protected Validator $validator;
 
     /**
+     * @var int
+     */
+    protected int $length;
+
+    /**
      * Array constructor.
      *
      * Pass a validator that must be applied to each element in this array
      *
      * @param Validator $validator
+     * @param int $length
      */
-    public function __construct(Validator $validator)
+    public function __construct(Validator $validator, int $length = 0)
     {
         $this->validator = $validator;
+        $this->length = $length;
     }
 
     /**
@@ -87,6 +94,10 @@ class ArrayList extends Validator
     public function isValid(mixed $value): bool
     {
         if (!\is_array($value)) {
+            return false;
+        }
+
+        if ($this->length && \count($value) > $this->length) {
             return false;
         }
 

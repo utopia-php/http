@@ -27,10 +27,16 @@ class ArrayListTest extends TestCase
      */
     protected $arrayList2 = null;
 
+    /**
+     * @var ArrayList
+     */
+    protected $arrayList3 = null;
+
     public function setUp():void
     {
         $this->arrayList1 = new ArrayList(new Text(100));
         $this->arrayList2 = new ArrayList(new Numeric());
+        $this->arrayList3 = new ArrayList(new Numeric(), 2);
     }
 
     public function tearDown():void
@@ -54,5 +60,9 @@ class ArrayListTest extends TestCase
         $this->assertEquals($this->arrayList1->getType(), \Utopia\Validator::TYPE_STRING);
         $this->assertEquals($this->arrayList2->getType(), \Utopia\Validator::TYPE_MIXED);
         $this->assertEquals($this->arrayList1->isArray(), true);
+
+        $this->assertEquals(true, $this->arrayList3->isValid([1]));
+        $this->assertEquals(true, $this->arrayList3->isValid([1, 2]));
+        $this->assertEquals(false, $this->arrayList3->isValid([1, 2, 3]));
     }
 }
