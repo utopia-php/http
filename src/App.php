@@ -555,6 +555,10 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
+            self::setResource('args', function() use ($args) {
+                return new Args($args);
+            });
+
             if ($route->getMiddleware()) {
                 foreach (self::$init['*'] as $init) { // Global init hooks
                     \call_user_func_array($init['callback'], $this->getResources($init['resources']));
@@ -568,6 +572,8 @@ class App
                     }
                 }
             }
+
+            $args = $this->getResource('args')->get();
 
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
