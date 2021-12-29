@@ -68,6 +68,11 @@ class ResponseTest extends TestCase
     {
         $result = $this->response->addCookie('name', 'value');
         $this->assertEquals($this->response, $result);
+
+        //test cookie case insensitive
+        $result = $this->response->addCookie('cookieName', 'cookieValue');
+        $result->getCookies()['cookiename']['name'] = 'cookiename';
+        $result->getCookies()['cookiename']['value'] = 'cookieValue';
     }
 
     public function testSend()

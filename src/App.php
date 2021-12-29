@@ -36,7 +36,7 @@ class App
      *
      * @var array
      */
-    protected static $routes = [
+    protected static array $routes = [
         self::REQUEST_METHOD_GET       => [],
         self::REQUEST_METHOD_POST      => [],
         self::REQUEST_METHOD_PUT       => [],
@@ -47,21 +47,21 @@ class App
     /**
      * @var array
      */
-    protected $resources = [
+    protected array $resources = [
         'error' => null,
     ];
 
     /**
      * @var array
      */
-    protected static $resourcesCallbacks = [];
+    protected static array $resourcesCallbacks = [];
 
     /**
      * Current running mode
      *
      * @var string
      */
-    protected static $mode = '';
+    protected static string $mode = '';
 
     /**
      * Errors
@@ -70,7 +70,7 @@ class App
      *
      * @var array
      */
-    protected static $errors = [
+    protected static array $errors = [
         '*' => [],
     ];
 
@@ -81,7 +81,7 @@ class App
      *
      * @var array
      */
-    protected static $init = [
+    protected static array $init = [
         '*' => [],
     ];
 
@@ -92,7 +92,7 @@ class App
      *
      * @var array
      */
-    protected static $shutdown = [
+    protected static array $shutdown = [
         '*' => [],
     ];
 
@@ -103,7 +103,7 @@ class App
      *
      * @var array
      */
-    protected static $options = [
+    protected static array $options = [
         '*' => [],
     ];
 
@@ -112,7 +112,7 @@ class App
      *
      * @var bool
      */
-    protected static $sorted = false;
+    protected static bool $sorted = false;
 
     /**
      * Route
@@ -121,7 +121,7 @@ class App
      *
      * @var Route|null
      */
-    protected $route = null;
+    protected ?Route $route = null;
 
     /**
      * Matches
@@ -130,15 +130,14 @@ class App
      *
      * @var array
      */
-    protected $matches = [];
+    protected array $matches = [];
 
     /**
      * App
      *
      * @param string $timezone
-     * @param bool $mode Current mode
      */
-    public function __construct($timezone)
+    public function __construct(string $timezone)
     {
         \date_default_timezone_set($timezone);
     }
@@ -151,7 +150,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public static function get($url): Route
+    public static function get(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_GET, $url);
     }
@@ -164,7 +163,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public static function post($url): Route
+    public static function post(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_POST, $url);
     }
@@ -177,7 +176,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public static function put($url): Route
+    public static function put(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_PUT, $url);
     }
@@ -190,7 +189,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public static function patch($url): Route
+    public static function patch(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_PATCH, $url);
     }
@@ -203,7 +202,7 @@ class App
      * @param string $url
      * @return Route
      */
-    public static function delete($url): Route
+    public static function delete(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_DELETE, $url);
     }
@@ -293,11 +292,11 @@ class App
      *
      * Method for querying env varialbles. If $key is not found $default value will be returned.
      *
-     * @param  string $key
-     * @param  mixed  $default
+     * @param string $key
+     * @param mixed  $default
      * @return mixed
      */
-    public static function getEnv($key, $default = null)
+    public static function getEnv(string $key, mixed $default = null): mixed
     {
         return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
@@ -336,7 +335,7 @@ class App
      * @return mixed
      * @throws Exception
      */
-    public function getResource(string $name, $fresh = false)
+    public function getResource(string $name, bool $fresh = false): mixed
     {
         if ($name === 'utopia') {
             return $this;
@@ -365,7 +364,7 @@ class App
     public function getResources(array $list): array
     {
         $resources = [];
-        
+
         foreach ($list as $name) {
             $resources[$name] = $this->getResource($name);
         }
@@ -378,6 +377,7 @@ class App
      *
      * @param string $name
      * @param callable $callback
+     * @param array $injections
      *
      * @throws Exception
      *
@@ -392,7 +392,11 @@ class App
     }
 
     /**
+     */
+    /**
      * Is app in production mode?
+     *
+     * @return bool
      */
     public static function isProduction(): bool
     {
@@ -401,6 +405,8 @@ class App
 
     /**
      * Is app in development mode?
+     *
+     * @return bool
      */
     public static function isDevelopment(): bool
     {
@@ -409,6 +415,8 @@ class App
 
     /**
      * Is app in stage mode?
+     *
+     * @return bool
      */
     public static function isStage(): bool
     {
@@ -432,19 +440,19 @@ class App
      *
      * @return null|Route
      */
-    public function getRoute(): ?Route  
+    public function getRoute(): ?Route
     {
-        return $this->route ?? null; 
+        return $this->route ?? null;
     }
 
     /**
      * Set the current route
      *
-     * @param Route $route 
+     * @param Route $route
      *
      * @return self
      */
-    public function setRoute(Route $route): self 
+    public function setRoute(Route $route): self
     {
         $this->route = $route;
         return $this;
@@ -459,7 +467,7 @@ class App
      * @param string $url
      * @return Route
      */
-    protected static function addRoute($method, $url): Route
+    protected static function addRoute(string $method, string $url): Route
     {
         $route = new Route($method, $url);
 
@@ -478,7 +486,7 @@ class App
      * @param Request $request
      * @return null|Route
      */
-    public function match(Request $request)
+    public function match(Request $request): ?Route
     {
         if (null !== $this->route) {
             return $this->route;
@@ -526,6 +534,7 @@ class App
      * Execute a given route with middlewares and error handling
      * 
      * @param Route $route
+     * @param array $args
      * @return self
      */
     public function execute(Route $route, array $args = []): self
@@ -567,9 +576,9 @@ class App
                 if($route->getIsAlias() && isset($route->getAliasParams()[$key])) {
                     $value = $route->getAliasParams()[$key];
                 }
-                
+
                 $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
-                
+
                 $this->validate($key, $param, $value);
                 $arguments[$param['order']] = $value;
             }
@@ -580,7 +589,7 @@ class App
 
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $arguments);
-            
+
             foreach ($groups as $group) {
                 if (isset(self::$shutdown[$group])) {
                     foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
@@ -597,7 +606,7 @@ class App
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
                 if (isset(self::$errors[$group])) {
-                    foreach (self::$errors[$group] as $error) { // Group shutdown hooks
+                    foreach (self::$errors[$group] as $error) { // Group error hooks
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
@@ -632,11 +641,11 @@ class App
         self::setResource('request', function() use ($request) {
             return $request;
         });
-        
+
         self::setResource('response', function() use ($response) {
             return $response;
         });
-        
+
         /*
          * Re-order array
          *
@@ -655,10 +664,10 @@ class App
                 \uksort(self::$routes[$method], function (string $a, string $b) {
                     return \strlen($b) - \strlen($a);
                 });
-                
-                \uksort(self::$routes[$method], function ($a, $b) {                    
+
+                \uksort(self::$routes[$method], function (string $a, string $b) {
                     $result = \count(\explode('/', $b)) - \count(\explode('/', $a));
-                    
+
                     if($result === 0) {
                         return \substr_count($a, ':') - \substr_count($b, ':');
                     }
@@ -669,7 +678,7 @@ class App
 
             self::$sorted = true;
         }
-        
+
         $method     = $request->getMethod();
         $route      = $this->match($request);
         $groups     = ($route instanceof Route) ? $route->getGroups() : [];
@@ -728,7 +737,7 @@ class App
      *
      * @return void
      */
-    protected function validate(string $key, array $param, $value): void
+    protected function validate(string $key, array $param, mixed $value): void
     {
         if ('' !== $value && !is_null($value)) {
             $validator = $param['validator']; // checking whether the class exists

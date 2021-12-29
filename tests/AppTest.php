@@ -186,7 +186,7 @@ class AppTest extends TestCase
         $this->app->init(function($rand) {
             echo 'init-'.$rand.'-';
         }, ['rand']);
-        
+
         $this->app->shutdown(function() {
             echo '-shutdown';
         });
