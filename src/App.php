@@ -534,10 +534,10 @@ class App
      * Execute a given route with middlewares and error handling
      * 
      * @param Route $route
-     * @param array $args
+     * @param Request $request
      * @return self
      */
-    public function execute(Route $route, array $args = []): self
+    public function execute(Route $route, Request $request): self
     {
         $keys       = [];
         $arguments  = [];
@@ -568,6 +568,8 @@ class App
                     }
                 }
             }
+
+            $args = $request->getParams();
 
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
@@ -689,7 +691,7 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request->getParams());
+            return $this->execute($route, $request);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
