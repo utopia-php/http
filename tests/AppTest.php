@@ -14,6 +14,7 @@
 namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Tests\UtopiaRequestTest;
 use Utopia\Validator\Text;
 
 App::setResource('rand', function () {return rand();});
@@ -98,7 +99,7 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, []);
+        $this->app->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -126,7 +127,7 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, []);
+        $this->app->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
         
@@ -134,7 +135,7 @@ class AppTest extends TestCase
         $route->setIsAlias(true);
         
         \ob_start();
-        $this->app->execute($route, []);
+        $this->app->execute($route, new Request());
         $result1 = \ob_get_contents();
         \ob_end_clean();
 
@@ -156,7 +157,9 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, ['x' => 'param-x', 'y' => 'param-y']);
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
+        $this->app->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -175,7 +178,9 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, ['x' => 'param-x', 'y' => 'param-y']);
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
+        $this->app->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -230,14 +235,18 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, ['x' => 'param-x', 'y' => 'param-y']);
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
+        $this->app->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         \ob_start();
-        $this->app->execute($homepage, ['x' => 'param-x', 'y' => 'param-y']);
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
+        $this->app->execute($homepage, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -265,7 +274,7 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, []);
+        $this->app->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -283,7 +292,7 @@ class AppTest extends TestCase
         ;
 
         \ob_start();
-        $this->app->execute($route, []);
+        $this->app->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
