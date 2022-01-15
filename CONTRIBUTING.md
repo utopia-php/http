@@ -6,6 +6,8 @@ We would ❤️ for you to contribute to Framework and help make it better! We w
 
 If you are worried or don’t know where to start, check out our next section explaining what kind of help we could use and where can you get involved. You can reach out with questions to [Eldad Fux (@eldadfux)](https://twitter.com/eldadfux) or [@appwrite_io](https://twitter.com/appwrite_io) on Twitter, and anyone from the [Appwrite team on Discord](https://discord.gg/GSeTUeA). You can also submit an issue, and a maintainer can guide you!
 
+You can get an in-depth understanding of the Utopia-PHP framework in our [Getting Started](docs/Getting-Starting-Guide.md) guide.
+
 ## Code of Conduct
 
 Help us keep framework open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
