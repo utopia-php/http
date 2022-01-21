@@ -253,7 +253,7 @@ The init and shutdown methods take three params:
 
 * ### Init
 
-init method is executed in the beginning when the program execution begins. Here’s an example of the init method, where the init method is executed for all groups indicated by the wildcard symbol `'*'`, adding headers to the `$response` object for each route.
+init method is executed in the beginning when the program execution begins. Here’s an example of the init method, where the init method is executed for all groups indicated by the wildcard symbol `'*'`.
 ```php
 App::init(function($response) {
    /* 
