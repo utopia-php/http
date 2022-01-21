@@ -277,7 +277,6 @@ App::shutdown(function($request) {
 }, ['request'], '*');
 ```
 
-An example of the shutdown method is shown above. The shutdown method uses the Utopia CLI lib to log api to the console; this is done for routes in the `api` group in the current example.
 
 # Running Locally
 If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the Utopia-PHP/framework dependency using `composer require utopia-php/framework` command.
