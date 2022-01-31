@@ -30,7 +30,7 @@ class Numeric extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid number';
     }
@@ -64,10 +64,10 @@ class Numeric extends Validator
      *
      * Validation will pass when $value is numeric.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if (!\is_numeric($value)) {
             return false;

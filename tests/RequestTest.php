@@ -248,4 +248,50 @@ class RequestTest extends TestCase
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
     }
+
+    public function testRange()
+    {
+        $_SERVER['HTTP_RANGE'] = "bytes=0-499";
+        
+        $this->assertEquals('bytes', $this->request->getRangeUnit());
+        $this->assertEquals(0, $this->request->getRangeStart());
+        $this->assertEquals(499, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = " 0-499";
+        
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getRangeUnit());
+        $this->assertEquals(null, $this->request->getRangeStart());
+        $this->assertEquals(null, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = "bytes=0-";
+        $this->request = new Request();
+        $this->assertEquals('bytes', $this->request->getRangeUnit());
+        $this->assertEquals(0, $this->request->getRangeStart());
+        $this->assertEquals(null, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = "bytes=0--499";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getRangeUnit());
+        $this->assertEquals(null, $this->request->getRangeStart());
+        $this->assertEquals(null, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = "bytes=0-499test";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getRangeUnit());
+        $this->assertEquals(null, $this->request->getRangeStart());
+        $this->assertEquals(null, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = "bytes=0-49.9";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getRangeUnit());
+        $this->assertEquals(null, $this->request->getRangeStart());
+        $this->assertEquals(null, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = "bytes=0-49,9";
+        $this->request = new Request();
+        $this->assertEquals(null, $this->request->getRangeUnit());
+        $this->assertEquals(null, $this->request->getRangeStart());
+        $this->assertEquals(null, $this->request->getRangeEnd());
+    }
 }

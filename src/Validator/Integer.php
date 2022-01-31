@@ -13,7 +13,6 @@
 namespace Utopia\HTTP\Validator;
 
 use Utopia\Validator;
-
 /**
  * Integer
  *
@@ -24,13 +23,29 @@ use Utopia\Validator;
 class Integer extends Validator
 {
     /**
+     * @var bool
+     */
+    protected bool $loose = false;
+
+    /**
+     * Pass true to accept integer strings as valid integer values
+     * This option is good for validating query string params.
+     *
+     * @param bool $loose
+     */
+    public function __construct(bool $loose = false)
+    {
+        $this->loose = $loose;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid integer';
     }
@@ -67,8 +82,14 @@ class Integer extends Validator
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
+        if($this->loose) {
+            if(!\is_numeric($value)) {
+                return false;
+            }
+            $value = $value+0;
+        }
         if (!\is_int($value)) {
             return false;
         }

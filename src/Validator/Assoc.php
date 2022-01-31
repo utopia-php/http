@@ -30,7 +30,7 @@ class Assoc extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid object.';
     }
@@ -64,12 +64,19 @@ class Assoc extends Validator
      *
      * Validation will pass when $value is valid assoc array.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid($value): bool
     {
         if (!\is_array($value)) {
+            return false;
+        }
+
+        $jsonString = \json_encode($value);
+        $jsonStringSize = \strlen($jsonString);
+
+        if($jsonStringSize > 65535) {
             return false;
         }
 

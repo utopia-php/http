@@ -22,46 +22,45 @@ namespace Utopia\HTTP\Validator;
 class Range extends Numeric
 {
     /**
-     * @var int
+     * @var int|float
      */
-    protected $min;
+    protected int|float $min;
 
     /**
-     * @var int
+     * @var int|float
      */
-    protected $max;
+    protected int|float $max;
 
     /**
      * @var string
      */
-    protected $format;
+    protected string $format;
 
     /**
-     * @param int $min
-     * @param int $max
+     * @param int|float $min
+     * @param int|float $max
      * @param string $format
      */
-    public function __construct($min, $max, $format = self::TYPE_INTEGER)
+    public function __construct(int|float $min, int|float $max, string $format = self::TYPE_INTEGER)
     {
         $this->min = $min;
         $this->max = $max;
         $this->format = $format;
-    }
-
+}
     /**
      * Get Range Minimum Value
-     * @return int
+     * @return int|float
      */
-    public function getMin(): int
+    public function getMin(): int|float
     {
         return $this->min;
     }
 
     /**
      * Get Range Maximum Value
-     * @return int
+     * @return int|float
      */
-    public function getMax(): int
+    public function getMax(): int|float
     {
         return $this->max;
     }
@@ -116,11 +115,12 @@ class Range extends Numeric
      *
      * Validation will pass when $value number is bigger or equal than $min number and lower or equal than $max.
      * Not strict, considers any valid integer to be a valid float
+     * Considers infinity to be a valid integer
      *
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value): bool
+    public function isValid(mixed $value): bool
     {
         if (!parent::isValid($value)) {
             return false;
@@ -128,13 +128,18 @@ class Range extends Numeric
 
         switch ($this->format) {
             case self::TYPE_INTEGER:
-                $value = $value+0;
+                // Accept infinity as an integer
+                // Since gettype(INF) === TYPE_FLOAT
+                if ($value === INF || $value === -INF) {
+                    break; // move to check if value is within range
+                }
+                $value = $value + 0;
                 if(!is_int($value)) {
                     return false;
                 }
                 break;
             case self::TYPE_FLOAT:
-                $value = $value+0;
+                $value = $value + 0;
                 if(!is_float($value) && !is_int($value)) {
                     return false;
                 }

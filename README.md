@@ -65,7 +65,8 @@ Library | Description
 **[Utopia Audit](https://github.com/utopia-php/audit)** | Simple PHP library for audit logging users actions and system events 
 **[Utopia Cache](https://github.com/utopia-php/cache)** | Simple PHP library for managing cache with different storage adapters.
 **[Utopia CLI](https://github.com/utopia-php/cli)** | Simple PHP library for for building simple command line tools.
-**[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for for managing your app configuration.
+**[Utopia Config](https://github.com/utopia-php/config)** | Simple PHP library for managing your app configuration.
+**[Utopia Database](https://github.com/utopia-php/database)** | Simple PHP library for managing application persistency. It supports multiple database adapters. 
 **[Utopia Domains](https://github.com/utopia-php/domains)** | Simple PHP library for parsing domain names.
 **[Utopia Image](https://github.com/utopia-php/image)** | Simple PHP library for creating common image manipulations that is easy to use.
 **[Utopia Locale](https://github.com/utopia-php/locale)** | Simple PHP library for adding support to multiple locales in your app or API.
@@ -87,7 +88,15 @@ All code contributions - including those of people having commit access - must g
 
 Fork the project, create a feature branch, and send us a pull request.
 
+You can refer to the [Contributing Guide](https://github.com/utopia-php/framework/blob/master/CONTRIBUTING.md) for more info.
+
 For security issues, please email security@appwrite.io instead of posting a public issue in GitHub.
+
+### Testing
+
+  - `docker-compose up -d`
+  - `docker-compose exec web  vendor/bin/phpunit --configuration phpunit.xml`
+  - `docker-compose exec web vendor/bin/psalm --show-info=true`
 
 ## Copyright and license
 

@@ -30,7 +30,7 @@ abstract class Response
     const CONTENT_TYPE_IMAGE_WEBP   = 'image/webp';
     const CONTENT_TYPE_IMAGE_ICON   = 'image/x-icon';
     const CONTENT_TYPE_IMAGE_BMP    = 'image/bmp';
-    
+
     /**
      * Chrsets
      */
@@ -130,53 +130,73 @@ abstract class Response
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED       => 'HTTP Version Not Supported',
     ];
 
+    /**
+     * Mime Types with compression support
+     *
+     * @var array
+     */
+    protected $compressed = [
+        'text/plain' => true,
+        'text/css' => true,
+        'text/javascript' => true,
+        'application/javascript' => true,
+        'text/html' => true,
+        'text/html; charset=UTF-8' => true,
+        'application/json' => true,
+        'application/json; charset=UTF-8' => true,
+        'image/svg+xml' => true,
+        'application/xml+rss' => true,
+    ];
+
     const COOKIE_SAMESITE_NONE      = 'None';
     const COOKIE_SAMESITE_STRICT    = 'Strict';
     const COOKIE_SAMESITE_LAX       = 'Lax';
 
+    const CHUNK_SIZE = 2000000; //2mb
+
     /**
      * @var int
      */
-    protected $statusCode = self::STATUS_CODE_OK;
+    protected int $statusCode = self::STATUS_CODE_OK;
 
     /**
      * @var string
      */
-    protected $contentType = '';
+    protected string $contentType = '';
 
     /**
      * @var bool
      */
-    protected $disablePayload = false;
+    protected bool $disablePayload = false;
 
     /**
      * @var bool
      */
-    protected $sent = false;
+    protected bool $sent = false;
 
     /**
      * @var array
      */
-    protected $headers = [];
+    protected array $headers = [];
 
     /**
      * @var array
      */
-    protected $cookies = [];
+    protected array $cookies = [];
 
     /**
      * @var float
      */
-    protected $startTime = 0;
+    protected float $startTime = 0;
 
     /**
      * @var int
      */
-    protected $size = 0;
+    protected int $size = 0;
 
     /**
      * Response constructor.
-     * 
+     *
      * @param float $time response start time
      */
     public function __construct(float $time = 0)
@@ -189,7 +209,8 @@ abstract class Response
      *
      * Set HTTP content type header.
      *
-     * @param  string   $type
+     * @param string $type
+     * @param string $charset
      * @return self
      */
     public function setContentType(string $type, string $charset = ''): self
@@ -203,8 +224,6 @@ abstract class Response
      * Get content type
      *
      * Get HTTP content type header.
-     *
-     * @param string $type
      *
      * @return string
      */
@@ -251,6 +270,7 @@ abstract class Response
     public function disablePayload(): self
     {
         $this->disablePayload = true;
+
         return $this;
     }
 
@@ -260,6 +280,7 @@ abstract class Response
     public function enablePayload(): self
     {
         $this->disablePayload = false;
+
         return $this;
     }
 
@@ -314,17 +335,18 @@ abstract class Response
      * Add an HTTP cookie to response header
      *
      * @param string $name
-     * @param string $value    [optional]
-     * @param int    $expire   [optional]
-     * @param string $path     [optional]
-     * @param string $domain   [optional]
-     * @param bool   $secure   [optional]
-     * @param bool   $httponly [optional]
-     * @param string $sameSite [optional]
+     * @param string $value
+     * @param int    $expire
+     * @param string $path
+     * @param string $domain
+     * @param bool   $secure
+     * @param bool   $httponly
+     * @param string $sameSite
      * @return self
      */
     public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): self
     {
+        $name = strtolower($name);
         $this->cookies[$name] = [
             'name'		=> $name,
             'value'		=> $value,
@@ -374,12 +396,11 @@ abstract class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param string $body
-     * @param int $exit exit code or don't exit if code is null
      *
      * @return void
      */
-    abstract public function send(string $body = '', int $exit = null): void;
-
+    abstract public function send(string $body = ''): void;
+    
     /**
      * Append headers
      *
@@ -416,8 +437,10 @@ abstract class Response
      *
      * @throws Exception
      * @see http://tools.ietf.org/html/rfc2616
+     *
+     * @return void
      */
-    public function redirect(string $url, int $statusCode = 301, int $exit = null): void
+    public function redirect(string $url, int $statusCode = 301): void
     {
         if (300 == $statusCode) {
             \trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
@@ -426,7 +449,7 @@ abstract class Response
         $this
             ->addHeader('Location', $url)
             ->setStatusCode($statusCode)
-            ->send('', $exit)
+            ->send('')
         ;
     }
 
@@ -438,6 +461,8 @@ abstract class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param string $data
+     *
+     * @return void
      */
     public function html(string $data): void
     {
@@ -455,6 +480,8 @@ abstract class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param string $data
+     *
+     * @return void
      */
     public function text(string $data): void
     {
@@ -473,6 +500,8 @@ abstract class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param mixed $data
+     *
+     * @return void
      */
     public function json($data): void
     {
@@ -495,7 +524,9 @@ abstract class Response
      * @see http://en.wikipedia.org/wiki/JSONP
      *
      * @param string $callback
-     * @param array  $data
+     * @param array $data
+     *
+     * @return void
      */
     public function jsonp(string $callback, array $data): void
     {
@@ -512,13 +543,16 @@ abstract class Response
      * It sets relevant content type header ('text/html') and convert a PHP array ($data) to valid JSON using native json_encode
      *
      * @param string $callback
-     * @param array  $data
+     * @param array $data
+     *
+     * @return void
      */
     public function iframe(string $callback, array $data): void
     {
         $this
             ->setContentType(self::CONTENT_TYPE_HTML, self::CHARSET_UTF8)
-            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>');
+            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>')
+        ;
     }
 
     /**
@@ -528,11 +562,14 @@ abstract class Response
      *
      * The server has successfully fulfilled the request
      *  and that there is no additional content to send in the response payload body.
+     *
+     * @return void
      */
     public function noContent(): void
     {
         $this
             ->setStatusCode(self::STATUS_CODE_NOCONTENT)
-            ->send('');
+            ->send('')
+        ;
     }
 }

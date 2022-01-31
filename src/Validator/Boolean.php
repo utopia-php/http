@@ -26,7 +26,7 @@ class Boolean extends Validator
     /**
      * @var bool
      */
-    protected $loose = false;
+    protected bool $loose = false;
 
     /**
      * Pass true to accept true and false strings and integers 0 and 1 as valid boolean values
@@ -46,7 +46,7 @@ class Boolean extends Validator
      *
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid boolean';
     }
@@ -80,10 +80,10 @@ class Boolean extends Validator
      *
      * Validation will pass when $value has a boolean value.
      *
-     * @param  mixed $value
+     * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid($value): bool
     {
         if ($this->loose && ($value === 'true' || $value === 'false')) { // Accept strings
             return true;

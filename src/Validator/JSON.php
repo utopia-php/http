@@ -19,7 +19,7 @@ class JSON extends Validator
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return 'Value must be a valid JSON string';
     }
@@ -52,7 +52,7 @@ class JSON extends Validator
      * @param mixed $value
      * @return bool
      */
-    public function isValid($value)
+    public function isValid(mixed $value): bool
     {
         if (\is_array($value)) {
             return true;
@@ -62,7 +62,7 @@ class JSON extends Validator
             \json_decode($value);
             return (\json_last_error() == JSON_ERROR_NONE);
         }
-        
+
         return false;
     }
 }

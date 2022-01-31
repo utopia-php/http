@@ -10,6 +10,7 @@
         >
     <testsuites>
         <testsuite name="Application Test Suite">
+            <file>./tests/e2e/Client.php</file>
             <directory>./tests/</directory>
         </testsuite>
     </testsuites>

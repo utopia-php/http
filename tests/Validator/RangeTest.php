@@ -66,4 +66,17 @@ class RangeTest extends TestCase
         $this->assertEquals($this->rangeFloat->isArray(), false);
         $this->assertEquals($this->rangeFloat->getType(), \Utopia\Validator::TYPE_FLOAT);
     }
+
+    public function testInfinity()
+    {
+        $integer = new Range(5, INF, \Utopia\Validator::TYPE_INTEGER);
+        $float = new Range(-INF, 45.6, \Utopia\Validator::TYPE_FLOAT);
+
+        $this->assertEquals(true, $integer->isValid(25));
+        $this->assertEquals(false, $integer->isValid(3));
+        $this->assertEquals(true, $integer->isValid(INF));
+        $this->assertEquals(true, $float->isValid(32.1));
+        $this->assertEquals(false, $float->isValid(97.6));
+        $this->assertEquals(true, $float->isValid(-INF));
+    }
 }
