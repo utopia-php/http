@@ -25,7 +25,7 @@ class Request extends HTTPRequest
      * @param  mixed  $default
      * @return mixed
      */
-    public function getParam(string $key, $default = null)
+    public function getParam(string $key, mixed $default = null): mixed
     {
         switch ($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
@@ -75,7 +75,7 @@ class Request extends HTTPRequest
      * @param  mixed  $default
      * @return mixed
      */
-    public function getQuery(string $key, $default = null)
+    public function getQuery(string $key, mixed $default = null): mixed
     {
         return (isset($_GET[$key])) ? $_GET[$key] : $default;
     }
@@ -89,7 +89,7 @@ class Request extends HTTPRequest
      * @param  mixed  $default
      * @return mixed
      */
-    public function getPayload(string $key, $default = null)
+    public function getPayload(string $key, mixed $default = null): mixed
     {
         $payload = $this->generateInput();
 
@@ -105,7 +105,7 @@ class Request extends HTTPRequest
      * @param  mixed  $default
      * @return mixed
      */
-    public function getServer(string $key, $default = null)
+    public function getServer(string $key, mixed $default = null): mixed
     {
         return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
@@ -209,7 +209,7 @@ class Request extends HTTPRequest
      */
     public function getReferer(string $default = ''): string
     {
-        return $this->getServer('HTTP_REFERER', $default);
+        return (string) $this->getServer('HTTP_REFERER', $default);
     }
 
     /**
@@ -221,7 +221,7 @@ class Request extends HTTPRequest
      */
     public function getOrigin(string $default = ''): string
     {
-        return $this->getServer('HTTP_ORIGIN', $default);
+        return (string) $this->getServer('HTTP_ORIGIN', $default);
     }
 
     /**
@@ -233,7 +233,7 @@ class Request extends HTTPRequest
      */
     public function getUserAgent(string $default = ''): string
     {
-        return $this->getServer('HTTP_USER_AGENT', $default);
+        return (string) $this->getServer('HTTP_USER_AGENT', $default);
     }
 
     /**
@@ -245,7 +245,7 @@ class Request extends HTTPRequest
      */
     public function getAccept(string $default = ''): string
     {
-        return $this->getServer('HTTP_ACCEPT', $default);
+        return (string) $this->getServer('HTTP_ACCEPT', $default);
     }
 
     /**
