@@ -396,11 +396,48 @@ abstract class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param string $body
+     * @param int $exit exit code or don't exit if code is null
      *
      * @return void
      */
-    abstract public function send(string $body = ''): void;
-    
+    public function send(string $body = ''): void
+    {
+        if($this->sent) {
+            return;
+        }
+
+        $this->sent = true;
+
+        $this->addHeader('X-Debug-Speed', (string)(\microtime(true) - $this->startTime));
+
+        $this
+            ->appendCookies()
+            ->appendHeaders()
+        ;
+
+        if (!$this->disablePayload) {
+            $length = strlen($body);
+
+            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
+
+            if(array_key_exists(
+                $this->contentType,
+                $this->compressed
+                ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+                $this->end($body);
+            }
+            else {
+                for ($i=0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
+                    $this->write(substr($body, ($i * self::CHUNK_SIZE), min(self::CHUNK_SIZE, $length - ($i * self::CHUNK_SIZE))));
+                }
+
+                $this->end();
+            }
+
+            $this->disablePayload();
+        }
+    }
+
     /**
      * Append headers
      *
@@ -409,7 +446,23 @@ abstract class Response
      *
      * @return self
      */
-    abstract protected function appendHeaders(): self;
+    protected function appendHeaders(): self
+    {
+        // Send status code header
+        $this->sendStatus($this->statusCode);
+
+        // Send content type header
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType);
+        }
+
+        // Set application headers
+        foreach ($this->headers as $key => $value) {
+            $this->sendHeader($key, $value);
+        }
+
+        return $this;
+    }
 
     /**
      * Append cookies
@@ -418,7 +471,109 @@ abstract class Response
      *
      * @return self
      */
-    abstract protected function appendCookies(): self;
+    protected function appendCookies(): self
+    {
+        foreach ($this->cookies as $cookie) {
+            $this->sendCookie($cookie['name'], $cookie['value'], [
+                'expires'	=> $cookie['expire'],
+                'path' 		=> $cookie['path'],
+                'domain' 	=> $cookie['domain'],
+                'secure' 	=> $cookie['secure'],
+                'httponly'	=> $cookie['httponly'],
+                'samesite'	=> $cookie['samesite'],
+            ]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Write
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    abstract protected function write(string $content): void;
+
+    /**
+     * End
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    abstract protected function end(string $content=null): void;
+
+    /**
+     * Send Status Code
+     * 
+     * @param int $statusCode
+     * 
+     * @return void
+     */
+    abstract protected function sendStatus(int $statusCode): void;
+
+    /**
+     * Send Header
+     * 
+     * @param string $key
+     * @param string $value
+     * 
+     * @return void
+     */
+    abstract protected function sendHeader(string $key, string $value): void;
+
+    /**
+     * Send Cookie
+     *
+     * Send a cookie
+     * 
+     * @param string $name
+     * @param string $value
+     * @param array $options
+     *
+     * @return void
+     */
+    abstract protected function sendCookie(string $name, string $value, array $options): void;
+
+    /**
+     * Output response
+     *
+     * Generate HTTP response output including the response header (+cookies) and body and prints them.
+     *
+     * @param string $body
+     * @param bool $last
+     *
+     * @return void
+     */
+    public function chunk(string $body = '', bool $end = false): void
+    {
+        if ($this->sent) {
+            return;
+        }
+
+        if ($end) {
+            $this->sent = true;
+        }
+
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+
+        $this
+            ->appendCookies()
+            ->appendHeaders()
+        ;
+
+        if (!$this->disablePayload) {
+            $this->write($body);
+            if ($end) {
+                $this->disablePayload();
+                $this->end();
+            }
+        } else {
+            $this->end();
+        }
+    }
 
     /**
      * Redirect

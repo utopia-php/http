@@ -43,106 +43,76 @@ class Response extends UtopiaResponse
     }
 
     /**
-     * Output response
+     * Write
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    protected function write(string $content): void
+    {
+        $this->swoole->write($content);
+    }
+
+    /**
+     * End
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    protected function end(string $content=null): void
+    {
+        $this->swoole->end($content);
+    }
+
+    /**
+     * Send Status Code
+     * 
+     * @param int $statusCode
+     * 
+     * @return void
+     */
+    protected function sendStatus(int $statusCode): void
+    {
+        $this->swoole->status($statusCode);
+    }
+
+    /**
+     * Send Header
+     * 
+     * @param string $key
+     * @param string $value
+     * 
+     * @return void
+     */
+    protected function sendHeader(string $key, string $value): void
+    {
+        $this->swoole->header($key, $value);
+    }
+
+    /**
+     * Send Cookie
      *
-     * Generate HTTP response output including the response header (+cookies) and body and prints them.
-     *
-     * @param string $body
-     * @param int $exit exit code or don't exit if code is null
+     * Send a cookie
+     * 
+     * @param string $name
+     * @param string $value
+     * @param array $options
      *
      * @return void
      */
-    public function send(string $body = '', int $exit = null): void
+    protected function sendCookie(string $name, string $value, array $options): void
     {
-        if($this->sent) {
-            return;
-        }
-
-        $this->sent = true;
-        
-        $this->addHeader('X-Debug-Speed', (string)(microtime(true) - $this->startTime));
-
-        $this
-            ->appendCookies()
-            ->appendHeaders()
-        ;
-        
-        if(!$this->disablePayload) {
-
-            $chunk = 2000000; // Max chunk of 2 mb
-            $length = strlen($body);
-
-            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
-
-            if(array_key_exists(
-                $this->contentType,
-                $this->compressed
-                ) && ($length <= $chunk)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
-                $this->swoole->end($body);
-            }
-            else {
-                for ($i=0; $i < ceil($length / $chunk); $i++) {
-                    $this->swoole->write(substr($body, ($i * $chunk), min((($i * $chunk) + $chunk), $length)));
-                }
-
-                $this->swoole->end();
-            }
-
-            $this->disablePayload();
-        }
-        else {
-            $this->swoole->end();
-        }
-    }
-
-    /**
-     * Append headers
-     *
-     * Iterating over response headers to generate them using native PHP header function.
-     * This method is also responsible for generating the response and content type headers.
-     *
-     * @return self
-     */
-    protected function appendHeaders(): self
-    {
-        // Send status code header
-        $this->swoole->status((string)$this->statusCode);
-
-        // Send content type header
-        $this
-            ->addHeader('Content-Type', $this->contentType)
-        ;
-
-        // Set application headers
-        foreach ($this->headers as $key => $value) {
-            $this->swoole->header($key, $value);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Append cookies
-     *
-     * Iterating over response cookies to generate them using native PHP cookie function.
-     *
-     * @return self
-     */
-    protected function appendCookies(): self
-    {
-        foreach ($this->cookies as $cookie) {
-            $this->swoole->cookie(
-                $cookie['name'],
-                $cookie['value'],
-                $cookie['expire'],
-                $cookie['path'],
-                $cookie['domain'],
-                $cookie['secure'],
-                $cookie['httponly'],
-                $cookie['samesite'],
-            );
-        }
-
-        return $this;
+        $this->swoole->cookie(
+            $name,
+            $value,
+            $options['expire'] ?? 0,
+            $options['path'] ?? "",
+            $options['domain'] ?? "",
+            $options['secure'] ?? false,
+            $options['httponly'] ?? false,
+            $options['samesite'] ?? false,
+        );
     }
 }
