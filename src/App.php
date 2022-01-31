@@ -9,7 +9,7 @@
  * @author Appwrite Team <team@appwrite.io>
  */
 
-namespace Utopia;
+namespace Utopia\HTTP;
 
 class App
 {
@@ -770,5 +770,4 @@ class App
         ];
         self::$sorted = false;
     }
-
 }

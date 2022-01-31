@@ -10,7 +10,7 @@
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia;
+namespace Utopia\HTTP;
 
 class Response
 {

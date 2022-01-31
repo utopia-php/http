@@ -11,7 +11,7 @@
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Tests;
+namespace Utopia\HTTP\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Request;
