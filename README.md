@@ -21,9 +21,9 @@ Init your first application:
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
-use Utopia\Request;
-use Utopia\Response;
+use Utopia\HTTP\App;
+use Utopia\HTTP\Request;
+use Utopia\HTTP\Response;
 
 App::get('/hello-world') // Define Route
     ->inject('request')

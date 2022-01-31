@@ -14,7 +14,7 @@
 namespace Utopia\HTTP;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Validator\Text;
+use Utopia\HTTP\Validator\Text;
 
 class RouteTest extends TestCase
 {

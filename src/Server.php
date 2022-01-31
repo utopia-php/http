@@ -2,7 +2,7 @@
 namespace Utopia\HTTP;
 
 use Throwable;
-use Utopia\Adapter;
+use Utopia\HTTP\Adapter;
 
 /**
  * Utopia PHP Framework

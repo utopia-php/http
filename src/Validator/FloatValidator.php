@@ -12,7 +12,7 @@
 
 namespace Utopia\HTTP\Validator;
 
-use Utopia\Validator;
+use Utopia\HTTP\Validator;
 
 /**
  * Float
