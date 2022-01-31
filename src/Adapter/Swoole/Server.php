@@ -34,6 +34,7 @@ class Server
      */
     public function start(): void
     {
+        Files::load(__DIR__ . '/../public');
 
         $this->server->on('start', function (Server $http) {
             // $app = new App('UTC');

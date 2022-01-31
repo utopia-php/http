@@ -12,7 +12,7 @@
 
 namespace Utopia\HTTP;
 
-class Response
+abstract class Response
 {
     /**
      * HTTP content types
@@ -378,33 +378,7 @@ class Response
      *
      * @return void
      */
-    public function send(string $body = '', int $exit = null): void
-    {
-        if($this->sent) {
-            return;
-        }
-
-        $this->sent = true;
-        
-        $this->addHeader('X-Debug-Speed', (string)(\microtime(true) - $this->startTime));
-
-        $this
-            ->appendCookies()
-            ->appendHeaders()
-        ;
-
-        if (!$this->disablePayload) {
-            $this->size = $this->size + \mb_strlen(\implode("\n", \headers_list())) + \mb_strlen($body, '8bit');
-
-            echo $body;
-
-            $this->disablePayload();
-        }
-
-        if (!\is_null($exit)) {
-            exit($exit); // Exit with code
-        }
-    }
+    abstract public function send(string $body = '', int $exit = null): void;
 
     /**
      * Append headers
@@ -414,25 +388,7 @@ class Response
      *
      * @return self
      */
-    protected function appendHeaders(): self
-    {
-        // Send status code header
-        \http_response_code($this->statusCode);
-
-        // Send content type header
-        if (!empty($this->contentType)) {
-            $this
-                ->addHeader('Content-Type', $this->contentType)
-            ;
-        }
-
-        // Set application headers
-        foreach ($this->headers as $key => $value) {
-            \header($key . ': ' . $value);
-        }
-
-        return $this;
-    }
+    abstract protected function appendHeaders(): self;
 
     /**
      * Append cookies
@@ -441,25 +397,7 @@ class Response
      *
      * @return self
      */
-    protected function appendCookies(): self
-    {
-        foreach ($this->cookies as $cookie) {
-            if (\version_compare(PHP_VERSION, '7.3.0', '<')) {
-                \setcookie($cookie['name'], $cookie['value'], $cookie['expire'], $cookie['path'], $cookie['domain'], $cookie['secure'], $cookie['httponly']);
-            } else {
-                \setcookie($cookie['name'], $cookie['value'], [
-                    'expires' => $cookie['expire'],
-                    'path' => $cookie['path'],
-                    'domain' => $cookie['domain'],
-                    'secure' => $cookie['secure'],
-                    'httponly' => $cookie['httponly'],
-                    'samesite' => $cookie['samesite'],
-                ]);
-            }
-        }
-
-        return $this;
-    }
+    abstract protected function appendCookies(): self;
 
     /**
      * Redirect

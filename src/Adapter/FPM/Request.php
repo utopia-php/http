@@ -1,28 +1,21 @@
 <?php
+/**
+ * Utopia PHP Framework
+ *
+ * @package Framework
+ * @subpackage Core
+ *
+ * @link https://github.com/utopia-php/framework
+ * @author Appwrite Team <team@appwrite.io>
+ * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
+ */
 
-namespace Utopia\HTTP\Adapter\Swoole;
+namespace Utopia\HTTP\Adapter\FPM;
 
-use Exception;
-use Utopia\HTTP\Request as UtopiaRequest;
-use Swoole\Http\Request as SwooleRequest;
+use Utopia\HTTP\Request as HTTPRequest;
 
-class Request extends UtopiaRequest
+class Request extends HTTPRequest
 {
-    /**
-     * Swoole Request Object
-     * 
-     * @var SwooleRequest
-     */
-    protected $swoole;
-
-    /**
-     * Request constructor.
-     */
-    public function __construct(SwooleRequest $request)
-    {
-        $this->swoole = $request;
-    }
-
     /**
      * Get Param
      *
@@ -34,7 +27,7 @@ class Request extends UtopiaRequest
      */
     public function getParam(string $key, $default = null)
     {
-        switch($this->getMethod()) {
+        switch ($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
                 return $this->getQuery($key, $default);
                 break;
@@ -58,9 +51,9 @@ class Request extends UtopiaRequest
      */
     public function getParams(): array
     {
-        switch($this->getMethod()) {
+        switch ($this->getServer('REQUEST_METHOD', '')) {
             case self::METHOD_GET:
-                return (!empty($this->swoole->get)) ? $this->swoole->get : [];
+                return $_GET;
                 break;
             case self::METHOD_POST:
             case self::METHOD_PUT:
@@ -69,10 +62,8 @@ class Request extends UtopiaRequest
                 return $this->generateInput();
                 break;
             default:
-                return (!empty($this->swoole->get)) ? $this->swoole->get : [];
+                return $_GET;
         }
-
-        return [];
     }
 
     /**
@@ -86,7 +77,7 @@ class Request extends UtopiaRequest
      */
     public function getQuery(string $key, $default = null)
     {
-        return (isset($this->swoole->get[$key])) ? $this->swoole->get[$key] : $default;
+        return (isset($_GET[$key])) ? $_GET[$key] : $default;
     }
 
     /**
@@ -116,7 +107,7 @@ class Request extends UtopiaRequest
      */
     public function getServer(string $key, $default = null)
     {
-        return (isset($this->swoole->server) && isset($this->swoole->server[$key])) ? $this->swoole->server[$key] : $default;
+        return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
     }
 
     /**
@@ -125,10 +116,12 @@ class Request extends UtopiaRequest
      * Returns users IP address.
      * Support HTTP_X_FORWARDED_FOR header usually return
      *  from different proxy servers or PHP default REMOTE_ADDR
+     *
+     * @return string
      */
     public function getIP(): string
     {
-        $ips = explode(',',$this->getHeader('x-forwarded-for', $this->getServer('remote_addr', '0.0.0.0')));
+        $ips = explode(',',$this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0')));
         return trim($ips[0] ?? '');
     }
 
@@ -143,13 +136,7 @@ class Request extends UtopiaRequest
      */
     public function getProtocol(): string
     {
-        $protocol = $this->getHeader('x-forwarded-proto', $this->getServer('server_protocol', 'https'));
-
-        if($protocol === 'HTTP/1.1') {
-            return 'http';
-        }
-
-        return $protocol;
+        return $this->getServer('HTTP_X_FORWARDED_PROTO', $this->getServer('REQUEST_SCHEME', 'https'));
     }
 
     /**
@@ -161,7 +148,7 @@ class Request extends UtopiaRequest
      */
     public function getPort(): string
     {
-        return $this->getHeader('x-forwarded-port', (string)\parse_url($this->getProtocol().'://'.$this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_PORT));
+        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
     }
 
     /**
@@ -173,7 +160,7 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        return \parse_url($this->getProtocol().'://'.$this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
+        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
     }
 
     /**
@@ -185,7 +172,7 @@ class Request extends UtopiaRequest
      */
     public function getMethod(): string
     {
-        return $this->getServer('request_method', 'UNKNOWN');
+        return $this->getServer('REQUEST_METHOD', 'UNKNOWN');
     }
 
     /**
@@ -197,7 +184,20 @@ class Request extends UtopiaRequest
      */
     public function getURI(): string
     {
-        return $this->getServer('request_uri', '');
+        return $this->getServer('REQUEST_URI', '');
+    }
+
+    /**
+     * Get files
+     *
+     * Method for querying upload files data. If $key is not found empty array will be returned.
+     *
+     * @param  string $key
+     * @return array
+     */
+    public function getFiles(string $key): array
+    {
+        return (isset($_FILES[$key])) ? $_FILES[$key] : [];
     }
 
     /**
@@ -209,7 +209,7 @@ class Request extends UtopiaRequest
      */
     public function getReferer(string $default = ''): string
     {
-        return $this->getHeader('referer', '');
+        return $this->getServer('HTTP_REFERER', $default);
     }
 
     /**
@@ -221,7 +221,7 @@ class Request extends UtopiaRequest
      */
     public function getOrigin(string $default = ''): string
     {
-        return $this->getHeader('origin', $default);
+        return $this->getServer('HTTP_ORIGIN', $default);
     }
 
     /**
@@ -233,7 +233,7 @@ class Request extends UtopiaRequest
      */
     public function getUserAgent(string $default = ''): string
     {
-        return $this->getHeader('user-agent', $default);
+        return $this->getServer('HTTP_USER_AGENT', $default);
     }
 
     /**
@@ -245,21 +245,7 @@ class Request extends UtopiaRequest
      */
     public function getAccept(string $default = ''): string
     {
-        return $this->getHeader('accept', $default);
-    }
-
-    /**
-     * Get files
-     *
-     * Method for querying upload files data. If $key is not found empty array will be returned.
-     *
-     * @param string $key
-     * @return array
-     */
-    public function getFiles($key): array
-    {
-        $key = strtolower($key);
-        return (isset($this->swoole->files[$key])) ? $this->swoole->files[$key] : [];
+        return $this->getServer('HTTP_ACCEPT', $default);
     }
 
     /**
@@ -267,14 +253,13 @@ class Request extends UtopiaRequest
      *
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
      *
-     * @param string $key
-     * @param string  $default
+     * @param  string $key
+     * @param  string  $default
      * @return string
      */
     public function getCookie(string $key, string $default = ''): string
     {
-        $key = strtolower($key);
-        return (isset($this->swoole->cookie[$key])) ? $this->swoole->cookie[$key] : $default;
+        return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
     }
 
     /**
@@ -283,12 +268,26 @@ class Request extends UtopiaRequest
      * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
      *
      * @param  string $key
-     * @param  string   $default
-     * @return string 
+     * @param  string  $default
+     * @return string
      */
     public function getHeader(string $key, string $default = ''): string
     {
-        return (isset($this->swoole->header[$key])) ? $this->swoole->header[$key] : $default;
+        $headers = $this->generateHeaders();
+
+        return (isset($headers[$key])) ? $headers[$key] : $default;
+    }
+
+    /**
+     * Get Request Size
+     *
+     * Returns request size in bytes
+     *
+     * @return int
+     */
+    public function getSize(): int
+    {
+        return \mb_strlen(\implode("\n", $this->generateHeaders()), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
     }
 
     /**
@@ -304,21 +303,21 @@ class Request extends UtopiaRequest
             $contentType    = $this->getHeader('content-type');
 
             // Get content-type without the charset
-            $length         = strpos($contentType, ';');
-            $length         = (empty($length)) ? strlen($contentType) : $length;
-            $contentType    = substr($contentType, 0, $length);
+            $length         = \strpos($contentType, ';');
+            $length         = (empty($length)) ? \strlen($contentType) : $length;
+            $contentType    = \substr($contentType, 0, $length);
 
             switch ($contentType) {
                 case 'application/json':
-                    $this->payload = json_decode($this->swoole->rawContent(), true);
+                    $this->payload = \json_decode(\file_get_contents('php://input'), true);
                     break;
 
                 default:
-                    $this->payload = $this->swoole->post;
+                    $this->payload = $_POST;
                     break;
             }
 
-            if(empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
+            if (empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
                 $this->payload = [];
             }
         }
@@ -335,18 +334,28 @@ class Request extends UtopiaRequest
      */
     protected function generateHeaders(): array
     {
-        return $this->swoole->header;
-    }
+        if (null === $this->headers) {
+            /**
+             * Fallback for older PHP versions
+             * that do not support generateHeaders
+             */
+            if (!\function_exists('getallheaders')) {
+                $headers = [];
 
-    /**
-     * Get Request Size
-     *
-     * Returns request size in bytes
-     *
-     * @return int
-     */
-    public function getSize(): int
-    {
-        throw new Exception('not implemented');
+                foreach ($_SERVER as $name => $value) {
+                    if (\substr($name, 0, 5) == 'HTTP_') {
+                        $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
+                    }
+                }
+
+                $this->headers = $headers;
+
+                return $this->headers;
+            }
+
+            $this->headers = array_change_key_case(getallheaders());
+        }
+
+        return $this->headers;
     }
 }
