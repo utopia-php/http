@@ -5,7 +5,7 @@ namespace Utopia\HTTP\Adapter\Swoole;
 use Swoole\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\HTTP\HTTP\App;
+use Utopia\HTTP\App;
 
 /**
  * Utopia PHP Framework

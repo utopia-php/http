@@ -12,7 +12,7 @@
 
 namespace Utopia\HTTP\Adapter\FPM;
 
-use Utopia\HTTP\HTTP\Request as HTTPRequest;
+use Utopia\HTTP\Request as HTTPRequest;
 
 class Request extends HTTPRequest
 {

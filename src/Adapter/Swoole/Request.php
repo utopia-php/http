@@ -3,7 +3,7 @@
 namespace Utopia\HTTP\Adapter\Swoole;
 
 use Exception;
-use Utopia\HTTP\HTTP\Request as UtopiaRequest;
+use Utopia\HTTP\Request as UtopiaRequest;
 use Swoole\Http\Request as SwooleRequest;
 
 class Request extends UtopiaRequest

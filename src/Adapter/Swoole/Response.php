@@ -2,7 +2,7 @@
 
 namespace Utopia\HTTP\Adapter\Swoole;
 
-use Utopia\HTTP\HTTP\Response as UtopiaResponse;
+use Utopia\HTTP\Response as UtopiaResponse;
 use Swoole\Http\Response as SwooleResponse;
 
 class Response extends UtopiaResponse

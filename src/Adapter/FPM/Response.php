@@ -12,7 +12,7 @@
 
 namespace Utopia\HTTP\Adapter\FPM;
 
-use Utopia\HTTP\HTTP\Response as HTTPResponse;
+use Utopia\HTTP\Response as HTTPResponse;
 
 class Response extends HTTPResponse
 {
