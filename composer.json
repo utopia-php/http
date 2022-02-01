@@ -1,8 +1,8 @@
 {
-    "name": "utopia-php/framework",
-    "description": "A simple, light and advanced PHP framework",
+    "name": "utopia-php/http",
+    "description": "A simple, light and advanced PHP framework for building HTTP servers",
     "type": "library",
-    "keywords": ["php","framework", "upf"],
+    "keywords": ["php","framework", "upf", "http"],
     "license": "MIT",
     "minimum-stability": "stable",
     "authors": [
@@ -12,12 +12,13 @@
         }
     ],
     "autoload": {
-        "psr-4": {"Utopia\\": "src/"}
+        "psr-4": {"Utopia\\HTTP\\": "src/"}
     },
     "require": {
         "php": ">=8.0.0"
     },
     "require-dev": {
+        "swoole/ide-helper": "4.8.5",
         "phpunit/phpunit": "^9.5.10",
         "vimeo/psalm": "4.13.1"
     }

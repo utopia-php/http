@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +44,7 @@ class AssocTest extends TestCase
         $this->assertEquals(true, $this->assoc->isValid([]));
         $this->assertEquals(true, $this->assoc->isValid(['value' => str_repeat("-", 62000)]));
         $this->assertEquals(false, $this->assoc->isValid(['value' => str_repeat("-", 66000)]));
-        $this->assertEquals($this->assoc->getType(), \Utopia\Validator::TYPE_ARRAY);
+        $this->assertEquals($this->assoc->getType(), \Utopia\HTTP\Validator::TYPE_ARRAY);
         $this->assertEquals($this->assoc->isArray(), true);
     }
 }

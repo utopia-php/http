@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -43,7 +43,7 @@ class NumericTest extends TestCase
         $this->assertEquals($this->numeric->isValid(9.1), true);
         $this->assertEquals($this->numeric->isValid('not numeric'), false);
         $this->assertEquals($this->numeric->isValid([]), false);
-        $this->assertEquals($this->numeric->getType(), \Utopia\Validator::TYPE_MIXED);
+        $this->assertEquals($this->numeric->getType(), \Utopia\HTTP\Validator::TYPE_MIXED);
         $this->assertEquals($this->numeric->isArray(), false);
     }
 }

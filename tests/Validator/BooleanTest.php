@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -60,7 +60,7 @@ class BooleanTest extends TestCase
         $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
         $this->assertEquals(false, $this->boolean->isValid('string'));
         $this->assertEquals(false, $this->boolean->isValid(1.2));
-        $this->assertEquals($this->boolean->getType(), \Utopia\Validator::TYPE_BOOLEAN);
+        $this->assertEquals($this->boolean->getType(), \Utopia\HTTP\Validator::TYPE_BOOLEAN);
         $this->assertEquals($this->boolean->isArray(), false);
     }
 }

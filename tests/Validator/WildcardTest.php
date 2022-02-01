@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -39,7 +39,7 @@ class WildcardTest extends TestCase
         $this->assertEquals(true, $this->wildcard->isValid(1));
         $this->assertEquals(true, $this->wildcard->isValid(true));
         $this->assertEquals(true, $this->wildcard->isValid(false));
-        $this->assertEquals($this->wildcard->getType(), \Utopia\Validator::TYPE_STRING);
+        $this->assertEquals($this->wildcard->getType(), \Utopia\HTTP\Validator::TYPE_STRING);
         $this->assertEquals($this->wildcard->isArray(), false);
     }
 }

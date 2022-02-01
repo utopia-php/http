@@ -1,21 +1,23 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia;
+namespace Utopia\HTTP;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\HTTP\Adapter\FPM\Request;
+use Utopia\HTTP\Adapter\FPM\Response;
+use Utopia\HTTP\Validator\Text;
 use Utopia\Tests\UtopiaRequestTest;
-use Utopia\Validator\Text;
 
 App::setResource('rand', function () {return rand();});
 App::setResource('first', function ($second) {return 'first-'.$second;}, ['second']);

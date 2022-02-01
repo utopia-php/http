@@ -1,29 +1,29 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
 class IntegerTest extends TestCase
 {
     /**
-     * @var \Utopia\Validator\Integer
+     * @var \Utopia\HTTP\Validator\Integer
      */
     protected $validator = null;
     
     /**
-     * @var \Utopia\Validator\Integer
+     * @var \Utopia\HTTP\Validator\Integer
      */
     protected $looseValidator = null;
 
@@ -49,7 +49,7 @@ class IntegerTest extends TestCase
         $this->assertEquals($this->validator->isValid(null), false);
         $this->assertEquals($this->validator->isValid(true), false);
         $this->assertEquals($this->validator->isValid(false), false);
-        $this->assertEquals($this->validator->getType(), \Utopia\Validator::TYPE_INTEGER);
+        $this->assertEquals($this->validator->getType(), \Utopia\HTTP\Validator::TYPE_INTEGER);
         $this->assertEquals($this->validator->isArray(), false);
 
         // Assertions loose
@@ -60,7 +60,7 @@ class IntegerTest extends TestCase
         $this->assertEquals($this->looseValidator->isValid(null), false);
         $this->assertEquals($this->looseValidator->isValid(true), false);
         $this->assertEquals($this->looseValidator->isValid(false), false);
-        $this->assertEquals($this->looseValidator->getType(), \Utopia\Validator::TYPE_INTEGER);
+        $this->assertEquals($this->looseValidator->getType(), \Utopia\HTTP\Validator::TYPE_INTEGER);
         $this->assertEquals($this->looseValidator->isArray(), false);
     }
 }

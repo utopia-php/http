@@ -1,23 +1,23 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Validator
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 /**
  * Range
  *
  * Validates that an number is in range.
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Range extends Numeric
 {

@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -29,7 +29,7 @@ class WhiteListTest extends TestCase
         $this->assertEquals($whiteList->isValid(3), true);
         $this->assertEquals($whiteList->isValid(5), false);
         $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
-        $this->assertEquals($whiteList->getType(), \Utopia\Validator::TYPE_STRING); //string by default
+        $this->assertEquals($whiteList->getType(), \Utopia\HTTP\Validator::TYPE_STRING); //string by default
         $this->assertEquals($whiteList->isArray(), false);
         
         $whiteList = new WhiteList(['string1', 'string2', 3, 4], false);

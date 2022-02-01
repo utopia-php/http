@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -50,7 +50,7 @@ class FloatValidatorTest extends TestCase
         $this->assertEquals($this->validator->isValid(true), false);
         $this->assertEquals($this->validator->isValid('23.5'), false);
         $this->assertEquals($this->validator->isValid('23'), false);
-        $this->assertEquals($this->validator->getType(), \Utopia\Validator::TYPE_FLOAT);
+        $this->assertEquals($this->validator->getType(), \Utopia\HTTP\Validator::TYPE_FLOAT);
         $this->assertEquals($this->validator->isArray(), false);
 
         // Assertions Loose
@@ -62,7 +62,7 @@ class FloatValidatorTest extends TestCase
         $this->assertEquals($this->looseValidator->isValid(true), false);
         $this->assertEquals($this->looseValidator->isValid('23.5'), true);
         $this->assertEquals($this->looseValidator->isValid('23'), true);
-        $this->assertEquals($this->looseValidator->getType(), \Utopia\Validator::TYPE_FLOAT);
+        $this->assertEquals($this->looseValidator->getType(), \Utopia\HTTP\Validator::TYPE_FLOAT);
         $this->assertEquals($this->looseValidator->isArray(), false);
     }
 }

@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia;
+namespace Utopia\HTTP;
 
 use PHPUnit\Framework\TestCase;
 
@@ -37,7 +37,7 @@ class ViewTest extends TestCase
         $value = $this->view->setParam('key', 'value');
 
         // Assertions
-        $this->assertInstanceOf('Utopia\View', $value);
+        $this->assertInstanceOf('Utopia\HTTP\View', $value);
     }
 
     public function testGetParam()
@@ -54,7 +54,7 @@ class ViewTest extends TestCase
         $value = $this->view->setPath('mocks/View/fake.phtml');
 
         // Assertions
-        $this->assertInstanceOf('Utopia\View', $value);
+        $this->assertInstanceOf('Utopia\HTTP\View', $value);
     }
 
     public function testSetRendered()

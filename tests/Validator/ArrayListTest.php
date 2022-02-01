@@ -1,17 +1,17 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Tests
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @version 1.0 RC4
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia\Validator;
+namespace Utopia\HTTP\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -57,8 +57,8 @@ class ArrayListTest extends TestCase
         $this->assertEquals(false, $this->arrayList2->isValid('string'));
         $this->assertEquals(true, $this->arrayList2->isValid([1, 2, 3]));
         $this->assertEquals(false, $this->arrayList2->isValid(1, '2', 3));
-        $this->assertEquals($this->arrayList1->getType(), \Utopia\Validator::TYPE_STRING);
-        $this->assertEquals($this->arrayList2->getType(), \Utopia\Validator::TYPE_MIXED);
+        $this->assertEquals($this->arrayList1->getType(), \Utopia\HTTP\Validator::TYPE_STRING);
+        $this->assertEquals($this->arrayList2->getType(), \Utopia\HTTP\Validator::TYPE_MIXED);
         $this->assertEquals($this->arrayList1->isArray(), true);
 
         $this->assertEquals(true, $this->arrayList3->isValid([1]));

@@ -1,18 +1,18 @@
 <?php
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Core
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  * @license The MIT License (MIT) <http://www.opensource.org/licenses/mit-license.php>
  */
 
-namespace Utopia;
+namespace Utopia\HTTP;
 
-class Response
+abstract class Response
 {
     /**
      * HTTP content types
@@ -396,6 +396,7 @@ class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param string $body
+     * @param int $exit exit code or don't exit if code is null
      *
      * @return void
      */
@@ -438,34 +439,103 @@ class Response
     }
 
     /**
-     * Write
+     * Append headers
      *
-     * Send output
+     * Iterating over response headers to generate them using native PHP header function.
+     * This method is also responsible for generating the response and content type headers.
      *
-     * @param string $content
-     *
-     * @return void
+     * @return self
      */
-    protected function write(string $content): void
+    protected function appendHeaders(): self
     {
-        echo $content;
+        // Send status code header
+        $this->sendStatus($this->statusCode);
+
+        // Send content type header
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType);
+        }
+
+        // Set application headers
+        foreach ($this->headers as $key => $value) {
+            $this->sendHeader($key, $value);
+        }
+
+        return $this;
     }
 
     /**
-     * End
+     * Append cookies
      *
-     * Send optional content and end
+     * Iterating over response cookies to generate them using native PHP cookie function.
      *
+     * @return self
+     */
+    protected function appendCookies(): self
+    {
+        foreach ($this->cookies as $cookie) {
+            $this->sendCookie($cookie['name'], $cookie['value'], [
+                'expires'	=> $cookie['expire'],
+                'path' 		=> $cookie['path'],
+                'domain' 	=> $cookie['domain'],
+                'secure' 	=> $cookie['secure'],
+                'httponly'	=> $cookie['httponly'],
+                'samesite'	=> $cookie['samesite'],
+            ]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Write
+     * 
      * @param string $content
+     * 
+     * @return void
+     */
+    abstract protected function write(string $content): void;
+
+    /**
+     * End
+     * 
+     * @param string $content
+     * 
+     * @return void
+     */
+    abstract protected function end(string $content=null): void;
+
+    /**
+     * Send Status Code
+     * 
+     * @param int $statusCode
+     * 
+     * @return void
+     */
+    abstract protected function sendStatus(int $statusCode): void;
+
+    /**
+     * Send Header
+     * 
+     * @param string $key
+     * @param string $value
+     * 
+     * @return void
+     */
+    abstract protected function sendHeader(string $key, string $value): void;
+
+    /**
+     * Send Cookie
+     *
+     * Send a cookie
+     * 
+     * @param string $name
+     * @param string $value
+     * @param array $options
      *
      * @return void
      */
-    protected function end(string $content = null): void
-    {
-        if(!is_null($content)) {
-            echo $content;
-        }
-    }
+    abstract protected function sendCookie(string $name, string $value, array $options): void;
 
     /**
      * Output response
@@ -503,98 +573,6 @@ class Response
         } else {
             $this->end();
         }
-    }
-
-    /**
-     * Append headers
-     *
-     * Iterating over response headers to generate them using native PHP header function.
-     * This method is also responsible for generating the response and content type headers.
-     *
-     * @return self
-     */
-    protected function appendHeaders(): self
-    {
-        // Send status code header
-        $this->sendStatus($this->statusCode);
-
-        // Send content type header
-        if (!empty($this->contentType)) {
-            $this->addHeader('Content-Type', $this->contentType);
-        }
-
-        // Set application headers
-        foreach ($this->headers as $key => $value) {
-            $this->sendHeader($key, $value);
-        }
-
-        return $this;
-    }
-
-    /**
-     * Send Status Code
-     *
-     * @param int $statusCode
-     *
-     * @return void
-     */
-    protected function sendStatus(int $statusCode): void
-    {
-        http_response_code($statusCode);
-    }
-
-    /**
-     * Send Header
-     *
-     * Output Header
-     *
-     * @param string $key
-     * @param string $value
-     *
-     * @return void
-     */
-    protected function sendHeader(string $key, string $value): void
-    {
-        \header($key . ': ' . $value);
-    }
-
-    /**
-     * Send Cookie
-     *
-     * Output Cookie
-     *
-     * @param string $name
-     * @param string $value
-     * @param array $options
-     *
-     * @return void
-     */
-    protected function sendCookie(string $name, string $value, array $options): void
-    {
-        \setcookie($name, $value, $options);
-    }
-
-    /**
-     * Append cookies
-     *
-     * Iterating over response cookies to generate them using native PHP cookie function.
-     *
-     * @return self
-     */
-    protected function appendCookies(): self
-    {
-        foreach ($this->cookies as $cookie) {
-            $this->sendCookie($cookie['name'], $cookie['value'], [
-                'expires'	=> $cookie['expire'],
-                'path' 		=> $cookie['path'],
-                'domain' 	=> $cookie['domain'],
-                'secure' 	=> $cookie['secure'],
-                'httponly'	=> $cookie['httponly'],
-                'samesite'	=> $cookie['samesite'],
-            ]);
-        }
-
-        return $this;
     }
 
     /**
