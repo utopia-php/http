@@ -8,12 +8,12 @@ use Swoole\Http\Response as SwooleResponse;
 use Utopia\HTTP\App;
 
 /**
- * Utopia PHP Framework
+ * Utopia HTTP
  *
- * @package Framework
+ * @package HTTP
  * @subpackage Core
  *
- * @link https://github.com/utopia-php/framework
+ * @link https://github.com/utopia-php/http
  * @author Appwrite Team <team@appwrite.io>
  */
 class Server

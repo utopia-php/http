@@ -130,7 +130,7 @@ $response
     ->send('')
 ```
 
-You can find the details of other status codes by visiting our [GitHub repository](https://github.com/utopia-php/framework/blob/master/src/Response.php).
+You can find the details of other status codes by visiting our [GitHub repository](https://github.com/utopia-php/http/blob/master/src/Response.php).
 
 
 # Advanced Utopia
@@ -280,7 +280,7 @@ App::shutdown(function($request) {
 An example of the shutdown method is shown above. The shutdown method uses the Utopia CLI lib to log api to the console; this is done for routes in the `api` group in the current example.
 
 # Running Locally
-If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the Utopia-PHP/framework dependency using `composer require utopia-php/framework` command.
+If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the utopia-php/http dependency using `composer require utopia-php/http` command.
 
 > Utopia Framework requires PHP 7.3 or later. We recommend using the latest PHP version whenever possible.
 
