@@ -43,6 +43,6 @@ class TextTest extends TestCase
         $this->assertEquals(false, $this->text->isValid(["seven", 8, 9.0]));
         $this->assertEquals(false, $this->text->isValid(false));
         $this->assertEquals(false, $this->text->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->text->getType());
+        $this->assertEquals(\Utopia\HTTP\Validator::TYPE_STRING, $this->text->getType());
     }
 }

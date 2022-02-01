@@ -60,7 +60,7 @@ class BooleanTest extends TestCase
         $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
         $this->assertEquals(false, $this->boolean->isValid('string'));
         $this->assertEquals(false, $this->boolean->isValid(1.2));
-        $this->assertEquals($this->boolean->getType(), \Utopia\Validator::TYPE_BOOLEAN);
+        $this->assertEquals($this->boolean->getType(), \Utopia\HTTP\Validator::TYPE_BOOLEAN);
         $this->assertEquals($this->boolean->isArray(), false);
     }
 }

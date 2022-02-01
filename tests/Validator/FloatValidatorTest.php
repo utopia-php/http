@@ -50,7 +50,7 @@ class FloatValidatorTest extends TestCase
         $this->assertEquals($this->validator->isValid(true), false);
         $this->assertEquals($this->validator->isValid('23.5'), false);
         $this->assertEquals($this->validator->isValid('23'), false);
-        $this->assertEquals($this->validator->getType(), \Utopia\Validator::TYPE_FLOAT);
+        $this->assertEquals($this->validator->getType(), \Utopia\HTTP\Validator::TYPE_FLOAT);
         $this->assertEquals($this->validator->isArray(), false);
 
         // Assertions Loose
@@ -62,7 +62,7 @@ class FloatValidatorTest extends TestCase
         $this->assertEquals($this->looseValidator->isValid(true), false);
         $this->assertEquals($this->looseValidator->isValid('23.5'), true);
         $this->assertEquals($this->looseValidator->isValid('23'), true);
-        $this->assertEquals($this->looseValidator->getType(), \Utopia\Validator::TYPE_FLOAT);
+        $this->assertEquals($this->looseValidator->getType(), \Utopia\HTTP\Validator::TYPE_FLOAT);
         $this->assertEquals($this->looseValidator->isArray(), false);
     }
 }

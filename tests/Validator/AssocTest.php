@@ -44,7 +44,7 @@ class AssocTest extends TestCase
         $this->assertEquals(true, $this->assoc->isValid([]));
         $this->assertEquals(true, $this->assoc->isValid(['value' => str_repeat("-", 62000)]));
         $this->assertEquals(false, $this->assoc->isValid(['value' => str_repeat("-", 66000)]));
-        $this->assertEquals($this->assoc->getType(), \Utopia\Validator::TYPE_ARRAY);
+        $this->assertEquals($this->assoc->getType(), \Utopia\HTTP\Validator::TYPE_ARRAY);
         $this->assertEquals($this->assoc->isArray(), true);
     }
 }

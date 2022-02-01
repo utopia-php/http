@@ -18,7 +18,7 @@ use Utopia\HTTP\Validator;
  *
  * Validate that an variable is an integer
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Integer extends Validator
 {

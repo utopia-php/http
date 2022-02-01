@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Validate that an variable is a valid array value and each element passes given validation
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class ArrayList extends Validator
 {

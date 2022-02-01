@@ -35,6 +35,8 @@ class Response extends UtopiaResponse
     
     /**
      * Response constructor.
+     * 
+     * @param SwooleResponse $response
      */
     public function __construct(SwooleResponse $response)
     {        

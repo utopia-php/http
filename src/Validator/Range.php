@@ -17,7 +17,7 @@ namespace Utopia\HTTP\Validator;
  *
  * Validates that an number is in range.
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Range extends Numeric
 {

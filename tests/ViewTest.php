@@ -37,7 +37,7 @@ class ViewTest extends TestCase
         $value = $this->view->setParam('key', 'value');
 
         // Assertions
-        $this->assertInstanceOf('Utopia\View', $value);
+        $this->assertInstanceOf('Utopia\HTTP\View', $value);
     }
 
     public function testGetParam()
@@ -54,7 +54,7 @@ class ViewTest extends TestCase
         $value = $this->view->setPath('mocks/View/fake.phtml');
 
         // Assertions
-        $this->assertInstanceOf('Utopia\View', $value);
+        $this->assertInstanceOf('Utopia\HTTP\View', $value);
     }
 
     public function testSetRendered()

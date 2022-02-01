@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Validate that an variable is a float
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class FloatValidator extends Validator
 {

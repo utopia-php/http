@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Validate that an variable is a boolean value
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Boolean extends Validator
 {

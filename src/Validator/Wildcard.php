@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Does not perform any validation. Always returns valid
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Wildcard extends Validator
 {

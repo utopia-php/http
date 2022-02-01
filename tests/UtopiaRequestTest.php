@@ -2,9 +2,9 @@
 
 namespace Utopia\Tests;
 
-use Utopia\HTTP\Request as UtopiaRequest;
+use Utopia\HTTP\Adapter\FPM\Request;
 
-class UtopiaRequestTest extends UtopiaRequest
+class UtopiaRequestTest extends Request
 {
     /**
      * @var array

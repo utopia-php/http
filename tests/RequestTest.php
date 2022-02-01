@@ -14,7 +14,7 @@
 namespace Utopia\HTTP\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\HTTP\Request;
+use Utopia\HTTP\Adapter\FPM\Request;
 
 class RequestTest extends TestCase
 {

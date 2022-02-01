@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Validate that an variable is a valid text value
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Text extends Validator
 {

@@ -57,8 +57,8 @@ class ArrayListTest extends TestCase
         $this->assertEquals(false, $this->arrayList2->isValid('string'));
         $this->assertEquals(true, $this->arrayList2->isValid([1, 2, 3]));
         $this->assertEquals(false, $this->arrayList2->isValid(1, '2', 3));
-        $this->assertEquals($this->arrayList1->getType(), \Utopia\Validator::TYPE_STRING);
-        $this->assertEquals($this->arrayList2->getType(), \Utopia\Validator::TYPE_MIXED);
+        $this->assertEquals($this->arrayList1->getType(), \Utopia\HTTP\Validator::TYPE_STRING);
+        $this->assertEquals($this->arrayList2->getType(), \Utopia\HTTP\Validator::TYPE_MIXED);
         $this->assertEquals($this->arrayList1->isArray(), true);
 
         $this->assertEquals(true, $this->arrayList3->isValid([1]));

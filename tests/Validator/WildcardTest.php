@@ -39,7 +39,7 @@ class WildcardTest extends TestCase
         $this->assertEquals(true, $this->wildcard->isValid(1));
         $this->assertEquals(true, $this->wildcard->isValid(true));
         $this->assertEquals(true, $this->wildcard->isValid(false));
-        $this->assertEquals($this->wildcard->getType(), \Utopia\Validator::TYPE_STRING);
+        $this->assertEquals($this->wildcard->getType(), \Utopia\HTTP\Validator::TYPE_STRING);
         $this->assertEquals($this->wildcard->isArray(), false);
     }
 }

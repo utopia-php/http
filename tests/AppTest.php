@@ -14,8 +14,10 @@
 namespace Utopia\HTTP;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\HTTP\Tests\UtopiaRequestTest;
+use Utopia\HTTP\Adapter\FPM\Request;
+use Utopia\HTTP\Adapter\FPM\Response;
 use Utopia\HTTP\Validator\Text;
+use Utopia\Tests\UtopiaRequestTest;
 
 App::setResource('rand', function () {return rand();});
 App::setResource('first', function ($second) {return 'first-'.$second;}, ['second']);

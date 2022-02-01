@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Validate that an variable is numeric
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class Numeric extends Validator
 {

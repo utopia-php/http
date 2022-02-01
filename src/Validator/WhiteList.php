@@ -19,7 +19,7 @@ use Utopia\HTTP\Validator;
  *
  * Checks if a variable is inside predefined white list.
  *
- * @package Utopia\Validator
+ * @package Utopia\HTTP\Validator
  */
 class WhiteList extends Validator
 {
