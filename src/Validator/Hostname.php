@@ -12,6 +12,7 @@
 
 namespace Utopia\Validator;
 
+use Exception;
 use Utopia\Validator;
 
 class Hostname extends Validator
@@ -21,7 +22,7 @@ class Hostname extends Validator
      */
     protected array $whitelist = [];
 
-    /**
+    /** 
      * Constructor
      *
      * Sets allowed hostname patterns
@@ -30,9 +31,13 @@ class Hostname extends Validator
      */
     public function __construct(array $whitelist = [])
     {
-        $this->whitelist = $whitelist;
+        foreach ($whitelist as $pattern) {
+            if($pattern[strlen($pattern)-1] === '*') {
+                throw new Exception("Wildcard at the end of hostname '{$pattern}' is not allowed.");
+            }
+        }
 
-        // TODO: Validate whitelist - '*' can't be in last section. Throw error
+        $this->whitelist = $whitelist;
     }
 
     /**

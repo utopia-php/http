@@ -92,9 +92,10 @@ class HostnameTest extends TestCase
 
     public function testInvalidWhitelist()
     {
-        // TODO: Assert error here
+        $this->expectExceptionMessage('Wildcard at the end of hostname \'web.app.*\' is not allowed.');
 
         $validator = new Hostname([
+            'myapp.com',
             'web.app.*'
         ]);
     }
