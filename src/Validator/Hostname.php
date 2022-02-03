@@ -31,6 +31,8 @@ class Hostname extends Validator
     public function __construct(array $whitelist = [])
     {
         $this->whitelist = $whitelist;
+
+        // TODO: Validate whitelist - '*' can't be in last section. Throw error
     }
 
     /**
