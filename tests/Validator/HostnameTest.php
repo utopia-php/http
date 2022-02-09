@@ -88,6 +88,10 @@ class HostnameTest extends TestCase
         $this->assertEquals(false, $validator->isValid('myrepo.com'));
         $this->assertEquals(false, $validator->isValid('project1.myrepo.com'));
         $this->assertEquals(false, $validator->isValid('line1.commit1.project1.myrepo.com'));
+
+        // Whitelist tests
+        $validator = new Hostname(['localhost']);
+        $this->assertEquals(true, $validator->isValid('localhost'));
     }
 
     public function testInvalidWhitelist()
@@ -98,5 +102,12 @@ class HostnameTest extends TestCase
             'myapp.com',
             'web.app.*'
         ]);
+    }
+
+    public function testWildcardOnly()
+    {
+        $this->expectExceptionMessage('Wildcard at the end of hostname \'*\' is not allowed.');
+
+        $validator = new Hostname(['*']);
     }
 }
