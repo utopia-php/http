@@ -23,21 +23,33 @@ use Utopia\Validator;
  */
 class Text extends Validator
 {
+    const NUMBERS = [ '0','1','2','3','4','5','6','7','8','9' ];
+    const ALPHABET_UPPER = [ 'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z' ];
+    const ALPHABET_LOWER = [ 'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z' ];
+
     /**
      * @var int
      */
     protected int $length = 0;
 
     /**
+     * @var string[]
+     */
+    protected array $whitelist = [];
+
+    /**
      * Text constructor.
      *
-     * Validate text with maximum length $length. Use $length = 0 for unlimited length
+     * Validate text with maximum length $length. Use $length = 0 for unlimited length.
+     * Optionally, provide whitelist characters array $whitelist to only allow specific character.
      *
      * @param int $length
+     * @param string[] $whitelist
      */
-    public function __construct(int $length)
+    public function __construct(int $length, array $whitelist = [])
     {
         $this->length = $length;
+        $this->whitelist = $whitelist;
     }
 
     /**
@@ -54,6 +66,11 @@ class Text extends Validator
         if ($this->length) {
             $message .= ' and no longer than ' . $this->length . ' chars';
         }
+
+        if ($this->whitelist) {
+            $message .= ' and only consist of \'' . \join(', ', $this->whitelist) . '\' chars';
+        }
+
         return $message;
     }
 
@@ -97,6 +114,14 @@ class Text extends Validator
 
         if (\mb_strlen($value) > $this->length && $this->length !== 0) {
             return false;
+        }
+
+        if(\count($this->whitelist) > 0) {
+            foreach (\str_split($value) as $char) {
+                if(!\in_array($char, $this->whitelist)) {
+                    return false;
+                }
+            }
         }
 
         return true;
