@@ -35,21 +35,21 @@ class Text extends Validator
     /**
      * @var string[]
      */
-    protected array $whitelist = [];
+    protected array $allowList = [];
 
     /**
      * Text constructor.
      *
      * Validate text with maximum length $length. Use $length = 0 for unlimited length.
-     * Optionally, provide whitelist characters array $whitelist to only allow specific character.
+     * Optionally, provide allowList characters array $allowList to only allow specific character.
      *
      * @param int $length
-     * @param string[] $whitelist
+     * @param string[] $allowList
      */
-    public function __construct(int $length, array $whitelist = [])
+    public function __construct(int $length, array $allowList = [])
     {
         $this->length = $length;
-        $this->whitelist = $whitelist;
+        $this->allowList = $allowList;
     }
 
     /**
@@ -67,8 +67,8 @@ class Text extends Validator
             $message .= ' and no longer than ' . $this->length . ' chars';
         }
 
-        if ($this->whitelist) {
-            $message .= ' and only consist of \'' . \join(', ', $this->whitelist) . '\' chars';
+        if ($this->allowList) {
+            $message .= ' and only consist of \'' . \join(', ', $this->allowList) . '\' chars';
         }
 
         return $message;
@@ -116,9 +116,9 @@ class Text extends Validator
             return false;
         }
 
-        if(\count($this->whitelist) > 0) {
+        if(\count($this->allowList) > 0) {
             foreach (\str_split($value) as $char) {
-                if(!\in_array($char, $this->whitelist)) {
+                if(!\in_array($char, $this->allowList)) {
                     return false;
                 }
             }

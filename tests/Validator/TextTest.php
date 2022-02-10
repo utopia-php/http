@@ -46,7 +46,7 @@ class TextTest extends TestCase
         $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->text->getType());
     }
 
-    public function testWhitelist()
+    public function testAllowList()
     {
         // Test lowercase alphabet
         $this->validator = new Text(100, Text::ALPHABET_LOWER);
@@ -81,7 +81,7 @@ class TextTest extends TestCase
         $this->assertEquals(false, $this->validator->isValid('123 456'));
         $this->assertEquals(false, $this->validator->isValid('hello123'));
 
-        // Test combination of whitelists
+        // Test combination of allowLists
         $this->validator = new Text(100, [
             ...Text::ALPHABET_LOWER,
             ...Text::ALPHABET_UPPER,
