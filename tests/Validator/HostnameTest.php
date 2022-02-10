@@ -56,7 +56,7 @@ class HostnameTest extends TestCase
         $this->assertEquals(false, $validator->isValid('myweb.com/blog'));
         $this->assertEquals(false, $validator->isValid('myweb.com/blog/article1'));
 
-        // Whitelist tests
+        // allowList tests
         $validator = new Hostname([
             'myweb.vercel.app',
             'myweb.com',
@@ -89,12 +89,11 @@ class HostnameTest extends TestCase
         $this->assertEquals(false, $validator->isValid('project1.myrepo.com'));
         $this->assertEquals(false, $validator->isValid('line1.commit1.project1.myrepo.com'));
 
-        // Whitelist tests
         $validator = new Hostname(['localhost']);
         $this->assertEquals(true, $validator->isValid('localhost'));
     }
 
-    public function testInvalidWhitelist()
+    public function testInvalidAllowList()
     {
         $this->expectExceptionMessage('Wildcard at the end of hostname \'web.app.*\' is not allowed.');
 

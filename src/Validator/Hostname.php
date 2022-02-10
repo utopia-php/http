@@ -20,24 +20,24 @@ class Hostname extends Validator
     /**
      * @var string[]
      */
-    protected array $whitelist = [];
+    protected array $allowList = [];
 
     /** 
      * Constructor
      *
      * Sets allowed hostname patterns
      *
-     * @param string[] $whitelist
+     * @param string[] $allowList
      */
-    public function __construct(array $whitelist = [])
+    public function __construct(array $allowList = [])
     {
-        foreach ($whitelist as $pattern) {
+        foreach ($allowList as $pattern) {
             if($pattern[strlen($pattern)-1] === '*') {
                 throw new Exception("Wildcard at the end of hostname '{$pattern}' is not allowed.");
             }
         }
 
-        $this->whitelist = $whitelist;
+        $this->allowList = $allowList;
     }
 
     /**
@@ -92,9 +92,9 @@ class Hostname extends Validator
             return false;
         }
 
-        if(isset($this->whitelist) && !empty($this->whitelist)) {
+        if(isset($this->allowList) && !empty($this->allowList)) {
             // Loop through all allowed hostnames until match is found
-            foreach ($this->whitelist as $allowedHostname) {
+            foreach ($this->allowList as $allowedHostname) {
                 // If exact math; allow
                 if($value === $allowedHostname) {
                     return true;
