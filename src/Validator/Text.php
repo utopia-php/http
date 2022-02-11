@@ -30,12 +30,12 @@ class Text extends Validator
     /**
      * @var int
      */
-    protected int $length = 0;
+    protected $length = 0;
 
     /**
      * @var string[]
      */
-    protected array $allowList = [];
+    protected $allowList = [];
 
     /**
      * Text constructor.
@@ -59,7 +59,7 @@ class Text extends Validator
      *
      * @return string
      */
-    public function getDescription(): string
+    public function getDescription()
     {
         $message = 'Value must be a valid string';
 
@@ -106,7 +106,7 @@ class Text extends Validator
      * @param mixed $value
      * @return bool
      */
-    public function isValid(mixed $value): bool
+    public function isValid($value)
     {
         if (!\is_string($value)) {
             return false;
