@@ -8,7 +8,7 @@
 
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
 
-Utopia Framework is dependency free. Any extra features such as authentication, caching will be available as standalone models in order to keep the framework core as clean, light any easy to learn.
+Utopia Framework is dependency free. Any extra features such as authentication, caching will be available as standalone models in order to keep the framework core as clean, light and easy to learn.
 
 ## Getting Started
 
