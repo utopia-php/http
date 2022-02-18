@@ -74,6 +74,7 @@ class Response
     const STATUS_CODE_UNSUPPORTED_MEDIA_TYPE            = 415;
     const STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE   = 416;
     const STATUS_CODE_EXPECTATION_FAILED                = 417;
+    const STATUS_CODE_TOO_EARLY                         = 425;
     const STATUS_CODE_TOO_MANY_REQUESTS                 = 429;
     const STATUS_CODE_INTERNAL_SERVER_ERROR             = 500;
     const STATUS_CODE_NOT_IMPLEMENTED                   = 501;
@@ -121,6 +122,7 @@ class Response
         self::STATUS_CODE_UNSUPPORTED_MEDIA_TYPE           => 'Unsupported Media Type',
         self::STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE  => 'Requested Range Not Satisfiable',
         self::STATUS_CODE_EXPECTATION_FAILED               => 'Expectation Failed',
+        self::STATUS_CODE_TOO_EARLY                        => 'Too Early',
         self::STATUS_CODE_TOO_MANY_REQUESTS                => 'Too Many Requests',
         self::STATUS_CODE_INTERNAL_SERVER_ERROR            => 'Internal Server Error',
         self::STATUS_CODE_NOT_IMPLEMENTED                  => 'Not Implemented',
