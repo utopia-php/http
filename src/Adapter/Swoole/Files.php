@@ -33,7 +33,7 @@ class Files
     /**
      * Add MimeType
      * 
-     * @var string $mimeType
+     * @param string $mimeType
      * 
      * @return void
      */
@@ -45,7 +45,7 @@ class Files
     /**
      * Remove MimeType
      * 
-     * @var string $mimeType
+     * @param string $mimeType
      * 
      * @return void
      */
@@ -79,7 +79,7 @@ class Files
     /**
      * Load
      * 
-     * @var string $path
+     * @param string $path
      * 
      * @return void
      */
@@ -135,7 +135,7 @@ class Files
     /**
      * Is File Loaded
      * 
-     * @var string $uri
+     * @param string $uri
      */
     public static function isFileLoaded(string $uri): bool
     {
@@ -149,7 +149,7 @@ class Files
     /**
      * Get File Contants
      * 
-     * @var string $uri
+     * @param string $uri
      */
     public static function getFileContents(string $uri): string
     {
@@ -163,7 +163,7 @@ class Files
     /**
      * Get File MimeType
      * 
-     * @var string $uri
+     * @param string $uri
      */
     public static function getFileMimeType(string $uri): string
     {

@@ -6,4 +6,5 @@ services:
         ports:
             - "9020:80"
         volumes:
+            - .:/usr/share/nginx/html
             - ./tests:/usr/share/nginx/html/tests
