@@ -59,7 +59,7 @@ class View
 
         $this
             ->addFilter(self::FILTER_ESCAPE, function (string $value) {
-                return \htmlentities($value, ENT_QUOTES, 'UTF-8');
+                return \htmlentities($value ?? '', ENT_QUOTES, 'UTF-8');
             })
             ->addFilter(self::FILTER_NL2P, function (string $value) {
                 $paragraphs = '';
