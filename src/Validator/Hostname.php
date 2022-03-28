@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -31,12 +32,6 @@ class Hostname extends Validator
      */
     public function __construct(array $allowList = [])
     {
-        foreach ($allowList as $pattern) {
-            if($pattern[strlen($pattern)-1] === '*') {
-                throw new Exception("Wildcard at the end of hostname '{$pattern}' is not allowed.");
-            }
-        }
-
         $this->allowList = $allowList;
     }
 
@@ -92,22 +87,23 @@ class Hostname extends Validator
             return false;
         }
 
-        if(isset($this->allowList) && !empty($this->allowList)) {
+        if (isset($this->allowList) && !empty($this->allowList)) {
             // Loop through all allowed hostnames until match is found
             foreach ($this->allowList as $allowedHostname) {
                 // If exact math; allow
-                if($value === $allowedHostname) {
+                // If *, allow everything
+                if ($value === $allowedHostname || $allowedHostname === '*') {
                     return true;
                 }
 
                 // If wildcard symbol used
-                if(\str_contains($allowedHostname, '*')) {
+                if (\str_contains($allowedHostname, '*')) {
                     // Split hostnames into sections (subdomains)
                     $allowedSections = \explode('.', $allowedHostname);
                     $valueSections = \explode('.', $value);
 
                     // Only if amount of sections matches
-                    if(\count($allowedSections) === \count($valueSections)) {
+                    if (\count($allowedSections) === \count($valueSections)) {
                         $matchesAmount = 0;
 
                         // Loop through all sections
@@ -115,7 +111,7 @@ class Hostname extends Validator
                             $allowedSection = $allowedSections[$sectionIndex];
 
                             // If section matches, or wildcard symbol is used, increment match count
-                            if($allowedSection === '*' || $allowedSection === $valueSections[$sectionIndex]) {
+                            if ($allowedSection === '*' || $allowedSection === $valueSections[$sectionIndex]) {
                                 $matchesAmount++;
                             } else {
                                 // If one fails, the whole check always fails; we can skip iterations
@@ -124,7 +120,7 @@ class Hostname extends Validator
                         }
 
                         // If every section matched; allow
-                        if($matchesAmount === \count($allowedSections)) {
+                        if ($matchesAmount === \count($allowedSections)) {
                             return true;
                         }
                     }
