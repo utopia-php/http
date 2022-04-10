@@ -437,6 +437,7 @@ class Response
 
             $this->disablePayload();
         }
+        $this->end();
     }
 
     /**
