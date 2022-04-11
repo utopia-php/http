@@ -606,6 +606,20 @@ class App
                 }
             }
         } catch (\Throwable $e) {
+            if (self::$errors === ['*' => []]) { // If no error handler are set
+                $response = $this->getResources(['response'])["response"];
+                $response->setStatusCode(500);
+                $response->json([
+                    'message' => $e->getMessage(),
+                    'stacktrace' => $e->getTrace()
+                ]);
+
+                \fwrite(STDERR, "\033[31mException: " . $e->getMessage() . "\033[0m\n");
+                \fwrite(STDERR, "Stacktrace: \n" . $e->getTraceAsString() . "\n");
+
+                return $this;
+            }
+
             foreach ($groups as $group) {
                 if (isset(self::$errors[$group])) {
                     foreach (self::$errors[$group] as $error) { // Group error hooks
