@@ -574,6 +574,11 @@ class Response
      */
     protected function sendCookie(string $name, string $value, array $options): void
     {
+        // Use proper PHP keyword name
+        $options['expires'] = $options['expire'];
+        unset($options['expire']);
+
+        // Set the cookie
         \setcookie($name, $value, $options);
     }
 
@@ -588,7 +593,7 @@ class Response
     {
         foreach ($this->cookies as $cookie) {
             $this->sendCookie($cookie['name'], $cookie['value'], [
-                'expires'	=> $cookie['expire'],
+                'expire'	=> $cookie['expire'],
                 'path' 		=> $cookie['path'],
                 'domain' 	=> $cookie['domain'],
                 'secure' 	=> $cookie['secure'],
