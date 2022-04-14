@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -31,12 +32,6 @@ class Hostname extends Validator
      */
     public function __construct(array $allowList = [])
     {
-        foreach ($allowList as $pattern) {
-            if($pattern[strlen($pattern)-1] === '*') {
-                throw new Exception("Wildcard at the end of hostname '{$pattern}' is not allowed.");
-            }
-        }
-
         $this->allowList = $allowList;
     }
 
@@ -78,6 +73,7 @@ class Hostname extends Validator
      */
     public function isValid(mixed $value): bool
     {
+        // Validate proper format
         if (!\is_string($value) || empty($value)) {
             return false;
         }
@@ -92,49 +88,52 @@ class Hostname extends Validator
             return false;
         }
 
-        if(isset($this->allowList) && !empty($this->allowList)) {
-            // Loop through all allowed hostnames until match is found
-            foreach ($this->allowList as $allowedHostname) {
-                // If exact math; allow
-                if($value === $allowedHostname) {
-                    return true;
-                }
+        // Logic #1: Empty allowList means everything is allowed
+        if (!isset($this->allowList) || empty($this->allowList)) {
+            return true;
+        }
 
-                // If wildcard symbol used
-                if(\str_contains($allowedHostname, '*')) {
-                    // Split hostnames into sections (subdomains)
-                    $allowedSections = \explode('.', $allowedHostname);
-                    $valueSections = \explode('.', $value);
+        // Logic #2: Allow List not empty, there are rules to check
+        // Loop through all allowed hostnames until match is found
+        foreach ($this->allowList as $allowedHostname) {
+            // If exact match; allow
+            // If *, allow everything
+            if ($value === $allowedHostname || $allowedHostname === '*') {
+                return true;
+            }
 
-                    // Only if amount of sections matches
-                    if(\count($allowedSections) === \count($valueSections)) {
-                        $matchesAmount = 0;
+            // If wildcard symbol used
+            if (\str_contains($allowedHostname, '*')) {
+                // Split hostnames into sections (subdomains)
+                $allowedSections = \explode('.', $allowedHostname);
+                $valueSections = \explode('.', $value);
 
-                        // Loop through all sections
-                        for ($sectionIndex = 0; $sectionIndex < \count($allowedSections); $sectionIndex++) {
-                            $allowedSection = $allowedSections[$sectionIndex];
+                // Only if amount of sections matches
+                if (\count($allowedSections) === \count($valueSections)) {
+                    $matchesAmount = 0;
 
-                            // If section matches, or wildcard symbol is used, increment match count
-                            if($allowedSection === '*' || $allowedSection === $valueSections[$sectionIndex]) {
-                                $matchesAmount++;
-                            } else {
-                                // If one fails, the whole check always fails; we can skip iterations
-                                break;
-                            }
+                    // Loop through all sections
+                    for ($sectionIndex = 0; $sectionIndex < \count($allowedSections); $sectionIndex++) {
+                        $allowedSection = $allowedSections[$sectionIndex];
+
+                        // If section matches, or wildcard symbol is used, increment match count
+                        if ($allowedSection === '*' || $allowedSection === $valueSections[$sectionIndex]) {
+                            $matchesAmount++;
+                        } else {
+                            // If one fails, the whole check always fails; we can skip iterations
+                            break;
                         }
+                    }
 
-                        // If every section matched; allow
-                        if($matchesAmount === \count($allowedSections)) {
-                            return true;
-                        }
+                    // If every section matched; allow
+                    if ($matchesAmount === \count($allowedSections)) {
+                        return true;
                     }
                 }
             }
-
-            // If finished loop above without result, match is not found
-            return false;
         }
 
-        return true;
+        // If finished loop above without result, match is not found
+        return false;
     }
 }
