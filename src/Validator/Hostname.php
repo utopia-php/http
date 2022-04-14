@@ -90,7 +90,7 @@ class Hostname extends Validator
         if (isset($this->allowList) && !empty($this->allowList)) {
             // Loop through all allowed hostnames until match is found
             foreach ($this->allowList as $allowedHostname) {
-                // If exact math; allow
+                // If exact match; allow
                 // If *, allow everything
                 if ($value === $allowedHostname || $allowedHostname === '*') {
                     return true;
