@@ -606,18 +606,20 @@ class App
                 }
             }
         } catch (\Throwable $e) {
-            if (self::$errors === ['*' => []]) { // If no error handler are set
-                $response = $this->getResources(['response'])["response"];
-                $response->setStatusCode(500);
-                $response->json([
-                    'message' => $e->getMessage(),
-                    'stacktrace' => $e->getTrace()
-                ]);
-
-                \fwrite(STDERR, "\033[31mException: " . $e->getMessage() . "\033[0m\n");
-                \fwrite(STDERR, "Stacktrace: \n" . $e->getTraceAsString() . "\n");
-
-                return $this;
+            if (empty(self::$errors['*'])) { // If no error handler is set then add a default one.
+                self::$errors['*'][] = [
+                    'callback' => function (\Throwable $error, Response $response) {
+                        $response->setStatusCode(500);
+                        $response->json([
+                            'message' => $error->getMessage(),
+                            'stacktrace' => $error->getTrace()
+                        ]);
+                        $response->send();
+                        \fwrite(STDERR, "\033[31mException: " . $error->getMessage() . "\033[0m\n");
+                        \fwrite(STDERR, "Stacktrace: \n" . $error->getTraceAsString() . "\n");
+                    },
+                    'resources' => ['error', 'response']
+                ];
             }
 
             foreach ($groups as $group) {
