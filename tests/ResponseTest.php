@@ -58,6 +58,15 @@ class ResponseTest extends TestCase
         $this->fail('Expected exception');
     }
 
+    public function testGetStatus()
+    {
+        $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
+
+        // Assertions
+        $this->assertInstanceOf('Utopia\Response', $status);
+        $this->assertEquals(Response::STATUS_CODE_OK, $this->response->getStatusCode());
+    }
+
     public function testAddHeader()
     {
         $result = $this->response->addHeader('key', 'value');

@@ -332,9 +332,9 @@ class Response
     }
 
     /**
-     * Get Cookies
+     * Get Headers
      *
-     * Return array of all response cookies
+     * Return array of all response headers
      *
      * @return array
      */
