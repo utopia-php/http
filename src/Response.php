@@ -255,6 +255,18 @@ class Response
     }
 
     /**
+     * Get status code
+     *
+     * Get HTTP response status code
+     *
+     * @return int
+     **/
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    /**
      * Get Response Size
      *
      * Return output response size in bytes
