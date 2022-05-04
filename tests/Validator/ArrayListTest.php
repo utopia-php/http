@@ -53,10 +53,13 @@ class ArrayListTest extends TestCase
         $this->assertEquals(false, $this->arrayList1->isValid(['string', 'string', 3]));
         $this->assertEquals(false, $this->arrayList1->isValid('string'));
         $this->assertEquals(false, $this->arrayList1->isValid('string'));
+        $this->assertInstanceOf(Text::class, $this->arrayList1->getValidator());
 
         $this->assertEquals(false, $this->arrayList2->isValid('string'));
         $this->assertEquals(true, $this->arrayList2->isValid([1, 2, 3]));
         $this->assertEquals(false, $this->arrayList2->isValid(1, '2', 3));
+        $this->assertInstanceOf(Numeric::class, $this->arrayList2->getValidator());
+
         $this->assertEquals($this->arrayList1->getType(), \Utopia\Validator::TYPE_STRING);
         $this->assertEquals($this->arrayList2->getType(), \Utopia\Validator::TYPE_MIXED);
         $this->assertEquals($this->arrayList1->isArray(), true);
@@ -64,5 +67,6 @@ class ArrayListTest extends TestCase
         $this->assertEquals(true, $this->arrayList3->isValid([1]));
         $this->assertEquals(true, $this->arrayList3->isValid([1, 2]));
         $this->assertEquals(false, $this->arrayList3->isValid([1, 2, 3]));
+        $this->assertInstanceOf(Numeric::class, $this->arrayList3->getValidator());
     }
 }
