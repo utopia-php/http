@@ -614,7 +614,6 @@ class App
                             'message' => $error->getMessage(),
                             'stacktrace' => $error->getTrace()
                         ]);
-                        $response->send();
                         \fwrite(STDERR, "\033[31mException: " . $error->getMessage() . "\033[0m\n");
                         \fwrite(STDERR, "Stacktrace: \n" . $error->getTraceAsString() . "\n");
                     },
