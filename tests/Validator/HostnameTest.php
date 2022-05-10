@@ -60,6 +60,20 @@ class HostnameTest extends TestCase
         $this->assertEquals(false, $validator->isValid('myweb.com/blog'));
         $this->assertEquals(false, $validator->isValid('myweb.com/blog/article1'));
 
+        // Max length test
+        $domain = '';
+        $chunk = 'bestdomain'; // 10 chars
+        for($i = 0; $i < 25; $i++) {
+            $domain .= $chunk; // 250 total
+        }
+
+        $domain .= '.sk'; // Exactly at the limit
+        $this->assertEquals(true, $validator->isValid($domain));
+
+        $domain .= 'a'; // Exactly over the limit
+        $this->assertEquals(false, $validator->isValid($domain));
+
+
         // allowList tests
         $validator = new Hostname([
             'myweb.vercel.app',
