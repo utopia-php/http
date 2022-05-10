@@ -310,6 +310,13 @@ class AppTest extends TestCase
         $this->assertEquals($this->app->getRoute(), $route);
     }
 
+
+    /** 
+     * @runInSeparateProcess
+     *
+     * We need to use this because PHPUnit prints to the output while creating headers, please refer to this stackoverflow issue for more details:
+     * @link https://stackoverflow.com/questions/13875761/phpunit-output-with-header-exceptions-stderr-no-result
+    */
     public function testRun()
     {
         // Test head requests
@@ -339,6 +346,12 @@ class AppTest extends TestCase
         $this->assertStringNotContainsString('HELLO', $result);
     }
 
+    /** 
+     * @runInSeparateProcess
+     *
+     * We need to use this because PHPUnit prints to the output while creating headers, please refer to this stackoverflow issue for more details:
+     * @link https://stackoverflow.com/questions/13875761/phpunit-output-with-header-exceptions-stderr-no-result
+    */
     public function testRunAlias()
     {
         // Test head requests
