@@ -34,6 +34,13 @@ App::get('/redirect')
         $response->redirect('/');
     });
 
+App::get('/exception')
+    ->inject('response')
+    ->action(function($response) {
+        /** @var Utopia/Response $response */
+        throw new Exception('Exception!');
+    });
+
 $request    = new Request();
 $response   = new Response();
 
