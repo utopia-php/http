@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,11 +18,11 @@ use PHPUnit\Framework\TestCase;
 
 class HostnameTest extends TestCase
 {
-    public function setUp():void
+    public function setUp(): void
     {
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
     }
 
@@ -44,6 +45,9 @@ class HostnameTest extends TestCase
         $this->assertEquals(true, $validator->isValid('my-project.my-web.vercel.app'));
         $this->assertEquals(true, $validator->isValid('my-commit.my-project.my-web.vercel.app'));
         $this->assertEquals(true, $validator->isValid('myapp.co.uk'));
+        $this->assertEquals(true, $validator->isValid('*.myapp.com'));
+        $this->assertEquals(true, $validator->isValid('myapp.*'));
+        $this->assertEquals(true, $validator->isValid('*'));
 
         $this->assertEquals(false, $validator->isValid('https://myweb.com'));
         $this->assertEquals(false, $validator->isValid('ws://myweb.com'));
@@ -91,22 +95,17 @@ class HostnameTest extends TestCase
 
         $validator = new Hostname(['localhost']);
         $this->assertEquals(true, $validator->isValid('localhost'));
-    }
 
-    public function testInvalidAllowList()
-    {
-        $this->expectExceptionMessage('Wildcard at the end of hostname \'web.app.*\' is not allowed.');
-
-        $validator = new Hostname([
-            'myapp.com',
-            'web.app.*'
-        ]);
-    }
-
-    public function testWildcardOnly()
-    {
-        $this->expectExceptionMessage('Wildcard at the end of hostname \'*\' is not allowed.');
+        // edge-cases tests
+        $validator = new Hostname(['netlify.*']);
+        $this->assertEquals(true, $validator->isValid('netlify.com'));
+        $this->assertEquals(true, $validator->isValid('netlify.eu'));
+        $this->assertEquals(true, $validator->isValid('netlify.app'));
 
         $validator = new Hostname(['*']);
+        $this->assertEquals(true, $validator->isValid('localhost'));
+        $this->assertEquals(true, $validator->isValid('anything')); // Like localhost
+        $this->assertEquals(true, $validator->isValid('anything.com'));
+        $this->assertEquals(true, $validator->isValid('anything.with.subdomains.eu'));
     }
 }
