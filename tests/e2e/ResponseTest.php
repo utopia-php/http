@@ -45,4 +45,10 @@ class ResponseTest extends TestCase
         $response = $this->client->call(Client::METHOD_GET, '/exception');
         $this->assertEquals(500, $response['headers']['status-code']);
     }
+
+    public function testHandledException()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/handledException');
+        $this->assertEquals('Handled Exception.', $response['body']);
+    }
 }

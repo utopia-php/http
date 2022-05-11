@@ -41,6 +41,19 @@ App::get('/exception')
         throw new Exception('Exception!');
     });
 
+App::get('/handledException')
+    ->inject('response')
+    ->action(function($response) {
+        /** @var Utopia/Response $response */
+
+        App::error(function ($error, $response) {
+            /** @var Utopia/Response $response */
+            $response->send('Handled Exception.');
+        }, ['error', 'response']);
+
+        throw new Exception('Exception!');
+    });
+
 $request    = new Request();
 $response   = new Response();
 
