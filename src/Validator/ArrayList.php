@@ -84,6 +84,16 @@ class ArrayList extends Validator
     }
 
     /**
+     * Get Nested Validator
+     *
+     * @return Validator
+     */
+    public function getValidator(): Validator
+    {
+        return $this->validator;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value is valid array and validator is valid.
