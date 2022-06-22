@@ -452,7 +452,7 @@ class App
      *
      * @return self
      */
-    public function setRoute(Route $route): self
+    public function setRoute(?Route $route): self
     {
         $this->route = $route;
         return $this;
