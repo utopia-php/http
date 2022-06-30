@@ -573,7 +573,7 @@ class App
 
             foreach ($route->getParams() as $key => $param) { // Get value from route or request object
                 $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
-                $value = (isset($values[$key])) ? $values[$key] : $arg;
+                $value = (isset($values[$key])) && $values[$key][0] != ':' ? $values[$key] : $arg;
 
                 if($route->getIsAlias() && isset($route->getAliasParams()[$key])) {
                     $value = $route->getAliasParams()[$key];
