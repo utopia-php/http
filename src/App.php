@@ -467,7 +467,7 @@ class App
      * @param string $url
      * @return Route
      */
-    protected static function addRoute(string $method, string $url): Route
+    public static function addRoute(string $method, string $url): Route
     {
         $route = new Route($method, $url);
 
