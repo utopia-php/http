@@ -5,6 +5,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
+use Utopia\Validator\JSON;
 
 ini_set('memory_limit', '512M');
 ini_set('display_errors', 1);
@@ -32,6 +33,14 @@ App::get('/redirect')
     ->action(function($response) {
         /** @var Utopia/Response $response */
         $response->redirect('/');
+    });
+
+App::post('/echo')
+    ->param('body', '', new JSON(), 'Full request body as JSON', false, [], true)
+    ->inject('response')
+    ->action(function($body, $response) {
+        /** @var Utopia/Response $response */
+        $response->send(\json_encode($body));
     });
 
 $request    = new Request();

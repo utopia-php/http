@@ -39,4 +39,11 @@ class ResponseTest extends TestCase
         $response = $this->client->call(Client::METHOD_GET, '/redirect');
         $this->assertEquals('Hello World!', $response['body']);
     }
+
+    public function testFullBodyParam()
+    {
+        $body = [['Hello' => 'World!']];
+        $response = $this->client->call(Client::METHOD_POST, '/echo', [], $body);
+        $this->assertEquals(\json_encode($body), $response['body']);
+    }
 }
