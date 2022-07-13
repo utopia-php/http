@@ -579,6 +579,10 @@ class App
                     $value = $route->getAliasParams()[$key];
                 }
 
+                if ($param['fullBody']) {
+                    $value = $args;
+                }
+
                 $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
 
                 $this->validate($key, $param, $value);
