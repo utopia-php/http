@@ -40,7 +40,7 @@ class Hostname extends Validator
      */
     public function getDescription(): string
     {
-        return 'Value must be a hostname without path, port and protocol.';
+        return 'Value must be a valid hostname without path, port and protocol.';
     }
 
     /**
@@ -75,6 +75,11 @@ class Hostname extends Validator
     {
         // Validate proper format
         if (!\is_string($value) || empty($value)) {
+            return false;
+        }
+
+        // Max length 253 chars: https://en.wikipedia.org/wiki/Hostname#:~:text=The%20entire%20hostname%2C%20including%20the,maximum%20of%20253%20ASCII%20characters
+        if (\mb_strlen($value) > 253) {
             return false;
         }
 
