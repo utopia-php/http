@@ -486,9 +486,9 @@ class App
      * @param Request $request
      * @return null|Route
      */
-    public function match(Request $request): ?Route
+    public function match(Request $request, bool $fresh = false): ?Route
     {
-        if (null !== $this->route) {
+        if (null !== $this->route && !$fresh) {
             return $this->route;
         }
 
