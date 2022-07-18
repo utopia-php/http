@@ -219,7 +219,7 @@ class Route
      *
      * @return self
      */
-    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = [], bool $fullBody = false): self
+    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): self
     {
         $this->params[$key] = [
             'default' => $default,
@@ -229,7 +229,6 @@ class Route
             'injections' => $injections,
             'value' => null,
             'order' => count($this->params) + count($this->injections),
-            'fullBody' => $fullBody,
         ];
 
         return $this;
