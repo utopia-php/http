@@ -12,6 +12,15 @@ class Hook {
     protected string $desc = '';
 
     /**
+     * Parameters
+     *
+     * List of route params names and validators
+     *
+     * @var array
+     */
+    protected array $params = [];
+
+    /**
      * Group
      *
      * @var array
@@ -109,7 +118,7 @@ class Hook {
      */
     public function getInjections(): array
     {
-        return $this->injections;
+        return array_keys($this->injections);
     }
 
     /**
@@ -127,8 +136,105 @@ class Hook {
             throw new Exception('Injection already declared for ' . $injection);
         }
 
-        $this->injections[] = $injection;
+        $this->injections[$injection] = [
+            'name' => $injection,
+            'order' => count($this->params) + count($this->injections),
+        ];
 
         return $this;
     }
+
+    /**
+     * Add Param
+     *
+     * @param string $key
+     * @param mixed $default
+     * @param Validator|callable $validator
+     * @param string $description
+     * @param bool $optional
+     * @param array $injections
+     *
+     * @return static
+     */
+    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): static
+    {
+        $this->params[$key] = [
+            'default' => $default,
+            'validator' => $validator,
+            'description' => $description,
+            'optional' => $optional,
+            'injections' => $injections,
+            'value' => null,
+            'order' => count($this->params) + count($this->injections),
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Get Params
+     *
+     * @return array
+     */
+    public function getParams(): array
+    {
+        return $this->params;
+    }
+
+    /**
+     * Get Param Values
+     *
+     * @return array
+     */
+    public function getParamsValues(): array
+    {
+        $values = [];
+
+        foreach ($this->params as $key => $param) {
+            $values[$key] = $param['value'];
+        }
+
+        return $values;
+    }
+
+    /**
+     * Set Param Value
+     *
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return static
+     *
+     * @throws Exception
+     */
+    public function setParamValue(string $key, mixed $value): static
+    {
+        if (!isset($this->params[$key])) {
+            throw new Exception('Unknown key');
+        }
+
+        $this->params[$key]['value'] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get Param Value
+     *
+     * @param string $key
+     *
+     * @return mixed
+     *
+     * @throws Exception
+     */
+    public function getParamValue(string $key): mixed
+    {
+        if (!isset($this->params[$key])) {
+            throw new Exception('Unknown key');
+        }
+
+        return $this->params[$key]['value'];
+    }
+
+
 }

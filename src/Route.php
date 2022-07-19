@@ -63,15 +63,6 @@ class Route extends Hook
     public static int $counter = 0;
 
     /**
-     * Parameters
-     *
-     * List of route params names and validators
-     *
-     * @var array
-     */
-    protected array $params = [];
-
-    /**
      * Labels
      *
      * List of route label names
@@ -103,9 +94,9 @@ class Route extends Hook
      * Add path
      *
      * @param string $path
-     * @return self
+     * @return static
      */
-    public function path(string $path): self
+    public function path(string $path): static
     {
         $this->path = $path;
 
@@ -117,9 +108,9 @@ class Route extends Hook
      *
      * @param string $path
      * @param array $params
-     * @return self
+     * @return static
      */
-    public function alias(string $path, array $params = []): self
+    public function alias(string $path, array $params = []): static
     {
         $this->aliasPath = $path;
         $this->aliasParams = $params;
@@ -140,65 +131,15 @@ class Route extends Hook
     }
 
     /**
-     * Add Param
-     *
-     * @param string $key
-     * @param mixed $default
-     * @param Validator|callable $validator
-     * @param string $description
-     * @param bool $optional
-     * @param array $injections
-     *
-     * @return self
-     */
-    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): self
-    {
-        $this->params[$key] = [
-            'default' => $default,
-            'validator' => $validator,
-            'description' => $description,
-            'optional' => $optional,
-            'injections' => $injections,
-            'value' => null,
-            'order' => count($this->params) + count($this->injections),
-        ];
-
-        return $this;
-    }
-
-    /**
      * Set hook status
      *
      * @param boolean $hook
      *
-     * @return self
-     */
-    public function hook(bool $hook = true): self
-    {
-        $this->hook = $hook;
-
-        return $this;
-    }
-
-    /**
-     * Inject
-     *
-     * @param string $injection
-     *
-     * @throws Exception
-     *
      * @return static
      */
-    public function inject(string $injection): static
+    public function hook(bool $hook = true): static
     {
-        if (array_key_exists($injection, $this->injections)) {
-            throw new Exception('Injection already declared for ' . $injection);
-        }
-
-        $this->injections[$injection] = [
-            'name' => $injection,
-            'order' => count($this->params) + count($this->injections),
-        ];
+        $this->hook = $hook;
 
         return $this;
     }
@@ -211,7 +152,7 @@ class Route extends Hook
      *
      * @return $this
      */
-    public function label(string $key, mixed $value): self
+    public function label(string $key, mixed $value): static
     {
         $this->labels[$key] = $value;
 
@@ -269,71 +210,6 @@ class Route extends Hook
     }
 
     /**
-     * Get Params
-     *
-     * @return array
-     */
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    /**
-     * Get Param Values
-     *
-     * @return array
-     */
-    public function getParamsValues(): array
-    {
-        $values = [];
-
-        foreach ($this->params as $key => $param) {
-            $values[$key] = $param['value'];
-        }
-
-        return $values;
-    }
-
-    /**
-     * Set Param Value
-     *
-     * @param string $key
-     * @param mixed $value
-     *
-     * @return self
-     *
-     * @throws Exception
-     */
-    public function setParamValue(string $key, mixed $value): self
-    {
-        if (!isset($this->params[$key])) {
-            throw new Exception('Unknown key');
-        }
-
-        $this->params[$key]['value'] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Get Param Value
-     *
-     * @param string $key
-     *
-     * @return mixed
-     *
-     * @throws Exception
-     */
-    public function getParamValue(string $key): mixed
-    {
-        if (!isset($this->params[$key])) {
-            throw new Exception('Unknown key');
-        }
-
-        return $this->params[$key]['value'];
-    }
-
-    /**
      * Get Label
      *
      * Return given label value or default value if label doesn't exists
@@ -366,5 +242,15 @@ class Route extends Hook
     public function getHook(): bool
     {
         return $this->hook;
+    }
+
+    /**
+     * Get Injections
+     *
+     * @return array
+     */
+    public function getInjections(): array
+    {
+        return $this->injections;
     }
 }
