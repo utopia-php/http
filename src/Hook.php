@@ -38,9 +38,9 @@ class Hook {
      * Add Description
      *
      * @param string $desc
-     * @return self
+     * @return static
      */
-    public function desc(string $desc): self
+    public function desc(string $desc): static
     {
         $this->desc = $desc;
 
@@ -61,9 +61,9 @@ class Hook {
      * Add Group
      *
      * @param array $groups
-     * @return self
+     * @return static
      */
-    public function groups(array $groups): self
+    public function groups(array $groups): static
     {
         $this->groups = $groups;
 
@@ -84,9 +84,9 @@ class Hook {
      * Add Action
      *
      * @param callable $action
-     * @return self
+     * @return static
      */
-    public function action(callable $action): self
+    public function action(callable $action): static
     {
         $this->action = $action;
         return $this;
@@ -119,9 +119,9 @@ class Hook {
      *
      * @throws Exception
      *
-     * @return self
+     * @return static
      */
-    public function inject(string $injection): self
+    public function inject(string $injection): static
     {
         if (array_key_exists($injection, $this->injections)) {
             throw new Exception('Injection already declared for ' . $injection);

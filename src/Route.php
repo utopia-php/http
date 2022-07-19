@@ -187,9 +187,9 @@ class Route extends Hook
      *
      * @throws Exception
      *
-     * @return self
+     * @return static
      */
-    public function inject(string $injection): self
+    public function inject(string $injection): static
     {
         if (array_key_exists($injection, $this->injections)) {
             throw new Exception('Injection already declared for ' . $injection);
