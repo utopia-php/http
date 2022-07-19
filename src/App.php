@@ -218,13 +218,13 @@ class App
      *
      * @return void
      */
-    public static function init(callable $callback, array $resources = [], string $group = '*'): void
+    public static function init(Hook $hook, string $group = '*'): void
     {
         if (!isset(self::$init[$group])) {
             self::$init[$group] = [];
         }
 
-        self::$init[$group][] = ['callback' => $callback, 'resources' => $resources];
+        self::$init[$group][] = $hook;
     }
 
     /**
@@ -238,13 +238,13 @@ class App
      *
      * @return void
      */
-    public static function shutdown(callable $callback, array $resources = [], string $group = '*'): void
+    public static function shutdown(Hook $hook, string $group = '*'): void
     {
         if (!isset(self::$shutdown[$group])) {
             self::$shutdown[$group] = [];
         }
 
-        self::$shutdown[$group][] = ['callback' => $callback, 'resources' => $resources];
+        self::$shutdown[$group][] = $hook;
     }
 
     /**
@@ -258,13 +258,13 @@ class App
      *
      * @return void
      */
-    public static function options(callable $callback, array $resources = [], string $group = '*'): void
+    public static function options(Hook $hook, string $group = '*'): void
     {
         if (!isset(self::$options[$group])) {
             self::$options[$group] = [];
         }
 
-        self::$options[$group][] = ['callback' => $callback, 'resources' => $resources];
+        self::$options[$group][] = $hook;
     }
 
     /**
@@ -278,13 +278,13 @@ class App
      *
      * @return void
      */
-    public static function error(callable $callback, array $resources = [], string $group = '*'): void
+    public static function error(Hook $hook, string $group = '*'): void
     {
         if (!isset(self::$errors[$group])) {
             self::$errors[$group] = [];
         }
 
-        self::$errors[$group][] = ['callback' => $callback, 'resources' => $resources];
+        self::$errors[$group][] = $hook;
     }
 
     /**
@@ -557,14 +557,16 @@ class App
         try {
             if ($route->getMiddleware()) {
                 foreach (self::$init['*'] as $init) { // Global init hooks
-                    \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+                    /** @var Hook $init */
+                    \call_user_func_array($init->getCallback(), $this->getResources($init->getInjections()));
                 }
             }
 
             foreach ($groups as $group) {
                 if (isset(self::$init[$group])) {
                     foreach (self::$init[$group] as $init) { // Group init hooks
-                        \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+                        /** @var Hook $init */
+                        \call_user_func_array($init->getCallback(), $this->getResources($init->getInjections()));
                     }
                 }
             }
@@ -595,14 +597,16 @@ class App
             foreach ($groups as $group) {
                 if (isset(self::$shutdown[$group])) {
                     foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
-                        \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+                        /** @var Hook $shutdown */
+                        \call_user_func_array($shutdown->getCallback(), $this->getResources($shutdown->getInjections()));
                     }
                 }
             }
 
             if ($route->getMiddleware()) {
                 foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
-                    \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+                    /** @var Hook $shutdown */
+                    \call_user_func_array($shutdown->getCallback(), $this->getResources($shutdown->getInjections()));
                 }
             }
         } catch (\Throwable $e) {
@@ -612,7 +616,7 @@ class App
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                        \call_user_func_array($error->getCallback(), $this->getResources($error->getInjections()));
                     }
                 }
             }
@@ -621,7 +625,7 @@ class App
                 self::setResource('error', function() use ($e) {
                     return $e;
                 });
-                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                \call_user_func_array($error->getCallback(), $this->getResources($error->getInjections()));
             }
         }
 
@@ -697,20 +701,20 @@ class App
                 foreach ($groups as $group) {
                     if (isset(self::$options[$group])) {
                         foreach (self::$options[$group] as $option) { // Group options hooks
-                            \call_user_func_array($option['callback'], $this->getResources($option['resources']));
+                            \call_user_func_array($option->getCallback(), $this->getResources($option->getInjections()));
                         }
                     }
                 }
 
                 foreach (self::$options['*'] as $option) { // Global options hooks
-                    \call_user_func_array($option['callback'], $this->getResources($option['resources']));
+                    \call_user_func_array($option->getCallback(), $this->getResources($option->getInjections()));
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors['*'] as $error) { // Global error hooks
                     self::setResource('error', function() use ($e) {
                         return $e;
                     });
-                    \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                    \call_user_func_array($error->getCallback(), $this->getResources($error->getInjections()));
                 }
             }
         } else {
@@ -718,7 +722,7 @@ class App
                 self::setResource('error', function() {
                     return new Exception('Not Found', 404);
                 });
-                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                \call_user_func_array($error->getCallback(), $this->getResources($error->getInjections()));
             }
         }
 
