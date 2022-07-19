@@ -110,9 +110,12 @@ class AppTest extends TestCase
     {
         $resource = $this->app->getResource('rand');
 
-        $this->app->error(new Hook( function($error) {
-            echo 'error: '.$error->getMessage();
-        }, ['error']));
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action( function($error) {
+                echo 'error: '.$error->getMessage();
+            });
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -270,7 +273,7 @@ class AppTest extends TestCase
         $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function testMiddleWare() {
+    public function testHook() {
         App::reset();
 
         $this->app
@@ -306,7 +309,7 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->middleware(false)
+            ->hook(false)
             ->action(function($x) {
                 echo $x;
             })

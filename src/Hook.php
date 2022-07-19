@@ -16,7 +16,7 @@ class Hook {
      *
      * @var array
      */
-    protected array $groups = ['*'];
+    protected array $groups = [];
 
     /**
      * Action Callback

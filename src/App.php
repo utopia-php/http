@@ -209,6 +209,7 @@ class App
     public static function init(): Hook
     {
         $hook = new Hook();
+        $hook->groups(['*']);
         self::$init[] = $hook;
         return $hook;
     }
@@ -223,6 +224,7 @@ class App
     public static function shutdown(): Hook
     {
         $hook = new Hook();
+        $hook->groups(['*']);
         self::$shutdown[] = $hook;
         return $hook;
     }
@@ -237,6 +239,7 @@ class App
     public static function options(): Hook
     {
         $hook = new Hook();
+        $hook->groups(['*']);
         self::$options[] = $hook;
         return $hook;
     }
@@ -251,6 +254,7 @@ class App
     public static function error(): Hook
     {
         $hook = new Hook();
+        $hook->groups(['*']);
         self::$errors[] = $hook;
         return $hook;
     }
@@ -701,7 +705,7 @@ class App
                 }
             }
         } else {
-            foreach (self::$errors['*'] as $error) { // Global error hooks
+            foreach (self::$errors as $error) { // Global error hooks
                 /** @var Hook $error */
                 if(in_array('*', $error->getGroups())) {
                     self::setResource('error', function() {
@@ -757,18 +761,10 @@ class App
     {
         self::$resourcesCallbacks = [];
         self::$mode = '';
-        self::$errors = [
-            '*' => [],
-        ];
-        self::$init = [
-            '*' => [],
-        ];
-        self::$shutdown = [
-            '*' => [],
-        ];
-        self::$options = [
-            '*' => [],
-        ];
+        self::$errors = [];
+        self::$init = [];
+        self::$shutdown = [];
+        self::$options = [];
         self::$sorted = false;
     }
 
