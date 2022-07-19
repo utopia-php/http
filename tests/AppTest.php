@@ -110,9 +110,9 @@ class AppTest extends TestCase
     {
         $resource = $this->app->getResource('rand');
 
-        $this->app->error(function($error) {
+        $this->app->error(new Hook( function($error) {
             echo 'error: '.$error->getMessage();
-        }, ['error']);
+        }, ['error']));
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -188,29 +188,29 @@ class AppTest extends TestCase
 
         // With Hooks
 
-        $this->app->init(function($rand) {
+        $this->app->init(new Hook(function($rand) {
             echo 'init-'.$rand.'-';
-        }, ['rand']);
+        }, ['rand']));
 
-        $this->app->shutdown(function() {
+        $this->app->shutdown(new Hook(function() {
             echo '-shutdown';
-        });
+        }));
 
-        $this->app->init(function() {
+        $this->app->init(new Hook(function() {
             echo '(init-api)-';
-        }, [], 'api');
+        }, [], 'api'));
 
-        $this->app->shutdown(function() {
+        $this->app->shutdown(new Hook(function() {
             echo '-(shutdown-api)';
-        }, [], 'api');
+        }, [], 'api'));
 
-        $this->app->init(function() {
+        $this->app->init(new Hook(function() {
             echo '(init-homepage)-';
-        }, [], 'homepage');
+        }, [], 'homepage'));
 
-        $this->app->shutdown(function() {
+        $this->app->shutdown(new Hook(function() {
             echo '-(shutdown-homepage)';
-        }, [], 'homepage');
+        }, [], 'homepage'));
 
         $route = new Route('GET', '/path');
 
@@ -256,13 +256,13 @@ class AppTest extends TestCase
     public function testMiddleWare() {
         App::reset();
 
-        $this->app->init(function() {
+        $this->app->init(new Hook(function() {
             echo '(init)-';    
-        });
+        }));
 
-        $this->app->shutdown(function() {
+        $this->app->shutdown(new Hook(function() {
             echo '-(shutdown)';    
-        });
+        }));
 
         // Default Params
         $route = new Route('GET', '/path');
