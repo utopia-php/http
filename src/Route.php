@@ -14,7 +14,7 @@ namespace Utopia;
 
 use Exception;
 
-class Route
+class Route extends Hook
 {
     /**
      * HTTP Method
@@ -24,11 +24,11 @@ class Route
     protected string $method = '';
 
     /**
-     * Whether to use middleware
+     * Whether to use hook
      *
      * @var bool
      */
-    protected bool $middleware = true;
+    protected bool $hook = true;
 
     /**
      * Path
@@ -58,27 +58,6 @@ class Route
     protected bool $isAlias = false;
 
     /**
-     * Description
-     *
-     * @var string
-     */
-    protected string $desc = '';
-
-    /**
-     * Group
-     *
-     * @var array
-     */
-    protected array $groups = [];
-
-    /**
-     * Action Callback
-     *
-     * @var callable
-     */
-    protected $action;
-
-    /**
      * @var int
      */
     public static int $counter = 0;
@@ -91,15 +70,6 @@ class Route
      * @var array
      */
     protected array $params = [];
-
-    /**
-     * Injections
-     *
-     * List of route required injections for action callback
-     *
-     * @var array
-     */
-    protected array $injections = [];
 
     /**
      * Labels
@@ -170,44 +140,6 @@ class Route
     }
 
     /**
-     * Add Description
-     *
-     * @param string $desc
-     * @return self
-     */
-    public function desc(string $desc): self
-    {
-        $this->desc = $desc;
-
-        return $this;
-    }
-
-    /**
-     * Add Group
-     *
-     * @param array $groups
-     * @return self
-     */
-    public function groups(array $groups): self
-    {
-        $this->groups = $groups;
-
-        return $this;
-    }
-
-    /**
-     * Add Action
-     *
-     * @param callable $action
-     * @return self
-     */
-    public function action(callable $action): self
-    {
-        $this->action = $action;
-        return $this;
-    }
-
-    /**
      * Add Param
      *
      * @param string $key
@@ -235,15 +167,15 @@ class Route
     }
 
     /**
-     * Set middleware status
+     * Set hook status
      *
-     * @param boolean $middleware
+     * @param boolean $hook
      *
      * @return self
      */
-    public function middleware(bool $middleware = true): self
+    public function hook(bool $hook = true): self
     {
-        $this->middleware = $middleware;
+        $this->hook = $hook;
 
         return $this;
     }
@@ -337,36 +269,6 @@ class Route
     }
 
     /**
-     * Get Description
-     *
-     * @return string
-     */
-    public function getDesc(): string
-    {
-        return $this->desc;
-    }
-
-    /**
-     * Get Groups
-     *
-     * @return array
-     */
-    public function getGroups(): array
-    {
-        return $this->groups;
-    }
-
-    /**
-     * Get Action
-     *
-     * @return callable
-     */
-    public function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
      * Get Params
      *
      * @return array
@@ -374,16 +276,6 @@ class Route
     public function getParams(): array
     {
         return $this->params;
-    }
-
-    /**
-     * Get Injections
-     *
-     * @return array
-     */
-    public function getInjections(): array
-    {
-        return $this->injections;
     }
 
     /**
@@ -467,12 +359,12 @@ class Route
     }
 
     /**
-     * Get middleware status
+     * Get hook status
      *
      * @return bool
      */
-    public function getMiddleware(): bool
+    public function getHook(): bool
     {
-        return $this->middleware;
+        return $this->hook;
     }
 }

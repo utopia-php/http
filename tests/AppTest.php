@@ -188,29 +188,46 @@ class AppTest extends TestCase
 
         // With Hooks
 
-        $this->app->init(new Hook(function($rand) {
-            echo 'init-'.$rand.'-';
-        }, ['rand']));
+        $this->app
+            ->init()
+            ->inject('rand')
+            ->action(function($rand) {
+                echo 'init-'.$rand.'-';
+            });
 
-        $this->app->shutdown(new Hook(function() {
-            echo '-shutdown';
-        }));
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-shutdown';
+            });
 
-        $this->app->init(new Hook(function() {
-            echo '(init-api)-';
-        }, [], 'api'));
+        $this->app
+            ->init()
+            ->groups(['api'])
+            ->action(function() {
+                echo '(init-api)-';
+            });
 
-        $this->app->shutdown(new Hook(function() {
-            echo '-(shutdown-api)';
-        }, [], 'api'));
+        $this->app
+            ->shutdown()
+            ->groups(['api'])
+            ->action(function() {
+                echo '-(shutdown-api)';
+            });
 
-        $this->app->init(new Hook(function() {
-            echo '(init-homepage)-';
-        }, [], 'homepage'));
+        $this->app
+            ->init()
+            ->groups(['homepage'])
+            ->action(function() {
+                echo '(init-homepage)-';
+            });
 
-        $this->app->shutdown(new Hook(function() {
-            echo '-(shutdown-homepage)';
-        }, [], 'homepage'));
+        $this->app
+            ->shutdown()
+            ->groups(['homepage'])
+            ->action(function() {
+                echo '-(shutdown-homepage)';
+            });
 
         $route = new Route('GET', '/path');
 
@@ -256,13 +273,17 @@ class AppTest extends TestCase
     public function testMiddleWare() {
         App::reset();
 
-        $this->app->init(new Hook(function() {
-            echo '(init)-';    
-        }));
+        $this->app
+            ->init()
+            ->action(function() {
+                echo '(init)-';    
+            });
 
-        $this->app->shutdown(new Hook(function() {
-            echo '-(shutdown)';    
-        }));
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-(shutdown)';    
+            });
 
         // Default Params
         $route = new Route('GET', '/path');
