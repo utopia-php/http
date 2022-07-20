@@ -132,6 +132,7 @@ class Route extends Hook
 
     /**
      * Set hook status
+     * When set false, hooks for this route will be skipped.
      *
      * @param boolean $hook
      *
