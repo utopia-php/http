@@ -530,7 +530,7 @@ class App
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     /** @var Hook $hook */
-                    if(in_array('*',$hook->getGroups())) {
+                    if(in_array('*', $hook->getGroups())) {
                         \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
                     }
                 }
