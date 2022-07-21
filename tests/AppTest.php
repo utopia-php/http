@@ -110,9 +110,12 @@ class AppTest extends TestCase
     {
         $resource = $this->app->getResource('rand');
 
-        $this->app->error(function($error) {
-            echo 'error: '.$error->getMessage();
-        }, ['error']);
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action( function($error) {
+                echo 'error: '.$error->getMessage();
+            });
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -188,29 +191,46 @@ class AppTest extends TestCase
 
         // With Hooks
 
-        $this->app->init(function($rand) {
-            echo 'init-'.$rand.'-';
-        }, ['rand']);
+        $this->app
+            ->init()
+            ->inject('rand')
+            ->action(function($rand) {
+                echo 'init-'.$rand.'-';
+            });
 
-        $this->app->shutdown(function() {
-            echo '-shutdown';
-        });
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-shutdown';
+            });
 
-        $this->app->init(function() {
-            echo '(init-api)-';
-        }, [], 'api');
+        $this->app
+            ->init()
+            ->groups(['api'])
+            ->action(function() {
+                echo '(init-api)-';
+            });
 
-        $this->app->shutdown(function() {
-            echo '-(shutdown-api)';
-        }, [], 'api');
+        $this->app
+            ->shutdown()
+            ->groups(['api'])
+            ->action(function() {
+                echo '-(shutdown-api)';
+            });
 
-        $this->app->init(function() {
-            echo '(init-homepage)-';
-        }, [], 'homepage');
+        $this->app
+            ->init()
+            ->groups(['homepage'])
+            ->action(function() {
+                echo '(init-homepage)-';
+            });
 
-        $this->app->shutdown(function() {
-            echo '-(shutdown-homepage)';
-        }, [], 'homepage');
+        $this->app
+            ->shutdown()
+            ->groups(['homepage'])
+            ->action(function() {
+                echo '-(shutdown-homepage)';
+            });
 
         $route = new Route('GET', '/path');
 
@@ -253,16 +273,20 @@ class AppTest extends TestCase
         $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function testMiddleWare() {
+    public function testHook() {
         App::reset();
 
-        $this->app->init(function() {
-            echo '(init)-';    
-        });
+        $this->app
+            ->init()
+            ->action(function() {
+                echo '(init)-';    
+            });
 
-        $this->app->shutdown(function() {
-            echo '-(shutdown)';    
-        });
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-(shutdown)';    
+            });
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -285,7 +309,7 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->middleware(false)
+            ->hook(false)
             ->action(function($x) {
                 echo $x;
             })

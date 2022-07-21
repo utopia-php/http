@@ -70,9 +70,7 @@ class App
      *
      * @var array
      */
-    protected static array $errors = [
-        '*' => [],
-    ];
+    protected static array $errors = [];
 
     /**
      * Init
@@ -81,9 +79,7 @@ class App
      *
      * @var array
      */
-    protected static array $init = [
-        '*' => [],
-    ];
+    protected static array $init = [];
 
     /**
      * Shutdown
@@ -92,9 +88,7 @@ class App
      *
      * @var array
      */
-    protected static array $shutdown = [
-        '*' => [],
-    ];
+    protected static array $shutdown = [];
 
     /**
      * Options
@@ -103,9 +97,7 @@ class App
      *
      * @var array
      */
-    protected static array $options = [
-        '*' => [],
-    ];
+    protected static array $options = [];
 
     /**
      * Is Sorted?
@@ -212,19 +204,14 @@ class App
      *
      * Set a callback function that will be initialized on application start
      *
-     * @param callable $callback
-     * @param array $resources
-     * @param string $group Pass "*" for all
-     *
-     * @return void
+     * @return Hook
      */
-    public static function init(callable $callback, array $resources = [], string $group = '*'): void
+    public static function init(): Hook
     {
-        if (!isset(self::$init[$group])) {
-            self::$init[$group] = [];
-        }
-
-        self::$init[$group][] = ['callback' => $callback, 'resources' => $resources];
+        $hook = new Hook();
+        $hook->groups(['*']);
+        self::$init[] = $hook;
+        return $hook;
     }
 
     /**
@@ -232,19 +219,14 @@ class App
      *
      * Set a callback function that will be initialized on application end
      *
-     * @param callable $callback
-     * @param array $resources
-     * @param string $group Use "*" for all
-     *
-     * @return void
+     * @return Hook
      */
-    public static function shutdown(callable $callback, array $resources = [], string $group = '*'): void
+    public static function shutdown(): Hook
     {
-        if (!isset(self::$shutdown[$group])) {
-            self::$shutdown[$group] = [];
-        }
-
-        self::$shutdown[$group][] = ['callback' => $callback, 'resources' => $resources];
+        $hook = new Hook();
+        $hook->groups(['*']);
+        self::$shutdown[] = $hook;
+        return $hook;
     }
 
     /**
@@ -252,19 +234,14 @@ class App
      *
      * Set a callback function for all request with options method
      *
-     * @param callable $callback
-     * @param array $resources
-     * @param string $group Use "*" for all
-     *
-     * @return void
+     * @return Hook
      */
-    public static function options(callable $callback, array $resources = [], string $group = '*'): void
+    public static function options(): Hook
     {
-        if (!isset(self::$options[$group])) {
-            self::$options[$group] = [];
-        }
-
-        self::$options[$group][] = ['callback' => $callback, 'resources' => $resources];
+        $hook = new Hook();
+        $hook->groups(['*']);
+        self::$options[] = $hook;
+        return $hook;
     }
 
     /**
@@ -272,19 +249,14 @@ class App
      *
      * An error callback for failed or no matched requests
      *
-     * @param callable $callback
-     * @param array $resources
-     * @param string $group Use "*" for all
-     *
-     * @return void
+     * @return Hook
      */
-    public static function error(callable $callback, array $resources = [], string $group = '*'): void
+    public static function error(): Hook
     {
-        if (!isset(self::$errors[$group])) {
-            self::$errors[$group] = [];
-        }
-
-        self::$errors[$group][] = ['callback' => $callback, 'resources' => $resources];
+        $hook = new Hook();
+        $hook->groups(['*']);
+        self::$errors[] = $hook;
+        return $hook;
     }
 
     /**
@@ -555,16 +527,20 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
-            if ($route->getMiddleware()) {
-                foreach (self::$init['*'] as $init) { // Global init hooks
-                    \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+            if ($route->getHook()) {
+                foreach (self::$init as $hook) { // Global init hooks
+                    /** @var Hook $hook */
+                    if(in_array('*', $hook->getGroups())) {
+                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
+                    }
                 }
             }
 
             foreach ($groups as $group) {
-                if (isset(self::$init[$group])) {
-                    foreach (self::$init[$group] as $init) { // Group init hooks
-                        \call_user_func_array($init['callback'], $this->getResources($init['resources']));
+                foreach (self::$init as $hook) { // Group init hooks
+                    /** @var Hook $hook */
+                    if(in_array($group, $hook->getGroups())) {       
+                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
                     }
                 }
             }
@@ -593,35 +569,43 @@ class App
             \call_user_func_array($route->getAction(), $arguments);
 
             foreach ($groups as $group) {
-                if (isset(self::$shutdown[$group])) {
-                    foreach (self::$shutdown[$group] as $shutdown) { // Group shutdown hooks
-                        \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+                foreach (self::$shutdown as $hook) { // Group shutdown hooks
+                    /** @var Hook $hook */
+                    if(in_array($group, $hook->getGroups())) {
+                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
                     }
                 }
             }
 
-            if ($route->getMiddleware()) {
-                foreach (self::$shutdown['*'] as $shutdown) { // Global shutdown hooks
-                    \call_user_func_array($shutdown['callback'], $this->getResources($shutdown['resources']));
+            if ($route->getHook()) {
+                foreach (self::$shutdown as $hook) { // Group shutdown hooks
+                    /** @var Hook $hook */
+                    if(in_array('*', $hook->getGroups())) {
+                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
+                    }
                 }
             }
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
-                if (isset(self::$errors[$group])) {
-                    foreach (self::$errors[$group] as $error) { // Group error hooks
+                foreach (self::$errors as $error) { // Group error hooks
+                    /** @var Hook $error */
+                    if(in_array($group, $error->getGroups())) {
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                        \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
                     }
                 }
             }
 
-            foreach (self::$errors['*'] as $error) { // Global error hooks
-                self::setResource('error', function() use ($e) {
-                    return $e;
-                });
-                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+            foreach (self::$errors as $error) { // Global error hooks
+                /** @var Hook $error */
+                if(in_array('*', $error->getGroups())) {
+                    self::setResource('error', function() use ($e) {
+                        return $e;
+                    });
+                    \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                }
             }
         }
 
@@ -695,30 +679,40 @@ class App
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
-                    if (isset(self::$options[$group])) {
-                        foreach (self::$options[$group] as $option) { // Group options hooks
-                            \call_user_func_array($option['callback'], $this->getResources($option['resources']));
+                    foreach (self::$options as $option) { // Group options hooks
+                        /** @var Hook $option */
+                        if(in_array($group, $option->getGroups())) {
+                            \call_user_func_array($option->getAction(), $this->getResources($option->getInjections()));
                         }
                     }
                 }
 
-                foreach (self::$options['*'] as $option) { // Global options hooks
-                    \call_user_func_array($option['callback'], $this->getResources($option['resources']));
+                foreach (self::$options as $option) { // Global options hooks
+                    /** @var Hook $option */
+                    if(in_array('*', $option->getGroups())) {
+                        \call_user_func_array($option->getAction(), $this->getResources($option->getInjections()));
+                    }
                 }
             } catch (\Throwable $e) {
-                foreach (self::$errors['*'] as $error) { // Global error hooks
-                    self::setResource('error', function() use ($e) {
-                        return $e;
-                    });
-                    \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+                foreach (self::$errors as $error) { // Global error hooks
+                    /** @var Hook $error */
+                    if(in_array('*', $error->getGroups())) {
+                        self::setResource('error', function() use ($e) {
+                            return $e;
+                        });
+                        \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                    }
                 }
             }
         } else {
-            foreach (self::$errors['*'] as $error) { // Global error hooks
-                self::setResource('error', function() {
-                    return new Exception('Not Found', 404);
-                });
-                \call_user_func_array($error['callback'], $this->getResources($error['resources']));
+            foreach (self::$errors as $error) { // Global error hooks
+                /** @var Hook $error */
+                if(in_array('*', $error->getGroups())) {
+                    self::setResource('error', function() {
+                        return new Exception('Not Found', 404);
+                    });
+                    \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                }
             }
         }
 
@@ -767,18 +761,10 @@ class App
     {
         self::$resourcesCallbacks = [];
         self::$mode = '';
-        self::$errors = [
-            '*' => [],
-        ];
-        self::$init = [
-            '*' => [],
-        ];
-        self::$shutdown = [
-            '*' => [],
-        ];
-        self::$options = [
-            '*' => [],
-        ];
+        self::$errors = [];
+        self::$init = [];
+        self::$shutdown = [];
+        self::$options = [];
         self::$sorted = false;
     }
 
