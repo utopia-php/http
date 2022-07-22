@@ -47,6 +47,55 @@ $response   = new Response();
 $app->run($request, $response);
 ```
 
+### Hooks
+
+There are three types of hooks, init hooks, shutdown hooks and error hooks. Init hooks are executed before the route action is executed. Shutdown hook is executed after route action is executed before application shuts down. Finally error hooks are executed whenever there's an error in the application lifecycle. You can provide multiple hooks for each stage. If you do not assign groups to the hook, by default the hook will be executed for every route.
+
+```php
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Utopia\App;
+use Utopia\Request;
+use Utopia\Response;
+use Utopia\Hook;
+
+App::init()
+    ->inject('response')
+    ->action(function($response) {
+        $response->addHeader('content-type', 'application/json');
+    });
+
+App::error()
+    ->inject('error')
+    ->inject('response')
+    ->action(function($error, $response) {
+        $response
+            ->setStatusCode(500)
+            ->send('Error occurred ' . $error);
+    });
+
+App::get('/hello-world') // Define Route
+    ->inject('request')
+    ->inject('response')
+    ->action(
+        function($request, $response) {
+            $response
+              ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+              ->addHeader('Expires', '0')
+              ->addHeader('Pragma', 'no-cache')
+              ->json(['Hello' => 'World']);
+        }
+    );
+
+App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+
+$app        = new App('America/New_York');
+$request    = new Request();
+$response   = new Response();
+
+$app->run($request, $response);
+```
+
 ## System Requirements
 
 Utopia Framework requires PHP 7.3 or later. We recommend using the latest PHP version whenever possible.
