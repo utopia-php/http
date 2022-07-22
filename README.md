@@ -57,7 +57,6 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
-use Utopia\Hook;
 
 App::init()
     ->inject('response')
