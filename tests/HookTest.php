@@ -78,8 +78,8 @@ class HookTest extends TestCase
         ;
 
         $this->assertCount(2, $this->hook->getInjections());
-        $this->assertEquals('user', $this->hook->getInjections()['user']['name']);
-        $this->assertEquals('time', $this->hook->getInjections()['time']['name']);
+        $this->assertEquals('user', $this->hook->getInjections()[0]);
+        $this->assertEquals('time', $this->hook->getInjections()[1]);
     }
 
     public function tearDown():void

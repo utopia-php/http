@@ -43,6 +43,11 @@ class Hook {
      */
     protected array $injections = [];
 
+    public function __construct()
+    {
+        $this->action = function (): void {};
+    }
+
     /**
      * Add Description
      *
