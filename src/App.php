@@ -717,7 +717,7 @@ class App
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if(in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getResources($option->getInjections()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                         }
                     }
                 }
@@ -725,7 +725,7 @@ class App
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if(in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getResources($option->getInjections()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
@@ -735,7 +735,7 @@ class App
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
             }
@@ -746,7 +746,7 @@ class App
                     self::setResource('error', function() {
                         return new Exception('Not Found', 404);
                     });
-                    \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }
         }
