@@ -439,8 +439,11 @@ class App
      * @param string $url
      * @return Route
      */
-    protected static function addRoute(string $method, string $url): Route
+    public static function addRoute(string $method, string $url): Route
     {
+        if(!array_key_exists($method, self::$routes)) {
+            throw new Exception("Invalid Request Method");
+        }
         $route = new Route($method, $url);
 
         self::$routes[$method][$url] = $route;
