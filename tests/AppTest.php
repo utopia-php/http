@@ -324,7 +324,7 @@ class AppTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
-    public function testHookParams() {
+    public function testHookException() {
         App::reset();
 
         $this->app
