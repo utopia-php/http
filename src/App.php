@@ -528,14 +528,13 @@ class App
 
         // combine keys and values to one array
         $values = \array_combine($keys, $this->matches);
-        $args = $request->getParams();
         try {
 
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $args);
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -545,14 +544,13 @@ class App
                 foreach (self::$init as $hook) { // Group init hooks
                     /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {       
-                        $arguments = $this->getArguments($hook, $values, $args);
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-
-            $arguments = $this->getArguments($route, $values, $args);
+            $arguments = $this->getArguments($route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $arguments);
@@ -561,7 +559,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $args);
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -571,7 +569,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $args);
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -585,7 +583,7 @@ class App
                             return $e;
                         });
                         try {
-                            $arguments = $this->getArguments($error, $values, $args);
+                            $arguments = $this->getArguments($error, $values, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error', 0, $e);
@@ -601,7 +599,7 @@ class App
                         return $e;
                     });
                     try {
-                        $arguments = $this->getArguments($error, $values, $args);
+                        $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error', 0, $e);
@@ -717,7 +715,7 @@ class App
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if(in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getResources($option->getInjections()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                         }
                     }
                 }
@@ -725,7 +723,7 @@ class App
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if(in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getResources($option->getInjections()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
@@ -735,7 +733,7 @@ class App
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
             }
@@ -746,7 +744,7 @@ class App
                     self::setResource('error', function() {
                         return new Exception('Not Found', 404);
                     });
-                    \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }
         }
