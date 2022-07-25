@@ -582,8 +582,12 @@ class App
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
-                        $arguments = $this->getArguments($error, $args);
-                        \call_user_func_array($error->getAction(), $arguments);
+                        try {
+                            $arguments = $this->getArguments($error, $args);
+                            \call_user_func_array($error->getAction(), $arguments);
+                        } catch (\Throwable $e) {
+                            throw new Exception('Error handler had an error', 0, $e);
+                        }
                     }
                 }
             }
@@ -594,8 +598,12 @@ class App
                     self::setResource('error', function() use ($e) {
                         return $e;
                     });
-                    $arguments = $this->getArguments($error, $args);
-                    \call_user_func_array($error->getAction(), $arguments);
+                    try {
+                        $arguments = $this->getArguments($error, $args);
+                        \call_user_func_array($error->getAction(), $arguments);
+                    } catch (\Throwable $e) {
+                        throw new Exception('Error handler had an error', 0, $e);
+                    }
                 }
             }
         }
