@@ -324,6 +324,55 @@ class AppTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
+    public function testHookParams() {
+        App::reset();
+
+        $this->app
+            ->init()
+            ->param('y', '', new Text(5), 'y param', false)
+            ->action(function($y) {
+                echo '(init)-' . $y . '-';    
+            });
+        
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action(function($error) {
+                echo 'error-' . $error->getMessage();
+            });
+
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-(shutdown)';    
+            });
+
+        // param not provided for init
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->action(function($x) {
+                echo $x;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, new Request());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('error-Param "y" is not optional.', $result);
+
+
+        \ob_start();
+        $_GET['y'] = 'y-def';
+        $this->app->execute($route, new Request());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
+    }
+
     public function testSetRoute() {
         App::reset();
 
