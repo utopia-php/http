@@ -640,6 +640,7 @@ class App
         foreach ($hook->getInjections() as $key => $injection) {
             $arguments[$injection['order']] = $this->getResource($injection['name']);
         }
+
         return $arguments;
     }
 
