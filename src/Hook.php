@@ -43,6 +43,11 @@ class Hook {
      */
     protected array $injections = [];
 
+    public function __construct()
+    {
+        $this->action = function (): void {};
+    }
+
     /**
      * Add Description
      *
@@ -118,7 +123,7 @@ class Hook {
      */
     public function getInjections(): array
     {
-        return array_keys($this->injections);
+        return $this->injections;
     }
 
     /**

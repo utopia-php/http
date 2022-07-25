@@ -244,14 +244,4 @@ class Route extends Hook
     {
         return $this->hook;
     }
-
-    /**
-     * Get Injections
-     *
-     * @return array
-     */
-    public function getInjections(): array
-    {
-        return $this->injections;
-    }
 }
