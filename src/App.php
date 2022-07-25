@@ -549,7 +549,7 @@ class App
             }
 
 
-            $arguments = $this->getArguments($hook, $values, $args);
+            $arguments = $this->getArguments($route, $values, $args);
 
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $arguments);
