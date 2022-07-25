@@ -525,15 +525,14 @@ class App
 
         // combine keys and values to one array
         $values = \array_combine($keys, $this->matches);
-
+        $args = $request->getParams();
         try {
-            $args = $request->getParams();
 
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $args);
+                        $arguments = $this->getArguments($hook, $values, $args);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -543,14 +542,14 @@ class App
                 foreach (self::$init as $hook) { // Group init hooks
                     /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {       
-                        $arguments = $this->getArguments($hook, $args);
+                        $arguments = $this->getArguments($hook, $values, $args);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
 
-            $arguments = $this->getArguments($route, $args);
+            $arguments = $this->getArguments($hook, $values, $args);
 
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $arguments);
@@ -559,7 +558,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $args);
+                        $arguments = $this->getArguments($hook, $values, $args);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -569,7 +568,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $args);
+                        $arguments = $this->getArguments($hook, $values, $args);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -583,7 +582,7 @@ class App
                             return $e;
                         });
                         try {
-                            $arguments = $this->getArguments($error, $args);
+                            $arguments = $this->getArguments($error, $values, $args);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error', 0, $e);
@@ -599,7 +598,7 @@ class App
                         return $e;
                     });
                     try {
-                        $arguments = $this->getArguments($error, $args);
+                        $arguments = $this->getArguments($error, $values, $args);
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error', 0, $e);
@@ -611,7 +610,15 @@ class App
         return $this;
     }
 
-    protected function getArguments(Hook $hook, array $requestParams): array
+    /**
+     * Get Arguments
+     *
+     * @param Hook $hook
+     * @param array $values
+     * @param array $requestParams
+     * @return array
+     */
+    protected function getArguments(Hook $hook, array $values, array $requestParams): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
