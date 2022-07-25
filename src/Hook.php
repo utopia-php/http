@@ -123,7 +123,7 @@ class Hook {
      */
     public function getInjections(): array
     {
-        return array_keys($this->injections);
+        return $this->injections;
     }
 
     /**

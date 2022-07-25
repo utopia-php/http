@@ -527,11 +527,14 @@ class App
         $values = \array_combine($keys, $this->matches);
 
         try {
+            $args = $request->getParams();
+
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
+                        $arguments = $this->getArguments($hook, $args);
+                        \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
@@ -540,30 +543,14 @@ class App
                 foreach (self::$init as $hook) { // Group init hooks
                     /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {       
-                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
+                        $arguments = $this->getArguments($hook, $args);
+                        \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-            $args = $request->getParams();
 
-            foreach ($route->getParams() as $key => $param) { // Get value from route or request object
-                $arg = (isset($args[$key])) ? $args[$key] : $param['default'];
-                $value = (isset($values[$key])) ? $values[$key] : $arg;
-
-                if($route->getIsAlias() && isset($route->getAliasParams()[$key])) {
-                    $value = $route->getAliasParams()[$key];
-                }
-
-                $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
-
-                $this->validate($key, $param, $value);
-                $arguments[$param['order']] = $value;
-            }
-
-            foreach ($route->getInjections() as $key => $injection) {
-                $arguments[$injection['order']] = $this->getResource($injection['name']);
-            }
+            $arguments = $this->getArguments($route, $args);
 
             // Call the callback with the matched positions as params
             \call_user_func_array($route->getAction(), $arguments);
@@ -572,7 +559,8 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
+                        $arguments = $this->getArguments($hook, $args);
+                        \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
@@ -581,7 +569,8 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->getResources($hook->getInjections()));
+                        $arguments = $this->getArguments($hook, $args);
+                        \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
@@ -593,7 +582,8 @@ class App
                         self::setResource('error', function() use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                        $arguments = $this->getArguments($error, $args);
+                        \call_user_func_array($error->getAction(), $arguments);
                     }
                 }
             }
@@ -604,12 +594,38 @@ class App
                     self::setResource('error', function() use ($e) {
                         return $e;
                     });
-                    \call_user_func_array($error->getAction(), $this->getResources($error->getInjections()));
+                    $arguments = $this->getArguments($error, $args);
+                    \call_user_func_array($error->getAction(), $arguments);
                 }
             }
         }
 
         return $this;
+    }
+
+    protected function getArguments(Hook $hook, array $requestParams): array
+    {
+        $arguments = [];
+        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
+            $arg = (isset($requestParams[$key])) ? $requestParams[$key] : $param['default'];
+            $value = (isset($values[$key])) ? $values[$key] : $arg;
+
+            if($hook instanceof Route) {
+                if($hook->getIsAlias() && isset($hook->getAliasParams()[$key])) {
+                    $value = $hook->getAliasParams()[$key];
+                }
+            }
+
+            $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
+
+            $this->validate($key, $param, $value);
+            $arguments[$param['order']] = $value;
+        }
+
+        foreach ($hook->getInjections() as $key => $injection) {
+            $arguments[$injection['order']] = $this->getResource($injection['name']);
+        }
+        return $arguments;
     }
 
     /**
