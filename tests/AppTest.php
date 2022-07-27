@@ -108,15 +108,15 @@ class AppTest extends TestCase
 
     public function testAddRoute()
     {
-        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/');
-        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/');
+        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/addroute');
+        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/addroute');
 
         $routes = App::getRoutes();
-        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/']);
-        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/']);
+        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/addroute']);
+        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/addroute']);
 
         $this->expectExceptionMessage('Invalid Request Method');
-        App::addRoute('REST', '/');
+        App::addRoute('REST', '/addroute');
     }
 
     public function testExecute()
