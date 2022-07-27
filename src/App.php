@@ -459,6 +459,7 @@ class App
      * Find matching route given current user request
      *
      * @param Request $request
+     * @param bool $fresh If true, will not match any cached route
      * @return null|Route
      */
     public function match(Request $request, bool $fresh = false): ?Route
