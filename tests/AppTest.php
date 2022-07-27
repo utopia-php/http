@@ -106,13 +106,29 @@ class AppTest extends TestCase
         $this->assertEquals('x-def-y-def-'.$resource, $result);
     }
 
+    public function testAddRoute()
+    {
+        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/');
+        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/');
+
+        $routes = App::getRoutes();
+        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/']);
+        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/']);
+
+        $this->expectExceptionMessage('Invalid Request Method');
+        App::addRoute('REST', '/');
+    }
+
     public function testExecute()
     {
         $resource = $this->app->getResource('rand');
 
-        $this->app->error(function($error) {
-            echo 'error: '.$error->getMessage();
-        }, ['error']);
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action( function($error) {
+                echo 'error: '.$error->getMessage();
+            });
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -188,29 +204,46 @@ class AppTest extends TestCase
 
         // With Hooks
 
-        $this->app->init(function($rand) {
-            echo 'init-'.$rand.'-';
-        }, ['rand']);
+        $this->app
+            ->init()
+            ->inject('rand')
+            ->action(function($rand) {
+                echo 'init-'.$rand.'-';
+            });
 
-        $this->app->shutdown(function() {
-            echo '-shutdown';
-        });
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-shutdown';
+            });
 
-        $this->app->init(function() {
-            echo '(init-api)-';
-        }, [], 'api');
+        $this->app
+            ->init()
+            ->groups(['api'])
+            ->action(function() {
+                echo '(init-api)-';
+            });
 
-        $this->app->shutdown(function() {
-            echo '-(shutdown-api)';
-        }, [], 'api');
+        $this->app
+            ->shutdown()
+            ->groups(['api'])
+            ->action(function() {
+                echo '-(shutdown-api)';
+            });
 
-        $this->app->init(function() {
-            echo '(init-homepage)-';
-        }, [], 'homepage');
+        $this->app
+            ->init()
+            ->groups(['homepage'])
+            ->action(function() {
+                echo '(init-homepage)-';
+            });
 
-        $this->app->shutdown(function() {
-            echo '-(shutdown-homepage)';
-        }, [], 'homepage');
+        $this->app
+            ->shutdown()
+            ->groups(['homepage'])
+            ->action(function() {
+                echo '-(shutdown-homepage)';
+            });
 
         $route = new Route('GET', '/path');
 
@@ -253,16 +286,20 @@ class AppTest extends TestCase
         $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function testMiddleWare() {
+    public function testHook() {
         App::reset();
 
-        $this->app->init(function() {
-            echo '(init)-';    
-        });
+        $this->app
+            ->init()
+            ->action(function() {
+                echo '(init)-';    
+            });
 
-        $this->app->shutdown(function() {
-            echo '-(shutdown)';    
-        });
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-(shutdown)';    
+            });
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -285,7 +322,7 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->middleware(false)
+            ->hook(false)
             ->action(function($x) {
                 echo $x;
             })
@@ -298,6 +335,55 @@ class AppTest extends TestCase
 
         // var_dump($result);
         $this->assertEquals('x-def', $result);
+    }
+
+    public function testHookException() {
+        App::reset();
+
+        $this->app
+            ->init()
+            ->param('y', '', new Text(5), 'y param', false)
+            ->action(function($y) {
+                echo '(init)-' . $y . '-';    
+            });
+        
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action(function($error) {
+                echo 'error-' . $error->getMessage();
+            });
+
+        $this->app
+            ->shutdown()
+            ->action(function() {
+                echo '-(shutdown)';    
+            });
+
+        // param not provided for init
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->action(function($x) {
+                echo $x;
+            })
+        ;
+
+        \ob_start();
+        $this->app->execute($route, new Request());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('error-Param "y" is not optional.', $result);
+
+
+        \ob_start();
+        $_GET['y'] = 'y-def';
+        $this->app->execute($route, new Request());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
     }
 
     public function testSetRoute() {
