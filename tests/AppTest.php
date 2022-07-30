@@ -108,15 +108,15 @@ class AppTest extends TestCase
 
     public function testAddRoute()
     {
-        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/');
-        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/');
+        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/addroute');
+        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/addroute');
 
         $routes = App::getRoutes();
-        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/']);
-        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/']);
+        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/addroute']);
+        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/addroute']);
 
         $this->expectExceptionMessage('Invalid Request Method');
-        App::addRoute('REST', '/');
+        App::addRoute('REST', '/addroute');
     }
 
     public function testExecute()
@@ -394,6 +394,43 @@ class AppTest extends TestCase
         $this->assertEquals($this->app->getRoute(), null);
         $this->app->setRoute($route);
         $this->assertEquals($this->app->getRoute(), $route);
+    }
+
+    public function testFreshRouteMatch()
+    {
+        App::reset();
+        $route1 = App::get('/path1');
+        $route2 = App::get('/path2');
+        $method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
+        $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
+        $_SERVER['REQUEST_METHOD'] = 'HEAD';
+        $_SERVER['REQUEST_URI'] = '/path1';
+
+        try {
+            // Match first request
+            $matched = $this->app->match(new Request());
+            $this->assertEquals($route1, $matched);
+            $this->assertEquals($route1, $this->app->getRoute());
+
+            $_SERVER['REQUEST_METHOD'] = 'HEAD';
+            $_SERVER['REQUEST_URI'] = '/path2';
+            $request2 = new Request();
+
+            // Second request match returns cached route
+            $matched = $this->app->match($request2);
+            $this->assertEquals($route1, $matched);
+            $this->assertEquals($route1, $this->app->getRoute());
+
+            // Fresh match returns new route
+            $matched = $this->app->match($request2, fresh: true);
+            $this->assertEquals($route2, $matched);
+            $this->assertEquals($route2, $this->app->getRoute());
+        } catch(\Exception $e) {
+            $this->fail($e->getMessage());
+        } finally {
+            $_SERVER['REQUEST_METHOD'] = $method;
+            $_SERVER['REQUEST_URI'] = $uri;
+        }
     }
 
     public function testRun()
