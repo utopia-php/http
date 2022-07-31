@@ -511,7 +511,7 @@ class App
      *
      * @param Route $route
      * @param Request $request
-     * @param Request $response
+     * @param Response $response
      * @return self
      * @throws Exception
      */
