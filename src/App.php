@@ -508,12 +508,14 @@ class App
 
     /**
      * Execute a given route with middlewares and error handling
-     * 
+     *
      * @param Route $route
      * @param Request $request
+     * @param Request $response
      * @return self
+     * @throws Exception
      */
-    public function execute(Route $route, Request $request): self
+    public function execute(Route $route, Request $request, Response $response): self
     {
         $keys       = [];
         $arguments  = [];
@@ -551,17 +553,19 @@ class App
                 }
             }
 
-            $arguments = $this->getArguments($route, $values, $request->getParams());
+            if(!$response->isSent()) {
+                $arguments = $this->getArguments($route, $values, $request->getParams());
 
-            // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), $arguments);
+                // Call the callback with the matched positions as params
+                \call_user_func_array($route->getAction(), $arguments);
 
-            foreach ($groups as $group) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    /** @var Hook $hook */
-                    if(in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
+                foreach ($groups as $group) {
+                    foreach (self::$shutdown as $hook) { // Group shutdown hooks
+                        /** @var Hook $hook */
+                        if (in_array($group, $hook->getGroups())) {
+                            $arguments = $this->getArguments($hook, $values, $request->getParams());
+                            \call_user_func_array($hook->getAction(), $arguments);
+                        }
                     }
                 }
             }
@@ -575,6 +579,7 @@ class App
                     }
                 }
             }
+
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -709,7 +714,7 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request);
+            return $this->execute($route, $request, $response);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
