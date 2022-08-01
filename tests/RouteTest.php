@@ -119,13 +119,13 @@ class RouteTest extends TestCase
         $this->assertEquals('value', $this->route->getLabel('key', 'default'));
     }
 
-    public function testMiddleWare()
+    public function testHook()
     {
-        $this->assertTrue($this->route->getMiddleware());
-        $this->route->middleware(true);
-        $this->assertTrue($this->route->getMiddleware());
-        $this->route->middleware(false);
-        $this->assertFalse($this->route->getMiddleware());
+        $this->assertTrue($this->route->getHook());
+        $this->route->hook(true);
+        $this->assertTrue($this->route->getHook());
+        $this->route->hook(false);
+        $this->assertFalse($this->route->getHook());
     }
 
     public function tearDown():void

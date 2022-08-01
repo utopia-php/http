@@ -255,6 +255,18 @@ class Response
     }
 
     /**
+     * Get status code
+     *
+     * Get HTTP response status code
+     *
+     * @return int
+     **/
+    public function getStatusCode(): int
+    {
+        return $this->statusCode;
+    }
+
+    /**
      * Get Response Size
      *
      * Return output response size in bytes
@@ -320,9 +332,9 @@ class Response
     }
 
     /**
-     * Get Cookies
+     * Get Headers
      *
-     * Return array of all response cookies
+     * Return array of all response headers
      *
      * @return array
      */

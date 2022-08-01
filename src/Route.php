@@ -14,7 +14,7 @@ namespace Utopia;
 
 use Exception;
 
-class Route
+class Route extends Hook
 {
     /**
      * HTTP Method
@@ -24,11 +24,11 @@ class Route
     protected string $method = '';
 
     /**
-     * Whether to use middleware
+     * Whether to use hook
      *
      * @var bool
      */
-    protected bool $middleware = true;
+    protected bool $hook = true;
 
     /**
      * Path
@@ -58,48 +58,9 @@ class Route
     protected bool $isAlias = false;
 
     /**
-     * Description
-     *
-     * @var string
-     */
-    protected string $desc = '';
-
-    /**
-     * Group
-     *
-     * @var array
-     */
-    protected array $groups = [];
-
-    /**
-     * Action Callback
-     *
-     * @var callable
-     */
-    protected $action;
-
-    /**
      * @var int
      */
     public static int $counter = 0;
-
-    /**
-     * Parameters
-     *
-     * List of route params names and validators
-     *
-     * @var array
-     */
-    protected array $params = [];
-
-    /**
-     * Injections
-     *
-     * List of route required injections for action callback
-     *
-     * @var array
-     */
-    protected array $injections = [];
 
     /**
      * Labels
@@ -133,9 +94,9 @@ class Route
      * Add path
      *
      * @param string $path
-     * @return self
+     * @return static
      */
-    public function path(string $path): self
+    public function path(string $path): static
     {
         $this->path = $path;
 
@@ -147,9 +108,9 @@ class Route
      *
      * @param string $path
      * @param array $params
-     * @return self
+     * @return static
      */
-    public function alias(string $path, array $params = []): self
+    public function alias(string $path, array $params = []): static
     {
         $this->aliasPath = $path;
         $this->aliasParams = $params;
@@ -170,103 +131,16 @@ class Route
     }
 
     /**
-     * Add Description
+     * Set hook status
+     * When set false, hooks for this route will be skipped.
      *
-     * @param string $desc
-     * @return self
+     * @param boolean $hook
+     *
+     * @return static
      */
-    public function desc(string $desc): self
+    public function hook(bool $hook = true): static
     {
-        $this->desc = $desc;
-
-        return $this;
-    }
-
-    /**
-     * Add Group
-     *
-     * @param array $groups
-     * @return self
-     */
-    public function groups(array $groups): self
-    {
-        $this->groups = $groups;
-
-        return $this;
-    }
-
-    /**
-     * Add Action
-     *
-     * @param callable $action
-     * @return self
-     */
-    public function action(callable $action): self
-    {
-        $this->action = $action;
-        return $this;
-    }
-
-    /**
-     * Add Param
-     *
-     * @param string $key
-     * @param mixed $default
-     * @param Validator|callable $validator
-     * @param string $description
-     * @param bool $optional
-     * @param array $injections
-     *
-     * @return self
-     */
-    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): self
-    {
-        $this->params[$key] = [
-            'default' => $default,
-            'validator' => $validator,
-            'description' => $description,
-            'optional' => $optional,
-            'injections' => $injections,
-            'value' => null,
-            'order' => count($this->params) + count($this->injections),
-        ];
-
-        return $this;
-    }
-
-    /**
-     * Set middleware status
-     *
-     * @param boolean $middleware
-     *
-     * @return self
-     */
-    public function middleware(bool $middleware = true): self
-    {
-        $this->middleware = $middleware;
-
-        return $this;
-    }
-
-    /**
-     * Inject
-     *
-     * @param string $injection
-     *
-     * @throws Exception
-     *
-     * @return self
-     */
-    public function inject(string $injection): self
-    {
-        if (array_key_exists($injection, $this->injections)) {
-            throw new Exception('Injection already declared for ' . $injection);
-        }
-
-        $this->injections[$injection] = [
-            'name' => $injection,
-            'order' => count($this->params) + count($this->injections),
-        ];
+        $this->hook = $hook;
 
         return $this;
     }
@@ -279,7 +153,7 @@ class Route
      *
      * @return $this
      */
-    public function label(string $key, mixed $value): self
+    public function label(string $key, mixed $value): static
     {
         $this->labels[$key] = $value;
 
@@ -337,111 +211,6 @@ class Route
     }
 
     /**
-     * Get Description
-     *
-     * @return string
-     */
-    public function getDesc(): string
-    {
-        return $this->desc;
-    }
-
-    /**
-     * Get Groups
-     *
-     * @return array
-     */
-    public function getGroups(): array
-    {
-        return $this->groups;
-    }
-
-    /**
-     * Get Action
-     *
-     * @return callable
-     */
-    public function getAction()
-    {
-        return $this->action;
-    }
-
-    /**
-     * Get Params
-     *
-     * @return array
-     */
-    public function getParams(): array
-    {
-        return $this->params;
-    }
-
-    /**
-     * Get Injections
-     *
-     * @return array
-     */
-    public function getInjections(): array
-    {
-        return $this->injections;
-    }
-
-    /**
-     * Get Param Values
-     *
-     * @return array
-     */
-    public function getParamsValues(): array
-    {
-        $values = [];
-
-        foreach ($this->params as $key => $param) {
-            $values[$key] = $param['value'];
-        }
-
-        return $values;
-    }
-
-    /**
-     * Set Param Value
-     *
-     * @param string $key
-     * @param mixed $value
-     *
-     * @return self
-     *
-     * @throws Exception
-     */
-    public function setParamValue(string $key, mixed $value): self
-    {
-        if (!isset($this->params[$key])) {
-            throw new Exception('Unknown key');
-        }
-
-        $this->params[$key]['value'] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Get Param Value
-     *
-     * @param string $key
-     *
-     * @return mixed
-     *
-     * @throws Exception
-     */
-    public function getParamValue(string $key): mixed
-    {
-        if (!isset($this->params[$key])) {
-            throw new Exception('Unknown key');
-        }
-
-        return $this->params[$key]['value'];
-    }
-
-    /**
      * Get Label
      *
      * Return given label value or default value if label doesn't exists
@@ -467,12 +236,12 @@ class Route
     }
 
     /**
-     * Get middleware status
+     * Get hook status
      *
      * @return bool
      */
-    public function getMiddleware(): bool
+    public function getHook(): bool
     {
-        return $this->middleware;
+        return $this->hook;
     }
 }
