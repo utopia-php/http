@@ -575,21 +575,8 @@ class App
                     }
                 }
             }
-        } catch (\Throwable $e) {
-            if (empty(self::$errors['*'])) { // If no error handler is set then add a default one.
-                self::$errors['*'][] = [
-                    'callback' => function (\Throwable $error, Response $response) {
-                        $response->setStatusCode(500);
-                        $response->json([
-                            'message' => $error->getMessage(),
-                            'stacktrace' => $error->getTrace()
-                        ]);
-                        \fwrite(STDERR, "\033[31mException: " . $error->getMessage() . "\033[0m\n");
-                        \fwrite(STDERR, "Stacktrace: \n" . $error->getTraceAsString() . "\n");
-                    },
-                    'resources' => ['error', 'response']
-                ];
-            }
+        } catch (\Throwable $e) {;
+            $errorHandled = false;
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -601,6 +588,7 @@ class App
                         try {
                             $arguments = $this->getArguments($error, $values, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
+                            $errorHandled = true;
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error', 0, $e);
                         }
@@ -617,10 +605,22 @@ class App
                     try {
                         $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
+                        $errorHandled = true;
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error', 0, $e);
                     }
                 }
+            }
+
+            if (!$errorHandled) {
+                $response = $this->getResource('response');
+                $response->setStatusCode(500);
+                $response->json([
+                    'message' => $e->getMessage(),
+                    'stacktrace' => $e->getTrace()
+                ]);
+                \fwrite(STDERR, "\033[31mException: " . $e->getMessage() . "\033[0m\n");
+                \fwrite(STDERR, "Stacktrace: \n" . $e->getTraceAsString() . "\n");
             }
         }
 
@@ -743,6 +743,7 @@ class App
                     }
                 }
             } catch (\Throwable $e) {
+                $errorHandled = false;
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if(in_array('*', $error->getGroups())) {
@@ -750,10 +751,22 @@ class App
                             return $e;
                         });
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                        $errorHandled = true;
                     }
+                }
+
+                if (!$errorHandled) {
+                    $response->setStatusCode(500);
+                    $response->json([
+                        'message' => $e->getMessage(),
+                        'stacktrace' => $e->getTrace()
+                    ]);
+                    \fwrite(STDERR, "\033[31mException: " . $e->getMessage() . "\033[0m\n");
+                    \fwrite(STDERR, "Stacktrace: \n" . $e->getTraceAsString() . "\n");
                 }
             }
         } else {
+            $errorHandled = false;
             foreach (self::$errors as $error) { // Global error hooks
                 /** @var Hook $error */
                 if(in_array('*', $error->getGroups())) {
@@ -761,7 +774,16 @@ class App
                         return new Exception('Not Found', 404);
                     });
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                    $errorHandled = true;
                 }
+            }
+
+            if (!$errorHandled) {
+                $response->setStatusCode(404);
+                $response->json([
+                    'message' => 'Not Found'
+                ]);
+                \fwrite(STDERR, "\033[31mException: " . 'Route not found' . "\033[0m\n");
             }
         }
 
