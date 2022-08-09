@@ -223,18 +223,6 @@ class Response
     }
 
     /**
-     * Is sent
-     *
-     * Is response sent.
-     *
-     * @return bool
-     */
-    public function isSent(): bool
-    {
-        return $this->sent;
-    }
-
-    /**
      * Get content type
      *
      * Get HTTP content type header.

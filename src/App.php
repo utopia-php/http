@@ -291,7 +291,7 @@ class App
      * Set current mode
      *
      * @param string $value
-     * 
+     *
      * @return void
      */
     public static function setMode(string $value): void
@@ -511,11 +511,9 @@ class App
      *
      * @param Route $route
      * @param Request $request
-     * @param Response $response
      * @return self
-     * @throws Exception
      */
-    public function execute(Route $route, Request $request, Response $response): self
+    public function execute(Route $route, Request $request): self
     {
         $keys       = [];
         $arguments  = [];
@@ -546,26 +544,28 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     /** @var Hook $hook */
-                    if(in_array($group, $hook->getGroups())) {       
+                    if(in_array($group, $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-            if(!$response->isSent()) {
-                $arguments = $this->getArguments($route, $values, $request->getParams());
+            $arguments = $this->getArguments($route, $values, $request->getParams());
 
-                // Call the callback with the matched positions as params
+            // Call the callback with the matched positions as params
+            if($route->getIsActive()){
                 \call_user_func_array($route->getAction(), $arguments);
+            }
 
-                foreach ($groups as $group) {
-                    foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                        /** @var Hook $hook */
-                        if (in_array($group, $hook->getGroups())) {
-                            $arguments = $this->getArguments($hook, $values, $request->getParams());
-                            \call_user_func_array($hook->getAction(), $arguments);
-                        }
+            $route->setActive(true);
+
+            foreach ($groups as $group) {
+                foreach (self::$shutdown as $hook) { // Group shutdown hooks
+                    /** @var Hook $hook */
+                    if(in_array($group, $hook->getGroups())) {
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
@@ -579,7 +579,6 @@ class App
                     }
                 }
             }
-
         } catch (\Throwable $e) {
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -714,7 +713,7 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request, $response);
+            return $this->execute($route, $request);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
@@ -794,7 +793,7 @@ class App
     }
 
     /**
-     * Reset all the static variables 
+     * Reset all the static variables
      */
     public static function reset(): void
     {

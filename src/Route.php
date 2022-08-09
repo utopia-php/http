@@ -77,6 +77,11 @@ class Route extends Hook
     protected int $order;
 
     /**
+     * @var bool
+     */
+    protected bool $isActive = true;
+
+    /**
      * @param string $method
      * @param string $path
      */
@@ -119,6 +124,17 @@ class Route extends Hook
     }
 
     /**
+     * Set isActive
+     *
+     * @param bool $isActive
+     * @return void
+     */
+    public function setActive(bool $isActive): void
+    {
+        $this->isActive = $isActive;
+    }
+
+    /**
      * Set isAlias
      *
      * @param bool $isAlias
@@ -143,6 +159,16 @@ class Route extends Hook
         $this->hook = $hook;
 
         return $this;
+    }
+
+    /**
+     * When set to false the route will be skipped
+     *
+     * @return bool
+     */
+    public function getIsActive(): bool
+    {
+        return $this->isActive;
     }
 
     /**
