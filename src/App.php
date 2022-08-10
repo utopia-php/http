@@ -554,11 +554,11 @@ class App
             $arguments = $this->getArguments($route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
-            if($route->getActive()){
+            if($route->getIsActive()){
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
-            $route->setActive(true);
+            $route->setIsActive(true);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
