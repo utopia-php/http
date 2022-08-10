@@ -79,7 +79,7 @@ class Route extends Hook
     /**
      * @var bool
      */
-    protected bool $isActive = true;
+    protected bool $active = true;
 
     /**
      * @param string $method
@@ -124,14 +124,14 @@ class Route extends Hook
     }
 
     /**
-     * Set isActive
+     * Set active
      *
-     * @param bool $isActive
+     * @param bool $active
      * @return void
      */
-    public function setActive(bool $isActive): void
+    public function setActive(bool $active): void
     {
-        $this->isActive = $isActive;
+        $this->active = $active;
     }
 
     /**
@@ -166,9 +166,9 @@ class Route extends Hook
      *
      * @return bool
      */
-    public function getIsActive(): bool
+    public function getActive(): bool
     {
-        return $this->isActive;
+        return $this->active;
     }
 
     /**

@@ -554,7 +554,7 @@ class App
             $arguments = $this->getArguments($route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
-            if($route->getIsActive()){
+            if($route->getActive()){
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
