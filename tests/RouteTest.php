@@ -128,6 +128,15 @@ class RouteTest extends TestCase
         $this->assertFalse($this->route->getHook());
     }
 
+    public function testIsActive()
+    {
+        $this->assertTrue($this->route->getIsActive());
+        $this->route->setActive(true);
+        $this->assertTrue($this->route->getIsActive());
+        $this->route->setActive(false);
+        $this->assertFalse($this->route->getIsActive());
+    }
+
     public function tearDown():void
     {
         $this->route = null;
