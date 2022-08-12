@@ -14,6 +14,7 @@
 namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Validator\Numeric;
 use Utopia\Validator\Text;
 
 class HookTest extends TestCase
@@ -81,6 +82,30 @@ class HookTest extends TestCase
         $this->assertEquals('user', $this->hook->getInjections()['user']['name']);
         $this->assertEquals('time', $this->hook->getInjections()['time']['name']);
     }
+
+    public function testSetParamValue()
+    {
+        $this->assertEquals([], $this->hook->getParams());
+
+        $values = [
+            'x' => 'hello',
+            'y' => 'world'
+        ];
+
+        $this->hook
+            ->param('x', '', new Numeric())
+            ->param('y', '', new Numeric())
+        ;
+
+        foreach ($this->hook->getParams() as $key => $param){
+            $this->hook->setParamValue($key, $values[$key]);
+        }
+
+        $this->assertCount(2, $this->hook->getParams());
+        $this->assertEquals('hello', $this->hook->getParams()['x']['value']);
+        $this->assertEquals('world', $this->hook->getParams()['y']['value']);
+    }
+
 
     public function tearDown():void
     {

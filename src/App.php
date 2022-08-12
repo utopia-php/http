@@ -623,6 +623,7 @@ class App
      * @param array $values
      * @param array $requestParams
      * @return array
+     * @throws Exception
      */
     protected function getArguments(Hook $hook, array $values, array $requestParams): array
     {
@@ -640,6 +641,7 @@ class App
             $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
 
             $this->validate($key, $param, $value);
+            $hook->setParamValue($key, $value);
             $arguments[$param['order']] = $value;
         }
 
