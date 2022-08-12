@@ -291,7 +291,7 @@ class App
      * Set current mode
      *
      * @param string $value
-     * 
+     *
      * @return void
      */
     public static function setMode(string $value): void
@@ -508,7 +508,7 @@ class App
 
     /**
      * Execute a given route with middlewares and error handling
-     * 
+     *
      * @param Route $route
      * @param Request $request
      * @return self
@@ -544,7 +544,7 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     /** @var Hook $hook */
-                    if(in_array($group, $hook->getGroups())) {       
+                    if(in_array($group, $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -554,7 +554,11 @@ class App
             $arguments = $this->getArguments($route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
-            \call_user_func_array($route->getAction(), $arguments);
+            if($route->getIsActive()){
+                \call_user_func_array($route->getAction(), $arguments);
+            }
+
+            $route->setIsActive(true);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
@@ -619,6 +623,7 @@ class App
      * @param array $values
      * @param array $requestParams
      * @return array
+     * @throws Exception
      */
     protected function getArguments(Hook $hook, array $values, array $requestParams): array
     {
@@ -636,6 +641,7 @@ class App
             $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
 
             $this->validate($key, $param, $value);
+            $hook->setParamValue($key, $value);
             $arguments[$param['order']] = $value;
         }
 
@@ -789,7 +795,7 @@ class App
     }
 
     /**
-     * Reset all the static variables 
+     * Reset all the static variables
      */
     public static function reset(): void
     {
