@@ -424,7 +424,7 @@ class App
      *
      * @return self
      */
-    public function setRoute(Route $route): self
+    public function setRoute(Route $route): static
     {
         $this->route = $route;
         return $this;
@@ -513,7 +513,7 @@ class App
      * @param Request $request
      * @return self
      */
-    public function execute(Route $route, Request $request): self
+    public function execute(Route $route, Request $request): static
     {
         $keys       = [];
         $arguments  = [];
@@ -662,7 +662,7 @@ class App
      * @param Response $response
      * @return self
      */
-    public function run(Request $request, Response $response): self
+    public function run(Request $request, Response $response): static
     {
         self::setResource('request', function() use ($request) {
             return $request;

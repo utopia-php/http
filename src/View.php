@@ -89,7 +89,7 @@ class View
      *
      * @throws Exception
      */
-    public function setParam(string $key, mixed $value): self
+    public function setParam(string $key, mixed $value): static
     {
         if (\strpos($key, '.') !== false) {
             throw new Exception('$key can\'t contain a dot "." character');
@@ -107,7 +107,7 @@ class View
      *
      * @return self
      */
-    public function setParent(self $view): self
+    public function setParent(self $view): static
     {
         $this->parent = $view;
         return $this;
@@ -166,7 +166,7 @@ class View
      *
      * @return self
      */
-    public function setPath(string $path): self
+    public function setPath(string $path): static
     {
         $this->path = $path;
 
@@ -181,7 +181,7 @@ class View
      * @param bool $state
      * @return self
      */
-    public function setRendered(bool $state = true): self
+    public function setRendered(bool $state = true): static
     {
         $this->rendered = $state;
 
@@ -208,7 +208,7 @@ class View
      *
      * @return self
      */
-    public function addFilter(string $name, callable $callback): self
+    public function addFilter(string $name, callable $callback): static
     {
         $this->filters[$name] = $callback;
         return $this;
