@@ -215,7 +215,7 @@ class Response
      * @param string $charset
      * @return self
      */
-    public function setContentType(string $type, string $charset = ''): self
+    public function setContentType(string $type, string $charset = ''): static
     {
         $this->contentType = $type . ((!empty($charset) ? '; charset='.$charset : ''));
 
@@ -243,7 +243,7 @@ class Response
      * @return self
      * @throws Exception
      */
-    public function setStatusCode(int $code = 200): self
+    public function setStatusCode(int $code = 200): static
     {
         if (!\array_key_exists($code, $this->statusCodes)) {
             throw new Exception('Unknown HTTP status code');
@@ -281,7 +281,7 @@ class Response
     /**
      * Don't allow payload on response output
      */
-    public function disablePayload(): self
+    public function disablePayload(): static
     {
         $this->disablePayload = true;
 
@@ -291,7 +291,7 @@ class Response
     /**
      * Allow payload on response output
      */
-    public function enablePayload(): self
+    public function enablePayload(): static
     {
         $this->disablePayload = false;
 
@@ -307,7 +307,7 @@ class Response
      * @param string $value
      * @return self
      */
-    public function addHeader(string $key, string $value): self
+    public function addHeader(string $key, string $value): static
     {
         $this->headers[$key] = $value;
 
@@ -322,7 +322,7 @@ class Response
      * @param string $key
      * @return self
      */
-    public function removeHeader(string $key): self
+    public function removeHeader(string $key): static
     {
         if (isset($this->headers[$key])) {
             unset($this->headers[$key]);
@@ -358,7 +358,7 @@ class Response
      * @param string $sameSite
      * @return self
      */
-    public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): self
+    public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
     {
         $name = strtolower($name);
         $this->cookies[$name] = [
@@ -383,7 +383,7 @@ class Response
      * @param string $name
      * @return self
      */
-    public function removeCookie(string $name): self
+    public function removeCookie(string $name): static
     {
         if (isset($this->headers[$name])) {
             unset($this->cookies[$name]);
@@ -530,7 +530,7 @@ class Response
      *
      * @return self
      */
-    protected function appendHeaders(): self
+    protected function appendHeaders(): static
     {
         // Send status code header
         $this->sendStatus($this->statusCode);
@@ -603,7 +603,7 @@ class Response
      *
      * @return self
      */
-    protected function appendCookies(): self
+    protected function appendCookies(): static
     {
         foreach ($this->cookies as $cookie) {
             $this->sendCookie($cookie['name'], $cookie['value'], [
