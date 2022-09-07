@@ -28,6 +28,15 @@ class Hook {
     protected array $groups = [];
 
     /**
+     * Labels
+     *
+     * List of route label names
+     *
+     * @var array
+     */
+    protected array $labels = [];
+
+    /**
      * Action Callback
      *
      * @var callable
@@ -92,6 +101,36 @@ class Hook {
     public function getGroups(): array
     {
         return $this->groups;
+    }
+
+    /**
+     * Add Label
+     *
+     * @param string $key
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    public function label(string $key, mixed $value): static
+    {
+        $this->labels[$key] = $value;
+
+        return $this;
+    }
+    
+    /**
+     * Get Label
+     *
+     * Return given label value or default value if label doesn't exists
+     *
+     * @param string $key
+     * @param mixed $default
+     *
+     * @return mixed
+     */
+    public function getLabel(string $key, mixed $default): mixed
+    {
+        return (isset($this->labels[$key])) ? $this->labels[$key] : $default;
     }
 
     /**

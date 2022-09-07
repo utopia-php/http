@@ -63,15 +63,6 @@ class Route extends Hook
     public static int $counter = 0;
 
     /**
-     * Labels
-     *
-     * List of route label names
-     *
-     * @var array
-     */
-    protected array $labels = [];
-
-    /**
      * @var int
      */
     protected int $order;
@@ -172,21 +163,6 @@ class Route extends Hook
     }
 
     /**
-     * Add Label
-     *
-     * @param string $key
-     * @param mixed $value
-     *
-     * @return $this
-     */
-    public function label(string $key, mixed $value): static
-    {
-        $this->labels[$key] = $value;
-
-        return $this;
-    }
-
-    /**
      * Get HTTP Method
      *
      * @return string
@@ -234,21 +210,6 @@ class Route extends Hook
     public function getIsAlias(): bool
     {
         return $this->isAlias;
-    }
-
-    /**
-     * Get Label
-     *
-     * Return given label value or default value if label doesn't exists
-     *
-     * @param string $key
-     * @param mixed $default
-     *
-     * @return mixed
-     */
-    public function getLabel(string $key, mixed $default): mixed
-    {
-        return (isset($this->labels[$key])) ? $this->labels[$key] : $default;
     }
 
     /**
