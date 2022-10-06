@@ -39,8 +39,8 @@ class AppTest extends TestCase
 
     protected function saveRequest(): void
     {
-        $this->method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
-        $this->uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
+        $this->method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $this->uri = $_SERVER['REQUEST_URI'] ?? null;
     }
 
     protected function restoreRequest(): void
