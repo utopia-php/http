@@ -20,11 +20,7 @@ use Utopia\Validator\Text;
 
 class AppTest extends TestCase
 {
-    /**
-     * @var App
-     */
     protected ?App $app;
-
     protected ?string $method;
     protected ?string $uri;
 
