@@ -49,7 +49,7 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_URI'] = $this->uri;
     }
 
-    public function testIsMode(): void
+    public function testCanGetDifferentModes(): void
     {
         $this->assertEmpty(App::getMode());
         $this->assertFalse(App::isProduction());
@@ -78,7 +78,7 @@ class AppTest extends TestCase
         $this->assertTrue(App::isStage());
     }
 
-    public function testGetEnv(): void
+    public function testCanGetEnvironmentVariable(): void
     {
         // Mock
         $_SERVER['key'] = 'value';
@@ -87,7 +87,7 @@ class AppTest extends TestCase
         $this->assertEquals(App::getEnv('unknown', 'test'), 'test');
     }
 
-    public function testResources()
+    public function testCanGetResources(): void
     {
         App::setResource('rand', fn () => rand());
         App::setResource('first', fn ($second) => "first-{$second}", ['second']);
@@ -124,7 +124,7 @@ class AppTest extends TestCase
         $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
-    public function testAddRoute(): void
+    public function testCanAddRoute(): void
     {
         $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/addroute');
         $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/addroute');
@@ -137,7 +137,7 @@ class AppTest extends TestCase
         App::addRoute('REST', '/addroute');
     }
 
-    public function testExecute(): void
+    public function testCanExecuteRoute(): void
     {
         App::setResource('rand', fn () => rand());
         $resource = $this->app->getResource('rand');
@@ -303,7 +303,7 @@ class AppTest extends TestCase
         $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function testHook()
+    public function testCanAddAndExecuteHooks()
     {
         $this->app
             ->init()
@@ -351,7 +351,7 @@ class AppTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
-    public function testHookException()
+    public function testCanHookThrowExceptions()
     {
         $this->app
             ->init()
@@ -398,7 +398,7 @@ class AppTest extends TestCase
         $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
     }
 
-    public function testSetRoute()
+    public function testCanSetRoute()
     {
         $route = new Route('GET', '/path');
 
@@ -407,7 +407,7 @@ class AppTest extends TestCase
         $this->assertEquals($this->app->getRoute(), $route);
     }
 
-    public function providerRouteMatch(): array
+    public function providerRouteMatching(): array
     {
         $route1 = App::get('/path1');
         $route2 = App::get('/path2');
@@ -420,23 +420,23 @@ class AppTest extends TestCase
         $route9 = App::get('/a');
 
         return [
-            [$route1, App::REQUEST_METHOD_GET, '/path1'],
-            [$route2, App::REQUEST_METHOD_GET, '/path2'],
-            [$route3, App::REQUEST_METHOD_POST, '/path1'],
-            [$route4, App::REQUEST_METHOD_PUT, '/path1'],
-            [$route5, App::REQUEST_METHOD_PATCH, '/path1'],
-            [$route6, App::REQUEST_METHOD_DELETE, '/path1'],
+            'GET request' => [$route1, App::REQUEST_METHOD_GET, '/path1'],
+            'GET request on different route' => [$route2, App::REQUEST_METHOD_GET, '/path2'],
+            'POST request' => [$route3, App::REQUEST_METHOD_POST, '/path1'],
+            'PUT request' => [$route4, App::REQUEST_METHOD_PUT, '/path1'],
+            'PATCH request' => [$route5, App::REQUEST_METHOD_PATCH, '/path1'],
+            'DELETE request' => [$route6, App::REQUEST_METHOD_DELETE, '/path1'],
             // "/a/b/c" needs to be first
-            [$route7, App::REQUEST_METHOD_GET, '/a/b/c'],
-            [$route8, App::REQUEST_METHOD_GET, '/a/b'],
-            [$route9, App::REQUEST_METHOD_GET, '/a']
+            '3 separators' => [$route7, App::REQUEST_METHOD_GET, '/a/b/c'],
+            '2 separators' => [$route8, App::REQUEST_METHOD_GET, '/a/b'],
+            '1 separators' => [$route9, App::REQUEST_METHOD_GET, '/a']
         ];
     }
 
     /**
-     * @dataProvider providerRouteMatch
+     * @dataProvider providerRouteMatching
      */
-    public function testRouteMatch(Route $expected, string $method, string $path): void
+    public function testCanMatchRoute(Route $expected, string $method, string $path): void
     {
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $path;
@@ -445,7 +445,7 @@ class AppTest extends TestCase
         $this->assertEquals($expected, $this->app->getRoute());
     }
 
-    public function testFreshRouteMatch(): void
+    public function testCanMatchFreshRoute(): void
     {
         $route1 = App::get('/path1');
         $route2 = App::get('/path2');
@@ -475,7 +475,7 @@ class AppTest extends TestCase
         }
     }
 
-    public function testRun(): void
+    public function testCanRunRequest(): void
     {
         // Test head requests
 
@@ -502,7 +502,7 @@ class AppTest extends TestCase
         $this->assertStringNotContainsString('HELLO', $result);
     }
 
-    public function testRunAlias(): void
+    public function testCanRunAliasEndpoint(): void
     {
         // Test head requests
         App::get('/storage/buckets/:bucketId/files/:fileId')

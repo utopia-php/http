@@ -30,7 +30,7 @@ class HookTest extends TestCase
         $this->hook = new Hook();
     }
 
-    public function testDesc()
+    public function testDescriptionCanBeSet()
     {
         $this->assertEquals('', $this->hook->getDesc());
 
@@ -39,7 +39,7 @@ class HookTest extends TestCase
         $this->assertEquals('new hook', $this->hook->getDesc());
     }
 
-    public function testGroups()
+    public function testGroupsCanBeSet()
     {
         $this->assertEquals([], $this->hook->getGroups());
 
@@ -48,19 +48,17 @@ class HookTest extends TestCase
         $this->assertEquals(['api', 'homepage'], $this->hook->getGroups());
     }
 
-    public function testAction()
+    public function testActionCanBeSet()
     {
-        $this->assertEquals(function (): void {
+        $this->assertEquals(function () {
         }, $this->hook->getAction());
 
-        $this->hook->action(function () {
-            return 'hello world';
-        });
+        $this->hook->action(fn() => 'hello world');
 
         $this->assertEquals('hello world', $this->hook->getAction()());
     }
 
-    public function testParam()
+    public function testParamCanBeSet()
     {
         $this->assertEquals([], $this->hook->getParams());
 
@@ -71,7 +69,7 @@ class HookTest extends TestCase
         $this->assertCount(2, $this->hook->getParams());
     }
 
-    public function testResources()
+    public function testResourcesCanBeInjected()
     {
         $this->assertEquals([], $this->hook->getInjections());
 
@@ -86,7 +84,7 @@ class HookTest extends TestCase
         $this->assertEquals('time', $this->hook->getInjections()['time']['name']);
     }
 
-    public function testSetParamValue()
+    public function testParamValuesCanBeSet()
     {
         $this->assertEquals([], $this->hook->getParams());
 

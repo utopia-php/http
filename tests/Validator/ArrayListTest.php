@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,56 +18,36 @@ use PHPUnit\Framework\TestCase;
 
 class ArrayListTest extends TestCase
 {
-    /**
-     * @var ArrayList
-     */
-    protected $arrayList1 = null;
-
-    /**
-     * @var ArrayList
-     */
-    protected $arrayList2 = null;
-
-    /**
-     * @var ArrayList
-     */
-    protected $arrayList3 = null;
-
-    public function setUp():void
+    public function testCanValidateTextValues(): void
     {
-        $this->arrayList1 = new ArrayList(new Text(100));
-        $this->arrayList2 = new ArrayList(new Numeric());
-        $this->arrayList3 = new ArrayList(new Numeric(), 2);
+        $arrayList = new ArrayList(new Text(100));
+        $this->assertTrue($arrayList->isArray(), true);
+        $this->assertTrue($arrayList->isValid([0 => 'string', 1 => 'string']));
+        $this->assertTrue($arrayList->isValid(['string', 'string']));
+        $this->assertFalse($arrayList->isValid(['string', 'string', 3]));
+        $this->assertFalse($arrayList->isValid('string'));
+        $this->assertFalse($arrayList->isValid('string'));
+        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $arrayList->getType());
+        $this->assertInstanceOf(Text::class, $arrayList->getValidator());
     }
 
-    public function tearDown():void
+    public function testCanValidateNumericValues(): void
     {
-        $this->arrayList1 = null;
-        $this->arrayList2 = null;
+        $arrayList = new ArrayList(new Numeric());
+        $this->assertTrue($arrayList->isValid([1, 2, 3]));
+        $this->assertFalse($arrayList->isValid(1, '2', 3));
+        $this->assertFalse($arrayList->isValid('string'));
+        $this->assertEquals(\Utopia\Validator::TYPE_MIXED, $arrayList->getType());
+        $this->assertInstanceOf(Numeric::class, $arrayList->getValidator());
     }
 
-    public function testIsValid()
+    public function testCanValidateNumericValuesWithBoundaries(): void
     {
-        // Assertions
-        $this->assertEquals(true, $this->arrayList1->isValid([0 => 'string', 1 => 'string']));
-        $this->assertEquals(true, $this->arrayList1->isValid(['string', 'string']));
-        $this->assertEquals(false, $this->arrayList1->isValid(['string', 'string', 3]));
-        $this->assertEquals(false, $this->arrayList1->isValid('string'));
-        $this->assertEquals(false, $this->arrayList1->isValid('string'));
-        $this->assertInstanceOf(Text::class, $this->arrayList1->getValidator());
-
-        $this->assertEquals(false, $this->arrayList2->isValid('string'));
-        $this->assertEquals(true, $this->arrayList2->isValid([1, 2, 3]));
-        $this->assertEquals(false, $this->arrayList2->isValid(1, '2', 3));
-        $this->assertInstanceOf(Numeric::class, $this->arrayList2->getValidator());
-
-        $this->assertEquals($this->arrayList1->getType(), \Utopia\Validator::TYPE_STRING);
-        $this->assertEquals($this->arrayList2->getType(), \Utopia\Validator::TYPE_MIXED);
-        $this->assertEquals($this->arrayList1->isArray(), true);
-
-        $this->assertEquals(true, $this->arrayList3->isValid([1]));
-        $this->assertEquals(true, $this->arrayList3->isValid([1, 2]));
-        $this->assertEquals(false, $this->arrayList3->isValid([1, 2, 3]));
-        $this->assertInstanceOf(Numeric::class, $this->arrayList3->getValidator());
+        $arrayList = new ArrayList(new Numeric(), 2);
+        $this->assertTrue($arrayList->isValid([1]));
+        $this->assertTrue($arrayList->isValid([1, 2]));
+        $this->assertFalse($arrayList->isValid([1, 2, 3]));
+        $this->assertEquals($arrayList->getType(), \Utopia\Validator::TYPE_MIXED);
+        $this->assertInstanceOf(Numeric::class, $arrayList->getValidator());
     }
 }

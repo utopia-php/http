@@ -17,10 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class ViewTest extends TestCase
 {
-    /**
-     * @var View
-     */
-    protected $view = null;
+    protected ?View $view;
 
     public function setUp():void
     {
@@ -32,53 +29,46 @@ class ViewTest extends TestCase
         $this->view = null;
     }
 
-    public function testSetParam()
+    public function testCanSetParam()
     {
         $value = $this->view->setParam('key', 'value');
 
-        // Assertions
         $this->assertInstanceOf('Utopia\View', $value);
     }
 
-    public function testGetParam()
+    public function testCanGetParam()
     {
         $this->view->setParam('key', 'value');
 
-        // Assertions
         $this->assertEquals('value', $this->view->getParam('key', 'default'));
         $this->assertEquals('default', $this->view->getParam('fake', 'default'));
     }
 
-    public function testSetPath()
+    public function testCanSetPath()
     {
         $value = $this->view->setPath('mocks/View/fake.phtml');
 
-        // Assertions
         $this->assertInstanceOf('Utopia\View', $value);
     }
 
-    public function testSetRendered()
+    public function testCanSetRendered()
     {
         $this->view->setRendered();
 
-        // Assertions
         $this->assertEquals(true, $this->view->isRendered());
     }
 
-    public function testIsRendered()
+    public function testCanGetRendered()
     {
-        // Assertions
         $this->view->setRendered(false);
         $this->assertEquals(false, $this->view->isRendered());
 
-        // Assertions
         $this->view->setRendered(true);
         $this->assertEquals(true, $this->view->isRendered());
     }
 
-    public function testRender()
+    public function testCanRenderHtml()
     {
-        // Assertions
         $this->assertEquals('<div>Test template mock</div>', $this->view->render());
 
         $this->view->setRendered();
@@ -96,15 +86,13 @@ class ViewTest extends TestCase
         $this->fail('An expected exception has not been raised.');
     }
 
-    public function testEscape()
+    public function testCanEscapeUnicode()
     {
-        // Assertions
         $this->assertEquals('&amp;&quot;', $this->view->print('&"', View::FILTER_ESCAPE));
     }
 
-    public function testNl2p()
+    public function testCanFilterNewLinesToParagraphs()
     {
-        // Assertions
         $this->assertEquals('<p>line1</p><p>line2</p>', $this->view->print("line1\n\nline2", View::FILTER_NL2P));
     }
 }

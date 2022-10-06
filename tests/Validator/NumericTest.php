@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,33 +18,19 @@ use PHPUnit\Framework\TestCase;
 
 class NumericTest extends TestCase
 {
-    /**
-     * @var Numeric
-     */
-    protected $numeric = null;
-
-    public function setUp():void
+    public function testCanValidateNumerics(): void
     {
-        $this->numeric = new Numeric();
-    }
+        $numeric = new Numeric();
 
-    public function tearDown():void
-    {
-        $this->numeric = null;
-    }
-
-    public function testIsValid()
-    {
-        // Assertions
-        $this->assertEquals($this->numeric->isValid('42'), true);
-        $this->assertEquals($this->numeric->isValid(1337), true);
-        $this->assertEquals($this->numeric->isValid(0x539), true);
-        $this->assertEquals($this->numeric->isValid(02471), true);
-        $this->assertEquals($this->numeric->isValid(1337e0), true);
-        $this->assertEquals($this->numeric->isValid(9.1), true);
-        $this->assertEquals($this->numeric->isValid('not numeric'), false);
-        $this->assertEquals($this->numeric->isValid([]), false);
-        $this->assertEquals($this->numeric->getType(), \Utopia\Validator::TYPE_MIXED);
-        $this->assertEquals($this->numeric->isArray(), false);
+        $this->assertTrue($numeric->isValid('42'));
+        $this->assertTrue($numeric->isValid(1337));
+        $this->assertTrue($numeric->isValid(0x539));
+        $this->assertTrue($numeric->isValid(02471));
+        $this->assertTrue($numeric->isValid(1337e0));
+        $this->assertTrue($numeric->isValid(9.1));
+        $this->assertFalse($numeric->isValid('not numeric'));
+        $this->assertFalse($numeric->isValid([]));
+        $this->assertFalse($numeric->isArray());
+        $this->assertEquals(\Utopia\Validator::TYPE_MIXED, $numeric->getType());
     }
 }
