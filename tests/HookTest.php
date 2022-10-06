@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -22,9 +23,9 @@ class HookTest extends TestCase
     /**
      * @var Hook
      */
-    protected $hook;
+    protected ?Hook $hook;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->hook = new Hook();
     }
@@ -32,7 +33,7 @@ class HookTest extends TestCase
     public function testDesc()
     {
         $this->assertEquals('', $this->hook->getDesc());
-        
+
         $this->hook->desc('new hook');
 
         $this->assertEquals('new hook', $this->hook->getDesc());
@@ -41,7 +42,7 @@ class HookTest extends TestCase
     public function testGroups()
     {
         $this->assertEquals([], $this->hook->getGroups());
-        
+
         $this->hook->groups(['api', 'homepage']);
 
         $this->assertEquals(['api', 'homepage'], $this->hook->getGroups());
@@ -49,9 +50,12 @@ class HookTest extends TestCase
 
     public function testAction()
     {
-        $this->assertEquals(function(): void {}, $this->hook->getAction());
-        
-        $this->hook->action(function() {return 'hello world';});
+        $this->assertEquals(function (): void {
+        }, $this->hook->getAction());
+
+        $this->hook->action(function () {
+            return 'hello world';
+        });
 
         $this->assertEquals('hello world', $this->hook->getAction()());
     }
@@ -59,11 +63,10 @@ class HookTest extends TestCase
     public function testParam()
     {
         $this->assertEquals([], $this->hook->getParams());
-        
+
         $this->hook
             ->param('x', '', new Text(10))
-            ->param('y', '', new Text(10))
-        ;
+            ->param('y', '', new Text(10));
 
         $this->assertCount(2, $this->hook->getParams());
     }
@@ -71,12 +74,12 @@ class HookTest extends TestCase
     public function testResources()
     {
         $this->assertEquals([], $this->hook->getInjections());
-        
+
         $this->hook
             ->inject('user')
             ->inject('time')
-            ->action(function() {})
-        ;
+            ->action(function () {
+            });
 
         $this->assertCount(2, $this->hook->getInjections());
         $this->assertEquals('user', $this->hook->getInjections()['user']['name']);
@@ -94,10 +97,9 @@ class HookTest extends TestCase
 
         $this->hook
             ->param('x', '', new Numeric())
-            ->param('y', '', new Numeric())
-        ;
+            ->param('y', '', new Numeric());
 
-        foreach ($this->hook->getParams() as $key => $param){
+        foreach ($this->hook->getParams() as $key => $param) {
             $this->hook->setParamValue($key, $values[$key]);
         }
 
@@ -107,7 +109,7 @@ class HookTest extends TestCase
     }
 
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->hook = null;
     }

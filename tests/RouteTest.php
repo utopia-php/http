@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -23,7 +24,7 @@ class RouteTest extends TestCase
      */
     protected $route;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->route = new Route('GET', '/');
     }
@@ -36,7 +37,7 @@ class RouteTest extends TestCase
     public function testPath()
     {
         $this->assertEquals('/', $this->route->getPath());
-        
+
         $this->route->path('/path');
 
         $this->assertEquals('/path', $this->route->getPath());
@@ -46,11 +47,11 @@ class RouteTest extends TestCase
     {
         $this->assertEquals('', $this->route->getAliasPath());
         $this->assertEquals([], $this->route->getAliasParams());
-        
+
         $params = [
             'pathId' => 'hello'
         ];
-        $this->route->alias('/path1',$params);
+        $this->route->alias('/path1', $params);
 
         $this->assertEquals('/path1', $this->route->getAliasPath());
         $this->assertEquals($params, $this->route->getAliasParams());
@@ -59,7 +60,7 @@ class RouteTest extends TestCase
     public function testDesc()
     {
         $this->assertEquals('', $this->route->getDesc());
-        
+
         $this->route->desc('new route');
 
         $this->assertEquals('new route', $this->route->getDesc());
@@ -68,7 +69,7 @@ class RouteTest extends TestCase
     public function testGroups()
     {
         $this->assertEquals([], $this->route->getGroups());
-        
+
         $this->route->groups(['api', 'homepage']);
 
         $this->assertEquals(['api', 'homepage'], $this->route->getGroups());
@@ -76,9 +77,12 @@ class RouteTest extends TestCase
 
     public function testAction()
     {
-        $this->assertEquals(function(): void {}, $this->route->getAction());
-        
-        $this->route->action(function() {return 'hello world';});
+        $this->assertEquals(function (): void {
+        }, $this->route->getAction());
+
+        $this->route->action(function () {
+            return 'hello world';
+        });
 
         $this->assertEquals('hello world', $this->route->getAction()());
     }
@@ -86,11 +90,10 @@ class RouteTest extends TestCase
     public function testParam()
     {
         $this->assertEquals([], $this->route->getParams());
-        
+
         $this->route
             ->param('x', '', new Text(10))
-            ->param('y', '', new Text(10))
-        ;
+            ->param('y', '', new Text(10));
 
         $this->assertCount(2, $this->route->getParams());
     }
@@ -98,12 +101,12 @@ class RouteTest extends TestCase
     public function testResources()
     {
         $this->assertEquals([], $this->route->getInjections());
-        
+
         $this->route
             ->inject('user')
             ->inject('time')
-            ->action(function() {})
-        ;
+            ->action(function () {
+            });
 
         $this->assertCount(2, $this->route->getInjections());
         $this->assertEquals('user', $this->route->getInjections()['user']['name']);
@@ -113,7 +116,7 @@ class RouteTest extends TestCase
     public function testLabel()
     {
         $this->assertEquals('default', $this->route->getLabel('key', 'default'));
-        
+
         $this->route->label('key', 'value');
 
         $this->assertEquals('value', $this->route->getLabel('key', 'default'));
@@ -139,7 +142,7 @@ class RouteTest extends TestCase
         $this->assertTrue($this->route->getIsActive());
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->route = null;
     }
