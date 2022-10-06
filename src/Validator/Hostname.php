@@ -94,7 +94,7 @@ class Hostname extends Validator
         }
 
         // Logic #1: Empty allowList means everything is allowed
-        if (!isset($this->allowList) || empty($this->allowList)) {
+        if (empty($this->allowList)) {
             return true;
         }
 
