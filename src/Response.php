@@ -213,7 +213,6 @@ class Response
      *
      * @param string $type
      * @param string $charset
-     * @return self
      */
     public function setContentType(string $type, string $charset = ''): static
     {
@@ -240,7 +239,7 @@ class Response
      * Set HTTP response status code between available options. if status code is unknown an exception will be thrown
      *
      * @param int $code
-     * @return self
+     *
      * @throws Exception
      */
     public function setStatusCode(int $code = 200): static
@@ -305,7 +304,6 @@ class Response
      *
      * @param string $key
      * @param string $value
-     * @return self
      */
     public function addHeader(string $key, string $value): static
     {
@@ -320,7 +318,6 @@ class Response
      * Remove HTTP response header
      *
      * @param string $key
-     * @return self
      */
     public function removeHeader(string $key): static
     {
@@ -356,7 +353,6 @@ class Response
      * @param bool   $secure
      * @param bool   $httponly
      * @param string $sameSite
-     * @return self
      */
     public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
     {
@@ -381,7 +377,6 @@ class Response
      * Remove HTTP response cookie
      *
      * @param string $name
-     * @return self
      */
     public function removeCookie(string $name): static
     {
@@ -527,8 +522,6 @@ class Response
      *
      * Iterating over response headers to generate them using native PHP header function.
      * This method is also responsible for generating the response and content type headers.
-     *
-     * @return self
      */
     protected function appendHeaders(): static
     {
@@ -600,8 +593,6 @@ class Response
      * Append cookies
      *
      * Iterating over response cookies to generate them using native PHP cookie function.
-     *
-     * @return self
      */
     protected function appendCookies(): static
     {

@@ -85,8 +85,6 @@ class View
      * @param string $key
      * @param mixed $value
      *
-     * @return self
-     *
      * @throws Exception
      */
     public function setParam(string $key, mixed $value): static
@@ -104,8 +102,6 @@ class View
      * Set parent View object conatining this object
      *
      * @param self $view
-     *
-     * @return self
      */
     public function setParent(self $view): static
     {
@@ -163,8 +159,6 @@ class View
      * @param string $path
      *
      * @throws Exception
-     *
-     * @return self
      */
     public function setPath(string $path): static
     {
@@ -179,7 +173,6 @@ class View
      * By enabling rendered state to true, the object will not render its template and will return an empty string instead
      *
      * @param bool $state
-     * @return self
      */
     public function setRendered(bool $state = true): static
     {
@@ -205,8 +198,6 @@ class View
      *
      * @param string $name
      * @param callable $callback
-     *
-     * @return self
      */
     public function addFilter(string $name, callable $callback): static
     {
