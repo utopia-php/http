@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -50,21 +51,15 @@ class Request
      * @param  mixed  $default
      * @return mixed
      */
-    public function getParam(string $key, mixed $default = null)
+    public function getParam(string $key, mixed $default = null): mixed
     {
-        switch ($this->getServer('REQUEST_METHOD', '')) {
-            case self::METHOD_GET:
-                return $this->getQuery($key, $default);
-                break;
-            case self::METHOD_POST:
-            case self::METHOD_PUT:
-            case self::METHOD_PATCH:
-            case self::METHOD_DELETE:
-                return $this->getPayload($key, $default);
-                break;
-            default:
-                return $this->getQuery($key, $default);
-        }
+        return match ($this->getMethod()) {
+            self::METHOD_POST,
+            self::METHOD_PUT,
+            self::METHOD_PATCH,
+            self::METHOD_DELETE => $this->getPayload($key, $default),
+            default => $this->getQuery($key, $default)
+        };
     }
 
     /**
@@ -76,19 +71,13 @@ class Request
      */
     public function getParams(): array
     {
-        switch ($this->getServer('REQUEST_METHOD', '')) {
-            case self::METHOD_GET:
-                return $_GET;
-                break;
-            case self::METHOD_POST:
-            case self::METHOD_PUT:
-            case self::METHOD_PATCH:
-            case self::METHOD_DELETE:
-                return $this->generateInput();
-                break;
-            default:
-                return $_GET;
-        }
+        return match($this->getServer('REQUEST_METHOD', '')) {
+            self::METHOD_POST,
+            self::METHOD_PUT,
+            self::METHOD_PATCH,
+            self::METHOD_DELETE => $this->generateInput(),
+            default => $_GET
+        };
     }
 
     /**
@@ -118,7 +107,7 @@ class Request
     {
         $payload = $this->generateInput();
 
-        return (isset($payload[$key])) ? $payload[$key] : $default;
+        return $payload[$key] ?? $default;
     }
 
     /**
@@ -128,11 +117,11 @@ class Request
      *
      * @param  string $key
      * @param  mixed  $default
-     * @return mixed
+     * @return string
      */
-    public function getServer(string $key, mixed $default = null): mixed
+    public function getServer(string $key, string $default = null): string
     {
-        return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
+        return $_SERVER[$key] ?? $default;
     }
 
     /**
@@ -146,7 +135,7 @@ class Request
      */
     public function getIP(): string
     {
-        $ips = explode(',',$this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0')));
+        $ips = explode(',', $this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0')));
         return trim($ips[0] ?? '');
     }
 
@@ -173,7 +162,7 @@ class Request
      */
     public function getPort(): string
     {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
+        return (string) \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
     }
 
     /**
@@ -185,7 +174,7 @@ class Request
      */
     public function getHostname(): string
     {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
+        return (string) \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
     }
 
     /**
@@ -333,7 +322,7 @@ class Request
     public function getContentRangeStart(): ?int
     {
         $data = $this->parseContentRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['start'];
         } else {
             return null;
@@ -350,7 +339,7 @@ class Request
     public function getContentRangeEnd(): ?int
     {
         $data = $this->parseContentRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['end'];
         } else {
             return null;
@@ -367,7 +356,7 @@ class Request
     public function getContentRangeSize(): ?int
     {
         $data = $this->parseContentRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['size'];
         } else {
             return null;
@@ -384,7 +373,7 @@ class Request
     public function getContentRangeUnit(): ?string
     {
         $data = $this->parseContentRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['unit'];
         } else {
             return null;
@@ -400,7 +389,7 @@ class Request
     public function getRangeStart(): ?int
     {
         $data = $this->parseRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['start'];
         }
         return null;
@@ -416,7 +405,7 @@ class Request
     public function getRangeEnd(): ?int
     {
         $data = $this->parseRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['end'];
         }
         return null;
@@ -432,7 +421,7 @@ class Request
     public function getRangeUnit(): ?string
     {
         $data = $this->parseRange();
-        if(!empty($data)) {
+        if (!empty($data)) {
             return $data['unit'];
         }
         return null;
@@ -585,7 +574,7 @@ class Request
             return null;
         }
 
-        if(!ctype_digit($ranges[0])) {
+        if (!ctype_digit($ranges[0])) {
             return null;
         }
 
@@ -605,5 +594,4 @@ class Request
         }
         return $data;
     }
-
 }
