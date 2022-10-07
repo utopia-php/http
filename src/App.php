@@ -265,10 +265,10 @@ class App
      * Method for querying env varialbles. If $key is not found $default value will be returned.
      *
      * @param string $key
-     * @param mixed  $default
-     * @return mixed
+     * @param string|null $default
+     * @return string|null
      */
-    public static function getEnv(string $key, string $default = null): string
+    public static function getEnv(string $key, string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
     }

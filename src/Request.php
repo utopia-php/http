@@ -71,7 +71,7 @@ class Request
      */
     public function getParams(): array
     {
-        return match($this->getServer('REQUEST_METHOD', '')) {
+        return match ($this->getServer('REQUEST_METHOD', '')) {
             self::METHOD_POST,
             self::METHOD_PUT,
             self::METHOD_PATCH,
@@ -116,10 +116,10 @@ class Request
      * Method for querying server parameters. If $key is not found $default value will be returned.
      *
      * @param  string $key
-     * @param  mixed  $default
-     * @return string
+     * @param  string|null  $default
+     * @return string|null
      */
-    public function getServer(string $key, string $default = null): string
+    public function getServer(string $key, string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
     }
@@ -135,7 +135,8 @@ class Request
      */
     public function getIP(): string
     {
-        $ips = explode(',', $this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR', '0.0.0.0')));
+        $ips = explode(',', $this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR') ?? '0.0.0.0'));
+
         return trim($ips[0] ?? '');
     }
 
@@ -150,7 +151,7 @@ class Request
      */
     public function getProtocol(): string
     {
-        return $this->getServer('HTTP_X_FORWARDED_PROTO', $this->getServer('REQUEST_SCHEME', 'https'));
+        return $this->getServer('HTTP_X_FORWARDED_PROTO', $this->getServer('REQUEST_SCHEME')) ?? 'https';
     }
 
     /**
@@ -186,7 +187,7 @@ class Request
      */
     public function getMethod(): string
     {
-        return $this->getServer('REQUEST_METHOD', 'UNKNOWN');
+        return $this->getServer('REQUEST_METHOD') ?? 'UNKNOWN';
     }
 
     /**
@@ -198,7 +199,7 @@ class Request
      */
     public function getURI(): string
     {
-        return $this->getServer('REQUEST_URI', '');
+        return $this->getServer('REQUEST_URI') ?? '';
     }
 
     /**
