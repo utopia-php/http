@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,50 +18,40 @@ use PHPUnit\Framework\TestCase;
 
 class BooleanTest extends TestCase
 {
-    /**
-     * @var Boolean
-     */
-    protected $boolean;
-
-    public function setUp():void
+    public function testCanValidateStrictly()
     {
+        $boolean = new Boolean();
+
+        $this->assertTrue($boolean->isValid(true));
+        $this->assertTrue($boolean->isValid(false));
+        $this->assertFalse($boolean->isValid('false'));
+        $this->assertFalse($boolean->isValid('true'));
+        $this->assertFalse($boolean->isValid('0'));
+        $this->assertFalse($boolean->isValid('1'));
+        $this->assertFalse($boolean->isValid(0));
+        $this->assertFalse($boolean->isValid(1));
+        $this->assertFalse($boolean->isValid(['string', 'string']));
+        $this->assertFalse($boolean->isValid('string'));
+        $this->assertFalse($boolean->isValid(1.2));
+        $this->assertFalse($boolean->isArray());
+        $this->assertEquals($boolean->getType(), \Utopia\Validator::TYPE_BOOLEAN);
     }
-
-    public function tearDown():void
+    public function testCanValidateLoosely()
     {
-        $this->boolean = null;
-    }
+        $boolean = new Boolean(true);
 
-    public function testIsValid()
-    {
-        $this->boolean = new Boolean();
-
-        $this->assertEquals(true, $this->boolean->isValid(true));
-        $this->assertEquals(true, $this->boolean->isValid(false));
-        $this->assertEquals(false, $this->boolean->isValid('false'));
-        $this->assertEquals(false, $this->boolean->isValid('true'));
-        $this->assertEquals(false, $this->boolean->isValid('0'));
-        $this->assertEquals(false, $this->boolean->isValid('1'));
-        $this->assertEquals(false, $this->boolean->isValid(0));
-        $this->assertEquals(false, $this->boolean->isValid(1));
-        $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
-        $this->assertEquals(false, $this->boolean->isValid('string'));
-        $this->assertEquals(false, $this->boolean->isValid(1.2));
-
-        $this->boolean = new Boolean(true);
-
-        $this->assertEquals(true, $this->boolean->isValid(true));
-        $this->assertEquals(true, $this->boolean->isValid(false));
-        $this->assertEquals(true, $this->boolean->isValid('false'));
-        $this->assertEquals(true, $this->boolean->isValid('true'));
-        $this->assertEquals(true, $this->boolean->isValid('0'));
-        $this->assertEquals(true, $this->boolean->isValid('1'));
-        $this->assertEquals(true, $this->boolean->isValid(0));
-        $this->assertEquals(true, $this->boolean->isValid(1));
-        $this->assertEquals(false, $this->boolean->isValid(['string', 'string']));
-        $this->assertEquals(false, $this->boolean->isValid('string'));
-        $this->assertEquals(false, $this->boolean->isValid(1.2));
-        $this->assertEquals($this->boolean->getType(), \Utopia\Validator::TYPE_BOOLEAN);
-        $this->assertEquals($this->boolean->isArray(), false);
+        $this->assertTrue($boolean->isValid(true));
+        $this->assertTrue($boolean->isValid(false));
+        $this->assertTrue($boolean->isValid('false'));
+        $this->assertTrue($boolean->isValid('true'));
+        $this->assertTrue($boolean->isValid('0'));
+        $this->assertTrue($boolean->isValid('1'));
+        $this->assertTrue($boolean->isValid(0));
+        $this->assertTrue($boolean->isValid(1));
+        $this->assertFalse($boolean->isValid(['string', 'string']));
+        $this->assertFalse($boolean->isValid('string'));
+        $this->assertFalse($boolean->isValid(1.2));
+        $this->assertFalse($boolean->isArray());
+        $this->assertEquals(\Utopia\Validator::TYPE_BOOLEAN, $boolean->getType());
     }
 }

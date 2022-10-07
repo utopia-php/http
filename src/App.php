@@ -68,7 +68,7 @@ class App
      *
      * Errors callbacks
      *
-     * @var array
+     * @var Hook[]
      */
     protected static array $errors = [];
 
@@ -77,7 +77,7 @@ class App
      *
      * A callback function that is initialized on application start
      *
-     * @var array
+     * @var Hook[]
      */
     protected static array $init = [];
 
@@ -86,7 +86,7 @@ class App
      *
      * A callback function that is initialized on application end
      *
-     * @var array
+     * @var Hook[]
      */
     protected static array $shutdown = [];
 
@@ -95,7 +95,7 @@ class App
      *
      * A callback function for options method requests
      *
-     * @var array
+     * @var Hook[]
      */
     protected static array $options = [];
 
@@ -268,9 +268,9 @@ class App
      * @param mixed  $default
      * @return mixed
      */
-    public static function getEnv(string $key, mixed $default = null): mixed
+    public static function getEnv(string $key, string $default = null): string
     {
-        return (isset($_SERVER[$key])) ? $_SERVER[$key] : $default;
+        return $_SERVER[$key] ?? $default;
     }
 
     /**
@@ -421,12 +421,11 @@ class App
      * Set the current route
      *
      * @param Route $route
-     *
-     * @return self
      */
     public function setRoute(Route $route): static
     {
         $this->route = $route;
+
         return $this;
     }
 
@@ -511,7 +510,6 @@ class App
      *
      * @param Route $route
      * @param Request $request
-     * @return self
      */
     public function execute(Route $route, Request $request): static
     {
@@ -533,7 +531,6 @@ class App
 
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
-                    /** @var Hook $hook */
                     if(in_array('*', $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
@@ -543,7 +540,6 @@ class App
 
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
-                    /** @var Hook $hook */
                     if(in_array($group, $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
@@ -584,9 +580,7 @@ class App
                 foreach (self::$errors as $error) { // Group error hooks
                     /** @var Hook $error */
                     if(in_array($group, $error->getGroups())) {
-                        self::setResource('error', function() use ($e) {
-                            return $e;
-                        });
+                        self::setResource('error', fn () => $e);
                         try {
                             $arguments = $this->getArguments($error, $values, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
@@ -600,9 +594,7 @@ class App
             foreach (self::$errors as $error) { // Global error hooks
                 /** @var Hook $error */
                 if(in_array('*', $error->getGroups())) {
-                    self::setResource('error', function() use ($e) {
-                        return $e;
-                    });
+                    self::setResource('error', fn() => $e);
                     try {
                         $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
@@ -660,7 +652,6 @@ class App
      *
      * @param Request $request
      * @param Response $response
-     * @return self
      */
     public function run(Request $request, Response $response): static
     {
@@ -746,7 +737,6 @@ class App
             }
         } else {
             foreach (self::$errors as $error) { // Global error hooks
-                /** @var Hook $error */
                 if(in_array('*', $error->getGroups())) {
                     self::setResource('error', function() {
                         return new Exception('Not Found', 404);

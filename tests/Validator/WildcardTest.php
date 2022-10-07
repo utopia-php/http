@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,29 +18,16 @@ use PHPUnit\Framework\TestCase;
 
 class WildcardTest extends TestCase
 {
-
-    protected $wildcard;
-
-    public function setUp():void
+    public function testCanValidateWildcard()
     {
-        $this->wildcard = new Wildcard();
-    }
-
-    public function tearDown():void
-    {
-        $this->wildcard = null;
-    }
-
-    public function testIsValid()
-    {
-        // Assertions
-        $this->assertEquals(true, $this->wildcard->isValid([0 => 'string', 1 => 'string']));
-        $this->assertEquals(true, $this->wildcard->isValid(""));
-        $this->assertEquals(true, $this->wildcard->isValid([]));
-        $this->assertEquals(true, $this->wildcard->isValid(1));
-        $this->assertEquals(true, $this->wildcard->isValid(true));
-        $this->assertEquals(true, $this->wildcard->isValid(false));
-        $this->assertEquals($this->wildcard->getType(), \Utopia\Validator::TYPE_STRING);
-        $this->assertEquals($this->wildcard->isArray(), false);
+        $validator = new Wildcard();
+        $this->assertTrue($validator->isValid([0 => 'string', 1 => 'string']));
+        $this->assertTrue($validator->isValid(""));
+        $this->assertTrue($validator->isValid([]));
+        $this->assertTrue($validator->isValid(1));
+        $this->assertTrue($validator->isValid(true));
+        $this->assertTrue($validator->isValid(false));
+        $this->assertFalse($validator->isArray());
+        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $validator->getType());
     }
 }

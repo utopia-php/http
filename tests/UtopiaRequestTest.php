@@ -6,10 +6,7 @@ use Utopia\Request as UtopiaRequest;
 
 class UtopiaRequestTest extends UtopiaRequest
 {
-    /**
-     * @var array
-     */
-    private static $params = null;
+    private static ?array $params;
 
     /**
      * Get Param

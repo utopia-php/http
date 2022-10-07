@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -18,108 +19,105 @@ use Utopia\Validator\Text;
 
 class RouteTest extends TestCase
 {
-    /**
-     * @var Route
-     */
-    protected $route;
+    protected ?Route $route;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->route = new Route('GET', '/');
     }
 
-    public function testMethod()
+    public function testCanGetMethod()
     {
         $this->assertEquals('GET', $this->route->getMethod());
     }
 
-    public function testPath()
+    public function testCanGetAndSetPath()
     {
         $this->assertEquals('/', $this->route->getPath());
-        
+
         $this->route->path('/path');
 
         $this->assertEquals('/path', $this->route->getPath());
     }
 
-    public function testAlias()
+    public function testCanSetAndGetAlias()
     {
         $this->assertEquals('', $this->route->getAliasPath());
         $this->assertEquals([], $this->route->getAliasParams());
-        
+
         $params = [
             'pathId' => 'hello'
         ];
-        $this->route->alias('/path1',$params);
+        $this->route->alias('/path1', $params);
 
         $this->assertEquals('/path1', $this->route->getAliasPath());
         $this->assertEquals($params, $this->route->getAliasParams());
     }
 
-    public function testDesc()
+    public function testCanSetAndGetDescription()
     {
         $this->assertEquals('', $this->route->getDesc());
-        
+
         $this->route->desc('new route');
 
         $this->assertEquals('new route', $this->route->getDesc());
     }
 
-    public function testGroups()
+    public function testCanSetAndGetGroups()
     {
         $this->assertEquals([], $this->route->getGroups());
-        
+
         $this->route->groups(['api', 'homepage']);
 
         $this->assertEquals(['api', 'homepage'], $this->route->getGroups());
     }
 
-    public function testAction()
+    public function testCanSetAndGetAction()
     {
-        $this->assertEquals(function(): void {}, $this->route->getAction());
-        
-        $this->route->action(function() {return 'hello world';});
+        $this->assertEquals(function (): void {
+        }, $this->route->getAction());
+
+        $this->route->action(fn () => 'hello world');
 
         $this->assertEquals('hello world', $this->route->getAction()());
     }
 
-    public function testParam()
+    public function testCanGetAndSetParam()
     {
         $this->assertEquals([], $this->route->getParams());
-        
+
         $this->route
             ->param('x', '', new Text(10))
-            ->param('y', '', new Text(10))
-        ;
+            ->param('y', '', new Text(10));
 
         $this->assertCount(2, $this->route->getParams());
     }
 
-    public function testResources()
+    public function testCanInjectResources()
     {
         $this->assertEquals([], $this->route->getInjections());
-        
+
         $this->route
             ->inject('user')
             ->inject('time')
-            ->action(function() {})
-        ;
+            ->action(function () {
+            });
 
         $this->assertCount(2, $this->route->getInjections());
         $this->assertEquals('user', $this->route->getInjections()['user']['name']);
         $this->assertEquals('time', $this->route->getInjections()['time']['name']);
     }
 
-    public function testLabel()
+    public function testCanSetAndGetLabels()
     {
         $this->assertEquals('default', $this->route->getLabel('key', 'default'));
-        
+
         $this->route->label('key', 'value');
 
         $this->assertEquals('value', $this->route->getLabel('key', 'default'));
     }
 
-    public function testHook()
+    public function testCanSetAndGetHooks()
     {
         $this->assertTrue($this->route->getHook());
         $this->route->hook(true);
@@ -128,7 +126,7 @@ class RouteTest extends TestCase
         $this->assertFalse($this->route->getHook());
     }
 
-    public function testIsActive()
+    public function testCanSetAndGetIsActive()
     {
         $this->assertTrue($this->route->getIsActive());
         $this->route->setIsActive(true);
@@ -139,7 +137,7 @@ class RouteTest extends TestCase
         $this->assertTrue($this->route->getIsActive());
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->route = null;
     }

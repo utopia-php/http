@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,37 +18,23 @@ use PHPUnit\Framework\TestCase;
 
 class JSONTest extends TestCase
 {
-    /**
-     * @var JSON
-     */
-    protected $json = null;
-
-    public function setUp():void
+    public function testCanValidateJson(): void
     {
-        $this->json = new JSON();
-    }
+        $json = new JSON();
+        $this->assertTrue($json->isValid('{}'));
+        $this->assertTrue($json->isValid([]));
+        $this->assertTrue($json->isValid(['test']));
+        $this->assertTrue($json->isValid(['test' => 'demo']));
+        $this->assertTrue($json->isValid('{"test": "demo"}'));
 
-    public function tearDown():void
-    {
-        $this->json = null;
-    }
-
-    public function testIsValid()
-    {
-        // Assertions
-        $this->assertEquals(false, $this->json->isValid(''));
-        $this->assertEquals(false, $this->json->isValid(false));
-        $this->assertEquals(false, $this->json->isValid(null));
-        $this->assertEquals(false, $this->json->isValid('string'));
-        $this->assertEquals(false, $this->json->isValid(1));
-        $this->assertEquals(false, $this->json->isValid(1.2));
-        $this->assertEquals(false, $this->json->isValid("{'test': 'demo'}"));
-        $this->assertEquals(true, $this->json->isValid('{}'));
-        $this->assertEquals(true, $this->json->isValid([]));
-        $this->assertEquals(true, $this->json->isValid(['test']));
-        $this->assertEquals(true, $this->json->isValid(['test' => 'demo']));
-        $this->assertEquals(true, $this->json->isValid('{"test": "demo"}'));
-        $this->assertEquals($this->json->getType(), \Utopia\Validator::TYPE_OBJECT);
-        $this->assertEquals($this->json->isArray(), false);
+        $this->assertFalse($json->isValid(''));
+        $this->assertFalse($json->isValid(false));
+        $this->assertFalse($json->isValid(null));
+        $this->assertFalse($json->isValid('string'));
+        $this->assertFalse($json->isValid(1));
+        $this->assertFalse($json->isValid(1.2));
+        $this->assertFalse($json->isValid("{'test': 'demo'}"));
+        $this->assertFalse($json->isArray());
+        $this->assertEquals(\Utopia\Validator::TYPE_OBJECT, $json->getType());
     }
 }

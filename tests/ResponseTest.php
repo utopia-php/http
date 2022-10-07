@@ -17,10 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class ResponseTest extends TestCase
 {
-    /**
-     * @var Response
-     */
-    protected $response;
+    protected ?Response $response;
 
     public function setUp():void
     {
@@ -32,7 +29,7 @@ class ResponseTest extends TestCase
         $this->response = null;
     }
 
-    public function testSetContentType()
+    public function testCanSetContentType()
     {
         $contentType = $this->response->setContentType(Response::CONTENT_TYPE_HTML, Response::CHARSET_UTF8);
 
@@ -40,7 +37,7 @@ class ResponseTest extends TestCase
         $this->assertInstanceOf('Utopia\Response', $contentType);
     }
 
-    public function testSetStatus()
+    public function testCanSetStatus()
     {
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
 
@@ -58,7 +55,7 @@ class ResponseTest extends TestCase
         $this->fail('Expected exception');
     }
 
-    public function testGetStatus()
+    public function testCanGetStatus()
     {
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
 
@@ -67,13 +64,13 @@ class ResponseTest extends TestCase
         $this->assertEquals(Response::STATUS_CODE_OK, $this->response->getStatusCode());
     }
 
-    public function testAddHeader()
+    public function testCanAddHeader()
     {
         $result = $this->response->addHeader('key', 'value');
         $this->assertEquals($this->response, $result);
     }
 
-    public function testAddCookie()
+    public function testCanAddCookie()
     {
         $result = $this->response->addCookie('name', 'value');
         $this->assertEquals($this->response, $result);
@@ -84,7 +81,7 @@ class ResponseTest extends TestCase
         $result->getCookies()['cookiename']['value'] = 'cookieValue';
     }
 
-    public function testSend()
+    public function testCanSend()
     {
 
         ob_start(); //Start of build
@@ -100,7 +97,7 @@ class ResponseTest extends TestCase
         $this->assertEquals('body', $html);
     }
 
-    public function testRedirect()
+    public function testCanSendRedirect()
     {
         ob_start(); //Start of build
 
@@ -121,7 +118,7 @@ class ResponseTest extends TestCase
         $this->assertEquals('', $html);
     }
 
-    public function testText()
+    public function testCanSendText()
     {
         ob_start(); //Start of build
 
@@ -134,7 +131,7 @@ class ResponseTest extends TestCase
         $this->assertEquals('text/plain; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testHTML()
+    public function testCanSendHtml()
     {
         ob_start(); //Start of build
 
@@ -147,7 +144,7 @@ class ResponseTest extends TestCase
         $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testJson()
+    public function testCanSendJson()
     {
         ob_start(); //Start of build
 
@@ -160,7 +157,7 @@ class ResponseTest extends TestCase
         $this->assertEquals('application/json; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testJsonp()
+    public function testCanSendJsonp()
     {
         ob_start(); //Start of build
 
@@ -173,7 +170,7 @@ class ResponseTest extends TestCase
         $this->assertEquals('text/javascript; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testIframe()
+    public function testCanSendIframe()
     {
         ob_start(); //Start of build
 

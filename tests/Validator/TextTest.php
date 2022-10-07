@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -17,92 +18,74 @@ use PHPUnit\Framework\TestCase;
 
 class TextTest extends TestCase
 {
-    /**
-     * @var Domain
-     */
-    protected $text = null;
-
-    public function setUp():void
+    public function testCanValidateText(): void
     {
-        $this->text = new Text(10);
+        $validator = new Text(10);
+        $this->assertTrue($validator->isValid('text'));
+        $this->assertTrue($validator->isValid('7'));
+        $this->assertTrue($validator->isValid('7.9'));
+        $this->assertTrue($validator->isValid('["seven"]'));
+        $this->assertFalse($validator->isValid(["seven"]));
+        $this->assertFalse($validator->isValid(["seven", 8, 9.0]));
+        $this->assertFalse($validator->isValid(false));
+        $this->assertFalse($validator->isArray());
+        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $validator->getType());
     }
 
-    public function tearDown():void
+    public function testCanValidateBoundaries(): void
     {
-        $this->text = null;
+        $validator = new Text(5);
+        $this->assertTrue($validator->isValid('hell'));
+        $this->assertTrue($validator->isValid('hello'));
+        $this->assertFalse($validator->isValid('hellow'));
     }
 
-    public function testIsValid()
-    {
-        // Assertions
-        $this->assertEquals(true, $this->text->isValid('text'));
-        $this->assertEquals(true, $this->text->isValid('7'));
-        $this->assertEquals(true, $this->text->isValid('7.9'));
-        $this->assertEquals(true, $this->text->isValid('["seven"]'));
-        $this->assertEquals(false, $this->text->isValid(["seven"]));
-        $this->assertEquals(false, $this->text->isValid(["seven", 8, 9.0]));
-        $this->assertEquals(false, $this->text->isValid(false));
-        $this->assertEquals(false, $this->text->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->text->getType());
-    }
-
-    public function testAllowList()
+    public function testCanValidateTextWithAllowList(): void
     {
         // Test lowercase alphabet
-        $this->validator = new Text(100, Text::ALPHABET_LOWER);
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->validator->getType());
-        $this->assertEquals(false, $this->validator->isArray());
-        $this->assertEquals(true, $this->validator->isValid('qwertzuiopasdfghjklyxcvbnm'));
-        $this->assertEquals(true, $this->validator->isValid('hello'));
-        $this->assertEquals(true, $this->validator->isValid('world'));
-        $this->assertEquals(false, $this->validator->isValid('hello world'));
-        $this->assertEquals(false, $this->validator->isValid('Hello'));
-        $this->assertEquals(false, $this->validator->isValid('worlD'));
-        $this->assertEquals(false, $this->validator->isValid('hello123'));
+        $validator = new Text(100, Text::ALPHABET_LOWER);
+        $this->assertFalse($validator->isArray());
+        $this->assertTrue($validator->isValid('qwertzuiopasdfghjklyxcvbnm'));
+        $this->assertTrue($validator->isValid('hello'));
+        $this->assertTrue($validator->isValid('world'));
+        $this->assertFalse($validator->isValid('hello world'));
+        $this->assertFalse($validator->isValid('Hello'));
+        $this->assertFalse($validator->isValid('worlD'));
+        $this->assertFalse($validator->isValid('hello123'));
 
         // Test uppercase alphabet
-        $this->validator = new Text(100, Text::ALPHABET_UPPER);
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->validator->getType());
-        $this->assertEquals(false, $this->validator->isArray());
-        $this->assertEquals(true, $this->validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNM'));
-        $this->assertEquals(true, $this->validator->isValid('HELLO'));
-        $this->assertEquals(true, $this->validator->isValid('WORLD'));
-        $this->assertEquals(false, $this->validator->isValid('HELLO WORLD'));
-        $this->assertEquals(false, $this->validator->isValid('hELLO'));
-        $this->assertEquals(false, $this->validator->isValid('WORLd'));
-        $this->assertEquals(false, $this->validator->isValid('HELLO123'));
+        $validator = new Text(100, Text::ALPHABET_UPPER);
+        $this->assertFalse($validator->isArray());
+        $this->assertTrue($validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNM'));
+        $this->assertTrue($validator->isValid('HELLO'));
+        $this->assertTrue($validator->isValid('WORLD'));
+        $this->assertFalse($validator->isValid('HELLO WORLD'));
+        $this->assertFalse($validator->isValid('hELLO'));
+        $this->assertFalse($validator->isValid('WORLd'));
+        $this->assertFalse($validator->isValid('HELLO123'));
 
         // Test numbers
-        $this->validator = new Text(100, Text::NUMBERS);
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->validator->getType());
-        $this->assertEquals(false, $this->validator->isArray());
-        $this->assertEquals(true, $this->validator->isValid('1234567890'));
-        $this->assertEquals(true, $this->validator->isValid('123'));
-        $this->assertEquals(false, $this->validator->isValid('123 456'));
-        $this->assertEquals(false, $this->validator->isValid('hello123'));
+        $validator = new Text(100, Text::NUMBERS);
+        $this->assertFalse($validator->isArray());
+        $this->assertTrue($validator->isValid('1234567890'));
+        $this->assertTrue($validator->isValid('123'));
+        $this->assertFalse($validator->isValid('123 456'));
+        $this->assertFalse($validator->isValid('hello123'));
 
         // Test combination of allowLists
-        $this->validator = new Text(100, [
+        $validator = new Text(100, [
             ...Text::ALPHABET_LOWER,
             ...Text::ALPHABET_UPPER,
             ...Text::NUMBERS
         ]);
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->validator->getType());
-        $this->assertEquals(false, $this->validator->isArray());
-        $this->assertEquals(true, $this->validator->isValid('1234567890'));
-        $this->assertEquals(true, $this->validator->isValid('qwertzuiopasdfghjklyxcvbnm'));
-        $this->assertEquals(true, $this->validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNM'));
-        $this->assertEquals(true, $this->validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNMqwertzuiopasdfghjklyxcvbnm1234567890'));
-        $this->assertEquals(false, $this->validator->isValid('hello-world'));
-        $this->assertEquals(false, $this->validator->isValid('hello_world'));
-        $this->assertEquals(false, $this->validator->isValid('hello/world'));
 
-        // Test length validation
-        $this->validator = new Text(5, Text::ALPHABET_LOWER);
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $this->validator->getType());
-        $this->assertEquals(false, $this->validator->isArray());
-        $this->assertEquals(true, $this->validator->isValid('hell'));
-        $this->assertEquals(true, $this->validator->isValid('hello'));
-        $this->assertEquals(false, $this->validator->isValid('hellow'));
+        $this->assertFalse($validator->isArray());
+        $this->assertTrue($validator->isValid('1234567890'));
+        $this->assertTrue($validator->isValid('qwertzuiopasdfghjklyxcvbnm'));
+        $this->assertTrue($validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNM'));
+        $this->assertTrue($validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNMqwertzuiopasdfghjklyxcvbnm1234567890'));
+        $this->assertFalse($validator->isValid('hello-world'));
+        $this->assertFalse($validator->isValid('hello_world'));
+        $this->assertFalse($validator->isValid('hello/world'));
     }
 }
