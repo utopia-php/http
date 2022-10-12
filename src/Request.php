@@ -225,6 +225,21 @@ class Request
     }
 
     /**
+     * Get Path
+     *
+     * Return HTTP request path
+     *
+     * @param string $uri
+     * @return self
+     */
+    public function setURI(string $uri): self
+    {
+        $this->setServer('REQUEST_URI', $uri);
+
+        return $this;
+    }
+
+    /**
      * Get files
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.
