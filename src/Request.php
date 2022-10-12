@@ -339,6 +339,35 @@ class Request
     }
 
     /**
+     * Set header
+     *
+     * Method for setting HTTP header parameters.
+     *
+     * @param string $key
+     * @param string $value
+     * @return void
+     */
+    public function setHeader(string $key, string $value): void
+    {
+        $this->headers[$key] = $value;
+    }
+
+    /**
+     * Remvoe header
+     *
+     * Method for removing HTTP header parameters.
+     *
+     * @param string $key
+     * @return void
+     */
+    public function removeHeader(string $key): void
+    {
+        if (isset($this->headers[$key])) {
+            unset($this->headers[$key]);
+        }
+    }
+
+    /**
      * Get Request Size
      *
      * Returns request size in bytes
