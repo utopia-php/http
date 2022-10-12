@@ -495,6 +495,28 @@ class Request
     }
 
     /**
+     * Set GET parameters
+     *
+     * @param array $params
+     * @return void
+     */
+    public function setGet(array $params)
+    {
+        $_GET = $params;
+    }
+
+    /**
+     * Set POST parameters
+     *
+     * @param array $params
+     * @return void
+     */
+    public function setPost(array $params)
+    {
+        $_POST = $params;
+    }
+
+    /**
      * Generate input
      *
      * Generate PHP input stream and parse it as an array in order to handle different content type of requests
