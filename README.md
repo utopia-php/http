@@ -123,13 +123,6 @@ Library | Description
 **[Utopia System](https://github.com/utopia-php/system)** | Simple PHP library for obtaining information about the host's system.
 **[Utopia Storage](https://github.com/utopia-php/storage)** | Simple and lite PHP library for managing application storage. It supports multiple storage adapters.
 
-## Authors
-
-**Eldad Fux**
-
-+ [https://twitter.com/eldadfux](https://twitter.com/eldadfux)
-+ [https://github.com/eldadfux](https://github.com/eldadfux)
-
 ## Contributing
 
 All code contributions - including those of people having commit access - must go through a pull request and approved by a core developer before being merged. This is to ensure proper review of all the code.
