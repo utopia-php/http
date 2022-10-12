@@ -124,6 +124,13 @@ class Request
         return $_SERVER[$key] ?? $default;
     }
 
+    public function setServer(string $key, string $value): self
+    {
+        $_SERVER[$key] = $value;
+
+        return $this;
+    }
+
     /**
      * Get IP
      *
@@ -188,6 +195,21 @@ class Request
     public function getMethod(): string
     {
         return $this->getServer('REQUEST_METHOD') ?? 'UNKNOWN';
+    }
+
+    /**
+     * Set Method
+     *
+     * Set HTTP request method
+     *
+     * @param string $method
+     * @return self
+     */
+    public function setMethod(string $method): self
+    {
+        $this->setServer('REQUEST_METHOD', $method);
+
+        return $this;
     }
 
     /**
