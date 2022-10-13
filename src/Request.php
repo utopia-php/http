@@ -29,6 +29,11 @@ class Request
     const METHOD_CONNECT = 'CONNECT';
 
     /**
+     * @var string
+     */
+    private $raw = '';
+
+    /**
      * Container for php://input parsed stream
      *
      * @var array|null
@@ -108,6 +113,18 @@ class Request
         $payload = $this->generateInput();
 
         return $payload[$key] ?? $default;
+    }
+
+    /**
+     * Get raw payload
+     *
+     * Method for getting the HTTP request payload as a raw string.
+     *
+     * @return string
+     */
+    public function getRawPayload(): string
+    {
+        return $this->raw;
     }
 
     /**
@@ -533,11 +550,12 @@ class Request
             $length         = (empty($length)) ? \strlen($contentType) : $length;
             $contentType    = \substr($contentType, 0, $length);
 
+            $this->raw = \file_get_contents('php://input');
+
             switch ($contentType) {
                 case 'application/json':
-                    $this->payload = \json_decode(\file_get_contents('php://input'), true);
+                    $this->payload = \json_decode($this->raw, true);
                     break;
-
                 default:
                     $this->payload = $_POST;
                     break;
