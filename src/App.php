@@ -1,13 +1,4 @@
 <?php
-/**
- * Utopia PHP Framework
- *
- * @package Framework
- * @subpackage Core
- *
- * @link https://github.com/utopia-php/framework
- * @author Appwrite Team <team@appwrite.io>
- */
 
 namespace Utopia;
 
