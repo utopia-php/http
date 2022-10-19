@@ -18,11 +18,25 @@ class Request
     const METHOD_CONNECT = 'CONNECT';
 
     /**
-     * Container for php://input parsed stream
+     * Container for raw php://input parsed stream
+     *
+     * @var string
+     */
+    private $rawPayload = '';
+
+    /**
+     * Container for php://input parsed stream as an associative array
      *
      * @var array|null
      */
     protected $payload = null;
+
+    /**
+     * Container for parsed query string params
+     *
+     * @var array|null
+     */
+    protected $queryString = null;
 
     /**
      * Container for parsed headers
@@ -42,13 +56,9 @@ class Request
      */
     public function getParam(string $key, mixed $default = null): mixed
     {
-        return match ($this->getMethod()) {
-            self::METHOD_POST,
-            self::METHOD_PUT,
-            self::METHOD_PATCH,
-            self::METHOD_DELETE => $this->getPayload($key, $default),
-            default => $this->getQuery($key, $default)
-        };
+        $params = $this->getParams();
+
+        return (isset($params[$key])) ? $params[$key] : $default;
     }
 
     /**
@@ -60,13 +70,7 @@ class Request
      */
     public function getParams(): array
     {
-        return match ($this->getServer('REQUEST_METHOD', '')) {
-            self::METHOD_POST,
-            self::METHOD_PUT,
-            self::METHOD_PATCH,
-            self::METHOD_DELETE => $this->generateInput(),
-            default => $_GET
-        };
+        return $this->generateInput();
     }
 
     /**
@@ -80,7 +84,9 @@ class Request
      */
     public function getQuery(string $key, mixed $default = null): mixed
     {
-        return (isset($_GET[$key])) ? $_GET[$key] : $default;
+        $this->generateInput();
+
+        return $this->queryString[$key] ?? $default;
     }
 
     /**
@@ -94,9 +100,23 @@ class Request
      */
     public function getPayload(string $key, mixed $default = null): mixed
     {
-        $payload = $this->generateInput();
+        $this->generateInput();
 
-        return $payload[$key] ?? $default;
+        return $this->payload[$key] ?? $default;
+    }
+
+    /**
+     * Get raw payload
+     *
+     * Method for getting the HTTP request payload as a raw string.
+     *
+     * @return string
+     */
+    public function getRawPayload(): string
+    {
+        $this->generateInput();
+
+        return $this->rawPayload;
     }
 
     /**
@@ -111,6 +131,22 @@ class Request
     public function getServer(string $key, string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
+    }
+
+    /**
+     * Set server
+     *
+     * Method for setting server parameters.
+     *
+     * @param string $key
+     * @param string $value
+     * @return $this
+     */
+    public function setServer(string $key, string $value): self
+    {
+        $_SERVER[$key] = $value;
+
+        return $this;
     }
 
     /**
@@ -180,6 +216,21 @@ class Request
     }
 
     /**
+     * Set Method
+     *
+     * Set HTTP request method
+     *
+     * @param string $method
+     * @return self
+     */
+    public function setMethod(string $method): self
+    {
+        $this->setServer('REQUEST_METHOD', $method);
+
+        return $this;
+    }
+
+    /**
      * Get URI
      *
      * Return HTTP request URI
@@ -189,6 +240,21 @@ class Request
     public function getURI(): string
     {
         return $this->getServer('REQUEST_URI') ?? '';
+    }
+
+    /**
+     * Get Path
+     *
+     * Return HTTP request path
+     *
+     * @param string $uri
+     * @return self
+     */
+    public function setURI(string $uri): self
+    {
+        $this->setServer('REQUEST_URI', $uri);
+
+        return $this;
     }
 
     /**
@@ -288,6 +354,35 @@ class Request
         $headers = $this->generateHeaders();
 
         return (isset($headers[$key])) ? $headers[$key] : $default;
+    }
+
+    /**
+     * Set header
+     *
+     * Method for adding HTTP header parameters.
+     *
+     * @param string $key
+     * @param string $value
+     * @return void
+     */
+    public function addHeader(string $key, string $value): void
+    {
+        $this->headers[$key] = $value;
+    }
+
+    /**
+     * Remvoe header
+     *
+     * Method for removing HTTP header parameters.
+     *
+     * @param string $key
+     * @return void
+     */
+    public function removeHeader(string $key): void
+    {
+        if (isset($this->headers[$key])) {
+            unset($this->headers[$key]);
+        }
     }
 
     /**
@@ -418,6 +513,28 @@ class Request
     }
 
     /**
+     * Set query string parameters
+     *
+     * @param array $params
+     * @return void
+     */
+    public function setQueryString(array $params)
+    {
+        $this->queryString = $params;
+    }
+
+    /**
+     * Set payload parameters
+     *
+     * @param array $params
+     * @return void
+     */
+    public function setPayload(array $params)
+    {
+        $this->payload = $params;
+    }
+
+    /**
      * Generate input
      *
      * Generate PHP input stream and parse it as an array in order to handle different content type of requests
@@ -426,6 +543,9 @@ class Request
      */
     protected function generateInput(): array
     {
+        if (null === $this->queryString) {
+            $this->queryString = $_GET;
+        }
         if (null === $this->payload) {
             $contentType    = $this->getHeader('content-type');
 
@@ -434,11 +554,12 @@ class Request
             $length         = (empty($length)) ? \strlen($contentType) : $length;
             $contentType    = \substr($contentType, 0, $length);
 
+            $this->rawPayload = \file_get_contents('php://input');
+
             switch ($contentType) {
                 case 'application/json':
-                    $this->payload = \json_decode(\file_get_contents('php://input'), true);
+                    $this->payload = \json_decode($this->rawPayload, true);
                     break;
-
                 default:
                     $this->payload = $_POST;
                     break;
@@ -449,7 +570,13 @@ class Request
             }
         }
 
-        return $this->payload;
+        return match ($this->getServer('REQUEST_METHOD', '')) {
+            self::METHOD_POST,
+            self::METHOD_PUT,
+            self::METHOD_PATCH,
+            self::METHOD_DELETE => $this->payload,
+            default => $this->queryString
+        };
     }
 
     /**
