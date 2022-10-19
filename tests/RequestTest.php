@@ -39,9 +39,40 @@ class RequestTest extends TestCase
         $this->assertEquals('value2', $this->request->getHeader('custom-new'));
     }
 
+    public function testCanAddHeaders()
+    {
+        $this->request->addHeader('custom', 'value1');
+        $this->request->addHeader('custom-new', 'value2');
+
+        $this->assertEquals('value1', $this->request->getHeader('custom'));
+        $this->assertEquals('value2', $this->request->getHeader('custom-new'));
+    }
+
+    public function testCanRemoveHeaders()
+    {
+        $this->request->addHeader('custom', 'value1');
+        $this->request->addHeader('custom-new', 'value2');
+
+        $this->assertEquals('value1', $this->request->getHeader('custom'));
+        $this->assertEquals('value2', $this->request->getHeader('custom-new'));
+
+        $this->request->removeHeader('custom');
+
+        $this->assertEquals(null, $this->request->getHeader('custom'));
+        $this->assertEquals('value2', $this->request->getHeader('custom-new'));
+    }
+
     public function testCanGetQueryParameter()
     {
         $_GET['key'] = 'value';
+
+        $this->assertEquals($this->request->getQuery('key'), 'value');
+        $this->assertEquals($this->request->getQuery('unknown', 'test'), 'test');
+    }
+
+    public function testCanSetQueryString()
+    {
+        $this->request->setQueryString(['key' => 'value']);
 
         $this->assertEquals($this->request->getQuery('key'), 'value');
         $this->assertEquals($this->request->getQuery('unknown', 'test'), 'test');
@@ -52,9 +83,30 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getPayload('unknown', 'test'), 'test');
     }
 
+    public function testCanSetPayload()
+    {
+        $this->request->setPayload(['key' => 'value']);
+
+        $this->assertEquals($this->request->getPayload('key'), 'value');
+        $this->assertEquals($this->request->getPayload('unknown', 'test'), 'test');
+    }
+
+    public function testCanGetRawPayload()
+    {
+        $this->assertEquals($this->request->getRawPayload(), '');
+    }
+
     public function testCanGetServer()
     {
         $_SERVER['key'] = 'value';
+
+        $this->assertEquals($this->request->getServer('key'), 'value');
+        $this->assertEquals($this->request->getServer('unknown', 'test'), 'test');
+    }
+
+    public function testCanSetServer()
+    {
+        $this->request->setServer('key', 'value');
 
         $this->assertEquals($this->request->getServer('key'), 'value');
         $this->assertEquals($this->request->getServer('unknown', 'test'), 'test');
@@ -100,6 +152,13 @@ class RequestTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/index.html';
 
         $this->assertEquals('/index.html', $this->request->getURI());
+    }
+
+    public function testCanSetUri()
+    {
+        $this->request->setURI('/page.html');
+
+        $this->assertEquals('/page.html', $this->request->getURI());
     }
 
     public function testCanGetPort()
