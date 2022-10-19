@@ -5,12 +5,6 @@
     "keywords": ["php","framework", "upf"],
     "license": "MIT",
     "minimum-stability": "stable",
-    "authors": [
-        {
-            "name": "Eldad Fux",
-            "email": "eldad@appwrite.io"
-        }
-    ],
     "autoload": {
         "psr-4": {"Utopia\\": "src/"}
     },
