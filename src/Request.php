@@ -378,13 +378,15 @@ class Request
      * Method for removing HTTP header parameters.
      *
      * @param string $key
-     * @return void
+     * @return static
      */
-    public function removeHeader(string $key): void
+    public function removeHeader(string $key): static
     {
         if (isset($this->headers[$key])) {
             unset($this->headers[$key]);
         }
+
+        return $this;
     }
 
     /**
