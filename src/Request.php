@@ -140,9 +140,9 @@ class Request
      *
      * @param string $key
      * @param string $value
-     * @return $this
+     * @return static
      */
-    public function setServer(string $key, string $value): self
+    public function setServer(string $key, string $value): static
     {
         $_SERVER[$key] = $value;
 
@@ -221,9 +221,9 @@ class Request
      * Set HTTP request method
      *
      * @param string $method
-     * @return self
+     * @return static
      */
-    public function setMethod(string $method): self
+    public function setMethod(string $method): static
     {
         $this->setServer('REQUEST_METHOD', $method);
 
@@ -248,9 +248,9 @@ class Request
      * Return HTTP request path
      *
      * @param string $uri
-     * @return self
+     * @return static
      */
-    public function setURI(string $uri): self
+    public function setURI(string $uri): static
     {
         $this->setServer('REQUEST_URI', $uri);
 
@@ -363,11 +363,13 @@ class Request
      *
      * @param string $key
      * @param string $value
-     * @return void
+     * @return static
      */
-    public function addHeader(string $key, string $value): void
+    public function addHeader(string $key, string $value): static
     {
         $this->headers[$key] = $value;
+        
+        return $this;
     }
 
     /**
@@ -376,13 +378,15 @@ class Request
      * Method for removing HTTP header parameters.
      *
      * @param string $key
-     * @return void
+     * @return static
      */
-    public function removeHeader(string $key): void
+    public function removeHeader(string $key): static
     {
         if (isset($this->headers[$key])) {
             unset($this->headers[$key]);
         }
+
+        return $this;
     }
 
     /**
@@ -516,22 +520,26 @@ class Request
      * Set query string parameters
      *
      * @param array $params
-     * @return void
+     * @return static
      */
-    public function setQueryString(array $params)
+    public function setQueryString(array $params): static
     {
         $this->queryString = $params;
+        
+        return $this;
     }
 
     /**
      * Set payload parameters
      *
      * @param array $params
-     * @return void
+     * @return static
      */
-    public function setPayload(array $params)
+    public function setPayload(array $params): static
     {
         $this->payload = $params;
+        
+        return $this;
     }
 
     /**
