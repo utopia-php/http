@@ -28,6 +28,13 @@ class Route extends Hook
     protected string $path = '';
 
     /**
+     * Alias path
+     *
+     * @var null|string
+     */
+    protected ?string $aliasPath = null;
+
+    /**
      * Array of aliases where key is the path and value is an array of params
      *
      * @var array
@@ -168,7 +175,7 @@ class Route extends Hook
     /**
      * Get Aliases
      *
-     * For backwards compatibility, returns the first alias path
+     * Returns an array where the keys are paths and values are params
      * 
      * @return array
      */
@@ -186,8 +193,28 @@ class Route extends Hook
      */
     public function getAliasPath(): string
     {
+        if ($this->aliasPath !== null) {
+            return $this->aliasPath;
+        }
+
         $paths = array_keys($this->aliases);
-        return array_pop($paths) ?? '';
+        if (count($paths) === 0) {
+            return '';
+        }
+        return $paths[0];
+    }
+
+    /**
+     * Set Alias path
+     *
+     * For backwards compatibility, returns the first alias path
+     * 
+     * @return void
+     */
+    public function setAliasPath(?string $path): void
+    {
+        $this->aliasPath = $path;
+        $this->setIsAlias($path !== null);
     }
 
     /**
@@ -201,7 +228,10 @@ class Route extends Hook
     {
         if ($path === null) {
             $params = array_values($this->aliases);
-            return array_pop($params) ?? [];
+            if (count($params) === 0) {
+                return [];
+            }
+            return $params[0];
         }
 
         return $this->aliases[$path];

@@ -67,6 +67,8 @@ class RouteTest extends TestCase
             $aliases
         );
 
+        $this->assertEquals('/path1', $this->route->getAliasPath());
+        $this->assertEquals($path1Params, $this->route->getAliasParams());
         $this->assertEquals($path1Params, $this->route->getAliasParams('/path1'));
         $this->assertEquals($path2Params, $this->route->getAliasParams('/path2'));
     }
