@@ -28,18 +28,11 @@ class Route extends Hook
     protected string $path = '';
 
     /**
-     * Alias path
-     *
-     * @var string
-     */
-    protected string $aliasPath = '';
-
-    /**
-     * Alias Params
+     * Array of aliases where key is the path and value is an array of params
      *
      * @var array
      */
-    protected array $aliasParams = [];
+    protected array $aliases = [];
 
     /**
      * Is Alias Route?
@@ -73,7 +66,8 @@ class Route extends Hook
         $this->path($path);
         $this->method = $method;
         $this->order = self::$counter;
-        $this->action = function (): void {};
+        $this->action = function (): void {
+        };
     }
 
     /**
@@ -98,8 +92,7 @@ class Route extends Hook
      */
     public function alias(string $path, array $params = []): static
     {
-        $this->aliasPath = $path;
-        $this->aliasParams = $params;
+        $this->aliases[$path] = $params;
 
         return $this;
     }
@@ -173,23 +166,45 @@ class Route extends Hook
     }
 
     /**
+     * Get Aliases
+     *
+     * For backwards compatibility, returns the first alias path
+     * 
+     * @return array
+     */
+    public function getAliases(): array
+    {
+        return $this->aliases;
+    }
+
+    /**
      * Get Alias path
      *
+     * For backwards compatibility, returns the first alias path
+     * 
      * @return string
      */
     public function getAliasPath(): string
     {
-        return $this->aliasPath;
+        $paths = array_keys($this->aliases);
+        return array_pop($paths) ?? '';
     }
 
     /**
      * Get Alias Params
      *
+     * For backwards compatibility, returns the first alias params if no path passed
+     * 
      * @return array
      */
-    public function getAliasParams(): array
+    public function getAliasParams(string $path = null): array
     {
-        return $this->aliasParams;
+        if ($path === null) {
+            $params = array_values($this->aliases);
+            return array_pop($params) ?? [];
+        }
+
+        return $this->aliases[$path];
     }
 
     /**
