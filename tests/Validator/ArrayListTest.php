@@ -21,7 +21,7 @@ class ArrayListTest extends TestCase
     public function testCanValidateTextValues(): void
     {
         $arrayList = new ArrayList(new Text(100));
-        $this->assertTrue($arrayList->isArray(), true);
+        $this->assertTrue($arrayList->isArray(), 'true');
         $this->assertTrue($arrayList->isValid([0 => 'string', 1 => 'string']));
         $this->assertTrue($arrayList->isValid(['string', 'string']));
         $this->assertFalse($arrayList->isValid(['string', 'string', 3]));
@@ -35,7 +35,7 @@ class ArrayListTest extends TestCase
     {
         $arrayList = new ArrayList(new Numeric());
         $this->assertTrue($arrayList->isValid([1, 2, 3]));
-        $this->assertFalse($arrayList->isValid(1, '2', 3));
+        $this->assertFalse($arrayList->isValid(1));
         $this->assertFalse($arrayList->isValid('string'));
         $this->assertEquals(\Utopia\Validator::TYPE_MIXED, $arrayList->getType());
         $this->assertInstanceOf(Numeric::class, $arrayList->getValidator());

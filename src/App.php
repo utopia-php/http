@@ -757,10 +757,8 @@ class App
      * @param string $key
      * @param array $param
      * @param mixed $value
-     * @param array $resources
      *
      * @throws Exception
-     *
      * @return void
      */
     protected function validate(string $key, array $param, mixed $value): void

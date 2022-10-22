@@ -140,7 +140,7 @@ class Range extends Numeric
                 break;
             case self::TYPE_FLOAT:
                 $value = $value + 0;
-                if(!is_float($value) && !is_int($value)) {
+                if(!is_float($value) && is_int($value)) {
                     return false;
                 }
                 break;

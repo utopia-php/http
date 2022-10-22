@@ -21,7 +21,8 @@ App::get('/')
 App::get('/chunked')
     ->inject('response')
     ->action(function ($response) {
-        /** @var Utopia/Response $response */
+        /** @var Utopia /Response $response
+         * @phpstan-ignore-next-line */
         foreach (["Hello ", "World!"] as $key => $word) {
             $response->chunk($word, $key == 1);
         }
@@ -30,7 +31,8 @@ App::get('/chunked')
 App::get('/redirect')
     ->inject('response')
     ->action(function($response) {
-        /** @var Utopia/Response $response */
+        /** @var Utopia /Response $response
+         * @phpstan-ignore-next-line */
         $response->redirect('/');
     });
 
