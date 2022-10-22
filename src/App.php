@@ -590,7 +590,7 @@ class App
                         $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error', 0, $e);
+                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                     }
                 }
             }
