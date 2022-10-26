@@ -8,8 +8,6 @@ use Utopia\Validator;
  * Wildcard
  *
  * Does not perform any validation. Always returns valid
- *
- * @package Utopia\Validator
  */
 class Wildcard extends Validator
 {
@@ -30,7 +28,7 @@ class Wildcard extends Validator
      *
      * Validation will always pass irrespective of input
      *
-     * @param  mixed $value
+     * @param  mixed  $value
      * @return bool
      */
     public function isValid($value): bool

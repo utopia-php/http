@@ -8,12 +8,12 @@ class ViewTest extends TestCase
 {
     protected ?View $view;
 
-    public function setUp():void
+    public function setUp(): void
     {
-        $this->view = new View(__DIR__ . '/mocks/View/template.phtml');
+        $this->view = new View(__DIR__.'/mocks/View/template.phtml');
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->view = null;
     }
@@ -67,8 +67,7 @@ class ViewTest extends TestCase
             $this->view->setRendered(false);
             $this->view->setPath('just-a-broken-string.phtml');
             $this->view->render();
-        }
-        catch(\Exception $e) {
+        } catch(\Exception $e) {
             return;
         }
 

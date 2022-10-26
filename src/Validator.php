@@ -4,13 +4,18 @@ namespace Utopia;
 
 abstract class Validator
 {
-
     const TYPE_BOOLEAN = 'boolean';
+
     const TYPE_INTEGER = 'integer';
+
     const TYPE_FLOAT = 'double'; /* gettype() returns 'double' for historical reasons */
+
     const TYPE_STRING = 'string';
+
     const TYPE_ARRAY = 'array';
+
     const TYPE_OBJECT = 'object';
+
     const TYPE_MIXED = 'mixed';
 
     /**
@@ -23,7 +28,7 @@ abstract class Validator
     abstract public function getDescription(): string;
 
     /**
-     * Is array 
+     * Is array
      *
      * Returns true if an array or false if not.
      *
@@ -36,7 +41,7 @@ abstract class Validator
      *
      * Returns true if valid or false if not.
      *
-     * @param  mixed $value
+     * @param  mixed  $value
      * @return bool
      */
     abstract public function isValid($value): bool;

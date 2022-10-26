@@ -8,8 +8,6 @@ use Utopia\Validator;
  * WhiteList
  *
  * Checks if a variable is inside predefined white list.
- *
- * @package Utopia\Validator
  */
 class WhiteList extends Validator
 {
@@ -33,17 +31,17 @@ class WhiteList extends Validator
      *
      * Sets a white list array and strict mode.
      *
-     * @param array $list
-     * @param bool  $strict disable type check and be case insensetive
-     * @param string $type of $list items
+     * @param  array  $list
+     * @param  bool  $strict disable type check and be case insensetive
+     * @param  string  $type of $list items
      */
     public function __construct(array $list, bool $strict = false, string $type = self::TYPE_STRING)
     {
-        $this->list     = $list;
-        $this->strict   = $strict;
-        $this->type     = $type;
+        $this->list = $list;
+        $this->strict = $strict;
+        $this->type = $type;
 
-        if (!$this->strict) {
+        if (! $this->strict) {
             foreach ($this->list as $key => &$value) {
                 $this->list[$key] = \strtolower($value);
             }
@@ -69,7 +67,7 @@ class WhiteList extends Validator
      */
     public function getDescription(): string
     {
-        return 'Value must be one of (' . \implode(', ', $this->list) . ')';
+        return 'Value must be one of ('.\implode(', ', $this->list).')';
     }
 
     /**
@@ -101,7 +99,7 @@ class WhiteList extends Validator
      *
      * Validation will pass if $value is in the white list array.
      *
-     * @param  mixed $value
+     * @param  mixed  $value
      * @return bool
      */
     public function isValid(mixed $value): bool
@@ -112,7 +110,7 @@ class WhiteList extends Validator
 
         $value = ($this->strict) ? $value : \strtolower($value);
 
-        if (!\in_array($value, $this->list, $this->strict)) {
+        if (! \in_array($value, $this->list, $this->strict)) {
             return false;
         }
 
