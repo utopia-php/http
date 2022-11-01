@@ -564,7 +564,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        var_dump($result);
+        // var_dump($result);
 
         $this->assertEquals($expected, $result);
     }
