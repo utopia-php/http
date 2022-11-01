@@ -318,7 +318,6 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        // var_dump($result);
         $this->assertEquals('(init)-x-def-(shutdown)', $result);
 
         // Default Params
@@ -335,7 +334,6 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        // var_dump($result);
         $this->assertEquals('x-def', $result);
     }
 
@@ -563,8 +561,6 @@ class AppTest extends TestCase
         $this->app->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
-
-        // var_dump($result);
 
         $this->assertEquals($expected, $result);
     }
