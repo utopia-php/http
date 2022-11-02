@@ -107,6 +107,14 @@ class App
     protected ?Route $route = null;
 
     /**
+     * Wildcard route
+     * A route that get's executed if no route is matched
+     *
+     * @var Route|null
+     */
+    protected static ?Route $wildcardRoute;
+
+    /**
      * Matches
      *
      * Parameters matched from URL regex
@@ -188,6 +196,19 @@ class App
     public static function delete(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_DELETE, $url);
+    }
+
+    /**
+     * Wildcard
+     *
+     * Add Wildcard route
+     *
+     * @return Route
+     */
+    public static function wildcard(): Route
+    {
+        self::$wildcardRoute = new Route('', '');
+        return self::$wildcardRoute;
     }
 
     /**
@@ -697,6 +718,12 @@ class App
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
+        }
+
+        if(null === $route && null !== self::$wildcardRoute) {
+            $route = self::$wildcardRoute;
+            $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $route->path($path);
         }
 
         if (null !== $route) {

@@ -564,4 +564,29 @@ class AppTest extends TestCase
 
         $this->assertEquals($expected, $result);
     }
+
+    public function testWildcardRoute(): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $uri = $_SERVER['REQUEST_URI'] ?? null;
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/path';
+
+        App::wildcard()
+            ->inject('response')
+            ->action(function ($response) {
+                $response->send('HELLO');
+            });
+
+        \ob_start();
+        @$this->app->run(new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $_SERVER['REQUEST_METHOD'] = $method;
+        $_SERVER['REQUEST_URI'] = $uri;
+
+        $this->assertEquals('HELLO', $result);
+    }
 }
