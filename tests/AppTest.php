@@ -571,7 +571,7 @@ class AppTest extends TestCase
         $uri = $_SERVER['REQUEST_URI'] ?? null;
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/path';
+        $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         App::wildcard()
             ->inject('response')

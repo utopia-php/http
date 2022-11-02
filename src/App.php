@@ -108,11 +108,11 @@ class App
 
     /**
      * Wildcard route
-     * A route that get's executed if no route is matched
+     * If set, this get's executed if no other route is matched
      *
      * @var Route|null
      */
-    protected static ?Route $wildcardRoute;
+    protected static ?Route $wildcardRoute = null;
 
     /**
      * Matches
