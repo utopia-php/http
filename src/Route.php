@@ -173,7 +173,7 @@ class Route extends Hook
      * Get Aliases
      *
      * Returns an array where the keys are paths and values are params
-     * 
+     *
      * @return array
      */
     public function getAliases(): array
@@ -185,7 +185,7 @@ class Route extends Hook
      * Get Alias path
      *
      * For backwards compatibility, returns the first alias path
-     * 
+     *
      * @return string
      */
     public function getAliasPath(): string
@@ -198,6 +198,7 @@ class Route extends Hook
         if (count($paths) === 0) {
             return '';
         }
+
         return $paths[0];
     }
 
@@ -205,7 +206,7 @@ class Route extends Hook
      * Set Alias path
      *
      * For backwards compatibility, returns the first alias path
-     * 
+     *
      * @return void
      */
     public function setAliasPath(?string $path): void
@@ -218,7 +219,7 @@ class Route extends Hook
      * Get Alias Params
      *
      * For backwards compatibility, returns the first alias params if no path passed
-     * 
+     *
      * @return array
      */
     public function getAliasParams(string $path = null): array
@@ -228,6 +229,7 @@ class Route extends Hook
             if (count($params) === 0) {
                 return [];
             }
+
             return $params[0];
         }
 

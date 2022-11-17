@@ -216,6 +216,7 @@ class App
     public static function wildcard(): Route
     {
         self::$wildcardRoute = new Route('', '');
+
         return self::$wildcardRoute;
     }
 
@@ -463,8 +464,8 @@ class App
      */
     public static function addRoute(string $method, string $url): Route
     {
-        if (!array_key_exists($method, self::$routes)) {
-            throw new Exception("Invalid Request Method");
+        if (! array_key_exists($method, self::$routes)) {
+            throw new Exception('Invalid Request Method');
         }
         $route = new Route($method, $url);
 
@@ -729,7 +730,7 @@ class App
             $response->disablePayload();
         }
 
-        if(null === $route && null !== self::$wildcardRoute) {
+        if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
@@ -804,8 +805,8 @@ class App
             if (! $validator instanceof Validator) { // is the validator object an instance of the Validator class
                 throw new Exception('Validator object is not an instance of the Validator class', 500);
             }
-            if (!$validator->isValid($value)) {
-                throw new Exception('Invalid ' . $key . ': ' . $validator->getDescription(), 400);
+            if (! $validator->isValid($value)) {
+                throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
             }
         } elseif (! $param['optional']) {
             throw new Exception('Param "'.$key.'" is not optional.', 400);
@@ -825,11 +826,11 @@ class App
         self::$options = [];
         self::$sorted = false;
         self::$routes = [
-            self::REQUEST_METHOD_GET       => [],
-            self::REQUEST_METHOD_POST      => [],
-            self::REQUEST_METHOD_PUT       => [],
-            self::REQUEST_METHOD_PATCH     => [],
-            self::REQUEST_METHOD_DELETE    => [],
+            self::REQUEST_METHOD_GET => [],
+            self::REQUEST_METHOD_POST => [],
+            self::REQUEST_METHOD_PUT => [],
+            self::REQUEST_METHOD_PATCH => [],
+            self::REQUEST_METHOD_DELETE => [],
         ];
     }
 }
