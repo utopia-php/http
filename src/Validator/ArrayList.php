@@ -8,6 +8,8 @@ use Utopia\Validator;
  * ArrayList
  *
  * Validate that an variable is a valid array value and each element passes given validation
+ *
+ * @package Utopia\Validator
  */
 class ArrayList extends Validator
 {
@@ -26,8 +28,8 @@ class ArrayList extends Validator
      *
      * Pass a validator that must be applied to each element in this array
      *
-     * @param  Validator  $validator
-     * @param  int  $length
+     * @param Validator $validator
+     * @param int $length
      */
     public function __construct(Validator $validator, int $length = 0)
     {
@@ -44,7 +46,7 @@ class ArrayList extends Validator
      */
     public function getDescription(): string
     {
-        return 'Value must a valid array and '.$this->validator->getDescription();
+        return 'Value must a valid array and ' . $this->validator->getDescription();
     }
 
     /**
@@ -86,12 +88,12 @@ class ArrayList extends Validator
      *
      * Validation will pass when $value is valid array and validator is valid.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid(mixed $value): bool
     {
-        if (! \is_array($value)) {
+        if (!\is_array($value)) {
             return false;
         }
 
@@ -100,7 +102,7 @@ class ArrayList extends Validator
         }
 
         foreach ($value as $element) {
-            if (! $this->validator->isValid($element)) {
+            if (!$this->validator->isValid($element)) {
                 return false;
             }
         }

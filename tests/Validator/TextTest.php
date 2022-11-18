@@ -13,8 +13,8 @@ class TextTest extends TestCase
         $this->assertTrue($validator->isValid('7'));
         $this->assertTrue($validator->isValid('7.9'));
         $this->assertTrue($validator->isValid('["seven"]'));
-        $this->assertFalse($validator->isValid(['seven']));
-        $this->assertFalse($validator->isValid(['seven', 8, 9.0]));
+        $this->assertFalse($validator->isValid(["seven"]));
+        $this->assertFalse($validator->isValid(["seven", 8, 9.0]));
         $this->assertFalse($validator->isValid(false));
         $this->assertFalse($validator->isArray());
         $this->assertEquals(\Utopia\Validator::TYPE_STRING, $validator->getType());
@@ -64,7 +64,7 @@ class TextTest extends TestCase
         $validator = new Text(100, [
             ...Text::ALPHABET_LOWER,
             ...Text::ALPHABET_UPPER,
-            ...Text::NUMBERS,
+            ...Text::NUMBERS
         ]);
 
         $this->assertFalse($validator->isArray());

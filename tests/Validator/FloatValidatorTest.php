@@ -20,7 +20,6 @@ class FloatValidatorTest extends TestCase
         $this->assertFalse($validator->isArray());
         $this->assertEquals(\Utopia\Validator::TYPE_FLOAT, $validator->getType());
     }
-
     public function testCanValidateLoosely(): void
     {
         $validator = new FloatValidator(true);

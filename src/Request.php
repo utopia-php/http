@@ -8,21 +8,13 @@ class Request
      * HTTP methods
      */
     const METHOD_OPTIONS = 'OPTIONS';
-
-    const METHOD_GET = 'GET';
-
-    const METHOD_HEAD = 'HEAD';
-
-    const METHOD_POST = 'POST';
-
-    const METHOD_PATCH = 'PATCH';
-
-    const METHOD_PUT = 'PUT';
-
-    const METHOD_DELETE = 'DELETE';
-
-    const METHOD_TRACE = 'TRACE';
-
+    const METHOD_GET     = 'GET';
+    const METHOD_HEAD    = 'HEAD';
+    const METHOD_POST    = 'POST';
+    const METHOD_PATCH   = 'PATCH';
+    const METHOD_PUT     = 'PUT';
+    const METHOD_DELETE  = 'DELETE';
+    const METHOD_TRACE   = 'TRACE';
     const METHOD_CONNECT = 'CONNECT';
 
     /**
@@ -58,7 +50,7 @@ class Request
      *
      * Get param by current method name
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  mixed  $default
      * @return mixed
      */
@@ -86,7 +78,7 @@ class Request
      *
      * Method for querying HTTP GET request parameters. If $key is not found $default value will be returned.
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  mixed  $default
      * @return mixed
      */
@@ -102,7 +94,7 @@ class Request
      *
      * Method for querying HTTP request payload parameters. If $key is not found $default value will be returned.
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  mixed  $default
      * @return mixed
      */
@@ -132,7 +124,7 @@ class Request
      *
      * Method for querying server parameters. If $key is not found $default value will be returned.
      *
-     * @param  string  $key
+     * @param  string $key
      * @param  string|null  $default
      * @return string|null
      */
@@ -146,8 +138,8 @@ class Request
      *
      * Method for setting server parameters.
      *
-     * @param  string  $key
-     * @param  string  $value
+     * @param string $key
+     * @param string $value
      * @return static
      */
     public function setServer(string $key, string $value): static
@@ -196,7 +188,7 @@ class Request
      */
     public function getPort(): string
     {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
+        return (string) \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
     }
 
     /**
@@ -208,7 +200,7 @@ class Request
      */
     public function getHostname(): string
     {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
+        return (string) \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
     }
 
     /**
@@ -228,7 +220,7 @@ class Request
      *
      * Set HTTP request method
      *
-     * @param  string  $method
+     * @param string $method
      * @return static
      */
     public function setMethod(string $method): static
@@ -255,7 +247,7 @@ class Request
      *
      * Return HTTP request path
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return static
      */
     public function setURI(string $uri): static
@@ -270,7 +262,7 @@ class Request
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.
      *
-     * @param  string  $key
+     * @param  string $key
      * @return array
      */
     public function getFiles(string $key): array
@@ -283,7 +275,8 @@ class Request
      *
      * Return HTTP referer header
      *
-     * @param  string  $default
+     * @param string $default
+     *
      * @return string
      */
     public function getReferer(string $default = ''): string
@@ -296,7 +289,8 @@ class Request
      *
      * Return HTTP origin header
      *
-     * @param  string  $default
+     * @param string $default
+     *
      * @return string
      */
     public function getOrigin(string $default = ''): string
@@ -309,7 +303,8 @@ class Request
      *
      * Return HTTP user agent header
      *
-     * @param  string  $default
+     * @param string $default
+     *
      * @return string
      */
     public function getUserAgent(string $default = ''): string
@@ -322,7 +317,8 @@ class Request
      *
      * Return HTTP accept header
      *
-     * @param  string  $default
+     * @param string $default
+     *
      * @return string
      */
     public function getAccept(string $default = ''): string
@@ -335,8 +331,8 @@ class Request
      *
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
      *
-     * @param  string  $key
-     * @param  string  $default
+     * @param string $key
+     * @param string $default
      * @return string
      */
     public function getCookie(string $key, string $default = ''): string
@@ -349,8 +345,8 @@ class Request
      *
      * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
      *
-     * @param  string  $key
-     * @param  string  $default
+     * @param string $key
+     * @param string $default
      * @return string
      */
     public function getHeader(string $key, string $default = ''): string
@@ -365,14 +361,14 @@ class Request
      *
      * Method for adding HTTP header parameters.
      *
-     * @param  string  $key
-     * @param  string  $value
+     * @param string $key
+     * @param string $value
      * @return static
      */
     public function addHeader(string $key, string $value): static
     {
         $this->headers[$key] = $value;
-
+        
         return $this;
     }
 
@@ -381,7 +377,7 @@ class Request
      *
      * Method for removing HTTP header parameters.
      *
-     * @param  string  $key
+     * @param string $key
      * @return static
      */
     public function removeHeader(string $key): static
@@ -415,7 +411,7 @@ class Request
     public function getContentRangeStart(): ?int
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['start'];
         } else {
             return null;
@@ -432,7 +428,7 @@ class Request
     public function getContentRangeEnd(): ?int
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['end'];
         } else {
             return null;
@@ -449,7 +445,7 @@ class Request
     public function getContentRangeSize(): ?int
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['size'];
         } else {
             return null;
@@ -466,13 +462,12 @@ class Request
     public function getContentRangeUnit(): ?string
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['unit'];
         } else {
             return null;
         }
     }
-
     /**
      * Get Range Start
      *
@@ -483,10 +478,9 @@ class Request
     public function getRangeStart(): ?int
     {
         $data = $this->parseRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['start'];
         }
-
         return null;
     }
 
@@ -500,10 +494,9 @@ class Request
     public function getRangeEnd(): ?int
     {
         $data = $this->parseRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['end'];
         }
-
         return null;
     }
 
@@ -517,36 +510,35 @@ class Request
     public function getRangeUnit(): ?string
     {
         $data = $this->parseRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['unit'];
         }
-
         return null;
     }
 
     /**
      * Set query string parameters
      *
-     * @param  array  $params
+     * @param array $params
      * @return static
      */
     public function setQueryString(array $params): static
     {
         $this->queryString = $params;
-
+        
         return $this;
     }
 
     /**
      * Set payload parameters
      *
-     * @param  array  $params
+     * @param array $params
      * @return static
      */
     public function setPayload(array $params): static
     {
         $this->payload = $params;
-
+        
         return $this;
     }
 
@@ -563,12 +555,12 @@ class Request
             $this->queryString = $_GET;
         }
         if (null === $this->payload) {
-            $contentType = $this->getHeader('content-type');
+            $contentType    = $this->getHeader('content-type');
 
             // Get content-type without the charset
-            $length = \strpos($contentType, ';');
-            $length = (empty($length)) ? \strlen($contentType) : $length;
-            $contentType = \substr($contentType, 0, $length);
+            $length         = \strpos($contentType, ';');
+            $length         = (empty($length)) ? \strlen($contentType) : $length;
+            $contentType    = \substr($contentType, 0, $length);
 
             $this->rawPayload = \file_get_contents('php://input');
 
@@ -609,7 +601,7 @@ class Request
              * Fallback for older PHP versions
              * that do not support generateHeaders
              */
-            if (! \function_exists('getallheaders')) {
+            if (!\function_exists('getallheaders')) {
                 $headers = [];
 
                 foreach ($_SERVER as $name => $value) {
@@ -640,7 +632,7 @@ class Request
     {
         $contentRange = $this->getHeader('content-range', '');
         $data = [];
-        if (! empty($contentRange)) {
+        if (!empty($contentRange)) {
             $contentRange = explode(' ', $contentRange);
             if (count($contentRange) !== 2) {
                 return null;
@@ -657,7 +649,7 @@ class Request
                 return null;
             }
 
-            if (! ctype_digit($rangeData[1])) {
+            if (!ctype_digit($rangeData[1])) {
                 return null;
             }
 
@@ -667,7 +659,7 @@ class Request
                 return null;
             }
 
-            if (! ctype_digit($parts[0]) || ! ctype_digit($parts[1])) {
+            if (!ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
                 return null;
             }
 
@@ -676,10 +668,8 @@ class Request
             if ($data['start'] > $data['end'] || $data['end'] > $data['size']) {
                 return null;
             }
-
             return $data;
         }
-
         return null;
     }
 
@@ -709,16 +699,16 @@ class Request
             return null;
         }
 
-        if (! ctype_digit($ranges[0])) {
+        if (!ctype_digit($ranges[0])) {
             return null;
         }
 
         $data['start'] = (int) $ranges[0];
 
         if (strlen($ranges[1]) === 0) {
-            $data['end'] = null;
+            $data['end'] =  null;
         } else {
-            if (! ctype_digit($ranges[1])) {
+            if (!ctype_digit($ranges[1])) {
                 return null;
             }
             $data['end'] = (int) $ranges[1];
@@ -727,7 +717,6 @@ class Request
         if ($data['end'] !== null && $data['start'] >= $data['end']) {
             return null;
         }
-
         return $data;
     }
 }

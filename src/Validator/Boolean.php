@@ -8,6 +8,8 @@ use Utopia\Validator;
  * Bool
  *
  * Validate that an variable is a boolean value
+ *
+ * @package Utopia\Validator
  */
 class Boolean extends Validator
 {
@@ -20,7 +22,7 @@ class Boolean extends Validator
      * Pass true to accept true and false strings and integers 0 and 1 as valid boolean values
      * This option is good for validating query string params.
      *
-     * @param  bool  $loose
+     * @param bool $loose
      */
     public function __construct(bool $loose = false)
     {
@@ -68,7 +70,7 @@ class Boolean extends Validator
      *
      * Validation will pass when $value has a boolean value.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool

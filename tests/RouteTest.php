@@ -34,7 +34,7 @@ class RouteTest extends TestCase
         $this->assertEquals([], $this->route->getAliasParams());
 
         $params = [
-            'pathId' => 'hello',
+            'pathId' => 'hello'
         ];
         $this->route->alias('/path1', $params);
 

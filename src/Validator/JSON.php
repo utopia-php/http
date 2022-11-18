@@ -39,7 +39,7 @@ class JSON extends Validator
     }
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid(mixed $value): bool
@@ -50,8 +50,7 @@ class JSON extends Validator
 
         if (\is_string($value)) {
             \json_decode($value);
-
-            return \json_last_error() == JSON_ERROR_NONE;
+            return (\json_last_error() == JSON_ERROR_NONE);
         }
 
         return false;

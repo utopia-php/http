@@ -9,9 +9,7 @@ use Utopia\Validator\Text;
 class AppTest extends TestCase
 {
     protected ?App $app;
-
     protected ?string $method;
-
     protected ?string $uri;
 
     public function setUp(): void
@@ -103,7 +101,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y, $rand) {
-                echo $x.'-'.$y.'-'.$rand;
+                echo $x . '-' . $y . '-' . $rand;
             });
 
         \ob_start();
@@ -111,7 +109,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-def-y-def-'.$resource, $result);
+        $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
     public function testCanAddRoute(): void
@@ -136,7 +134,7 @@ class AppTest extends TestCase
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error: '.$error->getMessage();
+                echo 'error: ' . $error->getMessage();
             });
 
         // Default Params
@@ -147,7 +145,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-'.$y;
+                echo $x . '-' . $y;
             });
 
         \ob_start();
@@ -175,12 +173,11 @@ class AppTest extends TestCase
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->inject('rand')
             ->param('z', 'z-def', function ($rand) {
-                echo $rand.'-';
-
+                echo $rand . '-';
                 return new Text(200);
             }, 'z param', false, ['rand'])
             ->action(function ($x, $y, $z, $rand) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         \ob_start();
@@ -190,7 +187,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals($resource.'-param-x-param-y', $result);
+        $this->assertEquals($resource . '-param-x-param-y', $result);
 
         // With Error
 
@@ -200,7 +197,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(1), 'x param', false)
             ->param('y', 'y-def', new Text(1), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         \ob_start();
@@ -218,7 +215,7 @@ class AppTest extends TestCase
             ->init()
             ->inject('rand')
             ->action(function ($rand) {
-                echo 'init-'.$rand.'-';
+                echo 'init-' . $rand . '-';
             });
 
         $this->app
@@ -262,7 +259,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         $homepage = new Route('GET', '/path');
@@ -272,7 +269,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'*', $y;
+                echo $x . '*', $y;
             });
 
         \ob_start();
@@ -282,7 +279,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+        $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         \ob_start();
         $request = new UtopiaRequestTest();
@@ -291,7 +288,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+        $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function testCanAddAndExecuteHooks()
@@ -348,14 +345,14 @@ class AppTest extends TestCase
             ->init()
             ->param('y', '', new Text(5), 'y param', false)
             ->action(function ($y) {
-                echo '(init)-'.$y.'-';
+                echo '(init)-' . $y . '-';
             });
 
         $this->app
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error-'.$error->getMessage();
+                echo 'error-' . $error->getMessage();
             });
 
         $this->app
@@ -378,6 +375,7 @@ class AppTest extends TestCase
         \ob_end_clean();
 
         $this->assertEquals('error-Param "y" is not optional.', $result);
+
 
         \ob_start();
         $_GET['y'] = 'y-def';
@@ -419,7 +417,7 @@ class AppTest extends TestCase
             // "/a/b/c" needs to be first
             '3 separators' => [$route7, App::REQUEST_METHOD_GET, '/a/b/c'],
             '2 separators' => [$route8, App::REQUEST_METHOD_GET, '/a/b'],
-            '1 separators' => [$route9, App::REQUEST_METHOD_GET, '/a'],
+            '1 separators' => [$route9, App::REQUEST_METHOD_GET, '/a']
         ];
     }
 
@@ -497,13 +495,13 @@ class AppTest extends TestCase
         // Test head requests
         App::get('/storage/buckets/:bucketId/files/:fileId')
             ->alias('/storage/files/:fileId', [
-                'bucketId' => 'default',
+                "bucketId" => "default",
             ])
             ->param('bucketId', 'bucketid', new Text(100), 'My id', false)
             ->param('fileId', 'fileId', new Text(100), 'My id', false)
             ->inject('response')
             ->action(function ($bucketId, $fileId, $response) {
-                $response->send('HELLO');
+                $response->send("HELLO");
             });
 
         $_SERVER['REQUEST_METHOD'] = 'HEAD';

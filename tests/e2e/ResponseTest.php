@@ -18,7 +18,7 @@ class ResponseTest extends TestCase
     }
 
     /**
-     * @var Client
+     * @var Client $client
      */
     protected $client;
 

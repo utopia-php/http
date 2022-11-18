@@ -8,6 +8,8 @@ use Utopia\Validator;
  * Numeric
  *
  * Validate that an variable is numeric
+ *
+ * @package Utopia\Validator
  */
 class Numeric extends Validator
 {
@@ -52,12 +54,12 @@ class Numeric extends Validator
      *
      * Validation will pass when $value is numeric.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid(mixed $value): bool
     {
-        if (! \is_numeric($value)) {
+        if (!\is_numeric($value)) {
             return false;
         }
 

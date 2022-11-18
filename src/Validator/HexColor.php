@@ -39,7 +39,7 @@ class HexColor extends Validator
     }
 
     /**
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid(mixed $value): bool

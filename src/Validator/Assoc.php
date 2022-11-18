@@ -8,6 +8,8 @@ use Utopia\Validator;
  * ArrayList
  *
  * Validate that an variable is a valid array value and each element passes given validation
+ *
+ * @package Utopia\Validator
  */
 class Assoc extends Validator
 {
@@ -52,19 +54,19 @@ class Assoc extends Validator
      *
      * Validation will pass when $value is valid assoc array.
      *
-     * @param  mixed  $value
+     * @param mixed $value
      * @return bool
      */
     public function isValid($value): bool
     {
-        if (! \is_array($value)) {
+        if (!\is_array($value)) {
             return false;
         }
 
         $jsonString = \json_encode($value);
         $jsonStringSize = \strlen($jsonString);
 
-        if ($jsonStringSize > 65535) {
+        if($jsonStringSize > 65535) {
             return false;
         }
 

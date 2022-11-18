@@ -24,7 +24,6 @@ class BooleanTest extends TestCase
         $this->assertFalse($boolean->isArray());
         $this->assertEquals($boolean->getType(), \Utopia\Validator::TYPE_BOOLEAN);
     }
-
     public function testCanValidateLoosely()
     {
         $boolean = new Boolean(true);

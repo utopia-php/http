@@ -6,6 +6,8 @@ namespace Utopia\Validator;
  * Range
  *
  * Validates that an number is in range.
+ *
+ * @package Utopia\Validator
  */
 class Range extends Numeric
 {
@@ -25,20 +27,18 @@ class Range extends Numeric
     protected string $format;
 
     /**
-     * @param  int|float  $min
-     * @param  int|float  $max
-     * @param  string  $format
+     * @param int|float $min
+     * @param int|float $max
+     * @param string $format
      */
     public function __construct(int|float $min, int|float $max, string $format = self::TYPE_INTEGER)
     {
         $this->min = $min;
         $this->max = $max;
         $this->format = $format;
-    }
-
+}
     /**
      * Get Range Minimum Value
-     *
      * @return int|float
      */
     public function getMin(): int|float
@@ -48,7 +48,6 @@ class Range extends Numeric
 
     /**
      * Get Range Maximum Value
-     *
      * @return int|float
      */
     public function getMax(): int|float
@@ -58,7 +57,6 @@ class Range extends Numeric
 
     /**
      * Get Range Format
-     *
      * @return string
      */
     public function getFormat(): string
@@ -75,7 +73,7 @@ class Range extends Numeric
      */
     public function getDescription(): string
     {
-        return 'Value must be a valid range between '.\number_format($this->min).' and '.\number_format($this->max);
+        return 'Value must be a valid range between ' . \number_format($this->min) . ' and ' . \number_format($this->max);
     }
 
     /**
@@ -109,12 +107,12 @@ class Range extends Numeric
      * Not strict, considers any valid integer to be a valid float
      * Considers infinity to be a valid integer
      *
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return bool
      */
     public function isValid(mixed $value): bool
     {
-        if (! parent::isValid($value)) {
+        if (!parent::isValid($value)) {
             return false;
         }
 
@@ -126,13 +124,13 @@ class Range extends Numeric
                     break; // move to check if value is within range
                 }
                 $value = $value + 0;
-                if (! is_int($value)) {
+                if(!is_int($value)) {
                     return false;
                 }
                 break;
             case self::TYPE_FLOAT:
                 $value = $value + 0;
-                if (! is_float($value) && ! is_int($value)) {
+                if(!is_float($value) && !is_int($value)) {
                     return false;
                 }
                 break;

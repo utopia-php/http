@@ -13,13 +13,13 @@ class UtopiaRequestTest extends UtopiaRequest
      *
      * Get param by current method name
      *
-     * @param  string  $key
-     * @param  mixed  $default
+     * @param string $key
+     * @param mixed $default
      * @return mixed
      */
     public function getParam(string $key, $default = null): mixed
     {
-        if ($this::_hasParams() && \in_array($key, $this::_getParams())) {
+        if($this::_hasParams() && \in_array($key, $this::_getParams())) {
             return $this::_getParams()[$key];
         }
 
@@ -37,17 +37,19 @@ class UtopiaRequestTest extends UtopiaRequest
     {
         $paramsArray = [];
 
-        if ($this::_hasParams()) {
+        if($this::_hasParams()) {
             $paramsArray = $this::_getParams();
         }
 
         return \array_merge($paramsArray, parent::getParams());
     }
 
+
     /**
      * Function to set a response filter
      *
-     * @param  ?array  $params
+     * @param ?array $params
+     *
      * @return void
      */
     public static function _setParams(?array $params)

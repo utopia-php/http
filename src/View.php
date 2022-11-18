@@ -7,8 +7,7 @@ use Exception;
 class View
 {
     const FILTER_ESCAPE = 'escape';
-
-    const FILTER_NL2P = 'nl2p';
+    const FILTER_NL2P   = 'nl2p';
 
     /**
      * @var self|null
@@ -40,7 +39,7 @@ class View
      *
      * You can optionally initialize the View object with a template path, although this can also be set later using the $this->setPath($path) method
      *
-     * @param  string  $path
+     * @param string $path
      *
      * @throws Exception
      */
@@ -57,14 +56,15 @@ class View
 
                 foreach (\explode("\n\n", $value) as $line) {
                     if (\trim($line)) {
-                        $paragraphs .= '<p>'.$line.'</p>';
+                        $paragraphs .= '<p>' . $line . '</p>';
                     }
                 }
 
                 $paragraphs = \str_replace("\n", '<br />', $paragraphs);
 
                 return $paragraphs;
-            });
+            })
+        ;
     }
 
     /**
@@ -72,8 +72,8 @@ class View
      *
      * Assign a parameter by key
      *
-     * @param  string  $key
-     * @param  mixed  $value
+     * @param string $key
+     * @param mixed $value
      *
      * @throws Exception
      */
@@ -91,12 +91,11 @@ class View
     /**
      * Set parent View object conatining this object
      *
-     * @param  self  $view
+     * @param self $view
      */
     public function setParent(self $view): static
     {
         $this->parent = $view;
-
         return $this;
     }
 
@@ -107,7 +106,7 @@ class View
      */
     public function getParent(): ?self
     {
-        if (! empty($this->parent)) {
+        if (!empty($this->parent)) {
             return $this->parent;
         }
 
@@ -119,14 +118,15 @@ class View
      *
      * Returns an assigned parameter by its key or $default if param key doesn't exists
      *
-     * @param  string  $path
-     * @param  mixed  $default (optional)
+     * @param string $path
+     * @param mixed $default (optional)
+     *
      * @return mixed
      */
     public function getParam(string $path, mixed $default = null): mixed
     {
-        $path = \explode('.', $path);
-        $temp = $this->params;
+        $path   = \explode('.', $path);
+        $temp   = $this->params;
 
         foreach ($path as $key) {
             $temp = (isset($temp[$key])) ? $temp[$key] : null;
@@ -146,7 +146,7 @@ class View
      *
      * Set object template path that will be used to render view output
      *
-     * @param  string  $path
+     * @param string $path
      *
      * @throws Exception
      */
@@ -162,7 +162,7 @@ class View
      *
      * By enabling rendered state to true, the object will not render its template and will return an empty string instead
      *
-     * @param  bool  $state
+     * @param bool $state
      */
     public function setRendered(bool $state = true): static
     {
@@ -186,39 +186,39 @@ class View
     /**
      * Add Filter
      *
-     * @param  string  $name
-     * @param  callable  $callback
+     * @param string $name
+     * @param callable $callback
      */
     public function addFilter(string $name, callable $callback): static
     {
         $this->filters[$name] = $callback;
-
         return $this;
     }
 
     /**
      * Output and filter value
      *
-     * @param  mixed  $value
-     * @param  string|array  $filter
+     * @param mixed $value
+     * @param string|array $filter
+     *
      * @return mixed
      *
      * @throws Exception
      */
     public function print(mixed $value, string|array $filter = ''): mixed
     {
-        if (! empty($filter)) {
+        if (!empty($filter)) {
             if (\is_array($filter)) {
                 foreach ($filter as $callback) {
-                    if (! isset($this->filters[$callback])) {
-                        throw new Exception('Filter "'.$callback.'" is not registered');
+                    if (!isset($this->filters[$callback])) {
+                        throw new Exception('Filter "' . $callback . '" is not registered');
                     }
 
                     $value = $this->filters[$callback]($value);
                 }
             } else {
-                if (! isset($this->filters[$filter])) {
-                    throw new Exception('Filter "'.$filter.'" is not registered');
+                if (!isset($this->filters[$filter])) {
+                    throw new Exception('Filter "' . $filter . '" is not registered');
                 }
 
                 $value = $this->filters[$filter]($value);
@@ -234,7 +234,8 @@ class View
      * Render view .phtml template file if template has not been set as rendered yet using $this->setRendered(true).
      * In case path is not readable throws Exception.
      *
-     * @param  bool  $minify
+     * @param bool $minify
+     *
      * @return string
      *
      * @throws Exception
@@ -253,10 +254,10 @@ class View
              *
              * @psalm-suppress UnresolvableInclude
              */
-            include $this->path;
+            include $this->path; 
         } else {
             \ob_end_clean();
-            throw new Exception('"'.$this->path.'" view template is not readable');
+            throw new Exception('"' . $this->path . '" view template is not readable');
         }
 
         $html = \ob_get_contents();
@@ -280,13 +281,13 @@ class View
             $search = [
                 '/\>[^\S ]+/s',  // strip whitespaces after tags, except space
                 '/[^\S ]+\</s',  // strip whitespaces before tags, except space
-                '/(\s)+/s',       // shorten multiple whitespace sequences
+                '/(\s)+/s'       // shorten multiple whitespace sequences
             ];
 
             $replace = [
                 '>',
                 '<',
-                '\\1',
+                '\\1'
             ];
 
             $html = \preg_replace($search, $replace, $html);
@@ -310,7 +311,8 @@ class View
      *
      * Exec child View components
      *
-     * @param  array|self  $view
+     * @param array|self $view
+     *
      * @return string
      *
      * @throws Exception
