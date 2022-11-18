@@ -291,7 +291,7 @@ class App
      *
      * @param  string  $key
      * @param  string|null  $default
-     * @return string|null
+     * @return non-empty-list<string>|null|scalar
      */
     public static function getEnv(string $key, string $default = null): ?string
     {
