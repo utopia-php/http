@@ -26,6 +26,12 @@ class RequestTest extends TestCase
 
         $this->assertEquals('value1', $this->request->getHeader('custom'));
         $this->assertEquals('value2', $this->request->getHeader('custom-new'));
+
+        $headers = $this->request->getHeaders();
+        $this->assertIsArray($headers);
+        $this->assertCount(2, $headers);
+        $this->assertEquals('value1', $headers['custom']);
+        $this->assertEquals('value2', $headers['custom-new']);
     }
 
     public function testCanAddHeaders()
