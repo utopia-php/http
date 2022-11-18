@@ -407,7 +407,7 @@ class AppTest extends TestCase
             // "/a/b/c" needs to be first
             '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
             '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '1 separators' => [App::REQUEST_METHOD_GET, '/a'],
+            '1 separators' => [App::REQUEST_METHOD_GET, '/a']
         ];
     }
 
@@ -530,7 +530,7 @@ class AppTest extends TestCase
             '/real/:param1' => ['/real/p1', 'p1'],
             '/alias' => ['/alias', 'default'],
             '/another/:param1' => ['/another/a', 'a'],
-            '/param2' => ['/param2', 'param2'],
+            '/param2' => ['/param2', 'param2']
         ];
     }
 
@@ -541,11 +541,11 @@ class AppTest extends TestCase
     {
         App::get('/real/:param1')
             ->alias('/alias', [
-                'param1' => 'default',
+                "param1" => "default",
             ])
             ->alias('/another/:param1')
             ->alias('/param2', [
-                'param1' => 'param2',
+                "param1" => "param2",
             ])
             ->param('param1', '', new Text(100), 'a param', false)
             ->inject('response')
