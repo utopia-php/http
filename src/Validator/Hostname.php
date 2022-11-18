@@ -2,7 +2,6 @@
 
 namespace Utopia\Validator;
 
-use Exception;
 use Utopia\Validator;
 
 class Hostname extends Validator
@@ -12,12 +11,12 @@ class Hostname extends Validator
      */
     protected array $allowList = [];
 
-    /** 
+    /**
      * Constructor
      *
      * Sets allowed hostname patterns
      *
-     * @param string[] $allowList
+     * @param  string[]  $allowList
      */
     public function __construct(array $allowList = [])
     {
@@ -57,13 +56,13 @@ class Hostname extends Validator
     }
 
     /**
-     * @param mixed $value
+     * @param  mixed  $value
      * @return bool
      */
     public function isValid(mixed $value): bool
     {
         // Validate proper format
-        if (!\is_string($value) || empty($value)) {
+        if (! \is_string($value) || empty($value)) {
             return false;
         }
 

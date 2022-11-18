@@ -8,8 +8,6 @@ use Utopia\Validator;
  * Float
  *
  * Validate that an variable is a float
- *
- * @package Utopia\Validator
  */
 class FloatValidator extends Validator
 {
@@ -22,7 +20,7 @@ class FloatValidator extends Validator
      * Pass true to accept float strings as valid float values
      * This option is good for validating query string params.
      *
-     * @param bool $loose
+     * @param  bool  $loose
      */
     public function __construct(bool $loose = false)
     {
@@ -70,18 +68,18 @@ class FloatValidator extends Validator
      *
      * Validation will pass when $value is float.
      *
-     * @param mixed $value
+     * @param  mixed  $value
      * @return bool
      */
     public function isValid(mixed $value): bool
     {
-        if($this->loose) {
-            if(!\is_numeric($value)) {
+        if ($this->loose) {
+            if (! \is_numeric($value)) {
                 return false;
             }
-            $value = $value+0;
+            $value = $value + 0;
         }
-        if (!\is_float($value) && !\is_int($value)) {
+        if (! \is_float($value) && ! \is_int($value)) {
             return false;
         }
 

@@ -2,8 +2,6 @@
 
 namespace Utopia;
 
-use Exception;
-
 class Route extends Hook
 {
     /**
@@ -43,6 +41,7 @@ class Route extends Hook
 
     /**
      * Is Alias Route?
+     *
      * @var bool
      */
     protected bool $isAlias = false;
@@ -63,8 +62,8 @@ class Route extends Hook
     protected bool $isActive = true;
 
     /**
-     * @param string $method
-     * @param string $path
+     * @param  string  $method
+     * @param  string  $path
      */
     public function __construct(string $method, string $path)
     {
@@ -80,7 +79,7 @@ class Route extends Hook
     /**
      * Add path
      *
-     * @param string $path
+     * @param  string  $path
      * @return static
      */
     public function path(string $path): static
@@ -93,8 +92,8 @@ class Route extends Hook
     /**
      * Add alias
      *
-     * @param string $path
-     * @param array $params
+     * @param  string  $path
+     * @param  array  $params
      * @return static
      */
     public function alias(string $path, array $params = []): static
@@ -107,7 +106,7 @@ class Route extends Hook
     /**
      * Set isActive
      *
-     * @param bool $isActive
+     * @param  bool  $isActive
      * @return void
      */
     public function setIsActive(bool $isActive): void
@@ -118,8 +117,7 @@ class Route extends Hook
     /**
      * Set isAlias
      *
-     * @param bool $isAlias
-     *
+     * @param  bool  $isAlias
      * @return void
      */
     public function setIsAlias(bool $isAlias): void
@@ -131,8 +129,7 @@ class Route extends Hook
      * Set hook status
      * When set false, hooks for this route will be skipped.
      *
-     * @param boolean $hook
-     *
+     * @param  bool  $hook
      * @return static
      */
     public function hook(bool $hook = true): static
@@ -176,7 +173,7 @@ class Route extends Hook
      * Get Aliases
      *
      * Returns an array where the keys are paths and values are params
-     * 
+     *
      * @return array
      */
     public function getAliases(): array
@@ -188,7 +185,7 @@ class Route extends Hook
      * Get Alias path
      *
      * For backwards compatibility, returns the first alias path
-     * 
+     *
      * @return string
      */
     public function getAliasPath(): string
@@ -201,6 +198,7 @@ class Route extends Hook
         if (count($paths) === 0) {
             return '';
         }
+
         return $paths[0];
     }
 
@@ -208,7 +206,7 @@ class Route extends Hook
      * Set Alias path
      *
      * For backwards compatibility, returns the first alias path
-     * 
+     *
      * @return void
      */
     public function setAliasPath(?string $path): void
@@ -221,7 +219,7 @@ class Route extends Hook
      * Get Alias Params
      *
      * For backwards compatibility, returns the first alias params if no path passed
-     * 
+     *
      * @return array
      */
     public function getAliasParams(string $path = null): array
@@ -231,6 +229,7 @@ class Route extends Hook
             if (count($params) === 0) {
                 return [];
             }
+
             return $params[0];
         }
 

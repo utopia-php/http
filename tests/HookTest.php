@@ -41,7 +41,7 @@ class HookTest extends TestCase
         $this->assertEquals(function () {
         }, $this->hook->getAction());
 
-        $this->hook->action(fn() => 'hello world');
+        $this->hook->action(fn () => 'hello world');
 
         $this->assertEquals('hello world', $this->hook->getAction()());
     }
@@ -78,7 +78,7 @@ class HookTest extends TestCase
 
         $values = [
             'x' => 'hello',
-            'y' => 'world'
+            'y' => 'world',
         ];
 
         $this->hook
@@ -93,7 +93,6 @@ class HookTest extends TestCase
         $this->assertEquals('hello', $this->hook->getParams()['x']['value']);
         $this->assertEquals('world', $this->hook->getParams()['y']['value']);
     }
-
 
     public function tearDown(): void
     {
