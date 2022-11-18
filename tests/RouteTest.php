@@ -42,37 +42,6 @@ class RouteTest extends TestCase
         $this->assertEquals($params, $this->route->getAliasParams());
     }
 
-    public function testCanSetAndGetAliases()
-    {
-        $this->assertEquals('', $this->route->getAliasPath());
-        $this->assertEquals([], $this->route->getAliasParams());
-
-        $path1Params = [
-            'pathId' => 'hello'
-        ];
-        $this->route->alias('/path1', $path1Params);
-
-        $path2Params = [
-            'anotherPathId' => 'world'
-        ];
-        $this->route->alias('/path2', $path2Params);
-
-        $aliases = $this->route->getAliases();
-
-        $this->assertEquals(
-            [
-                '/path1' => $path1Params,
-                '/path2' => $path2Params,
-            ],
-            $aliases
-        );
-
-        $this->assertEquals('/path1', $this->route->getAliasPath());
-        $this->assertEquals($path1Params, $this->route->getAliasParams());
-        $this->assertEquals($path1Params, $this->route->getAliasParams('/path1'));
-        $this->assertEquals($path2Params, $this->route->getAliasParams('/path2'));
-    }
-
     public function testCanSetAndGetDescription()
     {
         $this->assertEquals('', $this->route->getDesc());

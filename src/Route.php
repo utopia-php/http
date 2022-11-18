@@ -28,16 +28,16 @@ class Route extends Hook
     /**
      * Alias path
      *
-     * @var null|string
+     * @var string
      */
-    protected ?string $aliasPath = null;
+    protected string $aliasPath = '';
 
     /**
-     * Array of aliases where key is the path and value is an array of params
+     * Alias Params
      *
      * @var array
      */
-    protected array $aliases = [];
+    protected array $aliasParams = [];
 
     /**
      * Is Alias Route?
@@ -98,7 +98,8 @@ class Route extends Hook
      */
     public function alias(string $path, array $params = []): static
     {
-        $this->aliases[$path] = $params;
+        $this->aliasPath = $path;
+        $this->aliasParams = $params;
 
         return $this;
     }
@@ -170,68 +171,23 @@ class Route extends Hook
     }
 
     /**
-     * Get Aliases
-     *
-     * Returns an array where the keys are paths and values are params
-     * 
-     * @return array
-     */
-    public function getAliases(): array
-    {
-        return $this->aliases;
-    }
-
-    /**
      * Get Alias path
      *
-     * For backwards compatibility, returns the first alias path
-     * 
      * @return string
      */
     public function getAliasPath(): string
     {
-        if ($this->aliasPath !== null) {
-            return $this->aliasPath;
-        }
-
-        $paths = array_keys($this->aliases);
-        if (count($paths) === 0) {
-            return '';
-        }
-        return $paths[0];
-    }
-
-    /**
-     * Set Alias path
-     *
-     * For backwards compatibility, returns the first alias path
-     * 
-     * @return void
-     */
-    public function setAliasPath(?string $path): void
-    {
-        $this->aliasPath = $path;
-        $this->setIsAlias($path !== null);
+        return $this->aliasPath;
     }
 
     /**
      * Get Alias Params
      *
-     * For backwards compatibility, returns the first alias params if no path passed
-     * 
      * @return array
      */
-    public function getAliasParams(string $path = null): array
+    public function getAliasParams(): array
     {
-        if ($path === null) {
-            $params = array_values($this->aliases);
-            if (count($params) === 0) {
-                return [];
-            }
-            return $params[0];
-        }
-
-        return $this->aliases[$path];
+        return $this->aliasParams;
     }
 
     /**

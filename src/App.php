@@ -115,14 +115,6 @@ class App
     protected ?Route $route = null;
 
     /**
-     * Wildcard route
-     * If set, this get's executed if no other route is matched
-     *
-     * @var Route|null
-     */
-    protected static ?Route $wildcardRoute = null;
-
-    /**
      * Matches
      *
      * Parameters matched from URL regex
@@ -204,19 +196,6 @@ class App
     public static function delete(string $url): Route
     {
         return self::addRoute(self::REQUEST_METHOD_DELETE, $url);
-    }
-
-    /**
-     * Wildcard
-     *
-     * Add Wildcard route
-     *
-     * @return Route
-     */
-    public static function wildcard(): Route
-    {
-        self::$wildcardRoute = new Route('', '');
-        return self::$wildcardRoute;
     }
 
     /**
@@ -342,10 +321,8 @@ class App
                 throw new Exception('Failed to find resource: "'.$name.'"');
             }
 
-            $this->resources[$name] = \call_user_func_array(
-                self::$resourcesCallbacks[$name]['callback'],
-                $this->getResources(self::$resourcesCallbacks[$name]['injections'])
-            );
+            $this->resources[$name] = \call_user_func_array(self::$resourcesCallbacks[$name]['callback'],
+                $this->getResources(self::$resourcesCallbacks[$name]['injections']));
         }
 
         self::$resourcesCallbacks[$name]['reset'] = false;
@@ -463,8 +440,8 @@ class App
      */
     public static function addRoute(string $method, string $url): Route
     {
-        if (!array_key_exists($method, self::$routes)) {
-            throw new Exception("Invalid Request Method");
+        if (! array_key_exists($method, self::$routes)) {
+            throw new Exception('Invalid Request Method');
         }
         $route = new Route($method, $url);
 
@@ -499,7 +476,7 @@ class App
         }
 
         foreach (self::$routes[$method] as $routeUrl => $route) {
-            /** @var Route $route */
+            /* @var $route Route */
 
             // convert urls like '/users/:uid/posts/:pid' to regular expression
             $regex = '@'.\preg_replace('@:[^/]+@', '([^/]+)', $routeUrl).'@';
@@ -512,10 +489,10 @@ class App
             \array_shift($this->matches);
             $this->route = $route;
 
-            if (isset($route->getAliases()[$routeUrl])) {
-                $this->route->setAliasPath($routeUrl);
+            if ($routeUrl == $route->getAliasPath()) {
+                $this->route->setIsAlias(true);
             } else {
-                $this->route->setAliasPath(null);
+                $this->route->setIsAlias(false);
             }
 
             break;
@@ -648,8 +625,8 @@ class App
             $value = (isset($values[$key])) ? $values[$key] : $arg;
 
             if ($hook instanceof Route) {
-                if ($hook->getIsAlias() && isset($hook->getAliasParams($hook->getAliasPath())[$key])) {
-                    $value = $hook->getAliasParams($hook->getAliasPath())[$key];
+                if ($hook->getIsAlias() && isset($hook->getAliasParams()[$key])) {
+                    $value = $hook->getAliasParams()[$key];
                 }
             }
 
@@ -695,9 +672,8 @@ class App
         if (! self::$sorted) {
             foreach (self::$routes as $method => $list) { //adding route alias in $routes
                 foreach ($list as $key => $route) {
-                    /** @var Route $route */
-                    foreach (array_keys($route->getAliases()) as $path) {
-                        self::$routes[$method][$path] = $route;
+                    if ($route->getAliasPath()) {
+                        self::$routes[$method][$route->getAliasPath()] = $route;
                     }
                 }
             }
@@ -727,12 +703,6 @@ class App
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
-        }
-
-        if(null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $route->path($path);
         }
 
         if (null !== $route) {
@@ -804,8 +774,9 @@ class App
             if (! $validator instanceof Validator) { // is the validator object an instance of the Validator class
                 throw new Exception('Validator object is not an instance of the Validator class', 500);
             }
-            if (!$validator->isValid($value)) {
-                throw new Exception('Invalid ' . $key . ': ' . $validator->getDescription(), 400);
+
+            if (! $validator->isValid($value)) {
+                throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
             }
         } elseif (! $param['optional']) {
             throw new Exception('Param "'.$key.'" is not optional.', 400);
@@ -824,12 +795,5 @@ class App
         self::$shutdown = [];
         self::$options = [];
         self::$sorted = false;
-        self::$routes = [
-            self::REQUEST_METHOD_GET       => [],
-            self::REQUEST_METHOD_POST      => [],
-            self::REQUEST_METHOD_PUT       => [],
-            self::REQUEST_METHOD_PATCH     => [],
-            self::REQUEST_METHOD_DELETE    => [],
-        ];
     }
 }

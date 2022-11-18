@@ -321,6 +321,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        // var_dump($result);
         $this->assertEquals('(init)-x-def-(shutdown)', $result);
 
         // Default Params
@@ -337,6 +338,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        // var_dump($result);
         $this->assertEquals('x-def', $result);
     }
 
@@ -397,43 +399,35 @@ class AppTest extends TestCase
 
     public function providerRouteMatching(): array
     {
+        $route1 = App::get('/path1');
+        $route2 = App::get('/path2');
+        $route3 = App::post('/path1');
+        $route4 = App::put('/path1');
+        $route5 = App::patch('/path1');
+        $route6 = App::delete('/path1');
+        $route7 = App::get('/a/b/c');
+        $route8 = App::get('/a/b');
+        $route9 = App::get('/a');
+
         return [
-            'GET request' => [App::REQUEST_METHOD_GET, '/path1'],
-            'GET request on different route' => [App::REQUEST_METHOD_GET, '/path2'],
-            'POST request' => [App::REQUEST_METHOD_POST, '/path1'],
-            'PUT request' => [App::REQUEST_METHOD_PUT, '/path1'],
-            'PATCH request' => [App::REQUEST_METHOD_PATCH, '/path1'],
-            'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
+            'GET request' => [$route1, App::REQUEST_METHOD_GET, '/path1'],
+            'GET request on different route' => [$route2, App::REQUEST_METHOD_GET, '/path2'],
+            'POST request' => [$route3, App::REQUEST_METHOD_POST, '/path1'],
+            'PUT request' => [$route4, App::REQUEST_METHOD_PUT, '/path1'],
+            'PATCH request' => [$route5, App::REQUEST_METHOD_PATCH, '/path1'],
+            'DELETE request' => [$route6, App::REQUEST_METHOD_DELETE, '/path1'],
             // "/a/b/c" needs to be first
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
-            '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '1 separators' => [App::REQUEST_METHOD_GET, '/a']
+            '3 separators' => [$route7, App::REQUEST_METHOD_GET, '/a/b/c'],
+            '2 separators' => [$route8, App::REQUEST_METHOD_GET, '/a/b'],
+            '1 separators' => [$route9, App::REQUEST_METHOD_GET, '/a'],
         ];
     }
 
     /**
      * @dataProvider providerRouteMatching
      */
-    public function testCanMatchRoute(string $method, string $path): void
+    public function testCanMatchRoute(Route $expected, string $method, string $path): void
     {
-        switch ($method) {
-            case App::REQUEST_METHOD_GET:
-                $expected = App::get($path);
-                break;
-            case App::REQUEST_METHOD_POST:
-                $expected = App::post($path);
-                break;
-            case App::REQUEST_METHOD_PUT:
-                $expected = App::put($path);
-                break;
-            case App::REQUEST_METHOD_PATCH:
-                $expected = App::patch($path);
-                break;
-            case App::REQUEST_METHOD_DELETE:
-                $expected = App::delete($path);
-                break;
-        }
-
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $path;
 
@@ -522,73 +516,5 @@ class AppTest extends TestCase
         \ob_end_clean();
 
         $this->assertStringNotContainsString('HELLO', $result1);
-    }
-
-    public function providerAliases(): array
-    {
-        return [
-            '/real/:param1' => ['/real/p1', 'p1'],
-            '/alias' => ['/alias', 'default'],
-            '/another/:param1' => ['/another/a', 'a'],
-            '/param2' => ['/param2', 'param2']
-        ];
-    }
-
-    /**
-     * @dataProvider providerAliases
-     */
-    public function testMultipleAliases(string $path, string $expected): void
-    {
-        App::get('/real/:param1')
-            ->alias('/alias', [
-                "param1" => "default",
-            ])
-            ->alias('/another/:param1')
-            ->alias('/param2', [
-                "param1" => "param2",
-            ])
-            ->param('param1', '', new Text(100), 'a param', false)
-            ->inject('response')
-            ->action(function ($param1, $response) {
-                echo $param1;
-            });
-
-        $routes = App::getRoutes();
-        $this->assertContains('/real/:param1', array_keys($routes[App::REQUEST_METHOD_GET]));
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-
-        $_SERVER['REQUEST_URI'] = $path;
-        \ob_start();
-        $this->app->run(new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals($expected, $result);
-    }
-
-    public function testWildcardRoute(): void
-    {
-        $method = $_SERVER['REQUEST_METHOD'] ?? null;
-        $uri = $_SERVER['REQUEST_URI'] ?? null;
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/unknown_path';
-
-        App::wildcard()
-            ->inject('response')
-            ->action(function ($response) {
-                $response->send('HELLO');
-            });
-
-        \ob_start();
-        @$this->app->run(new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $_SERVER['REQUEST_METHOD'] = $method;
-        $_SERVER['REQUEST_URI'] = $uri;
-
-        $this->assertEquals('HELLO', $result);
     }
 }
