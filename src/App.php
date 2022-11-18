@@ -545,7 +545,7 @@ class App
 
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
-                    if(in_array('*', $hook->getGroups())) {
+                    if (in_array('*', $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -554,7 +554,7 @@ class App
 
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
-                    if(in_array($group, $hook->getGroups())) {
+                    if (in_array($group, $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -564,7 +564,7 @@ class App
             $arguments = $this->getArguments($route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
-            if($route->getIsActive()){
+            if ($route->getIsActive()) {
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
@@ -573,7 +573,7 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
-                    if(in_array($group, $hook->getGroups())) {
+                    if (in_array($group, $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -583,7 +583,7 @@ class App
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
-                    if(in_array('*', $hook->getGroups())) {
+                    if (in_array('*', $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -593,7 +593,7 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     /** @var Hook $error */
-                    if(in_array($group, $error->getGroups())) {
+                    if (in_array($group, $error->getGroups())) {
                         self::setResource('error', fn () => $e);
                         try {
                             $arguments = $this->getArguments($error, $values, $request->getParams());
@@ -607,8 +607,8 @@ class App
 
             foreach (self::$errors as $error) { // Global error hooks
                 /** @var Hook $error */
-                if(in_array('*', $error->getGroups())) {
-                    self::setResource('error', fn() => $e);
+                if (in_array('*', $error->getGroups())) {
+                    self::setResource('error', fn () => $e);
                     try {
                         $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
@@ -669,11 +669,11 @@ class App
      */
     public function run(Request $request, Response $response): static
     {
-        self::setResource('request', function() use ($request) {
+        self::setResource('request', function () use ($request) {
             return $request;
         });
 
-        self::setResource('response', function() use ($response) {
+        self::setResource('response', function () use ($response) {
             return $response;
         });
 
@@ -700,7 +700,7 @@ class App
                 \uksort(self::$routes[$method], function (string $a, string $b) {
                     $result = \count(\explode('/', $b)) - \count(\explode('/', $a));
 
-                    if($result === 0) {
+                    if ($result === 0) {
                         return \substr_count($a, ':') - \substr_count($b, ':');
                     }
 
@@ -733,7 +733,7 @@ class App
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
-                        if(in_array($group, $option->getGroups())) {
+                        if (in_array($group, $option->getGroups())) {
                             \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                         }
                     }
@@ -741,15 +741,15 @@ class App
 
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
-                    if(in_array('*', $option->getGroups())) {
+                    if (in_array('*', $option->getGroups())) {
                         \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
-                    if(in_array('*', $error->getGroups())) {
-                        self::setResource('error', function() use ($e) {
+                    if (in_array('*', $error->getGroups())) {
+                        self::setResource('error', function () use ($e) {
                             return $e;
                         });
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
@@ -758,8 +758,8 @@ class App
             }
         } else {
             foreach (self::$errors as $error) { // Global error hooks
-                if(in_array('*', $error->getGroups())) {
-                    self::setResource('error', function() {
+                if (in_array('*', $error->getGroups())) {
+                    self::setResource('error', function () {
                         return new Exception('Not Found', 404);
                     });
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
@@ -796,6 +796,7 @@ class App
             if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
                 throw new Exception('Validator object is not an instance of the Validator class', 500);
             }
+
             if (!$validator->isValid($value)) {
                 throw new Exception('Invalid ' . $key . ': ' . $validator->getDescription(), 400);
             }
@@ -824,5 +825,4 @@ class App
             self::REQUEST_METHOD_DELETE    => [],
         ];
     }
-
 }
