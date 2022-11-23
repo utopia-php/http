@@ -2,8 +2,8 @@
 
 namespace Utopia;
 
-class Hook {
-
+class Hook
+{
     /**
      * Description
      *
@@ -54,13 +54,14 @@ class Hook {
 
     public function __construct()
     {
-        $this->action = function (): void {};
+        $this->action = function (): void {
+        };
     }
 
     /**
      * Add Description
      *
-     * @param string $desc
+     * @param  string  $desc
      * @return static
      */
     public function desc(string $desc): static
@@ -83,7 +84,7 @@ class Hook {
     /**
      * Add Group
      *
-     * @param array $groups
+     * @param  array  $groups
      * @return static
      */
     public function groups(array $groups): static
@@ -106,9 +107,8 @@ class Hook {
     /**
      * Add Label
      *
-     * @param string $key
-     * @param mixed $value
-     *
+     * @param  string  $key
+     * @param  mixed  $value
      * @return $this
      */
     public function label(string $key, mixed $value): static
@@ -117,15 +117,14 @@ class Hook {
 
         return $this;
     }
-    
+
     /**
      * Get Label
      *
      * Return given label value or default value if label doesn't exists
      *
-     * @param string $key
-     * @param mixed $default
-     *
+     * @param  string  $key
+     * @param  mixed  $default
      * @return mixed
      */
     public function getLabel(string $key, mixed $default): mixed
@@ -136,12 +135,13 @@ class Hook {
     /**
      * Add Action
      *
-     * @param callable $action
+     * @param  callable  $action
      * @return static
      */
     public function action(callable $action): static
     {
         $this->action = $action;
+
         return $this;
     }
 
@@ -168,16 +168,15 @@ class Hook {
     /**
      * Inject
      *
-     * @param string $injection
+     * @param  string  $injection
+     * @return static
      *
      * @throws Exception
-     *
-     * @return static
      */
     public function inject(string $injection): static
     {
         if (array_key_exists($injection, $this->injections)) {
-            throw new Exception('Injection already declared for ' . $injection);
+            throw new Exception('Injection already declared for '.$injection);
         }
 
         $this->injections[$injection] = [
@@ -191,13 +190,12 @@ class Hook {
     /**
      * Add Param
      *
-     * @param string $key
-     * @param mixed $default
-     * @param Validator|callable $validator
-     * @param string $description
-     * @param bool $optional
-     * @param array $injections
-     *
+     * @param  string  $key
+     * @param  mixed  $default
+     * @param  Validator|callable  $validator
+     * @param  string  $description
+     * @param  bool  $optional
+     * @param  array  $injections
      * @return static
      */
     public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): static
@@ -244,16 +242,15 @@ class Hook {
     /**
      * Set Param Value
      *
-     * @param string $key
-     * @param mixed $value
-     *
+     * @param  string  $key
+     * @param  mixed  $value
      * @return static
      *
      * @throws Exception
      */
     public function setParamValue(string $key, mixed $value): static
     {
-        if (!isset($this->params[$key])) {
+        if (! isset($this->params[$key])) {
             throw new Exception('Unknown key');
         }
 
@@ -265,20 +262,17 @@ class Hook {
     /**
      * Get Param Value
      *
-     * @param string $key
-     *
+     * @param  string  $key
      * @return mixed
      *
      * @throws Exception
      */
     public function getParamValue(string $key): mixed
     {
-        if (!isset($this->params[$key])) {
+        if (! isset($this->params[$key])) {
             throw new Exception('Unknown key');
         }
 
         return $this->params[$key]['value'];
     }
-
-
 }

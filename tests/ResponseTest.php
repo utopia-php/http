@@ -8,12 +8,12 @@ class ResponseTest extends TestCase
 {
     protected ?Response $response;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->response = new Response();
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->response = null;
     }
@@ -33,11 +33,11 @@ class ResponseTest extends TestCase
         // Assertions
         $this->assertInstanceOf('Utopia\Response', $status);
 
-        try{
+        try {
             $this->response->setStatusCode(0); // Unknown status code
-        }
-        catch(\Exception $e) {
+        } catch(\Exception $e) {
             $this->assertInstanceOf('\Exception', $e);
+
             return;
         }
 
@@ -72,7 +72,6 @@ class ResponseTest extends TestCase
 
     public function testCanSend()
     {
-
         ob_start(); //Start of build
 
         @$this->response

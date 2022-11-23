@@ -8,11 +8,16 @@
     "autoload": {
         "psr-4": {"Utopia\\": "src/"}
     },
+    "scripts": {
+      "lint": "./vendor/bin/pint --test",
+      "format": "./vendor/bin/pint"
+    },
     "require": {
         "php": ">=8.0.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",
-        "vimeo/psalm": "^4.27.0"
+        "vimeo/psalm": "4.27.0",
+        "laravel/pint": "^1.2"
     }
 }
