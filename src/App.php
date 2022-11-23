@@ -687,6 +687,9 @@ class App
             return $response;
         });
 
+        $this->resources['request'] = $request;
+        $this->resources['response'] = $request;
+
         /*
          * Re-order array
          *
