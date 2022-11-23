@@ -679,6 +679,9 @@ class App
      */
     public function run(Request $request, Response $response): static
     {
+        $this->resources['request'] = $request;
+        $this->resources['response'] = $request;
+
         self::setResource('request', function () use ($request) {
             return $request;
         });
@@ -686,9 +689,6 @@ class App
         self::setResource('response', function () use ($response) {
             return $response;
         });
-
-        $this->resources['request'] = $request;
-        $this->resources['response'] = $request;
 
         /*
          * Re-order array
