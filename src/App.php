@@ -680,7 +680,7 @@ class App
     public function run(Request $request, Response $response): static
     {
         $this->resources['request'] = $request;
-        $this->resources['response'] = $request;
+        $this->resources['response'] = $response;
 
         self::setResource('request', function () use ($request) {
             return $request;
