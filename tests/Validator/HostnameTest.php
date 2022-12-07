@@ -55,7 +55,6 @@ class HostnameTest extends TestCase
             'myweb.vercel.app',
             'myweb.com',
             '*.myapp.com',
-            '*.*.myrepo.com',
         ]);
 
         $this->assertTrue($validator->isValid('myweb.vercel.app'));
@@ -73,15 +72,9 @@ class HostnameTest extends TestCase
         $this->assertTrue($validator->isValid('project2.myapp.com'));
         $this->assertTrue($validator->isValid('project-with-dash.myapp.com'));
         $this->assertTrue($validator->isValid('anything.myapp.com'));
+        $this->assertTrue($validator->isValid('commit.anything.myapp.com'));
         $this->assertFalse($validator->isValid('anything.myapp.eu'));
-        $this->assertFalse($validator->isValid('commit.anything.myapp.com'));
-
-        $this->assertTrue($validator->isValid('commit1.project1.myrepo.com'));
-        $this->assertTrue($validator->isValid('commit2.project3.myrepo.com'));
-        $this->assertTrue($validator->isValid('commit-with-dash.project-with-dash.myrepo.com'));
-        $this->assertFalse($validator->isValid('myrepo.com'));
-        $this->assertFalse($validator->isValid('project1.myrepo.com'));
-        $this->assertFalse($validator->isValid('line1.commit1.project1.myrepo.com'));
+        $this->assertFalse($validator->isValid('myapp.com'));
 
         $validator = new Hostname(['localhost']);
         $this->assertTrue($validator->isValid('localhost'));
@@ -93,9 +86,15 @@ class HostnameTest extends TestCase
         $this->assertTrue($validator->isValid('*'));
 
         $validator = new Hostname(['netlify.*']);
-        $this->assertTrue($validator->isValid('netlify.com'));
-        $this->assertTrue($validator->isValid('netlify.eu'));
-        $this->assertTrue($validator->isValid('netlify.app'));
+        $this->assertFalse($validator->isValid('netlify.com'));
+        $this->assertFalse($validator->isValid('netlify.eu'));
+        $this->assertFalse($validator->isValid('netlify.app'));
+
+        $validator = new Hostname(['*.*.app.io']);
+        $this->assertFalse($validator->isValid('app.io'));
+        $this->assertFalse($validator->isValid('project.app.io'));
+        $this->assertFalse($validator->isValid('commit.project.app.io'));
+        $this->assertFalse($validator->isValid('api.commit.project.app.io'));
 
         $validator = new Hostname(['*']);
         $this->assertTrue($validator->isValid('*'));
