@@ -77,14 +77,6 @@ class Boolean extends Validator
             return true;
         }
 
-        if ($this->loose && ($value === '1' || $value === '0')) { // Accept numeric strings
-            return true;
-        }
-
-        if ($this->loose && ($value === 1 || $value === 0)) { // Accept integers
-            return true;
-        }
-
         if (\is_bool($value)) {
             return true;
         }

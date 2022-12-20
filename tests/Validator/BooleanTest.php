@@ -33,10 +33,10 @@ class BooleanTest extends TestCase
         $this->assertTrue($boolean->isValid(false));
         $this->assertTrue($boolean->isValid('false'));
         $this->assertTrue($boolean->isValid('true'));
-        $this->assertTrue($boolean->isValid('0'));
-        $this->assertTrue($boolean->isValid('1'));
-        $this->assertTrue($boolean->isValid(0));
-        $this->assertTrue($boolean->isValid(1));
+        $this->assertFalse($boolean->isValid('0'));
+        $this->assertFalse($boolean->isValid('1'));
+        $this->assertFalse($boolean->isValid(0));
+        $this->assertFalse($boolean->isValid(1));
         $this->assertFalse($boolean->isValid(['string', 'string']));
         $this->assertFalse($boolean->isValid('string'));
         $this->assertFalse($boolean->isValid(1.2));
