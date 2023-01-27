@@ -5,11 +5,13 @@ namespace Utopia\Validator;
 use Utopia\Validator;
 
 /**
- * Wildcard
+ * Domain
  *
- * Does not perform any validation. Always returns valid
+ * Validate that an variable is a valid domain address
+ *
+ * @package Utopia\Validator
  */
-class Wildcard extends Validator
+class Domain extends Validator
 {
     /**
      * Get Description
@@ -20,19 +22,33 @@ class Wildcard extends Validator
      */
     public function getDescription(): string
     {
-        return 'Every input is valid';
+        return 'Value must be a valid domain';
     }
 
     /**
      * Is valid
      *
-     * Validation will always pass irrespective of input
+     * Validation will pass when $value is valid domain.
      *
-     * @param  mixed  $value
+     * Validates domain names against RFC 1034, RFC 1035, RFC 952, RFC 1123, RFC 2732, RFC 2181, and RFC 1123.
+     *
+     * @param  mixed $value
      * @return bool
      */
     public function isValid($value): bool
     {
+        if (empty($value)) {
+            return false;
+        }
+
+        if (!is_string($value)) {
+            return false;
+        }
+
+        if (\filter_var($value, FILTER_VALIDATE_DOMAIN) === false) {
+            return false;
+        }
+
         return true;
     }
 

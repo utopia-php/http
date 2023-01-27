@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__.'/../../vendor/autoload.php';
 
 use Utopia\App;
 use Utopia\Request;
@@ -21,23 +21,21 @@ App::get('/')
 App::get('/chunked')
     ->inject('response')
     ->action(function ($response) {
-        /** @var Utopia /Response $response
-         * @phpstan-ignore-next-line */
-        foreach (["Hello ", "World!"] as $key => $word) {
+        /** @var Utopia/Response $response */
+        foreach (['Hello ', 'World!'] as $key => $word) {
             $response->chunk($word, $key == 1);
         }
     });
 
 App::get('/redirect')
     ->inject('response')
-    ->action(function($response) {
-        /** @var Utopia /Response $response
-         * @phpstan-ignore-next-line */
+    ->action(function ($response) {
+        /** @var Utopia/Response $response */
         $response->redirect('/');
     });
 
-$request    = new Request();
-$response   = new Response();
+$request = new Request();
+$response = new Response();
 
 $app = new App('UTC');
 $app->run($request, $response);

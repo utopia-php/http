@@ -9,12 +9,12 @@ class RequestTest extends TestCase
 {
     protected ?Request $request;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->request = new Request();
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->request = null;
     }
@@ -26,6 +26,12 @@ class RequestTest extends TestCase
 
         $this->assertEquals('value1', $this->request->getHeader('custom'));
         $this->assertEquals('value2', $this->request->getHeader('custom-new'));
+
+        $headers = $this->request->getHeaders();
+        $this->assertIsArray($headers);
+        $this->assertCount(2, $headers);
+        $this->assertEquals('value1', $headers['custom']);
+        $this->assertEquals('value2', $headers['custom-new']);
     }
 
     public function testCanAddHeaders()
@@ -213,49 +219,49 @@ class RequestTest extends TestCase
 
     public function testCanGetContentRange()
     {
-        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499/2000";
+        $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0-499/2000';
 
         $this->assertEquals('bytes', $this->request->getContentRangeUnit());
         $this->assertEquals(0, $this->request->getContentRangeStart());
         $this->assertEquals(499, $this->request->getContentRangeEnd());
         $this->assertEquals(2000, $this->request->getContentRangeSize());
 
-        $_SERVER['HTTP_CONTENT_RANGE'] = " 0-499/2000";
+        $_SERVER['HTTP_CONTENT_RANGE'] = ' 0-499/2000';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
 
-        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499/";
+        $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0-499/';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
 
-        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0--499/2000";
+        $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0--499/2000';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
 
-        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-499test/2000";
+        $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0-499test/2000';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
 
-        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-49.9/200.0";
+        $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0-49.9/200.0';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
         $this->assertEquals(null, $this->request->getContentRangeEnd());
         $this->assertEquals(null, $this->request->getContentRangeSize());
 
-        $_SERVER['HTTP_CONTENT_RANGE'] = "bytes 0-49,9/200,0";
+        $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0-49,9/200,0';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getContentRangeUnit());
         $this->assertEquals(null, $this->request->getContentRangeStart());
@@ -265,43 +271,43 @@ class RequestTest extends TestCase
 
     public function testCanGetRange()
     {
-        $_SERVER['HTTP_RANGE'] = "bytes=0-499";
+        $_SERVER['HTTP_RANGE'] = 'bytes=0-499';
 
         $this->assertEquals('bytes', $this->request->getRangeUnit());
         $this->assertEquals(0, $this->request->getRangeStart());
         $this->assertEquals(499, $this->request->getRangeEnd());
 
-        $_SERVER['HTTP_RANGE'] = " 0-499";
+        $_SERVER['HTTP_RANGE'] = ' 0-499';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getRangeUnit());
         $this->assertEquals(null, $this->request->getRangeStart());
         $this->assertEquals(null, $this->request->getRangeEnd());
 
-        $_SERVER['HTTP_RANGE'] = "bytes=0-";
+        $_SERVER['HTTP_RANGE'] = 'bytes=0-';
         $this->request = new Request();
         $this->assertEquals('bytes', $this->request->getRangeUnit());
         $this->assertEquals(0, $this->request->getRangeStart());
         $this->assertEquals(null, $this->request->getRangeEnd());
 
-        $_SERVER['HTTP_RANGE'] = "bytes=0--499";
+        $_SERVER['HTTP_RANGE'] = 'bytes=0--499';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getRangeUnit());
         $this->assertEquals(null, $this->request->getRangeStart());
         $this->assertEquals(null, $this->request->getRangeEnd());
 
-        $_SERVER['HTTP_RANGE'] = "bytes=0-499test";
+        $_SERVER['HTTP_RANGE'] = 'bytes=0-499test';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getRangeUnit());
         $this->assertEquals(null, $this->request->getRangeStart());
         $this->assertEquals(null, $this->request->getRangeEnd());
 
-        $_SERVER['HTTP_RANGE'] = "bytes=0-49.9";
+        $_SERVER['HTTP_RANGE'] = 'bytes=0-49.9';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getRangeUnit());
         $this->assertEquals(null, $this->request->getRangeStart());
         $this->assertEquals(null, $this->request->getRangeEnd());
 
-        $_SERVER['HTTP_RANGE'] = "bytes=0-49,9";
+        $_SERVER['HTTP_RANGE'] = 'bytes=0-49,9';
         $this->request = new Request();
         $this->assertEquals(null, $this->request->getRangeUnit());
         $this->assertEquals(null, $this->request->getRangeStart());
