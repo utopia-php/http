@@ -82,7 +82,6 @@ class IP extends Validator
 
             default:
                 return false;
-            break;
         }
 
         return false;

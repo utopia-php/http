@@ -132,6 +132,7 @@ class Range extends Numeric
                 break;
             case self::TYPE_FLOAT:
                 $value = $value + 0;
+                /** @phpstan-ignore-next-line */
                 if (! is_float($value) && ! is_int($value)) {
                     return false;
                 }

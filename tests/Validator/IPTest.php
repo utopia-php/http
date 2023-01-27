@@ -17,9 +17,11 @@ use PHPUnit\Framework\TestCase;
 
 class IPTest extends TestCase
 {
+    protected ?IP $validator = null;
+
     public function tearDown():void
     {
-        $this->validator = null;
+        unset($this->validator);
     }
 
     public function testIsValidIP()

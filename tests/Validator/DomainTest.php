@@ -29,7 +29,7 @@ class DomainTest extends TestCase
 
     public function tearDown(): void
     {
-        $this->domain = null;
+        unset($this->domain);
     }
 
     public function testIsValid()

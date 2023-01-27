@@ -525,9 +525,9 @@ class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param  string  $body
-     * @param  bool  $last
-     * @return void
      * @param bool $end
+     * 
+     * @return void
      */
     public function chunk(string $body = '', bool $end = false): void
     {
@@ -659,7 +659,6 @@ class Response
      *
      * @param  string  $url complete absolute URI for redirection as required by the internet standard RFC 2616 (HTTP 1.1)
      * @param  int  $statusCode valid HTTP status code
-     * @param  null  $exit
      * @return void
      *
      * @throws Exception

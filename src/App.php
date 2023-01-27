@@ -699,7 +699,6 @@ class App
         if (! self::$sorted) {
             foreach (self::$routes as $method => $list) { //adding route alias in $routes
                 foreach ($list as $key => $route) {
-                    /** @var Route $route */
                     foreach (array_keys($route->getAliases()) as $path) {
                         self::$routes[$method][$path] = $route;
                     }
@@ -791,7 +790,6 @@ class App
      * @param  string  $key
      * @param  array  $param
      * @param  mixed  $value
-     * @param  array  $resources
      * @return void
      *
      * @throws Exception

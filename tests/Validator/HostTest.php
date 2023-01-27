@@ -29,7 +29,7 @@ class HostTest extends TestCase
 
     public function tearDown():void
     {
-        $this->host = null;
+        unset($this->host);
     }
 
     public function testIsValid()
