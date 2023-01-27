@@ -14,10 +14,7 @@ class ResponseTest extends TestCase
 
     public function tearDown(): void
     {
-        /**
-         * @phpstan-ignore-next-line
-         */
-        $this->client = null;
+        unset($this->client);
     }
 
     /**
