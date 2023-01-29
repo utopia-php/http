@@ -599,11 +599,12 @@ class App
                 }
             }
         } catch (\Throwable $e) {
+            self::setResource('error', fn () => $e);
+
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     /** @var Hook $error */
                     if (in_array($group, $error->getGroups())) {
-                        self::setResource('error', fn () => $e);
                         try {
                             $arguments = $this->getArguments($error, $values, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
@@ -617,7 +618,6 @@ class App
             foreach (self::$errors as $error) { // Global error hooks
                 /** @var Hook $error */
                 if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', fn () => $e);
                     try {
                         $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
