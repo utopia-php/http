@@ -733,15 +733,7 @@ class App
             $response->disablePayload();
         }
 
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $route->path($path);
-        }
-
-        if (null !== $route) {
-            return $this->execute($route, $request);
-        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
+        if(null !== $route && self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
@@ -769,6 +761,19 @@ class App
                     }
                 }
             }
+
+            return $this;
+        }
+
+        if (null === $route && null !== self::$wildcardRoute) {
+            $route = self::$wildcardRoute;
+            $this->route = $route;
+            $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $route->path($path);
+        }
+
+        if (null !== $route) {
+            return $this->execute($route, $request);
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
