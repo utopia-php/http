@@ -733,7 +733,7 @@ class App
             $response->disablePayload();
         }
 
-        if(null !== $route && self::REQUEST_METHOD_OPTIONS == $method) {
+        if(self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
