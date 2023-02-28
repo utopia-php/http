@@ -645,10 +645,12 @@ class App
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $paramExists = \array_key_exists($key, $requestParams) || \array_key_exists($key, $values);
+            $existsInRequest = \array_key_exists($key, $requestParams);
+            $existsInValues = \array_key_exists($key, $values);
+            $paramExists = $existsInRequest || $existsInValues;
 
-            $arg = (\array_key_exists($key, $requestParams)) ? $requestParams[$key] : $param['default'];
-            $value = (\array_key_exists($key, $values)) ? $values[$key] : $arg;
+            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
+            $value = $existsInValues ? $values[$key] : $arg;
 
             if ($hook instanceof Route) {
                 if ($hook->getIsAlias() && isset($hook->getAliasParams($hook->getAliasPath())[$key])) {
