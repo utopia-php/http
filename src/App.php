@@ -802,17 +802,21 @@ class App
      */
     protected function validate(string $key, array $param, mixed $value): void
     {
+        if ($param['optional'] && \is_null($value)) {
+            return;
+        }
+
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
             $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
         }
 
-        if (! $validator instanceof Validator) { // is the validator object an instance of the Validator class
+        if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
             throw new Exception('Validator object is not an instance of the Validator class', 500);
         }
 
-        if (! $validator->isValid($value)) {
+        if (!$validator->isValid($value)) {
             throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
         }
     }
