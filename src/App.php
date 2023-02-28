@@ -645,7 +645,15 @@ class App
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $arg = (isset($requestParams[$key])) ? $requestParams[$key] : $param['default'];
+            if (\array_key_exists($key, $requestParams)) {
+                $arg = $requestParams[$key];
+            } else {
+                if (!$param['optional']) {
+                    throw new Exception('Param "'.$key.'" is not optional.', 400);
+                }
+                $arg = $param['default'];
+            }
+
             $value = (isset($values[$key])) ? $values[$key] : $arg;
 
             if ($hook instanceof Route) {
@@ -653,8 +661,6 @@ class App
                     $value = $hook->getAliasParams($hook->getAliasPath())[$key];
                 }
             }
-
-            $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
 
             $this->validate($key, $param, $value);
             $hook->setParamValue($key, $value);
@@ -798,22 +804,18 @@ class App
      */
     protected function validate(string $key, array $param, mixed $value): void
     {
-        if ('' !== $value && ! is_null($value)) {
-            $validator = $param['validator']; // checking whether the class exists
+        $validator = $param['validator']; // checking whether the class exists
 
-            if (\is_callable($validator)) {
-                $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
-            }
+        if (\is_callable($validator)) {
+            $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
+        }
 
-            if (! $validator instanceof Validator) { // is the validator object an instance of the Validator class
-                throw new Exception('Validator object is not an instance of the Validator class', 500);
-            }
+        if (! $validator instanceof Validator) { // is the validator object an instance of the Validator class
+            throw new Exception('Validator object is not an instance of the Validator class', 500);
+        }
 
-            if (! $validator->isValid($value)) {
-                throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
-            }
-        } elseif (! $param['optional']) {
-            throw new Exception('Param "'.$key.'" is not optional.', 400);
+        if (! $validator->isValid($value)) {
+            throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
         }
     }
 
