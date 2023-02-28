@@ -645,16 +645,14 @@ class App
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            if (\array_key_exists($key, $requestParams)) {
-                $arg = $requestParams[$key];
-            } else {
+            if (!\array_key_exists($key, $requestParams) && !\array_key_exists($key, $values)) {
                 if (!$param['optional']) {
                     throw new Exception('Param "'.$key.'" is not optional.', 400);
                 }
-                $arg = $param['default'];
             }
 
-            $value = (isset($values[$key])) ? $values[$key] : $arg;
+            $arg = (\array_key_exists($key, $requestParams)) ? $requestParams[$key] : $param['default'];
+            $value = (\array_key_exists($key, $values)) ? $values[$key] : $arg;
 
             if ($hook instanceof Route) {
                 if ($hook->getIsAlias() && isset($hook->getAliasParams($hook->getAliasPath())[$key])) {
