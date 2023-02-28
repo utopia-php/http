@@ -645,11 +645,7 @@ class App
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            if (!\array_key_exists($key, $requestParams) && !\array_key_exists($key, $values)) {
-                if (!$param['optional']) {
-                    throw new Exception('Param "'.$key.'" is not optional.', 400);
-                }
-            }
+            $paramExists = \array_key_exists($key, $requestParams) || \array_key_exists($key, $values);
 
             $arg = (\array_key_exists($key, $requestParams)) ? $requestParams[$key] : $param['default'];
             $value = (\array_key_exists($key, $values)) ? $values[$key] : $arg;
@@ -657,10 +653,18 @@ class App
             if ($hook instanceof Route) {
                 if ($hook->getIsAlias() && isset($hook->getAliasParams($hook->getAliasPath())[$key])) {
                     $value = $hook->getAliasParams($hook->getAliasPath())[$key];
+                    $paramExists = true;
                 }
             }
 
-            $this->validate($key, $param, $value);
+            if (!$paramExists && !$param['optional']) {
+                throw new Exception('Param "'.$key.'" is not optional.', 400);
+            }
+
+            if ($paramExists) {
+                $this->validate($key, $param, $value);
+            }
+
             $hook->setParamValue($key, $value);
             $arguments[$param['order']] = $value;
         }

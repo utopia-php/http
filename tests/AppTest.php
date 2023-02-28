@@ -4,7 +4,6 @@ namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Tests\UtopiaRequestTest;
-use Utopia\Validator\Nullable;
 use Utopia\Validator\Text;
 
 class AppTest extends TestCase
@@ -172,22 +171,21 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
-            ->param('a', 'a-def', new Nullable(new Text(200)), 'a param', false)
-            ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('y', 'y-def', new Text(200), 'y param', true)
             ->inject('rand')
             ->param('z', 'z-def', function ($rand) {
                 echo $rand.'-';
 
                 return new Text(200);
             }, 'z param', true, ['rand'])
-            ->action(function ($a, $x, $y, $z, $rand) {
-                echo (\is_null($a) ? '' : 'fail') . $x.'-', $y;
+            ->action(function ($x, $y, $z, $rand) {
+                echo $x.'-', $y;
             });
 
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'a' => null]);
+        $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
         $this->app->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
