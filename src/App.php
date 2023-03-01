@@ -660,13 +660,16 @@ class App
             }
 
             if (!$param['skipValidation']) {
-                if (!$paramExists && !$param['optional']) {
-                    throw new Exception('Param "'.$key.'" is not optional.', 400);
+                if (
+                    (!$paramExists && !$param['optional'])
+                    || $value === '' // this condition is added for backwards compatibility
+                ) {
+                    throw new Exception('Param "' . $key . '" is not optional.', 400);
                 }
 
                 if ($paramExists) {
                     $this->validate($key, $param, $value);
-                } 
+                }
             }
 
             $hook->setParamValue($key, $value);
