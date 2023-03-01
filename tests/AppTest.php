@@ -197,8 +197,8 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
-            ->param('x', 'x-def', new Text(1), 'x param', false)
-            ->param('y', 'y-def', new Text(1), 'y param', false)
+            ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
+            ->param('y', 'y-def', new Text(1, min: 0), 'y param', false)
             ->action(function ($x, $y) {
                 echo $x.'-', $y;
             });

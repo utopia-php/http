@@ -660,10 +660,7 @@ class App
             }
 
             if (!$param['skipValidation']) {
-                if (
-                    (!$paramExists && !$param['optional'])
-                    || $value === '' // this condition is added for backwards compatibility
-                ) {
+                if (!$paramExists && !$param['optional']) {
                     throw new Exception('Param "' . $key . '" is not optional.', 400);
                 }
 
