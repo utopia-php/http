@@ -64,7 +64,7 @@ class Text extends Validator
             $message .= ' and exactly '.$this->length.' chars';
         } else {
             if ($this->min) {
-                $message .= ' and at least '.$this->length.' chars';
+                $message .= ' and at least '.$this->min.' chars';
             }
 
             if ($this->length) {
