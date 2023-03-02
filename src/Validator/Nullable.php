@@ -47,6 +47,14 @@ class Nullable extends Validator
     }
 
     /**
+     * @return Validator 
+     */
+    public function getValidator(): Validator
+    {
+        return $this->validator;
+    }
+
+    /**
      * Is valid
      *
      * Validation will pass when $value is text with valid length.
