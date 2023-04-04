@@ -31,19 +31,6 @@ class App
     const MODE_TYPE_PRODUCTION = 'production';
 
     /**
-     * Routes
-     *
-     * @var array
-     */
-    protected static array $routes = [
-        self::REQUEST_METHOD_GET => [],
-        self::REQUEST_METHOD_POST => [],
-        self::REQUEST_METHOD_PUT => [],
-        self::REQUEST_METHOD_PATCH => [],
-        self::REQUEST_METHOD_DELETE => [],
-    ];
-
-    /**
      * @var array
      */
     protected array $resources = [
@@ -99,13 +86,6 @@ class App
     protected static array $options = [];
 
     /**
-     * Is Sorted?
-     *
-     * @var bool
-     */
-    protected static bool $sorted = false;
-
-    /**
      * Route
      *
      * Memory cached result for chosen route
@@ -121,15 +101,6 @@ class App
      * @var Route|null
      */
     protected static ?Route $wildcardRoute = null;
-
-    /**
-     * Matches
-     *
-     * Parameters matched from URL regex
-     *
-     * @var array
-     */
-    protected array $matches = [];
 
     /**
      * App
@@ -231,6 +202,7 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+
         self::$init[] = $hook;
 
         return $hook;
@@ -247,6 +219,7 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+
         self::$shutdown[] = $hook;
 
         return $hook;
@@ -263,6 +236,7 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+
         self::$options[] = $hook;
 
         return $hook;
@@ -279,6 +253,7 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+
         self::$errors[] = $hook;
 
         return $hook;
@@ -338,9 +313,9 @@ class App
             return $this;
         }
 
-        if (! \array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
-            if (! \array_key_exists($name, self::$resourcesCallbacks)) {
-                throw new Exception('Failed to find resource: "'.$name.'"');
+        if (!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
+            if (!\array_key_exists($name, self::$resourcesCallbacks)) {
+                throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
             $this->resources[$name] = \call_user_func_array(
@@ -428,7 +403,7 @@ class App
      */
     public static function getRoutes(): array
     {
-        return self::$routes;
+        return Router::getRoutes();
     }
 
     /**
@@ -446,7 +421,7 @@ class App
      *
      * @param  Route  $route
      */
-    public function setRoute(Route $route): static
+    public function setRoute(Route $route): self
     {
         $this->route = $route;
 
@@ -464,14 +439,9 @@ class App
      */
     public static function addRoute(string $method, string $url): Route
     {
-        if (! array_key_exists($method, self::$routes)) {
-            throw new Exception('Invalid Request Method');
-        }
         $route = new Route($method, $url);
 
-        self::$routes[$method][$url] = $route;
-
-        self::$sorted = false;
+        Router::addRoute($route);
 
         return $route;
     }
@@ -487,7 +457,7 @@ class App
      */
     public function match(Request $request, bool $fresh = false): ?Route
     {
-        if (null !== $this->route && ! $fresh) {
+        if (null !== $this->route && !$fresh) {
             return $this->route;
         }
 
@@ -495,36 +465,7 @@ class App
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        if (! isset(self::$routes[$method])) {
-            self::$routes[$method] = [];
-        }
-
-        foreach (self::$routes[$method] as $routeUrl => $route) {
-            /** @var Route $route */
-
-            // convert urls like '/users/:uid/posts/:pid' to regular expression
-            $regex = '@'.\preg_replace('@:[^/]+@', '([^/]+)', $routeUrl).'@';
-
-            // Check if the current request matches the expression
-            if (! \preg_match($regex, $url, $this->matches)) {
-                continue;
-            }
-
-            \array_shift($this->matches);
-            $this->route = $route;
-
-            if (isset($route->getAliases()[$routeUrl])) {
-                $this->route->setAliasPath($routeUrl);
-            } else {
-                $this->route->setAliasPath(null);
-            }
-
-            break;
-        }
-
-        if (! empty($this->route) && ('/' === $this->route->getPath()) && ($url != $this->route->getPath())) {
-            return null;
-        }
+        $this->route = Router::match($method, $url);
 
         return $this->route;
     }
@@ -537,25 +478,15 @@ class App
      */
     public function execute(Route $route, Request $request): static
     {
-        $keys = [];
         $arguments = [];
         $groups = $route->getGroups();
+        $pathValues = $route->getPathValues($request);
 
-        // Extract keys from URL
-        $url = $route->getIsAlias() ? $route->getAliasPath() : $route->getPath();
-        $keyRegex = '@^'.\preg_replace('@:[^/]+@', ':([^/]+)', $url).'$@';
-        \preg_match($keyRegex, $url, $keys);
-
-        // Remove the first key and value ( corresponding to full regex match )
-        \array_shift($keys);
-
-        // combine keys and values to one array
-        $values = \array_combine($keys, $this->matches);
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -564,13 +495,13 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-            $arguments = $this->getArguments($route, $values, $request->getParams());
+            $arguments = $this->getArguments($route, $pathValues, $request->getParams());
 
             // Call the callback with the matched positions as params
             if ($route->getIsActive()) {
@@ -581,9 +512,8 @@ class App
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    /** @var Hook $hook */
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -591,9 +521,8 @@ class App
 
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    /** @var Hook $hook */
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -603,26 +532,24 @@ class App
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
-                    /** @var Hook $error */
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $values, $request->getParams());
+                            $arguments = $this->getArguments($error, $pathValues, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: '.$e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                         }
                     }
                 }
             }
 
             foreach (self::$errors as $error) { // Global error hooks
-                /** @var Hook $error */
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $values, $request->getParams());
+                        $arguments = $this->getArguments($error, $pathValues, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: '.$e->getMessage(), 500, $e);
+                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                     }
                 }
             }
@@ -651,13 +578,6 @@ class App
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
             $value = $existsInValues ? $values[$key] : $arg;
-
-            if ($hook instanceof Route) {
-                if ($hook->getIsAlias() && isset($hook->getAliasParams($hook->getAliasPath())[$key])) {
-                    $value = $hook->getAliasParams($hook->getAliasPath())[$key];
-                    $paramExists = true;
-                }
-            }
 
             if (!$param['skipValidation']) {
                 if (!$paramExists && !$param['optional']) {
@@ -702,40 +622,6 @@ class App
             return $response;
         });
 
-        /*
-         * Re-order array
-         *
-         * For route to work with similar links where one is shorter than other
-         *  but both might match given pattern
-         */
-        if (! self::$sorted) {
-            foreach (self::$routes as $method => $list) { //adding route alias in $routes
-                foreach ($list as $key => $route) {
-                    /** @var Route $route */
-                    foreach (array_keys($route->getAliases()) as $path) {
-                        self::$routes[$method][$path] = $route;
-                    }
-                }
-            }
-            foreach (self::$routes as $method => $list) {
-                \uksort(self::$routes[$method], function (string $a, string $b) {
-                    return \strlen($b) - \strlen($a);
-                });
-
-                \uksort(self::$routes[$method], function (string $a, string $b) {
-                    $result = \count(\explode('/', $b)) - \count(\explode('/', $a));
-
-                    if ($result === 0) {
-                        return \substr_count($a, ':') - \substr_count($b, ':');
-                    }
-
-                    return $result;
-                });
-            }
-
-            self::$sorted = true;
-        }
-
         $method = $request->getMethod();
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
@@ -757,7 +643,6 @@ class App
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
-                        /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
                             \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                         }
@@ -765,14 +650,12 @@ class App
                 }
 
                 foreach (self::$options as $option) { // Global options hooks
-                    /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
                         \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
-                    /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
                         self::setResource('error', function () use ($e) {
                             return $e;
@@ -825,7 +708,7 @@ class App
         }
 
         if (!$validator->isValid($value)) {
-            throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
+            throw new Exception('Invalid ' . $key . ': ' . $validator->getDescription(), 400);
         }
     }
 
@@ -840,13 +723,6 @@ class App
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
-        self::$sorted = false;
-        self::$routes = [
-            self::REQUEST_METHOD_GET => [],
-            self::REQUEST_METHOD_POST => [],
-            self::REQUEST_METHOD_PUT => [],
-            self::REQUEST_METHOD_PATCH => [],
-            self::REQUEST_METHOD_DELETE => [],
-        ];
+        Router::reset();
     }
 }

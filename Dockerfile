@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN \
   apk add --no-cache --virtual .deps \
-  supervisor php$PHP_VERSION php$PHP_VERSION-fpm nginx bash
+  supervisor php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-mbstring nginx bash
 
 
 # Nginx Configuration (with self-signed ssl certificates)
