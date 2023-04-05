@@ -10,7 +10,7 @@
     },
     "scripts": {
       "lint": "./vendor/bin/pint --test",
-      "format": "./vendor/bin/pint"
+      "format": "./vendor/bin/pint --preset psr12"
     },
     "require": {
         "php": ">=8.0.0"

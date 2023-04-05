@@ -25,8 +25,11 @@ class Route extends Hook
      */
     protected string $path = '';
 
-    protected bool $isActive = true;
-
+    /**
+     * Path params.
+     *
+     * @var array<string,string>
+     */
     protected array $pathParams = [];
 
     public function __construct(string $method, string $path)
@@ -39,28 +42,24 @@ class Route extends Hook
 
     /**
      * Add path
+     *
+     * @param string $path
+     * @return self
      */
-    public function path(string $path): static
+    public function path(string $path): self
     {
         $this->path = $path;
 
         return $this;
     }
 
-    //TODO: remove
     /**
-     * Set isActive
-     */
-    public function setIsActive(bool $isActive): void
-    {
-        $this->isActive = $isActive;
-    }
-
-    /**
-     * Set hook status
      * When set false, hooks for this route will be skipped.
+     *
+     * @param bool $hook
+     * @return self
      */
-    public function hook(bool $hook = true): static
+    public function hook(bool $hook = true): self
     {
         $this->hook = $hook;
 
@@ -68,15 +67,9 @@ class Route extends Hook
     }
 
     /**
-     * When set to false the route will be skipped
-     */
-    public function getIsActive(): bool
-    {
-        return $this->isActive;
-    }
-
-    /**
      * Get HTTP Method
+     *
+     * @return string
      */
     public function getMethod(): string
     {
@@ -85,6 +78,8 @@ class Route extends Hook
 
     /**
      * Get path
+     *
+     * @return string
      */
     public function getPath(): string
     {
@@ -93,17 +88,32 @@ class Route extends Hook
 
     /**
      * Get hook status
+     *
+     * @return bool
      */
     public function getHook(): bool
     {
         return $this->hook;
     }
 
+    /**
+     * Set path param.
+     *
+     * @param string $key
+     * @param int $index
+     * @return void
+     */
     public function setPathParam(string $key, int $index): void
     {
         $this->pathParams[$key] = $index;
     }
 
+    /**
+     * Get path params.
+     *
+     * @param \Utopia\Request $request
+     * @return array
+     */
     public function getPathValues(Request $request): array
     {
         $pathParams = [];

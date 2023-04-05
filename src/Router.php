@@ -6,6 +6,9 @@ use Exception;
 
 class Router
 {
+    /**
+     * Placeholder token for params in paths.
+     */
     public const PLACEHOLDER_TOKEN = ':::';
 
     /**
@@ -26,16 +29,28 @@ class Router
      */
     protected static array $params = [];
 
+    /**
+     * Get all registered routes.
+     *
+     * @return array 
+     */
     public static function getRoutes(): array
     {
         return self::$routes;
     }
 
+    /**
+     * Add route to router.
+     *
+     * @param \Utopia\Route $route
+     * @return void
+     * @throws \Exception
+     */
     public static function addRoute(Route $route): void
     {
         [$path, $params] = self::preparePath($route->getPath());
 
-        if (! array_key_exists($route->getMethod(), self::$routes)) {
+        if (!array_key_exists($route->getMethod(), self::$routes)) {
             throw new Exception("Method ({$route->getMethod()}) not supported.");
         }
 
@@ -50,9 +65,16 @@ class Router
         self::$routes[$route->getMethod()][$path] = $route;
     }
 
+    /**
+     * Match route against the method and path.
+     *
+     * @param string $method
+     * @param string $path
+     * @return \Utopia\Route|null
+     */
     public static function match(string $method, string $path): Route|null
     {
-        if (! array_key_exists($method, self::$routes)) {
+        if (!array_key_exists($method, self::$routes)) {
             return null;
         }
 
@@ -78,18 +100,12 @@ class Router
         return null;
     }
 
-    public static function reset(): void
-    {
-        self::$params = [];
-        self::$routes = [
-            App::REQUEST_METHOD_GET => [],
-            App::REQUEST_METHOD_POST => [],
-            App::REQUEST_METHOD_PUT => [],
-            App::REQUEST_METHOD_PATCH => [],
-            App::REQUEST_METHOD_DELETE => [],
-        ];
-    }
-
+    /**
+     * Get all combinations of the given set.
+     *
+     * @param array $set
+     * @return iterable
+     */
     protected static function combinations(array $set): iterable
     {
         yield [];
@@ -106,6 +122,12 @@ class Router
         }
     }
 
+    /**
+     * Prepare path for matching
+     *
+     * @param string $path
+     * @return array
+     */
     protected static function preparePath(string $path): array
     {
         $parts = array_values(array_filter(explode('/', $path)));
@@ -120,7 +142,7 @@ class Router
             if (str_starts_with($part, ':')) {
                 $prepare .= self::PLACEHOLDER_TOKEN;
                 $params[ltrim($part, ':')] = $key;
-                if (! in_array($key, self::$params)) {
+                if (!in_array($key, self::$params)) {
                     self::$params[] = $key;
                 }
             } else {
@@ -129,5 +151,22 @@ class Router
         }
 
         return [$prepare, $params];
+    }
+
+    /**
+     * Reset router
+     *
+     * @return void
+     */
+    public static function reset(): void
+    {
+        self::$params = [];
+        self::$routes = [
+            App::REQUEST_METHOD_GET => [],
+            App::REQUEST_METHOD_POST => [],
+            App::REQUEST_METHOD_PUT => [],
+            App::REQUEST_METHOD_PATCH => [],
+            App::REQUEST_METHOD_DELETE => [],
+        ];
     }
 }

@@ -503,12 +503,8 @@ class App
 
             $arguments = $this->getArguments($route, $pathValues, $request->getParams());
 
-            // Call the callback with the matched positions as params
-            if ($route->getIsActive()) {
-                \call_user_func_array($route->getAction(), $arguments);
-            }
-
-            $route->setIsActive(true);
+            // Call the action callback with the matched positions as params
+            \call_user_func_array($route->getAction(), $arguments);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
@@ -714,15 +710,17 @@ class App
 
     /**
      * Reset all the static variables
+     *
+     * @return void
      */
     public static function reset(): void
     {
+        Router::reset();
         self::$resourcesCallbacks = [];
         self::$mode = '';
         self::$errors = [];
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
-        Router::reset();
     }
 }
