@@ -16,7 +16,7 @@ jobs:
         php-version: '8.0'
 
     - name: Install dependencies
-      run: composer install --prefer-dist --ignore-platform-reqs
+      run: composer install --prefer-dist
 
     - name: Run Linter
       run: composer lint

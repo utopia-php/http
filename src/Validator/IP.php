@@ -25,11 +25,11 @@ class IP extends Validator
 
     /**
      * Constructor
-     * 
+     *
      * Set a the type of IP check.
-     * @param string $type 
-     * @return void 
-     * @throws \Exception 
+     * @param string $type
+     * @return void
+     * @throws \Exception
      */
     public function __construct(string $type = self::ALL)
     {
