@@ -252,7 +252,7 @@ class Hook
      */
     public function setParamValue(string $key, mixed $value): static
     {
-        if (! isset($this->params[$key])) {
+        if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
         }
 
@@ -271,7 +271,7 @@ class Hook
      */
     public function getParamValue(string $key): mixed
     {
-        if (! isset($this->params[$key])) {
+        if (!isset($this->params[$key])) {
             throw new Exception('Unknown key');
         }
 

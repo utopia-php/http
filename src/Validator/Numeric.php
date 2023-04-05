@@ -57,7 +57,7 @@ class Numeric extends Validator
      */
     public function isValid(mixed $value): bool
     {
-        if (! \is_numeric($value)) {
+        if (!\is_numeric($value)) {
             return false;
         }
 

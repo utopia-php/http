@@ -71,7 +71,7 @@ class Boolean extends Validator
      * @param  mixed  $value
      * @return bool
      */
-    public function isValid($value): bool
+    public function isValid(mixed $value): bool
     {
         if ($this->loose && ($value === 'true' || $value === 'false')) { // Accept strings
             return true;

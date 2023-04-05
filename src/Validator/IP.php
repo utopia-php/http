@@ -21,14 +21,15 @@ class IP extends Validator
     /**
      * @var string
      */
-    protected $type = self::ALL;
+    protected string $type = self::ALL;
 
     /**
      * Constructor
-     *
+     * 
      * Set a the type of IP check.
-     *
-     * @param string $type
+     * @param string $type 
+     * @return void 
+     * @throws \Exception 
      */
     public function __construct(string $type = self::ALL)
     {
@@ -59,14 +60,14 @@ class IP extends Validator
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value): bool
+    public function isValid(mixed $value): bool
     {
         switch ($this->type) {
             case self::ALL:
                 if (\filter_var($value, FILTER_VALIDATE_IP)) {
                     return true;
                 }
-            break;
+                break;
 
             case self::V4:
                 if (\filter_var($value, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
@@ -82,7 +83,7 @@ class IP extends Validator
 
             default:
                 return false;
-            break;
+                break;
         }
 
         return false;

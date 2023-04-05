@@ -4,19 +4,19 @@ namespace Utopia;
 
 abstract class Validator
 {
-    const TYPE_BOOLEAN = 'boolean';
+    public const TYPE_BOOLEAN = 'boolean';
 
-    const TYPE_INTEGER = 'integer';
+    public const TYPE_INTEGER = 'integer';
 
-    const TYPE_FLOAT = 'double'; /* gettype() returns 'double' for historical reasons */
+    public const TYPE_FLOAT = 'double'; /* gettype() returns 'double' for historical reasons */
 
-    const TYPE_STRING = 'string';
+    public const TYPE_STRING = 'string';
 
-    const TYPE_ARRAY = 'array';
+    public const TYPE_ARRAY = 'array';
 
-    const TYPE_OBJECT = 'object';
+    public const TYPE_OBJECT = 'object';
 
-    const TYPE_MIXED = 'mixed';
+    public const TYPE_MIXED = 'mixed';
 
     /**
      * Get Description

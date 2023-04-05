@@ -7,28 +7,28 @@ class App
     /**
      * Request method constants
      */
-    const REQUEST_METHOD_GET = 'GET';
+    public const REQUEST_METHOD_GET = 'GET';
 
-    const REQUEST_METHOD_POST = 'POST';
+    public const REQUEST_METHOD_POST = 'POST';
 
-    const REQUEST_METHOD_PUT = 'PUT';
+    public const REQUEST_METHOD_PUT = 'PUT';
 
-    const REQUEST_METHOD_PATCH = 'PATCH';
+    public const REQUEST_METHOD_PATCH = 'PATCH';
 
-    const REQUEST_METHOD_DELETE = 'DELETE';
+    public const REQUEST_METHOD_DELETE = 'DELETE';
 
-    const REQUEST_METHOD_OPTIONS = 'OPTIONS';
+    public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
 
-    const REQUEST_METHOD_HEAD = 'HEAD';
+    public const REQUEST_METHOD_HEAD = 'HEAD';
 
     /**
      * Mode Type
      */
-    const MODE_TYPE_DEVELOPMENT = 'development';
+    public const MODE_TYPE_DEVELOPMENT = 'development';
 
-    const MODE_TYPE_STAGE = 'stage';
+    public const MODE_TYPE_STAGE = 'stage';
 
-    const MODE_TYPE_PRODUCTION = 'production';
+    public const MODE_TYPE_PRODUCTION = 'production';
 
     /**
      * Routes
@@ -338,8 +338,8 @@ class App
             return $this;
         }
 
-        if (! \array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
-            if (! \array_key_exists($name, self::$resourcesCallbacks)) {
+        if (!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
+            if (!\array_key_exists($name, self::$resourcesCallbacks)) {
                 throw new Exception('Failed to find resource: "'.$name.'"');
             }
 
@@ -464,7 +464,7 @@ class App
      */
     public static function addRoute(string $method, string $url): Route
     {
-        if (! array_key_exists($method, self::$routes)) {
+        if (!array_key_exists($method, self::$routes)) {
             throw new Exception('Invalid Request Method');
         }
         $route = new Route($method, $url);
@@ -487,7 +487,7 @@ class App
      */
     public function match(Request $request, bool $fresh = false): ?Route
     {
-        if (null !== $this->route && ! $fresh) {
+        if (null !== $this->route && !$fresh) {
             return $this->route;
         }
 
@@ -495,7 +495,7 @@ class App
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        if (! isset(self::$routes[$method])) {
+        if (!isset(self::$routes[$method])) {
             self::$routes[$method] = [];
         }
 
@@ -506,7 +506,7 @@ class App
             $regex = '@'.\preg_replace('@:[^/]+@', '([^/]+)', $routeUrl).'@';
 
             // Check if the current request matches the expression
-            if (! \preg_match($regex, $url, $this->matches)) {
+            if (!\preg_match($regex, $url, $this->matches)) {
                 continue;
             }
 
@@ -522,7 +522,7 @@ class App
             break;
         }
 
-        if (! empty($this->route) && ('/' === $this->route->getPath()) && ($url != $this->route->getPath())) {
+        if (!empty($this->route) && ('/' === $this->route->getPath()) && ($url != $this->route->getPath())) {
             return null;
         }
 
@@ -708,7 +708,7 @@ class App
          * For route to work with similar links where one is shorter than other
          *  but both might match given pattern
          */
-        if (! self::$sorted) {
+        if (!self::$sorted) {
             foreach (self::$routes as $method => $list) { //adding route alias in $routes
                 foreach ($list as $key => $route) {
                     /** @var Route $route */

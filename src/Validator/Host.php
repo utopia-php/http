@@ -13,7 +13,7 @@ use Utopia\Validator;
  */
 class Host extends Validator
 {
-    protected $whitelist = [];
+    protected array $whitelist = [];
 
     /**
      * @param array $whitelist
@@ -43,7 +43,7 @@ class Host extends Validator
      * @param  mixed $value
      * @return bool
      */
-    public function isValid($value): bool
+    public function isValid(mixed $value): bool
     {
         $urlValidator = new URL();
 

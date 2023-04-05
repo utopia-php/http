@@ -6,23 +6,23 @@ use Exception;
 
 class Client
 {
-    const METHOD_GET = 'GET';
+    public const METHOD_GET = 'GET';
 
-    const METHOD_POST = 'POST';
+    public const METHOD_POST = 'POST';
 
-    const METHOD_PUT = 'PUT';
+    public const METHOD_PUT = 'PUT';
 
-    const METHOD_PATCH = 'PATCH';
+    public const METHOD_PATCH = 'PATCH';
 
-    const METHOD_DELETE = 'DELETE';
+    public const METHOD_DELETE = 'DELETE';
 
-    const METHOD_HEAD = 'HEAD';
+    public const METHOD_HEAD = 'HEAD';
 
-    const METHOD_OPTIONS = 'OPTIONS';
+    public const METHOD_OPTIONS = 'OPTIONS';
 
-    const METHOD_CONNECT = 'CONNECT';
+    public const METHOD_CONNECT = 'CONNECT';
 
-    const METHOD_TRACE = 'TRACE';
+    public const METHOD_TRACE = 'TRACE';
 
     /**
      * Service host name
@@ -54,7 +54,7 @@ class Client
     public function call(string $method, string $path = '', array $headers = [], array $params = [])
     {
         usleep(50000);
-        $ch = curl_init($this->baseUrl.$path.(($method == self::METHOD_GET && ! empty($params)) ? '?'.http_build_query($params) : ''));
+        $ch = curl_init($this->baseUrl.$path.(($method == self::METHOD_GET && !empty($params)) ? '?'.http_build_query($params) : ''));
         $responseHeaders = [];
         $responseStatus = -1;
         $responseType = '';

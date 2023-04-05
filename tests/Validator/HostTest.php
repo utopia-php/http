@@ -22,12 +22,12 @@ class HostTest extends TestCase
      */
     protected $host = null;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->host = new Host(['example.io', 'subdomain.example.test', 'localhost']);
     }
 
-    public function tearDown():void
+    public function tearDown(): void
     {
         $this->host = null;
     }
