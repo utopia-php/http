@@ -17,10 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class DomainTest extends TestCase
 {
-    /**
-     * @var Domain
-     */
-    protected $domain = null;
+    protected ?Domain $domain = null;
 
     public function setUp(): void
     {
@@ -29,7 +26,7 @@ class DomainTest extends TestCase
 
     public function tearDown(): void
     {
-        unset($this->domain);
+        $this->domain = null;
     }
 
     public function testIsValid()

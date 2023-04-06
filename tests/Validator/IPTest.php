@@ -21,7 +21,7 @@ class IPTest extends TestCase
 
     public function tearDown():void
     {
-        unset($this->validator);
+        $this->validator = null;
     }
 
     public function testIsValidIP()

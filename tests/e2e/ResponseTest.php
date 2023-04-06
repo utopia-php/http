@@ -7,6 +7,8 @@ use Tests\E2E\Client;
 
 class ResponseTest extends TestCase
 {
+    protected ?Client $client;
+
     public function setUp(): void
     {
         $this->client = new Client();
@@ -14,13 +16,8 @@ class ResponseTest extends TestCase
 
     public function tearDown(): void
     {
-        unset($this->client);
+        $this->client = null;
     }
-
-    /**
-     * @var Client
-     */
-    protected $client;
 
     public function testResponse()
     {

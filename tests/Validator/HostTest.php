@@ -17,10 +17,7 @@ use PHPUnit\Framework\TestCase;
 
 class HostTest extends TestCase
 {
-    /**
-     * @var Host
-     */
-    protected $host = null;
+    protected ?Host $host = null;
 
     public function setUp():void
     {
@@ -29,7 +26,7 @@ class HostTest extends TestCase
 
     public function tearDown():void
     {
-        unset($this->host);
+        $this->host = null;
     }
 
     public function testIsValid()
