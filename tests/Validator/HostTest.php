@@ -17,16 +17,11 @@ use PHPUnit\Framework\TestCase;
 
 class HostTest extends TestCase
 {
-    protected ?Host $host = null;
+    protected Host $host;
 
     public function setUp():void
     {
         $this->host = new Host(['example.io', 'subdomain.example.test', 'localhost']);
-    }
-
-    public function tearDown():void
-    {
-        $this->host = null;
     }
 
     public function testIsValid()
