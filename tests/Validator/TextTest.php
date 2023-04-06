@@ -26,12 +26,21 @@ class TextTest extends TestCase
         $this->assertTrue($validator->isValid('hell'));
         $this->assertTrue($validator->isValid('hello'));
         $this->assertFalse($validator->isValid('hellow'));
+        $this->assertFalse($validator->isValid(''));
+
+        $validator = new Text(5, 3);
+        $this->assertTrue($validator->isValid('hel'));
+        $this->assertTrue($validator->isValid('hell'));
+        $this->assertTrue($validator->isValid('hello'));
+        $this->assertFalse($validator->isValid('hellow'));
+        $this->assertFalse($validator->isValid('he'));
+        $this->assertFalse($validator->isValid('h'));
     }
 
     public function testCanValidateTextWithAllowList(): void
     {
         // Test lowercase alphabet
-        $validator = new Text(100, Text::ALPHABET_LOWER);
+        $validator = new Text(100, allowList: Text::ALPHABET_LOWER);
         $this->assertFalse($validator->isArray());
         $this->assertTrue($validator->isValid('qwertzuiopasdfghjklyxcvbnm'));
         $this->assertTrue($validator->isValid('hello'));
@@ -42,7 +51,7 @@ class TextTest extends TestCase
         $this->assertFalse($validator->isValid('hello123'));
 
         // Test uppercase alphabet
-        $validator = new Text(100, Text::ALPHABET_UPPER);
+        $validator = new Text(100, allowList: Text::ALPHABET_UPPER);
         $this->assertFalse($validator->isArray());
         $this->assertTrue($validator->isValid('QWERTZUIOPASDFGHJKLYXCVBNM'));
         $this->assertTrue($validator->isValid('HELLO'));
@@ -53,7 +62,7 @@ class TextTest extends TestCase
         $this->assertFalse($validator->isValid('HELLO123'));
 
         // Test numbers
-        $validator = new Text(100, Text::NUMBERS);
+        $validator = new Text(100, allowList: Text::NUMBERS);
         $this->assertFalse($validator->isArray());
         $this->assertTrue($validator->isValid('1234567890'));
         $this->assertTrue($validator->isValid('123'));
@@ -61,7 +70,7 @@ class TextTest extends TestCase
         $this->assertFalse($validator->isValid('hello123'));
 
         // Test combination of allowLists
-        $validator = new Text(100, [
+        $validator = new Text(100, allowList: [
             ...Text::ALPHABET_LOWER,
             ...Text::ALPHABET_UPPER,
             ...Text::NUMBERS,
