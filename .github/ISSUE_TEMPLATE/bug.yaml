@@ -51,8 +51,7 @@ body:
       label: "🐘 PHP Version"
       description: "What version of PHP are you running?"
       options:
-        - PHP 7.3.x
-        - PHP 7.4.x
+        - PHP 8.0
         - Different version (specify in environment)
     validations:
       required: true

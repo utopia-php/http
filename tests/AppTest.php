@@ -416,6 +416,8 @@ class AppTest extends TestCase
      */
     public function testCanMatchRoute(string $method, string $path): void
     {
+        $expected = '';
+
         switch ($method) {
             case App::REQUEST_METHOD_GET:
                 $expected = App::get($path);
