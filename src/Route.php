@@ -19,6 +19,13 @@ class Route extends Hook
     protected bool $hook = true;
 
     /**
+     * Array of aliases.
+     *
+     * @var array<string>
+     */
+    protected array $aliases = [];
+
+    /**
      * Path
      *
      * @var string
@@ -54,6 +61,22 @@ class Route extends Hook
     }
 
     /**
+     * Add alias
+     *
+     * @param  string $path
+     * @param  array $params
+     * @return self
+     */
+    public function alias(string $path): self
+    {
+        if (!in_array($path, $this->aliases)) {
+            $this->aliases[] = $path;
+        }
+
+        return $this;
+    }
+
+    /**
      * When set false, hooks for this route will be skipped.
      *
      * @param bool $hook
@@ -84,6 +107,16 @@ class Route extends Hook
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    /**
+     * Get Aliases
+     *
+     * @return array<string>
+     */
+    public function getAliases(): array
+    {
+        return $this->aliases;
     }
 
     /**

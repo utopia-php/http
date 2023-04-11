@@ -65,6 +65,18 @@ final class RouterTest extends TestCase
         $this->assertNotEquals($routePOST, Router::match(App::REQUEST_METHOD_GET, '/'));
     }
 
+    public function testCanMatchAlias(): void
+    {
+        $routeGET = new Route(App::REQUEST_METHOD_GET, '/target');
+        $routeGET->alias('/alias')->alias('/alias2');
+
+        Router::addRoute($routeGET);
+
+        $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/target'));
+        $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/alias'));
+        $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/alias2'));
+    }
+
     public function testCannotFindUnknownRouteByPath(): void
     {
         $this->assertNull(Router::match(App::REQUEST_METHOD_GET, '/404'));
