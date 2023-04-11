@@ -64,7 +64,6 @@ class Route extends Hook
      * Add alias
      *
      * @param  string $path
-     * @param  array $params
      * @return self
      */
     public function alias(string $path): self
@@ -149,13 +148,15 @@ class Route extends Hook
      */
     public function getPathValues(Request $request): array
     {
-        $pathParams = [];
+        $pathValues = [];
         $parts = explode('/', ltrim($request->getURI(), '/'));
 
         foreach ($this->pathParams as $key => $index) {
-            $pathParams[$key] = $parts[$index];
+            if (array_key_exists($index, $parts)) {
+                $pathValues[$key] = $parts[$index];
+            }
         }
 
-        return $pathParams;
+        return $pathValues;
     }
 }
