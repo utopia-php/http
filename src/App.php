@@ -7,28 +7,28 @@ class App
     /**
      * Request method constants
      */
-    const REQUEST_METHOD_GET = 'GET';
+    public const REQUEST_METHOD_GET = 'GET';
 
-    const REQUEST_METHOD_POST = 'POST';
+    public const REQUEST_METHOD_POST = 'POST';
 
-    const REQUEST_METHOD_PUT = 'PUT';
+    public const REQUEST_METHOD_PUT = 'PUT';
 
-    const REQUEST_METHOD_PATCH = 'PATCH';
+    public const REQUEST_METHOD_PATCH = 'PATCH';
 
-    const REQUEST_METHOD_DELETE = 'DELETE';
+    public const REQUEST_METHOD_DELETE = 'DELETE';
 
-    const REQUEST_METHOD_OPTIONS = 'OPTIONS';
+    public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
 
-    const REQUEST_METHOD_HEAD = 'HEAD';
+    public const REQUEST_METHOD_HEAD = 'HEAD';
 
     /**
      * Mode Type
      */
-    const MODE_TYPE_DEVELOPMENT = 'development';
+    public const MODE_TYPE_DEVELOPMENT = 'development';
 
-    const MODE_TYPE_STAGE = 'stage';
+    public const MODE_TYPE_STAGE = 'stage';
 
-    const MODE_TYPE_PRODUCTION = 'production';
+    public const MODE_TYPE_PRODUCTION = 'production';
 
     /**
      * @var array
@@ -682,7 +682,6 @@ class App
      * @param  string  $key
      * @param  array  $param
      * @param  mixed  $value
-     * @param  array  $resources
      * @return void
      *
      * @throws Exception

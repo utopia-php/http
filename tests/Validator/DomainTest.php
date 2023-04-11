@@ -17,19 +17,11 @@ use PHPUnit\Framework\TestCase;
 
 class DomainTest extends TestCase
 {
-    /**
-     * @var Domain
-     */
-    protected $domain = null;
+    protected Domain $domain;
 
     public function setUp(): void
     {
         $this->domain = new Domain();
-    }
-
-    public function tearDown(): void
-    {
-        $this->domain = null;
     }
 
     public function testIsValid()

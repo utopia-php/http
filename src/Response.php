@@ -7,125 +7,125 @@ class Response
     /**
      * HTTP content types
      */
-    const CONTENT_TYPE_TEXT = 'text/plain';
+    public const CONTENT_TYPE_TEXT = 'text/plain';
 
-    const CONTENT_TYPE_HTML = 'text/html';
+    public const CONTENT_TYPE_HTML = 'text/html';
 
-    const CONTENT_TYPE_JSON = 'application/json';
+    public const CONTENT_TYPE_JSON = 'application/json';
 
-    const CONTENT_TYPE_XML = 'text/xml';
+    public const CONTENT_TYPE_XML = 'text/xml';
 
-    const CONTENT_TYPE_JAVASCRIPT = 'text/javascript';
+    public const CONTENT_TYPE_JAVASCRIPT = 'text/javascript';
 
-    const CONTENT_TYPE_IMAGE = 'image/*';
+    public const CONTENT_TYPE_IMAGE = 'image/*';
 
-    const CONTENT_TYPE_IMAGE_JPEG = 'image/jpeg';
+    public const CONTENT_TYPE_IMAGE_JPEG = 'image/jpeg';
 
-    const CONTENT_TYPE_IMAGE_PNG = 'image/png';
+    public const CONTENT_TYPE_IMAGE_PNG = 'image/png';
 
-    const CONTENT_TYPE_IMAGE_GIF = 'image/gif';
+    public const CONTENT_TYPE_IMAGE_GIF = 'image/gif';
 
-    const CONTENT_TYPE_IMAGE_SVG = 'image/svg+xml';
+    public const CONTENT_TYPE_IMAGE_SVG = 'image/svg+xml';
 
-    const CONTENT_TYPE_IMAGE_WEBP = 'image/webp';
+    public const CONTENT_TYPE_IMAGE_WEBP = 'image/webp';
 
-    const CONTENT_TYPE_IMAGE_ICON = 'image/x-icon';
+    public const CONTENT_TYPE_IMAGE_ICON = 'image/x-icon';
 
-    const CONTENT_TYPE_IMAGE_BMP = 'image/bmp';
+    public const CONTENT_TYPE_IMAGE_BMP = 'image/bmp';
 
     /**
      * Chrsets
      */
-    const CHARSET_UTF8 = 'UTF-8';
+    public const CHARSET_UTF8 = 'UTF-8';
 
     /**
      * HTTP response status codes
      */
-    const STATUS_CODE_CONTINUE = 100;
+    public const STATUS_CODE_CONTINUE = 100;
 
-    const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
+    public const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
 
-    const STATUS_CODE_OK = 200;
+    public const STATUS_CODE_OK = 200;
 
-    const STATUS_CODE_CREATED = 201;
+    public const STATUS_CODE_CREATED = 201;
 
-    const STATUS_CODE_ACCEPTED = 202;
+    public const STATUS_CODE_ACCEPTED = 202;
 
-    const STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203;
+    public const STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203;
 
-    const STATUS_CODE_NOCONTENT = 204;
+    public const STATUS_CODE_NOCONTENT = 204;
 
-    const STATUS_CODE_RESETCONTENT = 205;
+    public const STATUS_CODE_RESETCONTENT = 205;
 
-    const STATUS_CODE_PARTIALCONTENT = 206;
+    public const STATUS_CODE_PARTIALCONTENT = 206;
 
-    const STATUS_CODE_MULTIPLE_CHOICES = 300;
+    public const STATUS_CODE_MULTIPLE_CHOICES = 300;
 
-    const STATUS_CODE_MOVED_PERMANENTLY = 301;
+    public const STATUS_CODE_MOVED_PERMANENTLY = 301;
 
-    const STATUS_CODE_FOUND = 302;
+    public const STATUS_CODE_FOUND = 302;
 
-    const STATUS_CODE_SEE_OTHER = 303;
+    public const STATUS_CODE_SEE_OTHER = 303;
 
-    const STATUS_CODE_NOT_MODIFIED = 304;
+    public const STATUS_CODE_NOT_MODIFIED = 304;
 
-    const STATUS_CODE_USE_PROXY = 305;
+    public const STATUS_CODE_USE_PROXY = 305;
 
-    const STATUS_CODE_UNUSED = 306;
+    public const STATUS_CODE_UNUSED = 306;
 
-    const STATUS_CODE_TEMPORARY_REDIRECT = 307;
+    public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
 
-    const STATUS_CODE_BAD_REQUEST = 400;
+    public const STATUS_CODE_BAD_REQUEST = 400;
 
-    const STATUS_CODE_UNAUTHORIZED = 401;
+    public const STATUS_CODE_UNAUTHORIZED = 401;
 
-    const STATUS_CODE_PAYMENT_REQUIRED = 402;
+    public const STATUS_CODE_PAYMENT_REQUIRED = 402;
 
-    const STATUS_CODE_FORBIDDEN = 403;
+    public const STATUS_CODE_FORBIDDEN = 403;
 
-    const STATUS_CODE_NOT_FOUND = 404;
+    public const STATUS_CODE_NOT_FOUND = 404;
 
-    const STATUS_CODE_METHOD_NOT_ALLOWED = 405;
+    public const STATUS_CODE_METHOD_NOT_ALLOWED = 405;
 
-    const STATUS_CODE_NOT_ACCEPTABLE = 406;
+    public const STATUS_CODE_NOT_ACCEPTABLE = 406;
 
-    const STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407;
+    public const STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407;
 
-    const STATUS_CODE_REQUEST_TIMEOUT = 408;
+    public const STATUS_CODE_REQUEST_TIMEOUT = 408;
 
-    const STATUS_CODE_CONFLICT = 409;
+    public const STATUS_CODE_CONFLICT = 409;
 
-    const STATUS_CODE_GONE = 410;
+    public const STATUS_CODE_GONE = 410;
 
-    const STATUS_CODE_LENGTH_REQUIRED = 411;
+    public const STATUS_CODE_LENGTH_REQUIRED = 411;
 
-    const STATUS_CODE_PRECONDITION_FAILED = 412;
+    public const STATUS_CODE_PRECONDITION_FAILED = 412;
 
-    const STATUS_CODE_REQUEST_ENTITY_TOO_LARGE = 413;
+    public const STATUS_CODE_REQUEST_ENTITY_TOO_LARGE = 413;
 
-    const STATUS_CODE_REQUEST_URI_TOO_LONG = 414;
+    public const STATUS_CODE_REQUEST_URI_TOO_LONG = 414;
 
-    const STATUS_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
+    public const STATUS_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
 
-    const STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
+    public const STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
 
-    const STATUS_CODE_EXPECTATION_FAILED = 417;
+    public const STATUS_CODE_EXPECTATION_FAILED = 417;
 
-    const STATUS_CODE_TOO_EARLY = 425;
+    public const STATUS_CODE_TOO_EARLY = 425;
 
-    const STATUS_CODE_TOO_MANY_REQUESTS = 429;
+    public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
 
-    const STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
+    public const STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
 
-    const STATUS_CODE_NOT_IMPLEMENTED = 501;
+    public const STATUS_CODE_NOT_IMPLEMENTED = 501;
 
-    const STATUS_CODE_BAD_GATEWAY = 502;
+    public const STATUS_CODE_BAD_GATEWAY = 502;
 
-    const STATUS_CODE_SERVICE_UNAVAILABLE = 503;
+    public const STATUS_CODE_SERVICE_UNAVAILABLE = 503;
 
-    const STATUS_CODE_GATEWAY_TIMEOUT = 504;
+    public const STATUS_CODE_GATEWAY_TIMEOUT = 504;
 
-    const STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
+    public const STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
 
     /**
      * @var array
@@ -194,13 +194,13 @@ class Response
         'application/xml+rss' => true,
     ];
 
-    const COOKIE_SAMESITE_NONE = 'None';
+    public const COOKIE_SAMESITE_NONE = 'None';
 
-    const COOKIE_SAMESITE_STRICT = 'Strict';
+    public const COOKIE_SAMESITE_STRICT = 'Strict';
 
-    const COOKIE_SAMESITE_LAX = 'Lax';
+    public const COOKIE_SAMESITE_LAX = 'Lax';
 
-    const CHUNK_SIZE = 2000000; //2mb
+    public const CHUNK_SIZE = 2000000; //2mb
 
     /**
      * @var int
@@ -525,7 +525,8 @@ class Response
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
      * @param  string  $body
-     * @param  bool  $last
+     * @param bool $end
+     *
      * @return void
      */
     public function chunk(string $body = '', bool $end = false): void
@@ -658,7 +659,6 @@ class Response
      *
      * @param  string  $url complete absolute URI for redirection as required by the internet standard RFC 2616 (HTTP 1.1)
      * @param  int  $statusCode valid HTTP status code
-     * @param  null  $exit
      * @return void
      *
      * @throws Exception

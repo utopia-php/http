@@ -32,7 +32,7 @@ class Router
     /**
      * Get all registered routes.
      *
-     * @return array 
+     * @return array
      */
     public static function getRoutes(): array
     {
