@@ -38,7 +38,6 @@ COPY ./tests/docker/start /usr/local/bin/start
 COPY ./src /usr/share/nginx/html/src
 COPY ./tests /usr/share/nginx/html/tests
 COPY ./phpunit.xml /usr/share/nginx/html/phpunit.xml
-COPY ./psalm.xml /usr/share/nginx/html/psalm.xml
 COPY --from=step0 /usr/local/src/vendor /usr/share/nginx/html/vendor
 
 # Supervisord Conf
