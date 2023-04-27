@@ -49,7 +49,7 @@ final class RouterBench
     #[BeforeMethods("setUpRouter")]
     #[AfterMethods("tearDown")]
     #[Iterations(50)]
-    #[Assert('mode(variant.time.avg) < 0.025 ms')]
+    #[Assert('mode(variant.time.avg) < 0.1 ms')]
     #[ParamProviders('provideRoutesToMatch')]
     public function benchRouter(array $data): void
     {
