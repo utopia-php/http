@@ -45,9 +45,9 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeBlog, Router::match(App::REQUEST_METHOD_GET, '/blog'));
         $this->assertEquals($routeBlogAuthors, Router::match(App::REQUEST_METHOD_GET, '/blog/authors'));
         $this->assertEquals($routeBlogAuthorsComments, Router::match(App::REQUEST_METHOD_GET, '/blog/authors/comments'));
-        $this->assertEquals($routeBlogPost, Router::match(App::REQUEST_METHOD_GET, '/blog/:post'));
-        $this->assertEquals($routeBlogPostComments, Router::match(App::REQUEST_METHOD_GET, '/blog/:post/comments'));
-        $this->assertEquals($routeBlogPostCommentsSingle, Router::match(App::REQUEST_METHOD_GET, '/blog/:post/comments/:comment'));
+        $this->assertEquals($routeBlogPost, Router::match(App::REQUEST_METHOD_GET, '/blog/test'));
+        $this->assertEquals($routeBlogPostComments, Router::match(App::REQUEST_METHOD_GET, '/blog/test/comments'));
+        $this->assertEquals($routeBlogPostCommentsSingle, Router::match(App::REQUEST_METHOD_GET, '/blog/test/comments/:comment'));
     }
 
     public function testCanMatchHttpMethod(): void
@@ -75,6 +75,14 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/target'));
         $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/alias'));
         $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/alias2'));
+    }
+
+    public function testCanMatchFilename(): void
+    {
+        $routeGET = new Route(App::REQUEST_METHOD_GET, '/robots.txt');
+
+        Router::addRoute($routeGET);
+        $this->assertEquals($routeGET, Router::match(App::REQUEST_METHOD_GET, '/robots.txt'));
     }
 
     public function testCannotFindUnknownRouteByPath(): void

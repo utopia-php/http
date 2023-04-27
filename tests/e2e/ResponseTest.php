@@ -37,4 +37,10 @@ class ResponseTest extends TestCase
         $response = $this->client->call(Client::METHOD_GET, '/redirect');
         $this->assertEquals('Hello World!', $response['body']);
     }
+
+    public function testFile()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
+        $this->assertEquals(204, $response['headers']['status-code']);
+    }
 }

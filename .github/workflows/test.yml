@@ -23,3 +23,6 @@ jobs:
 
     - name: Run Tests
       run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml
+
+    - name: Run Benchmarks
+      run: docker compose exec web vendor/bin/phpbench run

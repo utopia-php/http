@@ -40,6 +40,12 @@ App::get('/redirect')
         $response->redirect('/');
     });
 
+App::get('/humans.txt')
+    ->inject('response')
+    ->action(function (Response $response) {
+        $response->noContent();
+    });
+
 $request = new Request();
 $response = new Response();
 
