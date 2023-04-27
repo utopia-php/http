@@ -25,4 +25,4 @@ jobs:
       run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml
 
     - name: Run Benchmarks
-      run: docker compose exec web vendor/bin/phpbench run
+      run: docker compose exec web vendor/bin/phpbench run --progress=plain
