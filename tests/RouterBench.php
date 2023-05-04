@@ -46,8 +46,8 @@ final class RouterBench
         }
     }
 
-    #[BeforeMethods("setUpRouter")]
-    #[AfterMethods("tearDown")]
+    #[BeforeMethods('setUpRouter')]
+    #[AfterMethods('tearDown')]
     #[Iterations(50)]
     #[Assert('mode(variant.time.avg) < 0.1 ms')]
     #[ParamProviders('provideRoutesToMatch')]
