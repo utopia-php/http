@@ -113,7 +113,7 @@ trait Hooks
      * @return void
      * @throws Exception
      */
-    public function callHooksByGroup(array $hooks, string $group, array $values = [], array $params = []): void
+    public function callHooks(array $hooks, string $group = '*', array $values = [], array $params = []): void
     {
         foreach ($hooks as $hook) {
             if (in_array($group, $hook->getGroups())) {

@@ -334,11 +334,11 @@ class App
 
         try {
             if ($route->getHook()) {
-                $this->callHooksByGroup(self::$init, '*', $pathValues, $request->getParams());
+                $this->callHooks(self::$init, values: $pathValues, params: $request->getParams());
             }
 
             foreach ($groups as $group) {
-                $this->callHooksByGroup(self::$init, $group, $pathValues, $request->getParams());
+                $this->callHooks(self::$init, $group, $pathValues, $request->getParams());
             }
 
             /**
@@ -347,20 +347,20 @@ class App
             $this->callHook($route, $pathValues, $request->getParams());
 
             foreach ($groups as $group) {
-                $this->callHooksByGroup(self::$shutdown, $group, $pathValues, $request->getParams());
+                $this->callHooks(self::$shutdown, $group, $pathValues, $request->getParams());
             }
 
             if ($route->getHook()) {
-                $this->callHooksByGroup(self::$shutdown, '*', $pathValues, $request->getParams());
+                $this->callHooks(self::$shutdown, values: $pathValues, params: $request->getParams());
             }
         } catch (\Throwable $e) {
             self::setResource('error', fn () => $e);
 
             try {
                 foreach ($groups as $group) {
-                    $this->callHooksByGroup(self::$errors, $group, $pathValues, $request->getParams());
+                    $this->callHooks(self::$errors, $group, $pathValues, $request->getParams());
                 }
-                $this->callHooksByGroup(self::$errors, '*', $pathValues, $request->getParams());
+                $this->callHooks(self::$errors, values: $pathValues, params: $request->getParams());
             } catch (\Throwable $e) {
                 throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
             }
@@ -411,16 +411,16 @@ class App
         } elseif (self::REQUEST_METHOD_OPTIONS === $method) {
             try {
                 foreach ($groups as $group) {
-                    $this->callHooksByGroup(self::$options, $group, params: $request->getParams());
+                    $this->callHooks(self::$options, $group, params: $request->getParams());
                 }
-                $this->callHooksByGroup(self::$options, '*', params: $request->getParams());
+                $this->callHooks(self::$options, params: $request->getParams());
             } catch (\Throwable $e) {
                 self::setResource('error', fn () => $e);
-                $this->callHooksByGroup(self::$errors, '*', params: $request->getParams());
+                $this->callHooks(self::$errors, params: $request->getParams());
             }
         } else {
             self::setResource('error', fn () => new Exception('Not Found', 404));
-            $this->callHooksByGroup(self::$errors, '*', params: $request->getParams());
+            $this->callHooks(self::$errors, params: $request->getParams());
         }
 
         return $this;
