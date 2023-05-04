@@ -89,21 +89,35 @@ trait Hooks
     }
 
     /**
+     * Call hook.
+     *
+     * @param Hook $hook
+     * @param array $values
+     * @param array $params
+     * @return void
+     * @throws Exception
+     */
+    public function callHook(Hook $hook, array $values = [], array $params = []): void
+    {
+        $arguments = $this->getArguments($hook, $values, $params);
+        \call_user_func_array($hook->getAction(), $arguments);
+    }
+
+    /**
      * Call hooks by group.
      *
-     * @param array $hooks
+     * @param array<Hook> $hooks
      * @param string $group
      * @param array $values
      * @param array $params
      * @return void
      * @throws Exception
      */
-    public function callHooks(array $hooks, string $group, array $values = [], array $params = []): void
+    public function callHooksByGroup(array $hooks, string $group, array $values = [], array $params = []): void
     {
         foreach ($hooks as $hook) {
             if (in_array($group, $hook->getGroups())) {
-                $arguments = $this->getArguments($hook, $values, $params);
-                \call_user_func_array($hook->getAction(), $arguments);
+                $this->callHook($hook, $values, $params);
             }
         }
     }
