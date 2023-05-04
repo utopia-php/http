@@ -7,7 +7,8 @@ use Utopia\Traits\Resources;
 
 class App
 {
-    use Resources, Hooks;
+    use Resources;
+    use Hooks;
 
     /**
      * Request method constants

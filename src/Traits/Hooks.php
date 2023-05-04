@@ -91,12 +91,12 @@ trait Hooks
     /**
      * Call hooks by group.
      *
-     * @param array $hooks 
-     * @param string $group 
-     * @param array $values 
-     * @param array $params 
-     * @return void 
-     * @throws Exception 
+     * @param array $hooks
+     * @param string $group
+     * @param array $values
+     * @param array $params
+     * @return void
+     * @throws Exception
      */
     public function callHooks(array $hooks, string $group, array $values = [], array $params = []): void
     {
