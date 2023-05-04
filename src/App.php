@@ -410,16 +410,16 @@ class App
         } elseif (self::REQUEST_METHOD_OPTIONS === $method) {
             try {
                 foreach ($groups as $group) {
-                    $this->callHooks(self::$options, $group, [], $request->getParams());
+                    $this->callHooks(self::$options, $group, params: $request->getParams());
                 }
-                $this->callHooks(self::$options, '*', [], $request->getParams());
+                $this->callHooks(self::$options, '*', params: $request->getParams());
             } catch (\Throwable $e) {
                 self::setResource('error', fn () => $e);
-                $this->callHooks(self::$errors, '*', [], $request->getParams());
+                $this->callHooks(self::$errors, '*', params: $request->getParams());
             }
         } else {
             self::setResource('error', fn () => new Exception('Not Found', 404));
-            $this->callHooks(self::$errors, '*', [], $request->getParams());
+            $this->callHooks(self::$errors, '*', params: $request->getParams());
         }
 
         return $this;
