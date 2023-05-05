@@ -15,7 +15,7 @@ trait Hooks
      *
      * Errors callbacks
      *
-     * @var Hook[]
+     * @var array<Hook>
      */
     protected static array $errors = [];
 
@@ -24,7 +24,7 @@ trait Hooks
      *
      * A callback function that is initialized on application start
      *
-     * @var Hook[]
+     * @var array<Hook>
      */
     protected static array $init = [];
 
@@ -33,7 +33,7 @@ trait Hooks
      *
      * A callback function that is initialized on application end
      *
-     * @var Hook[]
+     * @var array<Hook>
      */
     protected static array $shutdown = [];
 
@@ -165,15 +165,15 @@ trait Hooks
      *
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, array $values, array $params): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $existsInRequest = \array_key_exists($key, $requestParams);
+            $existsInRequest = \array_key_exists($key, $params);
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
 
-            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
+            $arg = $existsInRequest ? $params[$key] : $param['default'];
             $value = $existsInValues ? $values[$key] : $arg;
 
             if (!$param['skipValidation']) {
