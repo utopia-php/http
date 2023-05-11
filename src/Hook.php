@@ -196,9 +196,10 @@ class Hook
      * @param  string  $description
      * @param  bool  $optional
      * @param  array  $injections
+     * @param  bool  $skipValidation
      * @return static
      */
-    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = []): static
+    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = [], bool $skipValidation = false): static
     {
         $this->params[$key] = [
             'default' => $default,
@@ -206,6 +207,7 @@ class Hook
             'description' => $description,
             'optional' => $optional,
             'injections' => $injections,
+            'skipValidation' => $skipValidation,
             'value' => null,
             'order' => count($this->params) + count($this->injections),
         ];

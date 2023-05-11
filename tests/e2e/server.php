@@ -20,8 +20,7 @@ App::get('/')
 
 App::get('/chunked')
     ->inject('response')
-    ->action(function ($response) {
-        /** @var Utopia/Response $response */
+    ->action(function (Response $response) {
         foreach (['Hello ', 'World!'] as $key => $word) {
             $response->chunk($word, $key == 1);
         }
@@ -29,8 +28,7 @@ App::get('/chunked')
 
 App::get('/redirect')
     ->inject('response')
-    ->action(function ($response) {
-        /** @var Utopia/Response $response */
+    ->action(function (Response $response) {
         $response->redirect('/');
     });
 

@@ -7,20 +7,12 @@ use Tests\E2E\Client;
 
 class ResponseTest extends TestCase
 {
+    protected Client $client;
+
     public function setUp(): void
     {
         $this->client = new Client();
     }
-
-    public function tearDown(): void
-    {
-        $this->client = null;
-    }
-
-    /**
-     * @var Client
-     */
-    protected $client;
 
     public function testResponse()
     {

@@ -645,18 +645,30 @@ class App
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $arg = (isset($requestParams[$key])) ? $requestParams[$key] : $param['default'];
-            $value = (isset($values[$key])) ? $values[$key] : $arg;
+            $existsInRequest = \array_key_exists($key, $requestParams);
+            $existsInValues = \array_key_exists($key, $values);
+            $paramExists = $existsInRequest || $existsInValues;
+
+            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
+            $value = $existsInValues ? $values[$key] : $arg;
 
             if ($hook instanceof Route) {
                 if ($hook->getIsAlias() && isset($hook->getAliasParams($hook->getAliasPath())[$key])) {
                     $value = $hook->getAliasParams($hook->getAliasPath())[$key];
+                    $paramExists = true;
                 }
             }
 
-            $value = ($value === '' || is_null($value)) ? $param['default'] : $value;
+            if (!$param['skipValidation']) {
+                if (!$paramExists && !$param['optional']) {
+                    throw new Exception('Param "' . $key . '" is not optional.', 400);
+                }
 
-            $this->validate($key, $param, $value);
+                if ($paramExists) {
+                    $this->validate($key, $param, $value);
+                }
+            }
+
             $hook->setParamValue($key, $value);
             $arguments[$param['order']] = $value;
         }
@@ -699,7 +711,6 @@ class App
         if (! self::$sorted) {
             foreach (self::$routes as $method => $list) { //adding route alias in $routes
                 foreach ($list as $key => $route) {
-                    /** @var Route $route */
                     foreach (array_keys($route->getAliases()) as $path) {
                         self::$routes[$method][$path] = $route;
                     }
@@ -796,29 +807,28 @@ class App
      * @param  string  $key
      * @param  array  $param
      * @param  mixed  $value
-     * @param  array  $resources
      * @return void
      *
      * @throws Exception
      */
     protected function validate(string $key, array $param, mixed $value): void
     {
-        if ('' !== $value && ! is_null($value)) {
-            $validator = $param['validator']; // checking whether the class exists
+        if ($param['optional'] && \is_null($value)) {
+            return;
+        }
 
-            if (\is_callable($validator)) {
-                $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
-            }
+        $validator = $param['validator']; // checking whether the class exists
 
-            if (! $validator instanceof Validator) { // is the validator object an instance of the Validator class
-                throw new Exception('Validator object is not an instance of the Validator class', 500);
-            }
+        if (\is_callable($validator)) {
+            $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
+        }
 
-            if (! $validator->isValid($value)) {
-                throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
-            }
-        } elseif (! $param['optional']) {
-            throw new Exception('Param "'.$key.'" is not optional.', 400);
+        if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
+            throw new Exception('Validator object is not an instance of the Validator class', 500);
+        }
+
+        if (!$validator->isValid($value)) {
+            throw new Exception('Invalid '.$key.': '.$validator->getDescription(), 400);
         }
     }
 

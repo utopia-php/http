@@ -96,32 +96,14 @@ class Hostname extends Validator
             }
 
             // If wildcard symbol used
-            if (\str_contains($allowedHostname, '*')) {
-                // Split hostnames into sections (subdomains)
-                $allowedSections = \explode('.', $allowedHostname);
-                $valueSections = \explode('.', $value);
+            if(\str_starts_with($allowedHostname, '*')) {
+                // Remove starting * symbol before comparing
+                $allowedHostname = substr($allowedHostname, 1);
 
-                // Only if amount of sections matches
-                if (\count($allowedSections) === \count($valueSections)) {
-                    $matchesAmount = 0;
-
-                    // Loop through all sections
-                    for ($sectionIndex = 0; $sectionIndex < \count($allowedSections); $sectionIndex++) {
-                        $allowedSection = $allowedSections[$sectionIndex];
-
-                        // If section matches, or wildcard symbol is used, increment match count
-                        if ($allowedSection === '*' || $allowedSection === $valueSections[$sectionIndex]) {
-                            $matchesAmount++;
-                        } else {
-                            // If one fails, the whole check always fails; we can skip iterations
-                            break;
-                        }
-                    }
-
-                    // If every section matched; allow
-                    if ($matchesAmount === \count($allowedSections)) {
-                        return true;
-                    }
+                // If rest of hostname match; allow
+                // Notice allowedHostname still includes starting dot. Root domain is NOT allowed by wildcard.
+                if(\str_ends_with($value, $allowedHostname)) {
+                    return true;
                 }
             }
         }

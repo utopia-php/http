@@ -20,12 +20,17 @@ class Text extends Validator
     /**
      * @var int
      */
-    protected int $length = 0;
+    protected int $length;
+
+    /**
+     * @var int
+     */
+    protected int $min;
 
     /**
      * @var string[]
      */
-    protected array $allowList = [];
+    protected array $allowList;
 
     /**
      * Text constructor.
@@ -34,11 +39,13 @@ class Text extends Validator
      * Optionally, provide allowList characters array $allowList to only allow specific character.
      *
      * @param  int  $length
+     * @param  int  $min
      * @param  string[]  $allowList
      */
-    public function __construct(int $length, array $allowList = [])
+    public function __construct(int $length, int $min = 1, array $allowList = [])
     {
         $this->length = $length;
+        $this->min = $min;
         $this->allowList = $allowList;
     }
 
@@ -53,8 +60,16 @@ class Text extends Validator
     {
         $message = 'Value must be a valid string';
 
-        if ($this->length) {
-            $message .= ' and no longer than '.$this->length.' chars';
+        if ($this->min === $this->length) {
+            $message .= ' and exactly '.$this->length.' chars';
+        } else {
+            if ($this->min) {
+                $message .= ' and at least '.$this->min.' chars';
+            }
+
+            if ($this->length) {
+                $message .= ' and no longer than '.$this->length.' chars';
+            }
         }
 
         if ($this->allowList) {
@@ -98,7 +113,11 @@ class Text extends Validator
      */
     public function isValid(mixed $value): bool
     {
-        if (! \is_string($value)) {
+        if (!\is_string($value)) {
+            return false;
+        }
+
+        if (\mb_strlen($value) < $this->min) {
             return false;
         }
 

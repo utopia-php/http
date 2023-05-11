@@ -100,8 +100,8 @@ class AppTest extends TestCase
 
         $route
             ->inject('rand')
-            ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y, $rand) {
                 echo $x.'-'.$y.'-'.$rand;
             });
@@ -144,8 +144,8 @@ class AppTest extends TestCase
 
         $route
             ->alias('/path1', ['x' => 'x-def-1', 'y' => 'y-def-1'])
-            ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y) {
                 echo $x.'-'.$y;
             });
@@ -171,21 +171,21 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', false)
-            ->param('y', 'y-def', new Text(200), 'y param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('y', 'y-def', new Text(200), 'y param', true)
             ->inject('rand')
             ->param('z', 'z-def', function ($rand) {
                 echo $rand.'-';
 
                 return new Text(200);
-            }, 'z param', false, ['rand'])
+            }, 'z param', true, ['rand'])
             ->action(function ($x, $y, $z, $rand) {
                 echo $x.'-', $y;
             });
 
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
+        $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
         $this->app->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
@@ -197,8 +197,8 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
-            ->param('x', 'x-def', new Text(1), 'x param', false)
-            ->param('y', 'y-def', new Text(1), 'y param', false)
+            ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
+            ->param('y', 'y-def', new Text(1, min: 0), 'y param', false)
             ->action(function ($x, $y) {
                 echo $x.'-', $y;
             });
@@ -311,7 +311,7 @@ class AppTest extends TestCase
         // Default Params
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
             ->action(function ($x) {
                 echo $x;
             });
@@ -326,7 +326,7 @@ class AppTest extends TestCase
         // Default Params
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
             ->hook(false)
             ->action(function ($x) {
                 echo $x;
@@ -365,7 +365,7 @@ class AppTest extends TestCase
         // param not provided for init
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', false)
+            ->param('x', 'x-def', new Text(200), 'x param', true)
             ->action(function ($x) {
                 echo $x;
             });
@@ -416,6 +416,8 @@ class AppTest extends TestCase
      */
     public function testCanMatchRoute(string $method, string $path): void
     {
+        $expected = '';
+
         switch ($method) {
             case App::REQUEST_METHOD_GET:
                 $expected = App::get($path);
