@@ -42,7 +42,7 @@ class Text extends Validator
      * @param  int  $min
      * @param  string[]  $allowList
      */
-    public function __construct(int $length, int $min = 1, array $allowList = [])
+    public function __construct(int $length, int $min = 0, array $allowList = [])
     {
         $this->length = $length;
         $this->min = $min;
