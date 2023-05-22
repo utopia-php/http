@@ -575,10 +575,36 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
-        App::wildcard()
+        App::init()
+            ->action(function () {
+                $route = $this->app->getRoute();
+                App::setResource('myRoute', fn () => $route);
+            });
+
+        App::options()
+            ->inject('request')
             ->inject('response')
-            ->action(function ($response) {
-                $response->send('HELLO');
+            ->action(function (Request $request, Response $response) {
+                $origin = $request->getOrigin();
+                $response
+                    ->addHeader('Server', 'Appwrite')
+                    ->addHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
+                    ->addHeader('Access-Control-Allow-Headers', 'Origin, Cookie, Set-Cookie, X-Requested-With, Content-Type, Access-Control-Allow-Origin, Access-Control-Request-Headers, Accept, X-Appwrite-Project, X-Appwrite-Key, X-Appwrite-Locale, X-Appwrite-Mode, X-Appwrite-JWT, X-Appwrite-Response-Format, X-SDK-Version, X-SDK-Name, X-SDK-Language, X-SDK-Platform, X-Appwrite-ID, Content-Range, Range, Cache-Control, Expires, Pragma, X-Fallback-Cookies')
+                    ->addHeader('Access-Control-Expose-Headers', 'X-Fallback-Cookies')
+                    ->addHeader('Access-Control-Allow-Origin', $origin)
+                    ->addHeader('Access-Control-Allow-Credentials', 'true')
+                    ->noContent();
+            });
+
+        App::wildcard()
+            ->inject('myRoute')
+            ->inject('response')
+            ->action(function (mixed $myRoute, $response) {
+                if($myRoute == null) {
+                    $response->send('ROUTE IS NULL!');
+                } else {
+                    $response->send('HELLO');
+                }
             });
 
         \ob_start();
@@ -586,9 +612,19 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        $this->assertEquals('HELLO', $result);
+
+        \ob_start();
+        $req = new Request();
+        $req = $req->setMethod('OPTIONS');
+        @$this->app->run($req, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('', $result);
+
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
 
-        $this->assertEquals('HELLO', $result);
     }
 }

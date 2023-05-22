@@ -733,8 +733,41 @@ class App
             $response->disablePayload();
         }
 
+        if(self::REQUEST_METHOD_OPTIONS == $method) {
+            try {
+                foreach ($groups as $group) {
+                    foreach (self::$options as $option) { // Group options hooks
+                        /** @var Hook $option */
+                        if (in_array($group, $option->getGroups())) {
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                        }
+                    }
+                }
+
+                foreach (self::$options as $option) { // Global options hooks
+                    /** @var Hook $option */
+                    if (in_array('*', $option->getGroups())) {
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                    }
+                }
+            } catch (\Throwable $e) {
+                foreach (self::$errors as $error) { // Global error hooks
+                    /** @var Hook $error */
+                    if (in_array('*', $error->getGroups())) {
+                        self::setResource('error', function () use ($e) {
+                            return $e;
+                        });
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                    }
+                }
+            }
+
+            return $this;
+        }
+
         if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
+            $this->route = $route;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
         }
