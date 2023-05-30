@@ -404,10 +404,9 @@ class AppTest extends TestCase
             'PUT request' => [App::REQUEST_METHOD_PUT, '/path1'],
             'PATCH request' => [App::REQUEST_METHOD_PATCH, '/path1'],
             'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
-            // "/a/b/c" needs to be first
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
+            '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
             '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '1 separators' => [App::REQUEST_METHOD_GET, '/a'],
+            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
         ];
     }
 
@@ -439,6 +438,36 @@ class AppTest extends TestCase
 
         $this->assertEquals($expected, $this->app->match(new Request()));
         $this->assertEquals($expected, $this->app->getRoute());
+    }
+
+    public function testNoMismatchRoute(): void
+    {
+        $requests = [
+            [
+                'path' => '/d/:id',
+                'url' => '/d/'
+            ],
+            [
+                'path' => '/d/:id/e/:id2',
+                'url' => '/d/123/e/'
+            ],
+            [
+                'path' => '/d/:id/e/:id2/f/:id3',
+                'url' => '/d/123/e/456/f/'
+            ],
+        ];
+
+        foreach ($requests as $request) {
+            App::get($request['path']);
+
+            $_SERVER['REQUEST_METHOD'] = App::REQUEST_METHOD_GET;
+            $_SERVER['REQUEST_URI'] = $request['url'];
+
+            $route = $this->app->match(new Request(), fresh: true);
+
+            $this->assertEquals(null, $route);
+            $this->assertEquals(null, $this->app->getRoute());
+        }
     }
 
     public function testCanMatchFreshRoute(): void

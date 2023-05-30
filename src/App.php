@@ -510,6 +510,11 @@ class App
                 continue;
             }
 
+            // Check the paths have the same amount of segments
+            if (\substr_count($routeUrl, '/') !== \substr_count($url, '/')) {
+                continue;
+            }
+
             \array_shift($this->matches);
             $this->route = $route;
 
