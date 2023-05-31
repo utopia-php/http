@@ -61,10 +61,10 @@ final class RouterTest extends TestCase
         Router::addRoute($routeAboutWildcard);
 
         $this->assertEquals($routeIndex, Router::match('GET', '/'));
-        $this->assertEquals($routeAbout, Router::match('GET',  '/about'));
-        $this->assertEquals($routeAboutWildcard, Router::match('GET',  '/about/me'));
-        $this->assertEquals($routeAboutWildcard, Router::match('GET',  '/about/you'));
-        $this->assertEquals($routeAboutWildcard, Router::match('GET',  '/about/me/myself/i'));
+        $this->assertEquals($routeAbout, Router::match('GET', '/about'));
+        $this->assertEquals($routeAboutWildcard, Router::match('GET', '/about/me'));
+        $this->assertEquals($routeAboutWildcard, Router::match('GET', '/about/you'));
+        $this->assertEquals($routeAboutWildcard, Router::match('GET', '/about/me/myself/i'));
     }
 
     public function testCanMatchHttpMethod(): void
