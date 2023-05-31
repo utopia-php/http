@@ -10,6 +10,7 @@ class Router
      * Placeholder token for params in paths.
      */
     public const PLACEHOLDER_TOKEN = ':::';
+    public const WILDCARD_TOKEN = '*';
 
     /**
      * @var array<string,Route[]>
@@ -100,6 +101,15 @@ class Router
             if (array_key_exists($match, self::$routes[$method])) {
                 return self::$routes[$method][$match];
             }
+        }
+
+        foreach ($parts as $part) {
+            $current ??= '';
+            $match = $current . self::WILDCARD_TOKEN;
+            if (array_key_exists($match, self::$routes[$method])) {
+                return self::$routes[$method][$match];
+            }
+            $current = $current . "{$part}/";
         }
 
         return null;

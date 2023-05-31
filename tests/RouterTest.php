@@ -50,6 +50,23 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeBlogPostCommentsSingle, Router::match(App::REQUEST_METHOD_GET, '/blog/test/comments/:comment'));
     }
 
+    public function testCanMatchUrlWithWildcard(): void
+    {
+        $routeIndex = new Route('GET', '/');
+        $routeAbout = new Route('GET', '/about');
+        $routeAboutWildcard = new Route('GET', '/about/*');
+
+        Router::addRoute($routeIndex);
+        Router::addRoute($routeAbout);
+        Router::addRoute($routeAboutWildcard);
+
+        $this->assertEquals($routeIndex, Router::match('GET', '/'));
+        $this->assertEquals($routeAbout, Router::match('GET',  '/about'));
+        $this->assertEquals($routeAboutWildcard, Router::match('GET',  '/about/me'));
+        $this->assertEquals($routeAboutWildcard, Router::match('GET',  '/about/you'));
+        $this->assertEquals($routeAboutWildcard, Router::match('GET',  '/about/me/myself/i'));
+    }
+
     public function testCanMatchHttpMethod(): void
     {
         $routeGET = new Route(App::REQUEST_METHOD_GET, '/');
