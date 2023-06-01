@@ -407,15 +407,17 @@ class AppTest extends TestCase
             '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
             '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
             '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
+            'trailing wildcard' => [App::REQUEST_METHOD_GET, '/wildcard/*', '/wildcard/lorem/ipsum'],
+            'trailing wildcard - root' => [App::REQUEST_METHOD_GET, '/wildcard/*', '/wildcard'],
         ];
     }
 
     /**
      * @dataProvider providerRouteMatching
      */
-    public function testCanMatchRoute(string $method, string $path): void
+    public function testCanMatchRoute(string $method, string $path, string $expected = null): void
     {
-        $expected = '';
+        $expected ??= $path;
 
         switch ($method) {
             case App::REQUEST_METHOD_GET:
