@@ -510,9 +510,12 @@ class App
                 continue;
             }
 
-            // Check the paths have the same amount of segments
-            if (\substr_count($routeUrl, '/') !== \substr_count($url, '/')) {
-                continue;
+            // check for trailing wildcard
+            if (!str_ends_with($routeUrl, '/*')) {
+                // Check the paths have the same amount of segments
+                if (\substr_count($routeUrl, '/') !== \substr_count($url, '/')) {
+                    continue;
+                }
             }
 
             \array_shift($this->matches);
