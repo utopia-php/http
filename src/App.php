@@ -502,6 +502,14 @@ class App
         foreach (self::$routes[$method] as $routeUrl => $route) {
             /** @var Route $route */
 
+            if(str_ends_with($routeUrl, '/') && substr_count($routeUrl, '/') > 1) {
+                $routeUrl = rtrim($routeUrl, '/');
+            }
+
+            if(str_ends_with($url, '/') && substr_count($url, '/') > 1) {
+                $url = rtrim($url, '/');
+            }
+
             // convert urls like '/users/:uid/posts/:pid' to regular expression
             $regex = '@'.\preg_replace('@:[^/]+@', '([^/]+)', $routeUrl).'@';
 
