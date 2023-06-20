@@ -332,11 +332,13 @@ class App
      *
      * @throws Exception
      */
-    public function getResource(string $name, bool $fresh = false): mixed
+    public function getResource(string $id, string $name, bool $fresh = false): mixed
     {
         if ($name === 'utopia') {
             return $this;
         }
+
+        $name = $id . '_' . $name;
 
         if (! \array_key_exists($name, self::$resourcesCallbacks)) {
             throw new Exception('Failed to find resource: "'.$name.'"');
@@ -344,7 +346,7 @@ class App
 
         return \call_user_func_array(
             self::$resourcesCallbacks[$name]['callback'],
-            $this->getResources(self::$resourcesCallbacks[$name]['injections'])
+            $this->getResources($id, self::$resourcesCallbacks[$name]['injections'])
         );
     }
 
@@ -354,12 +356,12 @@ class App
      * @param  array  $list
      * @return array
      */
-    public function getResources(array $list): array
+    public function getResources(string $id, array $list): array
     {
         $resources = [];
 
         foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name);
+            $resources[$name] = $this->getResource($id, $name);
         }
 
         return $resources;
@@ -375,11 +377,14 @@ class App
      *
      * @throws Exception
      */
-    public static function setResource(string $name, callable $callback, array $injections = []): void
+    public static function setResource($id, string $name, callable $callback, array $injections = []): void
     {
         if ($name === 'utopia') {
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
+
+        $name = $id . '_' . $name;
+
         self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
     }
 
@@ -545,7 +550,7 @@ class App
      * @param  Route  $route
      * @param  Request  $request
      */
-    public function execute(Route $route, Request $request): static
+    public function execute(Route $route, Request $request, string $id): static
     {
         $keys = [];
         $arguments = [];
@@ -565,7 +570,7 @@ class App
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($id, $hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -574,13 +579,13 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($id, $hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-            $arguments = $this->getArguments($route, $values, $request->getParams());
+            $arguments = $this->getArguments($id, $route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
             if ($route->getIsActive()) {
@@ -593,7 +598,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($id, $hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -603,20 +608,20 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $values, $request->getParams());
+                        $arguments = $this->getArguments($id, $hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
         } catch (\Throwable $e) {
-            self::setResource('error', fn () => $e);
+            self::setResource($id, 'error', fn () => $e);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     /** @var Hook $error */
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $values, $request->getParams());
+                            $arguments = $this->getArguments($id, $error, $values, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: '.$e->getMessage(), 500, $e);
@@ -629,7 +634,7 @@ class App
                 /** @var Hook $error */
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $values, $request->getParams());
+                        $arguments = $this->getArguments($id, $error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: '.$e->getMessage(), 500, $e);
@@ -651,7 +656,7 @@ class App
      *
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    protected function getArguments(string $id, Hook $hook, array $values, array $requestParams): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
@@ -675,7 +680,7 @@ class App
                 }
 
                 if ($paramExists) {
-                    $this->validate($key, $param, $value);
+                    $this->validate($id, $key, $param, $value);
                 }
             }
 
@@ -684,7 +689,7 @@ class App
         }
 
         foreach ($hook->getInjections() as $key => $injection) {
-            $arguments[$injection['order']] = $this->getResource($injection['name']);
+            $arguments[$injection['order']] = $this->getResource($id, $injection['name']);
         }
 
         return $arguments;
@@ -701,14 +706,21 @@ class App
      */
     public function run(Request $request, Response $response): static
     {
-        $this->resources['request'] = $request;
-        $this->resources['response'] = $response;
+        $id = $this->unique();
 
-        self::setResource('request', function () use ($request) {
+        $this->resources[$id . '_id'] = $id;
+        $this->resources[$id . '_request'] = $request;
+        $this->resources[$id . '_response'] = $response;
+
+        self::setResource($id, 'id', function () use ($id) {
+            return $id;
+        });
+
+        self::setResource($id, 'request', function () use ($request) {
             return $request;
         });
 
-        self::setResource('response', function () use ($response) {
+        self::setResource($id, 'response', function () use ($response) {
             return $response;
         });
 
@@ -761,14 +773,14 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request);
+            return $this->execute($route, $request, $id);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($id, $option, [], $request->getParams()));
                         }
                     }
                 }
@@ -776,27 +788,27 @@ class App
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($id, $option, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
+                        self::setResource($id, 'error', function () use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                        \call_user_func_array($error->getAction(), $this->getArguments($id, $error, [], $request->getParams()));
                     }
                 }
             }
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', function () {
+                    self::setResource($id, 'error', function () {
                         return new Exception('Not Found', 404);
                     });
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                    \call_user_func_array($error->getAction(), $this->getArguments($id, $error, [], $request->getParams()));
                 }
             }
         }
@@ -816,7 +828,7 @@ class App
      *
      * @throws Exception
      */
-    protected function validate(string $key, array $param, mixed $value): void
+    protected function validate($id, string $key, array $param, mixed $value): void
     {
         if ($param['optional'] && \is_null($value)) {
             return;
@@ -825,7 +837,7 @@ class App
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
+            $validator = \call_user_func_array($validator, $this->getResources($id, $param['injections']));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
@@ -856,5 +868,22 @@ class App
             self::REQUEST_METHOD_PATCH => [],
             self::REQUEST_METHOD_DELETE => [],
         ];
+    }
+
+    /**
+     * Create a new unique ID
+     *
+     * @throws \Exception
+     */
+    protected static function unique(int $padding = 7): string
+    {
+        $uniqid = \uniqid();
+
+        if ($padding > 0) {
+            $bytes = \random_bytes(\ceil($padding / 2)); // one byte expands to two chars
+            $uniqid .= \substr(\bin2hex($bytes), 0, $padding);
+        }
+
+        return $uniqid;
     }
 }
