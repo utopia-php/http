@@ -338,20 +338,14 @@ class App
             return $this;
         }
 
-        if (! \array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
-            if (! \array_key_exists($name, self::$resourcesCallbacks)) {
-                throw new Exception('Failed to find resource: "'.$name.'"');
-            }
-
-            $this->resources[$name] = \call_user_func_array(
-                self::$resourcesCallbacks[$name]['callback'],
-                $this->getResources(self::$resourcesCallbacks[$name]['injections'])
-            );
+        if (! \array_key_exists($name, self::$resourcesCallbacks)) {
+            throw new Exception('Failed to find resource: "'.$name.'"');
         }
 
-        self::$resourcesCallbacks[$name]['reset'] = false;
-
-        return $this->resources[$name];
+        return \call_user_func_array(
+            self::$resourcesCallbacks[$name]['callback'],
+            $this->getResources(self::$resourcesCallbacks[$name]['injections'])
+        );
     }
 
     /**
