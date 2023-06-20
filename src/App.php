@@ -616,6 +616,7 @@ class App
             }
         } catch (\Throwable $e) {
             self::setResource('error', fn () => $e);
+            $transaction->setResource('error',  fn () => $e);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -805,6 +806,9 @@ class App
                         self::setResource('error', function () use ($e) {
                             return $e;
                         });
+                        $transaction->setResource('error', function () use ($e) {
+                            return $e;
+                        });
                         \call_user_func_array($error->getAction(), $this->getArguments($transaction, $error, [], $request->getParams()));
                     }
                 }
@@ -813,6 +817,9 @@ class App
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     self::setResource('error', function () {
+                        return new Exception('Not Found', 404);
+                    });
+                    $transaction->setResource('error', function () {
                         return new Exception('Not Found', 404);
                     });
                     \call_user_func_array($error->getAction(), $this->getArguments($transaction, $error, [], $request->getParams()));
