@@ -567,12 +567,11 @@ class App
 
         // combine keys and values to one array
         $values = \array_combine($keys, $this->matches);
-        $arguments = $this->getArguments($route, $values, $request->getParams());
-
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -581,10 +580,13 @@ class App
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
+
+            $arguments = $this->getArguments($route, $values, $request->getParams());
 
             // Call the callback with the matched positions as params
             if ($route->getIsActive()) {
@@ -597,6 +599,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if (in_array($group, $hook->getGroups())) {
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -606,6 +609,7 @@ class App
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     /** @var Hook $hook */
                     if (in_array('*', $hook->getGroups())) {
+                        $arguments = $this->getArguments($hook, $values, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -618,6 +622,7 @@ class App
                     /** @var Hook $error */
                     if (in_array($group, $error->getGroups())) {
                         try {
+                            $arguments = $this->getArguments($error, $values, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: '.$e->getMessage(), 500, $e);
@@ -630,6 +635,7 @@ class App
                 /** @var Hook $error */
                 if (in_array('*', $error->getGroups())) {
                     try {
+                        $arguments = $this->getArguments($error, $values, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: '.$e->getMessage(), 500, $e);
