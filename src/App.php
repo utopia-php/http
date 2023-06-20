@@ -721,6 +721,16 @@ class App
             $transaction->setResource($name, $value['callback'], $value['injections']);
         }
 
+        $utopia = $this;
+        $transaction->setResource('utopia', function () use ($utopia) {
+            return $utopia;
+        });
+
+        $route = $this->match($request);
+        $transaction->setResource('route', function () use ($route) {
+            return $route;
+        });
+
         /*
          * Re-order array
          *

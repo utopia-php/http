@@ -15,10 +15,6 @@ class Transaction
 
     public function setResource(string $name, callable $callback, array $injections = []): void
     {
-        if ($name === 'utopia') {
-            throw new Exception("'utopia' is a reserved keyword.", 500);
-        }
-
         $this->resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections];
     }
 
