@@ -375,22 +375,26 @@ class AppTest extends TestCase
         return [
             'GET request' => [App::REQUEST_METHOD_GET, '/path1'],
             'GET request on different route' => [App::REQUEST_METHOD_GET, '/path2'],
+            'GET request with trailing slash #1' => [App::REQUEST_METHOD_GET, '/path3', '/path3/'],
+            'GET request with trailing slash #2' => [App::REQUEST_METHOD_GET, '/path3/', '/path3/'],
+            'GET request with trailing slash #3' => [App::REQUEST_METHOD_GET, '/path3/', '/path3'],
             'POST request' => [App::REQUEST_METHOD_POST, '/path1'],
             'PUT request' => [App::REQUEST_METHOD_PUT, '/path1'],
             'PATCH request' => [App::REQUEST_METHOD_PATCH, '/path1'],
             'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
             '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
             '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
+            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c']
         ];
     }
 
     /**
      * @dataProvider providerRouteMatching
      */
-    public function testCanMatchRoute(string $method, string $path): void
+    public function testCanMatchRoute(string $method, string $path, string $url = null): void
     {
-        $expected = '';
+        $url ??= $path;
+        $expected = null;
 
         switch ($method) {
             case App::REQUEST_METHOD_GET:
@@ -411,7 +415,7 @@ class AppTest extends TestCase
         }
 
         $_SERVER['REQUEST_METHOD'] = $method;
-        $_SERVER['REQUEST_URI'] = $path;
+        $_SERVER['REQUEST_URI'] = $url;
 
         $this->assertEquals($expected, $this->app->match(new Request()));
         $this->assertEquals($expected, $this->app->getRoute());
