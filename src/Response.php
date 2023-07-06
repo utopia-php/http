@@ -2,7 +2,7 @@
 
 namespace Utopia;
 
-class Response
+abstract class Response
 {
     /**
      * HTTP content types
@@ -499,10 +499,7 @@ class Response
      * @param  string  $content
      * @return void
      */
-    protected function write(string $content): void
-    {
-        echo $content;
-    }
+    abstract protected function write(string $content): void;
 
     /**
      * End
@@ -512,12 +509,7 @@ class Response
      * @param  string  $content
      * @return void
      */
-    protected function end(string $content = null): void
-    {
-        if (! is_null($content)) {
-            echo $content;
-        }
-    }
+    abstract protected function end(string $content = null): void;
 
     /**
      * Output response
@@ -586,10 +578,7 @@ class Response
      * @param  int  $statusCode
      * @return void
      */
-    protected function sendStatus(int $statusCode): void
-    {
-        http_response_code($statusCode);
-    }
+    abstract protected function sendStatus(int $statusCode): void;
 
     /**
      * Send Header
@@ -600,10 +589,7 @@ class Response
      * @param  string  $value
      * @return void
      */
-    protected function sendHeader(string $key, string $value): void
-    {
-        \header($key.': '.$value);
-    }
+    abstract protected function sendHeader(string $key, string $value): void;
 
     /**
      * Send Cookie
@@ -615,15 +601,7 @@ class Response
      * @param  array  $options
      * @return void
      */
-    protected function sendCookie(string $name, string $value, array $options): void
-    {
-        // Use proper PHP keyword name
-        $options['expires'] = $options['expire'];
-        unset($options['expire']);
-
-        // Set the cookie
-        \setcookie($name, $value, $options);
-    }
+    abstract protected function sendCookie(string $name, string $value, array $options): void;
 
     /**
      * Append cookies

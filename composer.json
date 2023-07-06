@@ -14,12 +14,14 @@
       "check": "./vendor/bin/phpstan analyse -l 5 src tests"
     },
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "ext-swoole": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",
         "vimeo/psalm": "4.27.0",
         "laravel/pint": "^1.2",
-        "phpstan/phpstan": "1.9.x-dev"
+        "phpstan/phpstan": "1.9.x-dev",
+        "swoole/ide-helper": "4.8.3"
     }
 }
