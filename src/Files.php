@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Adapter\Swoole;
+namespace Utopia;
 
 use Exception;
 
