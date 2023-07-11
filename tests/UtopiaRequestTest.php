@@ -2,9 +2,9 @@
 
 namespace Utopia\Tests;
 
-use Utopia\Request as UtopiaRequest;
+use Utopia\Adapter\FPM\Request as UtopiaFPMRequest;
 
-class UtopiaRequestTest extends UtopiaRequest
+class UtopiaFPMRequestTest extends UtopiaFPMRequest
 {
     private static ?array $params;
 

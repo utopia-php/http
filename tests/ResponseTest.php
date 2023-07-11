@@ -3,8 +3,9 @@
 namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Adapter\FPM\Response;
 
-class ResponseTest extends TestCase
+class FPMResponseTest extends TestCase
 {
     protected ?Response $response;
 

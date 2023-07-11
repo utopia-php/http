@@ -3,8 +3,10 @@
 namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Tests\UtopiaRequestTest;
+use Utopia\Tests\UtopiaFPMRequestTest;
 use Utopia\Validator\Text;
+use Utopia\Adapter\FPM\Request;
+use Utopia\Adapter\FPM\Server;
 
 class AppTest extends TestCase
 {
@@ -17,7 +19,7 @@ class AppTest extends TestCase
     public function setUp(): void
     {
         App::reset();
-        $this->app = new App('Asia/Tel_Aviv');
+        $this->app = new App('Asia/Tel_Aviv', new Server());
         $this->saveRequest();
     }
 
@@ -159,7 +161,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $request = new UtopiaRequestTest();
+        $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
         $this->app->execute($route, $request);
         $result = \ob_get_contents();
@@ -179,7 +181,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $request = new UtopiaRequestTest();
+        $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->app->execute($route, $request);
         $result = \ob_get_contents();
@@ -251,7 +253,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $request = new UtopiaRequestTest();
+        $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->app->execute($route, $request);
         $result = \ob_get_contents();
@@ -260,7 +262,7 @@ class AppTest extends TestCase
         $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         \ob_start();
-        $request = new UtopiaRequestTest();
+        $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->app->execute($homepage, $request);
         $result = \ob_get_contents();
@@ -498,7 +500,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->run(new Request(), new Response());
+        $this->app->run();
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -523,7 +525,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        @$this->app->run(new Request(), new Response());
+        @$this->app->run();
         $result = \ob_get_contents();
         \ob_end_clean();
 

@@ -3,7 +3,7 @@
 namespace Utopia\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Request;
+use Utopia\Adapter\FPM\Request;
 
 class RequestTest extends TestCase
 {
