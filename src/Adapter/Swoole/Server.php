@@ -28,7 +28,6 @@ class Server extends Adapter
         return new Response(new SwooleResponse());
     }
 
-
     public function setConfig(array $configs)
     {
         $this->server->set($configs);
