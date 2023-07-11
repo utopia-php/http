@@ -8,7 +8,6 @@ use Utopia\Response as UtopiaResponse;
 
 class Server extends Adapter
 {
-
     public function __construct()
     {
     }
