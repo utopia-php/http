@@ -48,5 +48,5 @@ App::get('/humans.txt')
 
 $server = new Server();
 
-$app = new App('UTC', $server);
+$app = new App( $server, 'UTC');
 $app->run();

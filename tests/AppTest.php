@@ -19,7 +19,7 @@ class AppTest extends TestCase
     public function setUp(): void
     {
         App::reset();
-        $this->app = new App('Asia/Tel_Aviv', new Server());
+        $this->app = new App(new Server(), 'Asia/Tel_Aviv');
         $this->saveRequest();
     }
 
