@@ -4,8 +4,6 @@ namespace Utopia\Adapter\Swoole;
 
 use Utopia\Adapter;
 use Swoole\Http\Server as SwooleServer;
-use Utopia\Request as UtopiaRequest;
-use Utopia\Response as UtopiaResponse;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 
@@ -15,17 +13,8 @@ class Server extends Adapter
 
     public function __construct(string $host, string $port = null)
     {
+        parent::__construct();
         $this->server = new SwooleServer($host, $port);
-    }
-
-    public function getRequest(): UtopiaRequest
-    {
-        return new Request(new SwooleRequest());
-    }
-
-    public function getResponse(): UtopiaResponse
-    {
-        return new Response(new SwooleResponse());
     }
 
     public function setConfig(array $configs)
@@ -33,8 +22,35 @@ class Server extends Adapter
         $this->server->set($configs);
     }
 
+    public function onRequest(callable $callback)
+    {
+        $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
+            call_user_func($callback, new Request($request), new Response($response));
+        });
+    }
+
     public function onWorkerStart(callable $callback)
     {
         $this->server->on('WorkerStart', $callback);
+    }
+
+    public function onBeforeReload(callable $callback)
+    {
+        $this->server->on('BeforeReload', $callback);
+    }
+
+    public function onAfterReload(callable $callback)
+    {
+        $this->server->on('AfterReload', $callback);
+    }
+
+    public function onStart(callable $callback)
+    {
+        $this->server->on('start', $callback);
+    }
+
+    public function start()
+    {
+        $this->server->start();
     }
 }

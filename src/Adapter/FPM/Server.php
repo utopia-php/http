@@ -3,22 +3,21 @@
 namespace Utopia\Adapter\FPM;
 
 use Utopia\Adapter;
-use Utopia\Request as UtopiaRequest;
-use Utopia\Response as UtopiaResponse;
 
 class Server extends Adapter
 {
     public function __construct()
     {
+        parent::__construct();
     }
 
-    public function getRequest(): UtopiaRequest
+    public function onRequest(callable $callback)
     {
-        return new Request();
+        call_user_func($callback, new Request(), new Response());
     }
 
-    public function getResponse(): UtopiaResponse
+    public function start()
     {
-        return new Response();
+        return;
     }
 }

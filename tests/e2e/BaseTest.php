@@ -2,18 +2,10 @@
 
 namespace Utopia\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Tests\E2E\Client;
 
-class ResponseTest extends TestCase
+trait BaseTest
 {
-    protected Client $client;
-
-    public function setUp(): void
-    {
-        $this->client = new Client();
-    }
-
     public function testResponse()
     {
         $response = $this->client->call(Client::METHOD_GET, '/');

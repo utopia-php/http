@@ -609,12 +609,11 @@ class App
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
      *
+     * @param Request $request
+     * @param Response $response;
      */
-    public function run(): static
+    public function run(Request $request, Response $response): static
     {
-        $request = $this->server->getRequest();
-        $response = $this->server->getResponse();
-
         $this->resources['request'] = $request;
         $this->resources['response'] = $response;
 

@@ -10,8 +10,9 @@ abstract class Adapter
     {
         $this->files = new Files();
     }
-    abstract public function getRequest(): Request;
-    abstract public function getResponse(): Response;
+
+    abstract public function onRequest(callable $callback);
+    abstract public function start();
     /**
      * Load directory.
      *
@@ -48,5 +49,18 @@ abstract class Adapter
     public function getFileContents(string $uri): mixed
     {
         return $this->files->getFileContents($uri);
+    }
+
+    /**
+     * Get file MIME type.
+     *
+     * @param  string  $uri
+     * @return string
+     *
+     * @throws \Exception
+     */
+    public function getFileMimeType(string $uri): mixed
+    {
+        return $this->files->getFileMimeType($uri);
     }
 }
