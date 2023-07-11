@@ -9,17 +9,17 @@ class Files
     /**
      * @var array<string, mixed>
      */
-    protected static array $loaded = [];
+    protected array $loaded = [];
 
     /**
      * @var int
      */
-    protected static int $count = 0;
+    protected int $count = 0;
 
     /**
      * @var array<string, mixed>
      */
-    protected static array $mimeTypes = [];
+    protected array $mimeTypes = [];
 
     /**
      * @var array<string, mixed>
@@ -36,9 +36,9 @@ class Files
      * @param  string  $mimeType
      * @return void
      */
-    public static function addMimeType(string $mimeType): void
+    public function addMimeType(string $mimeType): void
     {
-        self::$mimeTypes[$mimeType] = true;
+        $this->mimeTypes[$mimeType] = true;
     }
 
     /**
@@ -47,10 +47,10 @@ class Files
      * @param  string  $mimeType
      * @return void
      */
-    public static function removeMimeType(string $mimeType): void
+    public function removeMimeType(string $mimeType): void
     {
-        if (isset(self::$mimeTypes[$mimeType])) {
-            unset(self::$mimeTypes[$mimeType]);
+        if (isset($this->mimeTypes[$mimeType])) {
+            unset($this->mimeTypes[$mimeType]);
         }
     }
 
@@ -59,9 +59,9 @@ class Files
      *
      * @return array<string, mixed>
      */
-    public static function getMimeTypes(): array
+    public function getMimeTypes(): array
     {
-        return self::$mimeTypes;
+        return $this->mimeTypes;
     }
 
     /**
@@ -69,9 +69,9 @@ class Files
      *
      * @return int
      */
-    public static function getCount(): int
+    public function getCount(): int
     {
-        return self::$count;
+        return $this->count;
     }
 
     /**
@@ -83,7 +83,7 @@ class Files
      *
      * @throws \Exception
      */
-    public static function load(string $directory, string $root = null): void
+    public function load(string $directory, string $root = null): void
     {
         if (! is_readable($directory)) {
             throw new Exception("Failed to load directory: {$directory}");
@@ -113,25 +113,25 @@ class Files
             $dirPath = $directory.'/'.$path;
 
             if (is_dir($dirPath)) {
-                self::load($dirPath, strval($root));
+                $this->load($dirPath, strval($root));
 
                 continue;
             }
 
             $key = substr($dirPath, strlen(strval($root)));
 
-            if (array_key_exists($key, self::$loaded)) {
+            if (array_key_exists($key, $this->loaded)) {
                 continue;
             }
 
-            self::$loaded[$key] = [
+            $this->loaded[$key] = [
                 'contents' => file_get_contents($dirPath),
                 'mimeType' => (array_key_exists($extension, self::EXTENSIONS))
                     ? self::EXTENSIONS[$extension]
                     : mime_content_type($dirPath),
             ];
 
-            self::$count++;
+            $this->count++;
         }
 
         closedir($handle);
@@ -143,9 +143,9 @@ class Files
      * @param  string  $uri
      * @return bool
      */
-    public static function isFileLoaded(string $uri): bool
+    public function isFileLoaded(string $uri): bool
     {
-        if (! array_key_exists($uri, self::$loaded)) {
+        if (! array_key_exists($uri, $this->loaded)) {
             return false;
         }
 
@@ -160,13 +160,13 @@ class Files
      *
      * @throws \Exception
      */
-    public static function getFileContents(string $uri): mixed
+    public function getFileContents(string $uri): mixed
     {
-        if (! array_key_exists($uri, self::$loaded)) {
+        if (! array_key_exists($uri, $this->loaded)) {
             throw new Exception('File not found or not loaded: '.$uri);
         }
 
-        return self::$loaded[$uri]['contents'];
+        return $this->loaded[$uri]['contents'];
     }
 
     /**
@@ -177,13 +177,13 @@ class Files
      *
      * @throws \Exception
      */
-    public static function getFileMimeType(string $uri): mixed
+    public function getFileMimeType(string $uri): mixed
     {
-        if (! array_key_exists($uri, self::$loaded)) {
+        if (! array_key_exists($uri, $this->loaded)) {
             throw new Exception('File not found or not loaded: '.$uri);
         }
 
-        return self::$loaded[$uri]['mimeType'];
+        return $this->loaded[$uri]['mimeType'];
     }
 
     /**
@@ -191,10 +191,10 @@ class Files
      *
      * @return void
      */
-    public static function reset(): void
+    public function reset(): void
     {
-        self::$count = 0;
-        self::$loaded = [];
-        self::$mimeTypes = [];
+        $this->count = 0;
+        $this->loaded = [];
+        $this->mimeTypes = [];
     }
 }
