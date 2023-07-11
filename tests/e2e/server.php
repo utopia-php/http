@@ -2,8 +2,8 @@
 
 require_once __DIR__.'/../../vendor/autoload.php';
 
+use Utopia\Adapter\FPM\Server;
 use Utopia\App;
-use Utopia\Request;
 use Utopia\Response;
 use Utopia\Validator\Text;
 
@@ -46,8 +46,7 @@ App::get('/humans.txt')
         $response->noContent();
     });
 
-$request = new Request();
-$response = new Response();
+$server = new Server();
 
-$app = new App('UTC');
-$app->run($request, $response);
+$app = new App('UTC', $server);
+$app->run();

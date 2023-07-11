@@ -7,9 +7,8 @@ use Swoole\Http\Server as SwooleServer;
 use Utopia\Request as UtopiaRequest;
 use Utopia\Response as UtopiaResponse;
 
-
-class Server extends Adapter {
-
+class Server extends Adapter
+{
     protected SwooleServer $server;
 
     public function __construct()
@@ -25,5 +24,4 @@ class Server extends Adapter {
     {
         return new Response();
     }
-
 }

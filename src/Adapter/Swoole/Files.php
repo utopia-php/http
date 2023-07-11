@@ -24,7 +24,7 @@ class Files
     /**
      * @var array<string, mixed>
      */
-    const EXTENSIONS = [
+    public const EXTENSIONS = [
         'css' => 'text/css',
         'js' => 'text/javascript',
         'svg' => 'image/svg+xml',

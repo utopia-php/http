@@ -103,13 +103,20 @@ class App
     protected static ?Route $wildcardRoute = null;
 
     /**
+     * @var Adapter
+     */
+    protected Adapter $server;
+
+    /**
      * App
      *
      * @param  string  $timezone
+     * @param Adapter $server
      */
-    public function __construct(string $timezone)
+    public function __construct(string $timezone, Adapter $server)
     {
         \date_default_timezone_set($timezone);
+        $this->server = $server;
     }
 
     /**
@@ -605,8 +612,11 @@ class App
      * @param  Request  $request
      * @param  Response  $response
      */
-    public function run(Request $request, Response $response): static
+    public function run(): static
     {
+        $request = $this->server->getRequest();
+        $response = $this->server->getResponse();
+
         $this->resources['request'] = $request;
         $this->resources['response'] = $response;
 

@@ -9,8 +9,8 @@ use Utopia\Response as UtopiaResponse;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 
-class Server extends Adapter {
-
+class Server extends Adapter
+{
     protected SwooleServer $server;
 
     public function __construct(string $host, string $port = null)
@@ -29,4 +29,13 @@ class Server extends Adapter {
     }
 
 
+    public function setConfig(array $configs)
+    {
+        $this->server->set($configs);
+    }
+
+    public function onWorkerStart(callable $callback)
+    {
+        $this->server->on('WorkerStart', $callback);
+    }
 }
