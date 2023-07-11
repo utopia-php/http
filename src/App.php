@@ -110,10 +110,10 @@ class App
     /**
      * App
      *
-     * @param  string  $timezone
      * @param Adapter $server
+     * @param  string  $timezone
      */
-    public function __construct(string $timezone, Adapter $server)
+    public function __construct(Adapter $server, string $timezone)
     {
         \date_default_timezone_set($timezone);
         $this->server = $server;
