@@ -24,6 +24,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
+use Utopia\Adapter\FPM\Server;
 
 App::get('/hello-world') // Define Route
     ->inject('request')
@@ -40,11 +41,8 @@ App::get('/hello-world') // Define Route
 
 App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App('America/New_York');
-$request    = new Request();
-$response   = new Response();
-
-$app->run($request, $response);
+$app        = new App(new Server(), 'America/New_York');
+$app->run();
 ```
 
 ### Hooks
@@ -57,6 +55,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Utopia\App;
 use Utopia\Request;
 use Utopia\Response;
+use Utopia\Adapter\FPM\Server;
 
 App::init()
     ->inject('response')
@@ -88,11 +87,8 @@ App::get('/hello-world') // Define Route
 
 App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App('America/New_York');
-$request    = new Request();
-$response   = new Response();
-
-$app->run($request, $response);
+$app        = new App(new Server(), 'America/New_York');
+$app->run();
 ```
 
 ## System Requirements
