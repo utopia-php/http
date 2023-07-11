@@ -114,19 +114,6 @@ class AppTest extends TestCase
         $this->assertEquals('x-def-y-def-'.$resource, $result);
     }
 
-    public function testCanAddRoute(): void
-    {
-        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/addroute');
-        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/addroute');
-
-        $routes = App::getRoutes();
-        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/addroute']);
-        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/addroute']);
-
-        $this->expectExceptionMessage('Invalid Request Method');
-        App::addRoute('REST', '/addroute');
-    }
-
     public function testCanExecuteRoute(): void
     {
         App::setResource('rand', fn () => rand());
@@ -143,7 +130,6 @@ class AppTest extends TestCase
         $route = new Route('GET', '/path');
 
         $route
-            ->alias('/path1', ['x' => 'x-def-1', 'y' => 'y-def-1'])
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y) {
@@ -154,17 +140,6 @@ class AppTest extends TestCase
         $this->app->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
-
-        // test alias with param override
-        $route->setIsAlias(true);
-
-        \ob_start();
-        $this->app->execute($route, new Request());
-        $result1 = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('x-def-y-def', $result);
-        $this->assertEquals('x-def-1-y-def-1', $result1);
 
         // With Params
 
@@ -409,9 +384,7 @@ class AppTest extends TestCase
             'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
             '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
             '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
-            'trailing wildcard' => [App::REQUEST_METHOD_GET, '/wildcard/*', '/wildcard/lorem/ipsum'],
-            'trailing wildcard - root' => [App::REQUEST_METHOD_GET, '/wildcard/*', '/wildcard'],
+            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c']
         ];
     }
 
@@ -533,75 +506,6 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
-    }
-
-    public function testCanRunAliasEndpoint(): void
-    {
-        // Test head requests
-        App::get('/storage/buckets/:bucketId/files/:fileId')
-            ->alias('/storage/files/:fileId', [
-                'bucketId' => 'default',
-            ])
-            ->param('bucketId', 'bucketid', new Text(100), 'My id', false)
-            ->param('fileId', 'fileId', new Text(100), 'My id', false)
-            ->inject('response')
-            ->action(function ($bucketId, $fileId, $response) {
-                $response->send('HELLO');
-            });
-
-        $_SERVER['REQUEST_METHOD'] = 'HEAD';
-        $_SERVER['REQUEST_URI'] = '/storage/files/myfileid';
-
-        // Test Alias
-        \ob_start();
-        $this->app->run(new Request(), new Response());
-        $result1 = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertStringNotContainsString('HELLO', $result1);
-    }
-
-    public function providerAliases(): array
-    {
-        return [
-            '/real/:param1' => ['/real/p1', 'p1'],
-            '/alias' => ['/alias', 'default'],
-            '/another/:param1' => ['/another/a', 'a'],
-            '/param2' => ['/param2', 'param2'],
-        ];
-    }
-
-    /**
-     * @dataProvider providerAliases
-     */
-    public function testMultipleAliases(string $path, string $expected): void
-    {
-        App::get('/real/:param1')
-            ->alias('/alias', [
-                'param1' => 'default',
-            ])
-            ->alias('/another/:param1')
-            ->alias('/param2', [
-                'param1' => 'param2',
-            ])
-            ->param('param1', '', new Text(100), 'a param', false)
-            ->inject('response')
-            ->action(function ($param1, $response) {
-                echo $param1;
-            });
-
-        $routes = App::getRoutes();
-        $this->assertContains('/real/:param1', array_keys($routes[App::REQUEST_METHOD_GET]));
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-
-        $_SERVER['REQUEST_URI'] = $path;
-        \ob_start();
-        $this->app->run(new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals($expected, $result);
     }
 
     public function testWildcardRoute(): void

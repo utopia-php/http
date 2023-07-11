@@ -131,7 +131,7 @@ class Range extends Numeric
                 }
                 break;
             case self::TYPE_FLOAT:
-                if (! is_numeric($value) ) {
+                if (! is_numeric($value)) {
                     return false;
                 }
                 $value = $value + 0.0;

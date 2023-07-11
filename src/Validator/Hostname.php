@@ -96,13 +96,13 @@ class Hostname extends Validator
             }
 
             // If wildcard symbol used
-            if(\str_starts_with($allowedHostname, '*')) {
+            if (\str_starts_with($allowedHostname, '*')) {
                 // Remove starting * symbol before comparing
                 $allowedHostname = substr($allowedHostname, 1);
 
                 // If rest of hostname match; allow
                 // Notice allowedHostname still includes starting dot. Root domain is NOT allowed by wildcard.
-                if(\str_ends_with($value, $allowedHostname)) {
+                if (\str_ends_with($value, $allowedHostname)) {
                     return true;
                 }
             }
