@@ -16,7 +16,7 @@ jobs:
         php-version: '8.0'
 
     - name: Install dependencies
-      run: composer install --prefer-dist
+      run: composer install --prefer-dist --ignore-platform-reqs
 
     - name: Run Benchmarks
       run: composer bench -- --progress=plain
