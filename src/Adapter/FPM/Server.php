@@ -3,13 +3,11 @@
 namespace Utopia\Adapter\FPM;
 
 use Utopia\Adapter;
-use Swoole\Http\Server as SwooleServer;
 use Utopia\Request as UtopiaRequest;
 use Utopia\Response as UtopiaResponse;
 
 class Server extends Adapter
 {
-    protected SwooleServer $server;
 
     public function __construct()
     {
