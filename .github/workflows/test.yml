@@ -22,4 +22,4 @@ jobs:
       run: sleep 10
 
     - name: Run Tests
-      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml
+      run: docker compose exec fpm vendor/bin/phpunit --configuration phpunit.xml
