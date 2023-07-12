@@ -1,13 +1,13 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Tests\UtopiaFPMRequestTest;
-use Utopia\Validator\Text;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
-use Utopia\Adapter\FPM\Server;
+use Utopia\Http\Tests\UtopiaFPMRequestTest;
+use Utopia\Http\Validator\Text;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
+use Utopia\Http\Adapter\FPM\Server;
 
 class HttpTest extends TestCase
 {

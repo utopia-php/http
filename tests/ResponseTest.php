@@ -1,9 +1,9 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Adapter\FPM\Response;
+use Utopia\Http\Adapter\FPM\Response;
 
 class FPMResponseTest extends TestCase
 {
@@ -24,7 +24,7 @@ class FPMResponseTest extends TestCase
         $contentType = $this->response->setContentType(Response::CONTENT_TYPE_HTML, Response::CHARSET_UTF8);
 
         // Assertions
-        $this->assertInstanceOf('Utopia\Response', $contentType);
+        $this->assertInstanceOf('Utopia\Http\Response', $contentType);
     }
 
     public function testCanSetStatus()
@@ -32,7 +32,7 @@ class FPMResponseTest extends TestCase
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
 
         // Assertions
-        $this->assertInstanceOf('Utopia\Response', $status);
+        $this->assertInstanceOf('Utopia\Http\Response', $status);
 
         try {
             $this->response->setStatusCode(0); // Unknown status code
@@ -50,7 +50,7 @@ class FPMResponseTest extends TestCase
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
 
         // Assertions
-        $this->assertInstanceOf('Utopia\Response', $status);
+        $this->assertInstanceOf('Utopia\Http\Response', $status);
         $this->assertEquals(Response::STATUS_CODE_OK, $this->response->getStatusCode());
     }
 

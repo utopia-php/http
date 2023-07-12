@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +22,7 @@ class ViewTest extends TestCase
     {
         $value = $this->view->setParam('key', 'value');
 
-        $this->assertInstanceOf('Utopia\View', $value);
+        $this->assertInstanceOf('Utopia\Http\View', $value);
     }
 
     public function testCanGetParam()
@@ -37,7 +37,7 @@ class ViewTest extends TestCase
     {
         $value = $this->view->setPath('mocks/View/fake.phtml');
 
-        $this->assertInstanceOf('Utopia\View', $value);
+        $this->assertInstanceOf('Utopia\Http\View', $value);
     }
 
     public function testCanSetRendered()

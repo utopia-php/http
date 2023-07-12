@@ -21,10 +21,10 @@ Init your first application:
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Request;
-use Utopia\Response;
-use Utopia\Adapter\FPM\Server;
+use Utopia\Http\Http;
+use Utopia\Http\Request;
+use Utopia\Http\Response;
+use Utopia\Http\Adapter\FPM\Server;
 
 Http::get('/hello-world') // Define Route
     ->inject('request')
@@ -54,10 +54,10 @@ Library now supports server adapters and currently there are two servers impleme
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
-use Utopia\Adapter\FPM\Server;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
+use Utopia\Http\Adapter\FPM\Server;
 
 Http::get('/hello-world') // Define Route
     ->inject('request')
@@ -83,10 +83,10 @@ $http->run(new Request(), new Response());
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Adapter\Swoole\Request;
-use Utopia\Adapter\Swoole\Response;
-use Utopia\Adapter\Swoole\Server;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\Swoole\Request;
+use Utopia\Http\Adapter\Swoole\Response;
+use Utopia\Http\Adapter\Swoole\Server;
 
 Http::get('/hello-world') // Define Route
     ->inject('request')
@@ -120,10 +120,10 @@ There are three types of hooks, init hooks, shutdown hooks and error hooks. Init
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Request;
-use Utopia\Response;
-use Utopia\Adapter\FPM\Server;
+use Utopia\Http\Http;
+use Utopia\Http\Request;
+use Utopia\Http\Response;
+use Utopia\Http\Adapter\FPM\Server;
 
 Http::init()
     ->inject('response')

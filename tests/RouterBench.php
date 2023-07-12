@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use PhpBench\Attributes\AfterMethods;
 use PhpBench\Attributes\Assert;

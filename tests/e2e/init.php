@@ -2,9 +2,9 @@
 
 require_once __DIR__.'/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Response;
-use Utopia\Validator\Text;
+use Utopia\Http\Http;
+use Utopia\Http\Response;
+use Utopia\Http\Validator\Text;
 
 ini_set('memory_limit', '1024M');
 ini_set('display_errors', '1');

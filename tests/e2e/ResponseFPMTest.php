@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Tests\E2E\Client;

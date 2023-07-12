@@ -2,8 +2,8 @@
 
 require_once __DIR__.'/init.php';
 
-use Utopia\Adapter\Swoole\Server;
-use Utopia\Http;
+use Utopia\Http\Adapter\Swoole\Server;
+use Utopia\Http\Http;
 
 $server = new Server('0.0.0.0', '80');
 $http = new Http($server, 'UTC');
