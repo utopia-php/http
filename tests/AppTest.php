@@ -471,7 +471,7 @@ class AppTest extends TestCase
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path2';
             $request2 = new Request();
-            $matched = $this->app->match($request2);
+            $matched = $this->app->match($request2, fresh: false);
             $this->assertEquals($route1, $matched);
             $this->assertEquals($route1, $this->app->getRoute());
 

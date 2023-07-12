@@ -453,6 +453,12 @@ class App
         return $route;
     }
 
+    public function start()
+    {
+        $this->server->onRequest(fn($request, $response ) => $this->run($request, $response));
+        $this->server->start();
+    }
+
     /**
      * Match
      *
@@ -462,7 +468,7 @@ class App
      * @param  bool  $fresh If true, will not match any cached route
      * @return null|Route
      */
-    public function match(Request $request, bool $fresh = false): ?Route
+    public function match(Request $request, bool $fresh = true): ?Route
     {
         if (null !== $this->route && !$fresh) {
             return $this->route;
