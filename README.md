@@ -21,12 +21,12 @@ Init your first application:
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Request;
 use Utopia\Response;
 use Utopia\Adapter\FPM\Server;
 
-App::get('/hello-world') // Define Route
+Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
@@ -39,10 +39,10 @@ App::get('/hello-world') // Define Route
         }
     );
 
-App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+Http::setMode(Http::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App(new Server(), 'America/New_York');
-$app->run();
+$http        = new Http(new Server(), 'America/New_York');
+$http->run();
 ```
 
 ### Server Adapters
@@ -54,12 +54,12 @@ Library now supports server adapters and currently there are two servers impleme
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Adapter\FPM\Request;
 use Utopia\Adapter\FPM\Response;
 use Utopia\Adapter\FPM\Server;
 
-App::get('/hello-world') // Define Route
+Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
@@ -72,10 +72,10 @@ App::get('/hello-world') // Define Route
         }
     );
 
-App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+Http::setMode(Http::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App(new Server(), 'America/New_York');
-$app->run(new Request(), new Response());
+$http        = new Http(new Server(), 'America/New_York');
+$http->run(new Request(), new Response());
 ```
 
 **Using swoole server**
@@ -83,12 +83,12 @@ $app->run(new Request(), new Response());
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Adapter\Swoole\Request;
 use Utopia\Adapter\Swoole\Response;
 use Utopia\Adapter\Swoole\Server;
 
-App::get('/hello-world') // Define Route
+Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
@@ -101,13 +101,13 @@ App::get('/hello-world') // Define Route
         }
     );
 
-App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+Http::setMode(Http::MODE_TYPE_PRODUCTION); // Define Mode
 
 $server = new Server('0.0.0.0', '80');
 
 $server->onRequest(function (Request $request, Response $response) use ($server) {
-    $app = new App($server, 'UTC');
-    $app->run($request, $response);
+    $http = new Http($server, 'UTC');
+    $http->run($request, $response);
 });
 
 $server->start();
@@ -120,18 +120,18 @@ There are three types of hooks, init hooks, shutdown hooks and error hooks. Init
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Request;
 use Utopia\Response;
 use Utopia\Adapter\FPM\Server;
 
-App::init()
+Http::init()
     ->inject('response')
     ->action(function($response) {
         $response->addHeader('content-type', 'application/json');
     });
 
-App::error()
+Http::error()
     ->inject('error')
     ->inject('response')
     ->action(function($error, $response) {
@@ -140,7 +140,7 @@ App::error()
             ->send('Error occurred ' . $error);
     });
 
-App::get('/hello-world') // Define Route
+Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
@@ -153,10 +153,10 @@ App::get('/hello-world') // Define Route
         }
     );
 
-App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+Http::setMode(Http::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App(new Server(), 'America/New_York');
-$app->run();
+$http        = new Http(new Server(), 'America/New_York');
+$http->run();
 ```
 
 ## System Requirements

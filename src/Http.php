@@ -2,7 +2,7 @@
 
 namespace Utopia;
 
-class App
+class Http
 {
     /**
      * Request method constants
@@ -108,7 +108,7 @@ class App
     protected Adapter $server;
 
     /**
-     * App
+     * Http
      *
      * @param Adapter $server
      * @param  string  $timezone
@@ -372,7 +372,7 @@ class App
     }
 
     /**
-     * Is app in production mode?
+     * Is http in production mode?
      *
      * @return bool
      */
@@ -382,7 +382,7 @@ class App
     }
 
     /**
-     * Is app in development mode?
+     * Is http in development mode?
      *
      * @return bool
      */
@@ -392,7 +392,7 @@ class App
     }
 
     /**
-     * Is app in stage mode?
+     * Is http in stage mode?
      *
      * @return bool
      */

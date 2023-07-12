@@ -16,11 +16,11 @@ class Router
      * @var array<string,Route[]>
      */
     protected static array $routes = [
-        App::REQUEST_METHOD_GET => [],
-        App::REQUEST_METHOD_POST => [],
-        App::REQUEST_METHOD_PUT => [],
-        App::REQUEST_METHOD_PATCH => [],
-        App::REQUEST_METHOD_DELETE => [],
+        Http::REQUEST_METHOD_GET => [],
+        Http::REQUEST_METHOD_POST => [],
+        Http::REQUEST_METHOD_PUT => [],
+        Http::REQUEST_METHOD_PATCH => [],
+        Http::REQUEST_METHOD_DELETE => [],
     ];
 
     /**
@@ -177,11 +177,11 @@ class Router
     {
         self::$params = [];
         self::$routes = [
-            App::REQUEST_METHOD_GET => [],
-            App::REQUEST_METHOD_POST => [],
-            App::REQUEST_METHOD_PUT => [],
-            App::REQUEST_METHOD_PATCH => [],
-            App::REQUEST_METHOD_DELETE => [],
+            Http::REQUEST_METHOD_GET => [],
+            Http::REQUEST_METHOD_POST => [],
+            Http::REQUEST_METHOD_PUT => [],
+            Http::REQUEST_METHOD_PATCH => [],
+            Http::REQUEST_METHOD_DELETE => [],
         ];
     }
 }

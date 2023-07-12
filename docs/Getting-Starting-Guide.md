@@ -9,7 +9,7 @@ If you’re new to Utopia, let’s get started by looking at an example of a bas
 ## Basic GET Route
 
 ```php
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Swoole\Request;
 use Utopia\Swoole\Response;
 use Swoole\Http\Server;
@@ -18,7 +18,7 @@ use Swoole\Http\Response as SwooleResponse;
 
 $http = new Server("0.0.0.0", 8080);
  
-App::get('/')
+Http::get('/')
    ->inject('request')
    ->inject('response')
    ->action(
@@ -27,14 +27,14 @@ App::get('/')
            $response->send("<div> Hello World! </div>");
        }
 /*
-   Configure your HTTP server to respond with the Utopia app.   
+   Configure your HTTP server to respond with the Utopia http.   
 */
 
 $http->on('request', function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
    $request = new Request($swooleRequest);
    $response = new Response($swooleResponse);
-   $app = new App('America/Toronto');
-   $app->run($request, $response);
+   $http = new Http('America/Toronto');
+   $http->run($request, $response);
 });
 
 $http->start();
@@ -59,14 +59,14 @@ You can perform basic CRUD operations like GET, POST, PUT and DELETE using Utopi
 You can create a PUT request to update a todo by passing it’s reference `id` along with the values to be updated as follows:
 
 ```php
-App::put('/todos/:id')
+Http::put('/todos/:id')
    ->param('id', "", new Wildcard(), 'id of the todo')
    ->param('task', "", new Wildcard(), 'name of the todo')
    ->param('is_complete', true, new Wildcard(), 'task complete or not')
    ->inject('response')
    ->action(
        function($id, $task, $is_complete, $response) {
-           $path = \realpath('/app/app/todos.json');
+           $path = \realpath('/http/http/todos.json');
            $data = json_decode(file_get_contents($path));
            foreach($data as $object){
                if($object->id == $id){
@@ -138,7 +138,7 @@ You can find the details of other status codes by visiting our [GitHub repositor
 Let's make the above example slightly advanced by adding more properties.
 
 ```php
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Swoole\Request;
 use Utopia\Swoole\Response;
 use Swoole\Http\Server;
@@ -148,28 +148,28 @@ use Utopia\Validator\Wildcard;
 
 $http = new Server("0.0.0.0", 8080);
 
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Example of global init method. Do stuff that is common to all your endpoints in all groups. 
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response']);
 
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Example of init method for group1. Do stuff that is common to all your endpoints in group1.
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], 'group1');
 
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Example of init method for group2. Do stuff that is common to all your endpoints in group2. 
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], 'group2');
 
-App::shutdown(function($request) {
+Http::shutdown(function($request) {
    /* 
      Example of global shutdown method. Do stuff that needs to be performed at the end of each request for all groups.
      '*' (Wildcard validator) is optional.
@@ -178,7 +178,7 @@ App::shutdown(function($request) {
 
 }, ['request'], '*');
 
-App::shutdown(function($request) {
+Http::shutdown(function($request) {
    /* 
      Example of shutdown method of group1. Do stuff that needs to be performed at the end of each request for all groups.
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..
@@ -186,7 +186,7 @@ App::shutdown(function($request) {
 
 }, ['request'], 'group1');
 
-App::put('/todos/:id')
+Http::put('/todos/:id')
    ->desc('Update todo')
    ->groups(['group1', 'group2'])
    ->label('scope', 'public')
@@ -197,7 +197,7 @@ App::put('/todos/:id')
    ->inject('response')
    ->action(
        function($id, $task, $is_complete, $response) {
-           $path = \realpath('/app/app/todos.json');
+           $path = \realpath('/http/http/todos.json');
            $data = json_decode(file_get_contents($path));
            foreach($data as $object){
                if($object->id == $id){
@@ -227,7 +227,7 @@ For each endpoint, you can add the following properties described below. Let’s
 `label` can be used to store metadata that is related to your endpoint. It’s a key-value store. Some use-cases can be using label to generate the documentation or the swagger specifications. 
 
 * #### Injections
-Since each action in Utopia depends on certain resources, `inject` is used to add the dependencies. `$response` and `$request` can be injected into the service. Utopia provides the app static functions to make global resources available to all utopia endpoints.
+Since each action in Utopia depends on certain resources, `inject` is used to add the dependencies. `$response` and `$request` can be injected into the service. Utopia provides the http static functions to make global resources available to all utopia endpoints.
 
 * #### Action
 `action` contains the callback function that needs to be executed when an endpoint is called. The `param` and `inject` variables need to be passed as parameters in the callback function in the same order. The callback function defines the logic and also returns the `$response` back.
@@ -239,7 +239,7 @@ Now that you’re familiar with routing in Utopia, let’s dive into the lifecyc
 
 ## Init and Shutdown Methods
  
-The Utopia app goes through the following lifecycle whenever it receives any request:
+The Utopia http goes through the following lifecycle whenever it receives any request:
 
 ![untitled@2x](https://user-images.githubusercontent.com/43381712/146966398-0f4af03b-213e-47d7-9002-01983053c5aa.png)
 
@@ -255,7 +255,7 @@ The init and shutdown methods take three params:
 
 init method is executed in the beginning when the program execution begins. Here’s an example of the init method, where the init method is executed for all groups indicated by the wildcard symbol `'*'`.
 ```php
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Do stuff that is common to all your endpoints. 
       This can include things like authentication and authorisation checks, implementing rate limits and so on.. 
@@ -268,7 +268,7 @@ App::init(function($response) {
 Utopia's shutdown callback is used to perform cleanup tasks after a request. This could include closing any open database connections, resetting certain flags, triggering analytics events (if any) and similar tasks.
 
 ```php
-App::shutdown(function($request) {
+Http::shutdown(function($request) {
    /* 
      Do stuff that needs to be performed at the end of each request. 
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..

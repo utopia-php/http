@@ -9,9 +9,9 @@ use Utopia\Adapter\FPM\Request;
 use Utopia\Adapter\FPM\Response;
 use Utopia\Adapter\FPM\Server;
 
-class AppTest extends TestCase
+class HttpTest extends TestCase
 {
-    protected ?App $app;
+    protected ?Http $http;
 
     protected ?string $method;
 
@@ -19,14 +19,14 @@ class AppTest extends TestCase
 
     public function setUp(): void
     {
-        App::reset();
-        $this->app = new App(new Server(), 'Asia/Tel_Aviv');
+        Http::reset();
+        $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
         $this->saveRequest();
     }
 
     public function tearDown(): void
     {
-        $this->app = null;
+        $this->http = null;
         $this->restoreRequest();
     }
 
@@ -44,31 +44,31 @@ class AppTest extends TestCase
 
     public function testCanGetDifferentModes(): void
     {
-        $this->assertEmpty(App::getMode());
-        $this->assertFalse(App::isProduction());
-        $this->assertFalse(App::isDevelopment());
-        $this->assertFalse(App::isStage());
+        $this->assertEmpty(Http::getMode());
+        $this->assertFalse(Http::isProduction());
+        $this->assertFalse(Http::isDevelopment());
+        $this->assertFalse(Http::isStage());
 
-        App::setMode(App::MODE_TYPE_PRODUCTION);
+        Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(App::MODE_TYPE_PRODUCTION, App::getMode());
-        $this->assertTrue(App::isProduction());
-        $this->assertFalse(App::isDevelopment());
-        $this->assertFalse(App::isStage());
+        $this->assertEquals(Http::MODE_TYPE_PRODUCTION, Http::getMode());
+        $this->assertTrue(Http::isProduction());
+        $this->assertFalse(Http::isDevelopment());
+        $this->assertFalse(Http::isStage());
 
-        App::setMode(App::MODE_TYPE_DEVELOPMENT);
+        Http::setMode(Http::MODE_TYPE_DEVELOPMENT);
 
-        $this->assertEquals(App::MODE_TYPE_DEVELOPMENT, App::getMode());
-        $this->assertFalse(App::isProduction());
-        $this->assertTrue(App::isDevelopment());
-        $this->assertFalse(App::isStage());
+        $this->assertEquals(Http::MODE_TYPE_DEVELOPMENT, Http::getMode());
+        $this->assertFalse(Http::isProduction());
+        $this->assertTrue(Http::isDevelopment());
+        $this->assertFalse(Http::isStage());
 
-        App::setMode(App::MODE_TYPE_STAGE);
+        Http::setMode(Http::MODE_TYPE_STAGE);
 
-        $this->assertEquals(App::MODE_TYPE_STAGE, App::getMode());
-        $this->assertFalse(App::isProduction());
-        $this->assertFalse(App::isDevelopment());
-        $this->assertTrue(App::isStage());
+        $this->assertEquals(Http::MODE_TYPE_STAGE, Http::getMode());
+        $this->assertFalse(Http::isProduction());
+        $this->assertFalse(Http::isDevelopment());
+        $this->assertTrue(Http::isStage());
     }
 
     public function testCanGetEnvironmentVariable(): void
@@ -76,27 +76,27 @@ class AppTest extends TestCase
         // Mock
         $_SERVER['key'] = 'value';
 
-        $this->assertEquals(App::getEnv('key'), 'value');
-        $this->assertEquals(App::getEnv('unknown', 'test'), 'test');
+        $this->assertEquals(Http::getEnv('key'), 'value');
+        $this->assertEquals(Http::getEnv('unknown', 'test'), 'test');
     }
 
     public function testCanGetResources(): void
     {
-        App::setResource('rand', fn () => rand());
-        App::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        App::setResource('second', fn () => 'second');
+        Http::setResource('rand', fn () => rand());
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
 
-        $second = $this->app->getResource('second');
-        $first = $this->app->getResource('first');
+        $second = $this->http->getResource('second');
+        $first = $this->http->getResource('first');
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        $resource = $this->app->getResource('rand');
+        $resource = $this->http->getResource('rand');
 
         $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, $this->app->getResource('rand'));
-        $this->assertEquals($resource, $this->app->getResource('rand'));
-        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $this->http->getResource('rand'));
+        $this->assertEquals($resource, $this->http->getResource('rand'));
+        $this->assertEquals($resource, $this->http->getResource('rand'));
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -110,7 +110,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -119,10 +119,10 @@ class AppTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        App::setResource('rand', fn () => rand());
-        $resource = $this->app->getResource('rand');
+        Http::setResource('rand', fn () => rand());
+        $resource = $this->http->getResource('rand');
 
-        $this->app
+        $this->http
             ->error()
             ->inject('error')
             ->action(function ($error) {
@@ -140,7 +140,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -164,7 +164,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->app->execute($route, $request);
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -184,7 +184,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request);
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -192,41 +192,41 @@ class AppTest extends TestCase
 
         // With Hooks
 
-        $this->app
+        $this->http
             ->init()
             ->inject('rand')
             ->action(function ($rand) {
                 echo 'init-'.$rand.'-';
             });
 
-        $this->app
+        $this->http
             ->shutdown()
             ->action(function () {
                 echo '-shutdown';
             });
 
-        $this->app
+        $this->http
             ->init()
             ->groups(['api'])
             ->action(function () {
                 echo '(init-api)-';
             });
 
-        $this->app
+        $this->http
             ->shutdown()
             ->groups(['api'])
             ->action(function () {
                 echo '-(shutdown-api)';
             });
 
-        $this->app
+        $this->http
             ->init()
             ->groups(['homepage'])
             ->action(function () {
                 echo '(init-homepage)-';
             });
 
-        $this->app
+        $this->http
             ->shutdown()
             ->groups(['homepage'])
             ->action(function () {
@@ -256,7 +256,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request);
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -265,7 +265,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($homepage, $request);
+        $this->http->execute($homepage, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -274,13 +274,13 @@ class AppTest extends TestCase
 
     public function testCanAddAndExecuteHooks()
     {
-        $this->app
+        $this->http
             ->init()
             ->action(function () {
                 echo '(init)-';
             });
 
-        $this->app
+        $this->http
             ->shutdown()
             ->action(function () {
                 echo '-(shutdown)';
@@ -295,7 +295,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -311,7 +311,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -320,21 +320,21 @@ class AppTest extends TestCase
 
     public function testCanHookThrowExceptions()
     {
-        $this->app
+        $this->http
             ->init()
             ->param('y', '', new Text(5), 'y param', false)
             ->action(function ($y) {
                 echo '(init)-'.$y.'-';
             });
 
-        $this->app
+        $this->http
             ->error()
             ->inject('error')
             ->action(function ($error) {
                 echo 'error-'.$error->getMessage();
             });
 
-        $this->app
+        $this->http
             ->shutdown()
             ->action(function () {
                 echo '-(shutdown)';
@@ -349,7 +349,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -357,7 +357,7 @@ class AppTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->app->execute($route, new Request());
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -368,26 +368,26 @@ class AppTest extends TestCase
     {
         $route = new Route('GET', '/path');
 
-        $this->assertEquals($this->app->getRoute(), null);
-        $this->app->setRoute($route);
-        $this->assertEquals($this->app->getRoute(), $route);
+        $this->assertEquals($this->http->getRoute(), null);
+        $this->http->setRoute($route);
+        $this->assertEquals($this->http->getRoute(), $route);
     }
 
     public function providerRouteMatching(): array
     {
         return [
-            'GET request' => [App::REQUEST_METHOD_GET, '/path1'],
-            'GET request on different route' => [App::REQUEST_METHOD_GET, '/path2'],
-            'GET request with trailing slash #1' => [App::REQUEST_METHOD_GET, '/path3', '/path3/'],
-            'GET request with trailing slash #2' => [App::REQUEST_METHOD_GET, '/path3/', '/path3/'],
-            'GET request with trailing slash #3' => [App::REQUEST_METHOD_GET, '/path3/', '/path3'],
-            'POST request' => [App::REQUEST_METHOD_POST, '/path1'],
-            'PUT request' => [App::REQUEST_METHOD_PUT, '/path1'],
-            'PATCH request' => [App::REQUEST_METHOD_PATCH, '/path1'],
-            'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
-            '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
-            '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c']
+            'GET request' => [Http::REQUEST_METHOD_GET, '/path1'],
+            'GET request on different route' => [Http::REQUEST_METHOD_GET, '/path2'],
+            'GET request with trailing slash #1' => [Http::REQUEST_METHOD_GET, '/path3', '/path3/'],
+            'GET request with trailing slash #2' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3/'],
+            'GET request with trailing slash #3' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3'],
+            'POST request' => [Http::REQUEST_METHOD_POST, '/path1'],
+            'PUT request' => [Http::REQUEST_METHOD_PUT, '/path1'],
+            'PATCH request' => [Http::REQUEST_METHOD_PATCH, '/path1'],
+            'DELETE request' => [Http::REQUEST_METHOD_DELETE, '/path1'],
+            '1 separators' => [Http::REQUEST_METHOD_GET, '/a/'],
+            '2 separators' => [Http::REQUEST_METHOD_GET, '/a/b'],
+            '3 separators' => [Http::REQUEST_METHOD_GET, '/a/b/c']
         ];
     }
 
@@ -400,28 +400,28 @@ class AppTest extends TestCase
         $expected = null;
 
         switch ($method) {
-            case App::REQUEST_METHOD_GET:
-                $expected = App::get($path);
+            case Http::REQUEST_METHOD_GET:
+                $expected = Http::get($path);
                 break;
-            case App::REQUEST_METHOD_POST:
-                $expected = App::post($path);
+            case Http::REQUEST_METHOD_POST:
+                $expected = Http::post($path);
                 break;
-            case App::REQUEST_METHOD_PUT:
-                $expected = App::put($path);
+            case Http::REQUEST_METHOD_PUT:
+                $expected = Http::put($path);
                 break;
-            case App::REQUEST_METHOD_PATCH:
-                $expected = App::patch($path);
+            case Http::REQUEST_METHOD_PATCH:
+                $expected = Http::patch($path);
                 break;
-            case App::REQUEST_METHOD_DELETE:
-                $expected = App::delete($path);
+            case Http::REQUEST_METHOD_DELETE:
+                $expected = Http::delete($path);
                 break;
         }
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $url;
 
-        $this->assertEquals($expected, $this->app->match(new Request()));
-        $this->assertEquals($expected, $this->app->getRoute());
+        $this->assertEquals($expected, $this->http->match(new Request()));
+        $this->assertEquals($expected, $this->http->getRoute());
     }
 
     public function testNoMismatchRoute(): void
@@ -442,43 +442,43 @@ class AppTest extends TestCase
         ];
 
         foreach ($requests as $request) {
-            App::get($request['path']);
+            Http::get($request['path']);
 
-            $_SERVER['REQUEST_METHOD'] = App::REQUEST_METHOD_GET;
+            $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
             $_SERVER['REQUEST_URI'] = $request['url'];
 
-            $route = $this->app->match(new Request(), fresh: true);
+            $route = $this->http->match(new Request(), fresh: true);
 
             $this->assertEquals(null, $route);
-            $this->assertEquals(null, $this->app->getRoute());
+            $this->assertEquals(null, $this->http->getRoute());
         }
     }
 
     public function testCanMatchFreshRoute(): void
     {
-        $route1 = App::get('/path1');
-        $route2 = App::get('/path2');
+        $route1 = Http::get('/path1');
+        $route2 = Http::get('/path2');
 
         try {
             // Match first request
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path1';
-            $matched = $this->app->match(new Request());
+            $matched = $this->http->match(new Request());
             $this->assertEquals($route1, $matched);
-            $this->assertEquals($route1, $this->app->getRoute());
+            $this->assertEquals($route1, $this->http->getRoute());
 
             // Second request match returns cached route
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path2';
             $request2 = new Request();
-            $matched = $this->app->match($request2, fresh: false);
+            $matched = $this->http->match($request2, fresh: false);
             $this->assertEquals($route1, $matched);
-            $this->assertEquals($route1, $this->app->getRoute());
+            $this->assertEquals($route1, $this->http->getRoute());
 
             // Fresh match returns new route
-            $matched = $this->app->match($request2, fresh: true);
+            $matched = $this->http->match($request2, fresh: true);
             $this->assertEquals($route2, $matched);
-            $this->assertEquals($route2, $this->app->getRoute());
+            $this->assertEquals($route2, $this->http->getRoute());
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
@@ -494,14 +494,14 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'HEAD';
         $_SERVER['REQUEST_URI'] = '/path';
 
-        App::get('/path')
+        Http::get('/path')
             ->inject('response')
             ->action(function ($response) {
                 $response->send('HELLO');
             });
 
         \ob_start();
-        $this->app->run(new Request(), new Response());
+        $this->http->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -519,14 +519,14 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
-        App::wildcard()
+        Http::wildcard()
             ->inject('response')
             ->action(function ($response) {
                 $response->send('HELLO');
             });
 
         \ob_start();
-        @$this->app->run(new Request(), new Response());
+        @$this->http->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
