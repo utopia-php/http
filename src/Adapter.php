@@ -13,6 +13,7 @@ abstract class Adapter
 
     abstract public function onRequest(callable $callback);
     abstract public function start();
+    
     /**
      * Load directory.
      *
