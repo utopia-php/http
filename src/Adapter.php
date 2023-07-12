@@ -22,9 +22,9 @@ abstract class Adapter
      *
      * @throws \Exception
     */
-    public function loadfiles(string $diectory, string $root = null): void
+    public function loadfiles(string $directory, string $root = null): void
     {
-        $this->files->load($diectory, $root);
+        $this->files->load($directory, $root);
     }
 
     /**
