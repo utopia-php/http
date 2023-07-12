@@ -45,6 +45,74 @@ $app        = new App(new Server(), 'America/New_York');
 $app->run();
 ```
 
+### Server Adapters
+
+Library now supports server adapters and currently there are two servers implemented. You can use the PHP FPM server or the swoole server.
+
+**Use PHP FPM server**
+
+```php
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Utopia\App;
+use Utopia\Adapter\FPM\Request;
+use Utopia\Adapter\FPM\Response;
+use Utopia\Adapter\FPM\Server;
+
+App::get('/hello-world') // Define Route
+    ->inject('request')
+    ->inject('response')
+    ->action(
+        function($request, $response) {
+            $response
+              ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+              ->addHeader('Expires', '0')
+              ->addHeader('Pragma', 'no-cache')
+              ->json(['Hello' => 'World']);
+        }
+    );
+
+App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+
+$app        = new App(new Server(), 'America/New_York');
+$app->run(new Request(), new Response());
+```
+
+**Using swoole server**
+
+```php
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Utopia\App;
+use Utopia\Adapter\Swoole\Request;
+use Utopia\Adapter\Swoole\Response;
+use Utopia\Adapter\Swoole\Server;
+
+App::get('/hello-world') // Define Route
+    ->inject('request')
+    ->inject('response')
+    ->action(
+        function($request, $response) {
+            $response
+              ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+              ->addHeader('Expires', '0')
+              ->addHeader('Pragma', 'no-cache')
+              ->json(['Hello' => 'World']);
+        }
+    );
+
+App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+
+$server = new Server('0.0.0.0', '80');
+
+$server->onRequest(function (Request $request, Response $response) use ($server) {
+    $app = new App($server, 'UTC');
+    $app->run($request, $response);
+});
+
+$server->start();
+```
+
 ### Hooks
 
 There are three types of hooks, init hooks, shutdown hooks and error hooks. Init hooks are executed before the route action is executed. Shutdown hook is executed after route action is executed before application shuts down. Finally error hooks are executed whenever there's an error in the application lifecycle. You can provide multiple hooks for each stage. If you do not assign groups to the hook, by default the hook will be executed for every route.
