@@ -13,7 +13,6 @@ class Server extends Adapter
 
     public function __construct(string $host, string $port = null)
     {
-        parent::__construct();
         $this->server = new SwooleServer($host, $port);
     }
 
