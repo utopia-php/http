@@ -11,7 +11,7 @@
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-            "Utopia\\Http": "src/Http"
+            "Utopia\\Http\\": "src/Http"
         }
     },
     "scripts": {

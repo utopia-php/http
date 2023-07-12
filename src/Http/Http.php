@@ -677,7 +677,7 @@ class Http
      */
     public function run(Request $request, Response $response): static
     {
-        if($this->isFileLoaded($request->getURI())) {
+        if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
 
             $response

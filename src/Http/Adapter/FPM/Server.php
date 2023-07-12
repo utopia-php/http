@@ -7,7 +7,8 @@ use Utopia\Http\Adapter;
 class Server extends Adapter
 {
     public function __construct()
-    {}
+    {
+    }
 
     public function onRequest(callable $callback)
     {
