@@ -2,7 +2,9 @@ version: '3'
 
 services:
     fpm:
-        build: .
+        build:
+            context: .
+            dockerfile: Dockerfile.fpm
         ports:
             - "9020:80"
         volumes:
