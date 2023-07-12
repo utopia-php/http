@@ -455,7 +455,7 @@ class Http
 
     public function start()
     {
-        $this->server->onRequest(fn($request, $response ) => $this->run($request, $response));
+        $this->server->onRequest(fn ($request, $response) => $this->run($request, $response));
         $this->server->start();
     }
 
