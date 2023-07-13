@@ -91,6 +91,13 @@ class Http
     protected static array $options = [];
 
     /**
+     * Server Start hooks
+     *
+     * @var Hook[]
+     */
+    protected static array $startHooks = [];
+
+    /**
      * Route
      *
      * Memory cached result for chosen route
@@ -521,20 +528,42 @@ class Http
         $this->server->onWorkerStart($callback);
     }
 
-    /**
-     * On server start callback
-     *
-     * @param callable $callback
-     * @return void
-     */
-    public function onStart(callable $callback)
+
+    public static function onStart(): Hook
     {
-        $this->server->onStart($callback);
+        $hook = new Hook();
+        self::$startHooks[] = $hook;
+        return $hook;
     }
 
     public function start()
     {
         $this->server->onRequest(fn ($request, $response) => $this->run($request, $response));
+        $this->server->onStart(function ($server) {
+            $this->resources['server'] = $server;
+
+            try {
+
+                foreach (self::$startHooks as $hook) {
+                    $arguments = $this->getArguments($hook, [], []);
+                    \call_user_func_array($hook->getAction(), $arguments);
+                }
+            } catch(\Exception $e) {
+                self::setResource('error', fn () => $e);
+
+                foreach (self::$errors as $error) { // Global error hooks
+                    if (in_array('*', $error->getGroups())) {
+                        try {
+                            $arguments = $this->getArguments($error, [], []);
+                            \call_user_func_array($error->getAction(), $arguments);
+                        } catch (\Throwable $e) {
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        }
+                    }
+                }
+            }
+        });
+
         $this->server->start();
     }
 
