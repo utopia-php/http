@@ -543,7 +543,9 @@ class Http
         $this->server->onRequest(fn ($request, $response) => $this->run($request, $response));
         $this->server->onStart(function ($server) {
             $this->resources['server'] = $server;
-
+            self::setResource('server', function () use ($server) {
+                return $server;
+            });
             try {
 
                 foreach (self::$startHooks as $hook) {
@@ -569,6 +571,13 @@ class Http
         $this->server->onWorkerStart(function ($server, $workerId) {
             $this->resources['server'] = $server;
             $this->resources['workerId'] = $workerId;
+
+            self::setResource('server', function () use ($server) {
+                return $server;
+            });
+            self::setResource('workerId', function () use ($workerId) {
+                return $workerId;
+            });
 
             try {
 
