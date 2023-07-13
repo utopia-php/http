@@ -98,6 +98,13 @@ class Http
     protected static array $startHooks = [];
 
     /**
+     * Worker Start hooks
+     *
+     * @var Hook[]
+     */
+    protected static array $workerStartHooks = [];
+
+    /**
      * Route
      *
      * Memory cached result for chosen route
@@ -517,17 +524,12 @@ class Http
         return $this->files->getFileMimeType($uri);
     }
 
-    /**
-     * On worker start callback
-     *
-     * @param callable $callback
-     * @return void
-     */
-    public function onWorkerStart(callable $callback)
+    public static function onWorkerStart(): Hook
     {
-        $this->server->onWorkerStart($callback);
+        $hook = new Hook();
+        self::$workerStartHooks[] = $hook;
+        return $hook;
     }
-
 
     public static function onStart(): Hook
     {
@@ -545,6 +547,32 @@ class Http
             try {
 
                 foreach (self::$startHooks as $hook) {
+                    $arguments = $this->getArguments($hook, [], []);
+                    \call_user_func_array($hook->getAction(), $arguments);
+                }
+            } catch(\Exception $e) {
+                self::setResource('error', fn () => $e);
+
+                foreach (self::$errors as $error) { // Global error hooks
+                    if (in_array('*', $error->getGroups())) {
+                        try {
+                            $arguments = $this->getArguments($error, [], []);
+                            \call_user_func_array($error->getAction(), $arguments);
+                        } catch (\Throwable $e) {
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        }
+                    }
+                }
+            }
+        });
+
+        $this->server->onWorkerStart(function ($server, $workerId) {
+            $this->resources['server'] = $server;
+            $this->resources['workerId'] = $workerId;
+
+            try {
+
+                foreach (self::$workerStartHooks as $hook) {
                     $arguments = $this->getArguments($hook, [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
