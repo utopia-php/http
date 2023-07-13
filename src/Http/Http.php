@@ -510,6 +510,28 @@ class Http
         return $this->files->getFileMimeType($uri);
     }
 
+    /**
+     * On worker start callback
+     *
+     * @param callable $callback
+     * @return void
+     */
+    public function onWorkerStart(callable $callback)
+    {
+        $this->server->onWorkerStart($callback);
+    }
+
+    /**
+     * On server start callback
+     *
+     * @param callable $callback
+     * @return void
+     */
+    public function onStart(callable $callback)
+    {
+        $this->server->onStart($callback);
+    }
+
     public function start()
     {
         $this->server->onRequest(fn ($request, $response) => $this->run($request, $response));
