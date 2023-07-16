@@ -891,5 +891,7 @@ class Http
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
+        self::$workerStartHooks = [];
+        self::$startHooks = [];
     }
 }
