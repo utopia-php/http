@@ -105,6 +105,13 @@ class Http
     protected static array $workerStartHooks = [];
 
     /**
+     * Request hooks
+     *
+     * @var Hook[]
+     */
+    protected static array $requestHooks = [];
+
+    /**
      * Route
      *
      * Memory cached result for chosen route
@@ -538,6 +545,13 @@ class Http
         return $hook;
     }
 
+    public static function onRequest(): Hook
+    {
+        $hook = new Hook();
+        self::$requestHooks[] = $hook;
+        return $hook;
+    }
+
     public function start()
     {
         $this->server->onRequest(fn ($request, $response) => $this->run($request, $response));
@@ -765,6 +779,38 @@ class Http
      */
     public function run(Request $request, Response $response): static
     {
+        $this->resources['request'] = $request;
+        $this->resources['response'] = $response;
+
+        self::setResource('request', function () use ($request) {
+            return $request;
+        });
+
+        self::setResource('response', function () use ($response) {
+            return $response;
+        });
+
+        try {
+
+            foreach (self::$requestHooks as $hook) {
+                $arguments = $this->getArguments($hook, [], []);
+                \call_user_func_array($hook->getAction(), $arguments);
+            }
+        } catch(\Exception $e) {
+            self::setResource('error', fn () => $e);
+
+            foreach (self::$errors as $error) { // Global error hooks
+                if (in_array('*', $error->getGroups())) {
+                    try {
+                        $arguments = $this->getArguments($error, [], []);
+                        \call_user_func_array($error->getAction(), $arguments);
+                    } catch (\Throwable $e) {
+                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                    }
+                }
+            }
+        }
+
         if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
 
@@ -776,17 +822,6 @@ class Http
 
             return $this;
         }
-
-        $this->resources['request'] = $request;
-        $this->resources['response'] = $response;
-
-        self::setResource('request', function () use ($request) {
-            return $request;
-        });
-
-        self::setResource('response', function () use ($response) {
-            return $response;
-        });
 
         $method = $request->getMethod();
         $route = $this->match($request);
