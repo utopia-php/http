@@ -19,13 +19,6 @@ class Route extends Hook
     protected bool $hook = true;
 
     /**
-     * Array of aliases.
-     *
-     * @var array<string>
-     */
-    protected array $aliases = [];
-
-    /**
      * Path
      *
      * @var string
@@ -68,9 +61,7 @@ class Route extends Hook
      */
     public function alias(string $path): self
     {
-        if (!in_array($path, $this->aliases)) {
-            $this->aliases[] = $path;
-        }
+        Router::addRouteAlias($path, $this);
 
         return $this;
     }
@@ -106,16 +97,6 @@ class Route extends Hook
     public function getPath(): string
     {
         return $this->path;
-    }
-
-    /**
-     * Get Aliases
-     *
-     * @return array<string>
-     */
-    public function getAliases(): array
-    {
-        return $this->aliases;
     }
 
     /**
