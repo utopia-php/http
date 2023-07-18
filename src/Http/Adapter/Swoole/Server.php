@@ -43,6 +43,11 @@ class Server extends Adapter
         $this->server->on('AfterReload', $callback);
     }
 
+    public function onBeforeShutdown(callable $callback)
+    {
+        $this->server->on('beforeShutdown', $callback);
+    }
+
     public function onStart(callable $callback)
     {
         $this->server->on('start', $callback);
