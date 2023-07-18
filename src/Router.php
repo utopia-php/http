@@ -103,13 +103,23 @@ class Router
             }
         }
 
+        /**
+         * Match root wildcard.
+         */
+        $match = self::WILDCARD_TOKEN;
+        if (array_key_exists($match, self::$routes[$method])) {
+            return self::$routes[$method][$match];
+        }
+
+        /**
+         * Match wildcard for path segments.
+         */
         foreach ($parts as $part) {
-            $current ??= '';
+            $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (array_key_exists($match, self::$routes[$method])) {
                 return self::$routes[$method][$match];
             }
-            $current = $current . "{$part}/";
         }
 
         return null;
