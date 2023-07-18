@@ -64,11 +64,6 @@ class Router
         }
 
         self::$routes[$route->getMethod()][$path] = $route;
-
-        foreach ($route->getAliases() as $alias) {
-            [$alias] = self::preparePath($alias);
-            self::$routes[$route->getMethod()][$alias] = $route;
-        }
     }
 
         /**
