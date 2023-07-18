@@ -301,6 +301,11 @@ class Request extends UtopiaRequest
         return $this;
     }
 
+    public function getSwooleRequest(): SwooleRequest
+    {
+        return $this->swoole;
+    }
+
     /**
      * Generate input
      *
