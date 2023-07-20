@@ -64,11 +64,24 @@ class Router
         }
 
         self::$routes[$route->getMethod()][$path] = $route;
+    }
 
-        foreach ($route->getAliases() as $alias) {
-            [$alias] = self::preparePath($alias);
-            self::$routes[$route->getMethod()][$alias] = $route;
+        /**
+     * Add route to router.
+     *
+     * @param \Utopia\Route $route
+     * @return void
+     * @throws \Exception
+     */
+    public static function addRouteAlias(string $path, Route $route): void
+    {
+        [$alias] = self::preparePath($path);
+
+        if (array_key_exists($alias, self::$routes[$route->getMethod()])) {
+            throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
         }
+
+        self::$routes[$route->getMethod()][$alias] = $route;
     }
 
     /**
@@ -103,13 +116,23 @@ class Router
             }
         }
 
+        /**
+         * Match root wildcard.
+         */
+        $match = self::WILDCARD_TOKEN;
+        if (array_key_exists($match, self::$routes[$method])) {
+            return self::$routes[$method][$match];
+        }
+
+        /**
+         * Match wildcard for path segments.
+         */
         foreach ($parts as $part) {
-            $current ??= '';
+            $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (array_key_exists($match, self::$routes[$method])) {
                 return self::$routes[$method][$match];
             }
-            $current = $current . "{$part}/";
         }
 
         return null;

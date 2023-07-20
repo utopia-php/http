@@ -85,13 +85,38 @@ final class RouterTest extends TestCase
     public function testCanMatchAlias(): void
     {
         $routeGET = new Route(Http::REQUEST_METHOD_GET, '/target');
-        $routeGET->alias('/alias')->alias('/alias2');
+        $routeGET
+            ->alias('/alias')
+            ->alias('/alias2');
 
         Router::addRoute($routeGET);
 
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/target'));
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias'));
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias2'));
+    }
+
+    public function testCanMatchMix(): void
+    {
+        $routeGET = new Route(Http::REQUEST_METHOD_GET, '/');
+        $routeGET
+            ->alias('/console/*')
+            ->alias('/auth/*')
+            ->alias('/invite')
+            ->alias('/login')
+            ->alias('/recover')
+            ->alias('/register/*');
+
+        Router::addRoute($routeGET);
+
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/invite'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/login'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/recover'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console/lorem/ipsum/dolor'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/auth/lorem/ipsum'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/register/lorem/ipsum'));
     }
 
     public function testCanMatchFilename(): void
