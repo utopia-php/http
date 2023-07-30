@@ -2,8 +2,14 @@
 
 namespace Utopia;
 
+use Utopia\Traits\Hooks;
+use Utopia\Traits\Resources;
+
 class App
 {
+    use Resources;
+    use Hooks;
+
     /**
      * Request method constants
      */
@@ -31,50 +37,11 @@ class App
     public const MODE_TYPE_PRODUCTION = 'production';
 
     /**
-     * @var array
-     */
-    protected array $resources = [
-        'error' => null,
-    ];
-
-    /**
-     * @var array
-     */
-    protected static array $resourcesCallbacks = [];
-
-    /**
      * Current running mode
      *
      * @var string
      */
     protected static string $mode = '';
-
-    /**
-     * Errors
-     *
-     * Errors callbacks
-     *
-     * @var Hook[]
-     */
-    protected static array $errors = [];
-
-    /**
-     * Init
-     *
-     * A callback function that is initialized on application start
-     *
-     * @var Hook[]
-     */
-    protected static array $init = [];
-
-    /**
-     * Shutdown
-     *
-     * A callback function that is initialized on application end
-     *
-     * @var Hook[]
-     */
-    protected static array $shutdown = [];
 
     /**
      * Options
@@ -192,40 +159,6 @@ class App
     }
 
     /**
-     * Init
-     *
-     * Set a callback function that will be initialized on application start
-     *
-     * @return Hook
-     */
-    public static function init(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$init[] = $hook;
-
-        return $hook;
-    }
-
-    /**
-     * Shutdown
-     *
-     * Set a callback function that will be initialized on application end
-     *
-     * @return Hook
-     */
-    public static function shutdown(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$shutdown[] = $hook;
-
-        return $hook;
-    }
-
-    /**
      * Options
      *
      * Set a callback function for all request with options method
@@ -238,23 +171,6 @@ class App
         $hook->groups(['*']);
 
         self::$options[] = $hook;
-
-        return $hook;
-    }
-
-    /**
-     * Error
-     *
-     * An error callback for failed or no matched requests
-     *
-     * @return Hook
-     */
-    public static function error(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$errors[] = $hook;
 
         return $hook;
     }
@@ -296,72 +212,6 @@ class App
     public static function setMode(string $value): void
     {
         self::$mode = $value;
-    }
-
-    /**
-     * If a resource has been created return it, otherwise create it and then return it
-     *
-     * @param  string  $name
-     * @param  bool  $fresh
-     * @return mixed
-     *
-     * @throws Exception
-     */
-    public function getResource(string $name, bool $fresh = false): mixed
-    {
-        if ($name === 'utopia') {
-            return $this;
-        }
-
-        if (!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
-            if (!\array_key_exists($name, self::$resourcesCallbacks)) {
-                throw new Exception('Failed to find resource: "' . $name . '"');
-            }
-
-            $this->resources[$name] = \call_user_func_array(
-                self::$resourcesCallbacks[$name]['callback'],
-                $this->getResources(self::$resourcesCallbacks[$name]['injections'])
-            );
-        }
-
-        self::$resourcesCallbacks[$name]['reset'] = false;
-
-        return $this->resources[$name];
-    }
-
-    /**
-     * Get Resources By List
-     *
-     * @param  array  $list
-     * @return array
-     */
-    public function getResources(array $list): array
-    {
-        $resources = [];
-
-        foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name);
-        }
-
-        return $resources;
-    }
-
-    /**
-     * Set a new resource callback
-     *
-     * @param  string  $name
-     * @param  callable  $callback
-     * @param  array  $injections
-     * @return void
-     *
-     * @throws Exception
-     */
-    public static function setResource(string $name, callable $callback, array $injections = []): void
-    {
-        if ($name === 'utopia') {
-            throw new Exception("'utopia' is a reserved keyword.", 500);
-        }
-        self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
     }
 
     /**
@@ -484,116 +334,39 @@ class App
 
         try {
             if ($route->getHook()) {
-                foreach (self::$init as $hook) { // Global init hooks
-                    if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
+                $this->callHooks(self::$init, values: $pathValues, params: $request->getParams());
             }
 
             foreach ($groups as $group) {
-                foreach (self::$init as $hook) { // Group init hooks
-                    if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
+                $this->callHooks(self::$init, $group, $pathValues, $request->getParams());
             }
 
-            $arguments = $this->getArguments($route, $pathValues, $request->getParams());
-
-            // Call the action callback with the matched positions as params
-            \call_user_func_array($route->getAction(), $arguments);
+            /**
+             * Call the route action.
+             */
+            $this->callHook($route, $pathValues, $request->getParams());
 
             foreach ($groups as $group) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
+                $this->callHooks(self::$shutdown, $group, $pathValues, $request->getParams());
             }
 
             if ($route->getHook()) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
+                $this->callHooks(self::$shutdown, values: $pathValues, params: $request->getParams());
             }
         } catch (\Throwable $e) {
             self::setResource('error', fn () => $e);
 
-            foreach ($groups as $group) {
-                foreach (self::$errors as $error) { // Group error hooks
-                    if (in_array($group, $error->getGroups())) {
-                        try {
-                            $arguments = $this->getArguments($error, $pathValues, $request->getParams());
-                            \call_user_func_array($error->getAction(), $arguments);
-                        } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                        }
-                    }
+            try {
+                foreach ($groups as $group) {
+                    $this->callHooks(self::$errors, $group, $pathValues, $request->getParams());
                 }
-            }
-
-            foreach (self::$errors as $error) { // Global error hooks
-                if (in_array('*', $error->getGroups())) {
-                    try {
-                        $arguments = $this->getArguments($error, $pathValues, $request->getParams());
-                        \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                    }
-                }
+                $this->callHooks(self::$errors, values: $pathValues, params: $request->getParams());
+            } catch (\Throwable $e) {
+                throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
             }
         }
 
         return $this;
-    }
-
-    /**
-     * Get Arguments
-     *
-     * @param  Hook  $hook
-     * @param  array  $values
-     * @param  array  $requestParams
-     * @return array
-     *
-     * @throws Exception
-     */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
-    {
-        $arguments = [];
-        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $existsInRequest = \array_key_exists($key, $requestParams);
-            $existsInValues = \array_key_exists($key, $values);
-            $paramExists = $existsInRequest || $existsInValues;
-
-            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
-            $value = $existsInValues ? $values[$key] : $arg;
-
-            if (!$param['skipValidation']) {
-                if (!$paramExists && !$param['optional']) {
-                    throw new Exception('Param "' . $key . '" is not optional.', 400);
-                }
-
-                if ($paramExists) {
-                    $this->validate($key, $param, $value);
-                }
-            }
-
-            $hook->setParamValue($key, $value);
-            $arguments[$param['order']] = $value;
-        }
-
-        foreach ($hook->getInjections() as $key => $injection) {
-            $arguments[$injection['order']] = $this->getResource($injection['name']);
-        }
-
-        return $arguments;
     }
 
     /**
@@ -668,76 +441,22 @@ class App
 
         if (null !== $route) {
             return $this->execute($route, $request);
-        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
+        } elseif (self::REQUEST_METHOD_OPTIONS === $method) {
             try {
                 foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                        }
-                    }
+                    $this->callHooks(self::$options, $group, params: $request->getParams());
                 }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                    }
-                }
+                $this->callHooks(self::$options, params: $request->getParams());
             } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
-                        });
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                    }
-                }
+                self::setResource('error', fn () => $e);
+                $this->callHooks(self::$errors, params: $request->getParams());
             }
         } else {
-            foreach (self::$errors as $error) { // Global error hooks
-                if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', function () {
-                        return new Exception('Not Found', 404);
-                    });
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                }
-            }
+            self::setResource('error', fn () => new Exception('Not Found', 404));
+            $this->callHooks(self::$errors, params: $request->getParams());
         }
 
         return $this;
-    }
-
-    /**
-     * Validate Param
-     *
-     * Creates an validator instance and validate given value with given rules.
-     *
-     * @param  string  $key
-     * @param  array  $param
-     * @param  mixed  $value
-     * @return void
-     *
-     * @throws Exception
-     */
-    protected function validate(string $key, array $param, mixed $value): void
-    {
-        if ($param['optional'] && \is_null($value)) {
-            return;
-        }
-
-        $validator = $param['validator']; // checking whether the class exists
-
-        if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
-        }
-
-        if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
-            throw new Exception('Validator object is not an instance of the Validator class', 500);
-        }
-
-        if (!$validator->isValid($value)) {
-            throw new Exception('Invalid ' . $key . ': ' . $validator->getDescription(), 400);
-        }
     }
 
     /**
