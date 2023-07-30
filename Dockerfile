@@ -21,7 +21,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN \
   apk add --no-cache --virtual .deps \
-  supervisor php$PHP_VERSION php$PHP_VERSION-fpm nginx bash
+  supervisor php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-mbstring nginx bash
 
 
 # Nginx Configuration (with self-signed ssl certificates)
@@ -38,7 +38,7 @@ COPY ./tests/docker/start /usr/local/bin/start
 COPY ./src /usr/share/nginx/html/src
 COPY ./tests /usr/share/nginx/html/tests
 COPY ./phpunit.xml /usr/share/nginx/html/phpunit.xml
-COPY ./psalm.xml /usr/share/nginx/html/psalm.xml
+COPY ./phpbench.json /usr/share/nginx/html/phpbench.json
 COPY --from=step0 /usr/local/src/vendor /usr/share/nginx/html/vendor
 
 # Supervisord Conf

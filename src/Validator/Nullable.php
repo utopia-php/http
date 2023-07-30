@@ -47,7 +47,7 @@ class Nullable extends Validator
     }
 
     /**
-     * @return Validator 
+     * @return Validator
      */
     public function getValidator(): Validator
     {
