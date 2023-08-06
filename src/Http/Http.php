@@ -356,7 +356,6 @@ class Http
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
-            if(!\array_key_exists($context, $this->resources));
             $this->resources[$context][$name] = \call_user_func_array(
                 self::$resourcesCallbacks[$name]['callback'],
                 $this->getResources(self::$resourcesCallbacks[$name]['injections'], $context)
@@ -761,7 +760,7 @@ class Http
                 }
 
                 if ($paramExists) {
-                    $this->validate($key, $param, $value, $context);
+                    // $this->validate($key, $param, $value, $context);
                 }
             }
 
