@@ -66,7 +66,7 @@ class Router
         self::$routes[$route->getMethod()][$path] = $route;
     }
 
-        /**
+    /**
      * Add route to router.
      *
      * @param \Utopia\Route $route
