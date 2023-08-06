@@ -520,10 +520,22 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
+        Http::init()
+            ->action(function () {
+                $route = $this->http->getRoute();
+                http::setResource('myRoute', fn () => $route);
+            });
+
+
         Http::wildcard()
+            ->inject('myRoute')
             ->inject('response')
-            ->action(function ($response) {
-                $response->send('HELLO');
+            ->action(function (mixed $myRoute, $response) {
+                if($myRoute == null) {
+                    $response->send('ROUTE IS NULL!');
+                } else {
+                    $response->send('HELLO');
+                }
             });
 
         \ob_start();
@@ -531,9 +543,19 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        $this->assertEquals('HELLO', $result);
+
+        \ob_start();
+        $req = new Request();
+        $req = $req->setMethod('OPTIONS');
+        @$this->http->run($req, new Response(), 1);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('', $result);
+
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
 
-        $this->assertEquals('HELLO', $result);
     }
 }
