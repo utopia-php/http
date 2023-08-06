@@ -29,7 +29,7 @@ class Server extends Adapter
     public function onRequest(callable $callback)
     {
         $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            call_user_func($callback, new Request($request), new Response($response), Coroutine::getCid());
+            call_user_func($callback, new Request($request), new Response($response), \strval(Coroutine::getCid()));
         });
     }
 

@@ -341,7 +341,7 @@ class Http
      *
      * @throws Exception
      */
-    public function getResource(string $name, int $context, bool $fresh = false): mixed
+    public function getResource(string $name, string $context = 'utopia', bool $fresh = false): mixed
     {
         if ($name === 'utopia') {
             return $this;
@@ -370,7 +370,7 @@ class Http
      * @param  array  $list
      * @return array
      */
-    public function getResources(array $list, int $context): array
+    public function getResources(array $list, string $context): array
     {
         $resources = [];
 
@@ -649,7 +649,7 @@ class Http
      * @param  Route  $route
      * @param  Request  $request
      */
-    public function execute(Route $route, Request $request, int $context): static
+    public function execute(Route $route, Request $request, string $context): static
     {
         $arguments = [];
         $groups = $route->getGroups();
@@ -740,7 +740,7 @@ class Http
      *
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, int $context, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, string $context, array $values, array $requestParams): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
@@ -781,7 +781,7 @@ class Http
      * @param Request $request
      * @param Response $response;
      */
-    public function run(Request $request, Response $response, int $context): static
+    public function run(Request $request, Response $response, string $context): static
     {
         $this->resources[$context] = [];
         $this->resources[$context]['request'] = $request;
@@ -843,7 +843,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
                         }
                     }
                 }
@@ -851,7 +851,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
@@ -861,7 +861,7 @@ class Http
                         self::setResource('error', function () use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
                     }
                 }
             }
