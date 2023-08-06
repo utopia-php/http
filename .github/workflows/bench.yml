@@ -13,4 +13,4 @@ jobs:
     - name: Run Linter
       run: |
         docker run --rm -v $PWD:/app composer sh -c \
-        "composer install --profile --ignore-platform-reqs && composer bench -- --progress=plain"
+        "composer install --profile --ignore-platform-reqs && git config --global --add safe.directory /app && composer bench -- --progress=plain"
