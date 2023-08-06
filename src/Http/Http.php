@@ -341,7 +341,7 @@ class Http
      *
      * @throws Exception
      */
-    public function getResource(string $name, int $context, bool $fresh = true): mixed
+    public function getResource(string $name, int $context, bool $fresh = false): mixed
     {
         if ($name === 'utopia') {
             return $this;
