@@ -760,7 +760,7 @@ class Http
                 }
 
                 if ($paramExists) {
-                    // $this->validate($key, $param, $value, $context);
+                    $this->validate($key, $param, $value, $context);
                 }
             }
 

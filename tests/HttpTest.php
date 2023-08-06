@@ -86,17 +86,17 @@ class HttpTest extends TestCase
         Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
         Http::setResource('second', fn () => 'second');
 
-        $second = $this->http->getResource('second');
-        $first = $this->http->getResource('first');
+        $second = $this->http->getResource('second', 1);
+        $first = $this->http->getResource('first', 1);
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        $resource = $this->http->getResource('rand');
+        $resource = $this->http->getResource('rand', 1);
 
         $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, $this->http->getResource('rand'));
-        $this->assertEquals($resource, $this->http->getResource('rand'));
-        $this->assertEquals($resource, $this->http->getResource('rand'));
+        $this->assertEquals($resource, $this->http->getResource('rand', 1));
+        $this->assertEquals($resource, $this->http->getResource('rand', 1));
+        $this->assertEquals($resource, $this->http->getResource('rand', 1));
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -110,7 +110,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -120,13 +120,14 @@ class HttpTest extends TestCase
     public function testCanExecuteRoute(): void
     {
         Http::setResource('rand', fn () => rand());
-        $resource = $this->http->getResource('rand');
+        $resource = $this->http->getResource('rand', 1);
 
         $this->http
             ->error()
             ->inject('error')
-            ->action(function ($error) {
+            ->action(function (\Throwable $error) {
                 echo 'error: '.$error->getMessage();
+                echo 'error: ' . $error->getTraceAsString();
             });
 
         // Default Params
@@ -140,7 +141,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -164,7 +165,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request);
+        $this->http->execute($route, $request, 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -184,7 +185,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request);
+        $this->http->execute($route, $request, 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -256,7 +257,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request);
+        $this->http->execute($route, $request, 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -265,7 +266,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request);
+        $this->http->execute($homepage, $request, 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -295,7 +296,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -311,7 +312,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -349,7 +350,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -357,7 +358,7 @@ class HttpTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -501,7 +502,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->run(new Request(), new Response());
+        $this->http->run(new Request(), new Response(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -526,7 +527,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        @$this->http->run(new Request(), new Response());
+        @$this->http->run(new Request(), new Response(), 1);
         $result = \ob_get_contents();
         \ob_end_clean();
 
