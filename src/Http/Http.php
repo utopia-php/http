@@ -347,9 +347,7 @@ class Http
             return $this;
         }
 
-        if(!\array_key_exists($context, $this->resources)) {
-            $this->resources[$context] = [];
-        }
+        $this->resources[$context] ??= [];
 
         if (!\array_key_exists($name, $this->resources[$context]) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
             if (!\array_key_exists($name, self::$resourcesCallbacks)) {
@@ -363,7 +361,6 @@ class Http
         }
 
         self::$resourcesCallbacks[$name]['reset'] = false;
-
         return $this->resources[$context][$name];
     }
 
@@ -375,7 +372,7 @@ class Http
      */
     public function getResources(array $list, int $context): array
     {
-        $resources[$context] = [];
+        $resources = [];
 
         foreach ($list as $name) {
             $resources[$name] = $this->getResource($name, $context);

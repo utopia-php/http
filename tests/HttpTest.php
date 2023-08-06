@@ -127,7 +127,6 @@ class HttpTest extends TestCase
             ->inject('error')
             ->action(function (\Throwable $error) {
                 echo 'error: '.$error->getMessage();
-                echo 'error: ' . $error->getTraceAsString();
             });
 
         // Default Params
@@ -146,7 +145,7 @@ class HttpTest extends TestCase
         \ob_end_clean();
 
         // With Params
-
+        $resource = $this->http->getResource('rand', 1);
         $route = new Route('GET', '/path');
 
         $route
@@ -172,7 +171,7 @@ class HttpTest extends TestCase
         $this->assertEquals($resource.'-param-x-param-y', $result);
 
         // With Error
-
+        $resource = $this->http->getResource('rand', 1);
         $route = new Route('GET', '/path');
 
         $route
@@ -192,7 +191,7 @@ class HttpTest extends TestCase
         $this->assertEquals('error: Invalid x: Value must be a valid string and no longer than 1 chars', $result);
 
         // With Hooks
-
+        $resource = $this->http->getResource('rand', 1);
         $this->http
             ->init()
             ->inject('rand')
@@ -263,6 +262,7 @@ class HttpTest extends TestCase
 
         $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
+        $resource = $this->http->getResource('rand', 1);
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
