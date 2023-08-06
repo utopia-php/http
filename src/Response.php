@@ -284,7 +284,7 @@ class Response
      *
      * @return bool
      */
-    public function sent(): bool
+    public function isSent(): bool
     {
         return $this->sent;
     }

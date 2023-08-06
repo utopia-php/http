@@ -107,7 +107,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -137,7 +137,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -161,7 +161,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->app->execute($route, $request);
+        $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -181,7 +181,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request);
+        $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -253,7 +253,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request);
+        $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -262,7 +262,7 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($homepage, $request);
+        $this->app->execute($homepage, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -292,7 +292,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -308,7 +308,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -346,7 +346,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -354,7 +354,7 @@ class AppTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 

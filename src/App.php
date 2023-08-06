@@ -501,7 +501,7 @@ class App
                 }
             }
 
-            if (!($response->sent())) {
+            if (!($response->isSent())) {
                 $arguments = $this->getArguments($route, $pathValues, $request->getParams());
 
                 // Call the action callback with the matched positions as params
