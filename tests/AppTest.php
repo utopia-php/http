@@ -103,7 +103,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y, $rand) {
-                echo $x.'-'.$y.'-'.$rand;
+                echo $x . '-' . $y . '-' . $rand;
             });
 
         \ob_start();
@@ -111,7 +111,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-def-y-def-'.$resource, $result);
+        $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
     public function testCanExecuteRoute(): void
@@ -123,7 +123,7 @@ class AppTest extends TestCase
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error: '.$error->getMessage();
+                echo 'error: ' . $error->getMessage();
             });
 
         // Default Params
@@ -133,7 +133,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y) {
-                echo $x.'-'.$y;
+                echo $x . '-' . $y;
             });
 
         \ob_start();
@@ -150,12 +150,12 @@ class AppTest extends TestCase
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->inject('rand')
             ->param('z', 'z-def', function ($rand) {
-                echo $rand.'-';
+                echo $rand . '-';
 
                 return new Text(200);
             }, 'z param', true, ['rand'])
             ->action(function ($x, $y, $z, $rand) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         \ob_start();
@@ -165,7 +165,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals($resource.'-param-x-param-y', $result);
+        $this->assertEquals($resource . '-param-x-param-y', $result);
 
         // With Error
 
@@ -175,7 +175,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
             ->param('y', 'y-def', new Text(1, min: 0), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         \ob_start();
@@ -193,7 +193,7 @@ class AppTest extends TestCase
             ->init()
             ->inject('rand')
             ->action(function ($rand) {
-                echo 'init-'.$rand.'-';
+                echo 'init-' . $rand . '-';
             });
 
         $this->app
@@ -237,7 +237,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         $homepage = new Route('GET', '/path');
@@ -247,7 +247,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'*', $y;
+                echo $x . '*', $y;
             });
 
         \ob_start();
@@ -257,7 +257,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+        $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         \ob_start();
         $request = new UtopiaRequestTest();
@@ -266,7 +266,7 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+        $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function testCanAddAndExecuteHooks()
@@ -321,14 +321,14 @@ class AppTest extends TestCase
             ->init()
             ->param('y', '', new Text(5), 'y param', false)
             ->action(function ($y) {
-                echo '(init)-'.$y.'-';
+                echo '(init)-' . $y . '-';
             });
 
         $this->app
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error-'.$error->getMessage();
+                echo 'error-' . $error->getMessage();
             });
 
         $this->app
@@ -517,9 +517,15 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         App::init()
-            ->action(function () {
+            ->inject('request')
+            ->inject('response')
+            ->action(function (Request $request, Response $response) {
                 $route = $this->app->getRoute();
                 App::setResource('myRoute', fn () => $route);
+
+                if ($request->getURI() === '/init_response') {
+                    $response->send('THIS IS RESPONSE FROM INIT!');
+                }
             });
 
         App::options()
@@ -541,7 +547,7 @@ class AppTest extends TestCase
             ->inject('myRoute')
             ->inject('response')
             ->action(function (mixed $myRoute, $response) {
-                if($myRoute == null) {
+                if ($myRoute == null) {
                     $response->send('ROUTE IS NULL!');
                 } else {
                     $response->send('HELLO');
@@ -564,8 +570,17 @@ class AppTest extends TestCase
 
         $this->assertEquals('', $result);
 
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/init_response';
+
+        \ob_start();
+        @$this->app->run(new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('THIS IS RESPONSE FROM INIT!', $result);
+
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
-
     }
 }
