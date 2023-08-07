@@ -26,52 +26,16 @@ class Route extends Hook
     protected string $path = '';
 
     /**
-     * Alias path
+     * Path params.
      *
-     * @var null|string
+     * @var array<string,string>
      */
-    protected ?string $aliasPath = null;
+    protected array $pathParams = [];
 
-    /**
-     * Array of aliases where key is the path and value is an array of params
-     *
-     * @var array
-     */
-    protected array $aliases = [];
-
-    /**
-     * Is Alias Route?
-     *
-     * @var bool
-     */
-    protected bool $isAlias = false;
-
-    /**
-     * @var int
-     */
-    public static int $counter = 0;
-
-    /**
-     * @var int
-     */
-    protected int $order;
-
-    /**
-     * @var bool
-     */
-    protected bool $isActive = true;
-
-    /**
-     * @param  string  $method
-     * @param  string  $path
-     */
     public function __construct(string $method, string $path)
     {
-        self::$counter++;
-
         $this->path($path);
         $this->method = $method;
-        $this->order = self::$counter;
         $this->action = function (): void {
         };
     }
@@ -79,10 +43,10 @@ class Route extends Hook
     /**
      * Add path
      *
-     * @param  string  $path
-     * @return static
+     * @param string $path
+     * @return self
      */
-    public function path(string $path): static
+    public function path(string $path): self
     {
         $this->path = $path;
 
@@ -92,61 +56,27 @@ class Route extends Hook
     /**
      * Add alias
      *
-     * @param  string  $path
-     * @param  array  $params
-     * @return static
+     * @param  string $path
+     * @return self
      */
-    public function alias(string $path, array $params = []): static
+    public function alias(string $path): self
     {
-        $this->aliases[$path] = $params;
+        Router::addRouteAlias($path, $this);
 
         return $this;
     }
 
     /**
-     * Set isActive
-     *
-     * @param  bool  $isActive
-     * @return void
-     */
-    public function setIsActive(bool $isActive): void
-    {
-        $this->isActive = $isActive;
-    }
-
-    /**
-     * Set isAlias
-     *
-     * @param  bool  $isAlias
-     * @return void
-     */
-    public function setIsAlias(bool $isAlias): void
-    {
-        $this->isAlias = $isAlias;
-    }
-
-    /**
-     * Set hook status
      * When set false, hooks for this route will be skipped.
      *
-     * @param  bool  $hook
-     * @return static
+     * @param bool $hook
+     * @return self
      */
-    public function hook(bool $hook = true): static
+    public function hook(bool $hook = true): self
     {
         $this->hook = $hook;
 
         return $this;
-    }
-
-    /**
-     * When set to false the route will be skipped
-     *
-     * @return bool
-     */
-    public function getIsActive(): bool
-    {
-        return $this->isActive;
     }
 
     /**
@@ -170,93 +100,6 @@ class Route extends Hook
     }
 
     /**
-     * Get Aliases
-     *
-     * Returns an array where the keys are paths and values are params
-     *
-     * @return array
-     */
-    public function getAliases(): array
-    {
-        return $this->aliases;
-    }
-
-    /**
-     * Get Alias path
-     *
-     * For backwards compatibility, returns the first alias path
-     *
-     * @return string
-     */
-    public function getAliasPath(): string
-    {
-        if ($this->aliasPath !== null) {
-            return $this->aliasPath;
-        }
-
-        $paths = array_keys($this->aliases);
-        if (count($paths) === 0) {
-            return '';
-        }
-
-        return $paths[0];
-    }
-
-    /**
-     * Set Alias path
-     *
-     * For backwards compatibility, returns the first alias path
-     *
-     * @return void
-     */
-    public function setAliasPath(?string $path): void
-    {
-        $this->aliasPath = $path;
-        $this->setIsAlias($path !== null);
-    }
-
-    /**
-     * Get Alias Params
-     *
-     * For backwards compatibility, returns the first alias params if no path passed
-     *
-     * @return array
-     */
-    public function getAliasParams(string $path = null): array
-    {
-        if ($path === null) {
-            $params = array_values($this->aliases);
-            if (count($params) === 0) {
-                return [];
-            }
-
-            return $params[0];
-        }
-
-        return $this->aliases[$path];
-    }
-
-    /**
-     * Get is Alias
-     *
-     * @return bool
-     */
-    public function getIsAlias(): bool
-    {
-        return $this->isAlias;
-    }
-
-    /**
-     * Get Route Order ID
-     *
-     * @return int
-     */
-    public function getOrder(): int
-    {
-        return $this->order;
-    }
-
-    /**
      * Get hook status
      *
      * @return bool
@@ -264,5 +107,37 @@ class Route extends Hook
     public function getHook(): bool
     {
         return $this->hook;
+    }
+
+    /**
+     * Set path param.
+     *
+     * @param string $key
+     * @param int $index
+     * @return void
+     */
+    public function setPathParam(string $key, int $index): void
+    {
+        $this->pathParams[$key] = $index;
+    }
+
+    /**
+     * Get path params.
+     *
+     * @param \Utopia\Request $request
+     * @return array
+     */
+    public function getPathValues(Request $request): array
+    {
+        $pathValues = [];
+        $parts = explode('/', ltrim($request->getURI(), '/'));
+
+        foreach ($this->pathParams as $key => $index) {
+            if (array_key_exists($index, $parts)) {
+                $pathValues[$key] = $parts[$index];
+            }
+        }
+
+        return $pathValues;
     }
 }

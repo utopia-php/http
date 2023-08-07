@@ -19,7 +19,7 @@ class HostTest extends TestCase
 {
     protected Host $host;
 
-    public function setUp():void
+    public function setUp(): void
     {
         $this->host = new Host(['example.io', 'subdomain.example.test', 'localhost']);
     }

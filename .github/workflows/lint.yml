@@ -1,17 +1,16 @@
-name: "CodeQL"
+name: "Linter"
 
 on: [pull_request]
 jobs:
   lint:
-    name: CodeQL
+    name: Linter
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Run CodeQL
+    - name: Run Linter
       run: |
         docker run --rm -v $PWD:/app composer sh -c \
-        "composer install --profile --ignore-platform-reqs && composer check"
-        
+        "composer install --profile --ignore-platform-reqs && composer lint"

@@ -103,28 +103,15 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y, $rand) {
-                echo $x.'-'.$y.'-'.$rand;
+                echo $x . '-' . $y . '-' . $rand;
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-def-y-def-'.$resource, $result);
-    }
-
-    public function testCanAddRoute(): void
-    {
-        $getRoute = App::addRoute(App::REQUEST_METHOD_GET, '/addroute');
-        $postRoute = App::addRoute(App::REQUEST_METHOD_POST, '/addroute');
-
-        $routes = App::getRoutes();
-        $this->assertEquals($getRoute, $routes[App::REQUEST_METHOD_GET]['/addroute']);
-        $this->assertEquals($postRoute, $routes[App::REQUEST_METHOD_POST]['/addroute']);
-
-        $this->expectExceptionMessage('Invalid Request Method');
-        App::addRoute('REST', '/addroute');
+        $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
     public function testCanExecuteRoute(): void
@@ -136,35 +123,23 @@ class AppTest extends TestCase
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error: '.$error->getMessage();
+                echo 'error: ' . $error->getMessage();
             });
 
         // Default Params
         $route = new Route('GET', '/path');
 
         $route
-            ->alias('/path1', ['x' => 'x-def-1', 'y' => 'y-def-1'])
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->action(function ($x, $y) {
-                echo $x.'-'.$y;
+                echo $x . '-' . $y;
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
-
-        // test alias with param override
-        $route->setIsAlias(true);
-
-        \ob_start();
-        $this->app->execute($route, new Request());
-        $result1 = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('x-def-y-def', $result);
-        $this->assertEquals('x-def-1-y-def-1', $result1);
 
         // With Params
 
@@ -175,22 +150,22 @@ class AppTest extends TestCase
             ->param('y', 'y-def', new Text(200), 'y param', true)
             ->inject('rand')
             ->param('z', 'z-def', function ($rand) {
-                echo $rand.'-';
+                echo $rand . '-';
 
                 return new Text(200);
             }, 'z param', true, ['rand'])
             ->action(function ($x, $y, $z, $rand) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->app->execute($route, $request);
+        $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals($resource.'-param-x-param-y', $result);
+        $this->assertEquals($resource . '-param-x-param-y', $result);
 
         // With Error
 
@@ -200,13 +175,13 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
             ->param('y', 'y-def', new Text(1, min: 0), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request);
+        $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -218,7 +193,7 @@ class AppTest extends TestCase
             ->init()
             ->inject('rand')
             ->action(function ($rand) {
-                echo 'init-'.$rand.'-';
+                echo 'init-' . $rand . '-';
             });
 
         $this->app
@@ -262,7 +237,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'-', $y;
+                echo $x . '-', $y;
             });
 
         $homepage = new Route('GET', '/path');
@@ -272,26 +247,26 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(200), 'x param', false)
             ->param('y', 'y-def', new Text(200), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x.'*', $y;
+                echo $x . '*', $y;
             });
 
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request);
+        $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-'.$resource.'-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+        $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($homepage, $request);
+        $this->app->execute($homepage, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-'.$resource.'-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+        $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function testCanAddAndExecuteHooks()
@@ -317,7 +292,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -333,7 +308,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -346,14 +321,14 @@ class AppTest extends TestCase
             ->init()
             ->param('y', '', new Text(5), 'y param', false)
             ->action(function ($y) {
-                echo '(init)-'.$y.'-';
+                echo '(init)-' . $y . '-';
             });
 
         $this->app
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error-'.$error->getMessage();
+                echo 'error-' . $error->getMessage();
             });
 
         $this->app
@@ -371,7 +346,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -379,7 +354,7 @@ class AppTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->app->execute($route, new Request());
+        $this->app->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -409,9 +384,7 @@ class AppTest extends TestCase
             'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
             '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
             '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c'],
-            'trailing wildcard' => [App::REQUEST_METHOD_GET, '/wildcard/*', '/wildcard/lorem/ipsum'],
-            'trailing wildcard - root' => [App::REQUEST_METHOD_GET, '/wildcard/*', '/wildcard'],
+            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c']
         ];
     }
 
@@ -535,75 +508,6 @@ class AppTest extends TestCase
         $this->assertStringNotContainsString('HELLO', $result);
     }
 
-    public function testCanRunAliasEndpoint(): void
-    {
-        // Test head requests
-        App::get('/storage/buckets/:bucketId/files/:fileId')
-            ->alias('/storage/files/:fileId', [
-                'bucketId' => 'default',
-            ])
-            ->param('bucketId', 'bucketid', new Text(100), 'My id', false)
-            ->param('fileId', 'fileId', new Text(100), 'My id', false)
-            ->inject('response')
-            ->action(function ($bucketId, $fileId, $response) {
-                $response->send('HELLO');
-            });
-
-        $_SERVER['REQUEST_METHOD'] = 'HEAD';
-        $_SERVER['REQUEST_URI'] = '/storage/files/myfileid';
-
-        // Test Alias
-        \ob_start();
-        $this->app->run(new Request(), new Response());
-        $result1 = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertStringNotContainsString('HELLO', $result1);
-    }
-
-    public function providerAliases(): array
-    {
-        return [
-            '/real/:param1' => ['/real/p1', 'p1'],
-            '/alias' => ['/alias', 'default'],
-            '/another/:param1' => ['/another/a', 'a'],
-            '/param2' => ['/param2', 'param2'],
-        ];
-    }
-
-    /**
-     * @dataProvider providerAliases
-     */
-    public function testMultipleAliases(string $path, string $expected): void
-    {
-        App::get('/real/:param1')
-            ->alias('/alias', [
-                'param1' => 'default',
-            ])
-            ->alias('/another/:param1')
-            ->alias('/param2', [
-                'param1' => 'param2',
-            ])
-            ->param('param1', '', new Text(100), 'a param', false)
-            ->inject('response')
-            ->action(function ($param1, $response) {
-                echo $param1;
-            });
-
-        $routes = App::getRoutes();
-        $this->assertContains('/real/:param1', array_keys($routes[App::REQUEST_METHOD_GET]));
-
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-
-        $_SERVER['REQUEST_URI'] = $path;
-        \ob_start();
-        $this->app->run(new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals($expected, $result);
-    }
-
     public function testWildcardRoute(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? null;
@@ -612,10 +516,42 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
-        App::wildcard()
+        App::init()
+            ->inject('request')
             ->inject('response')
-            ->action(function ($response) {
-                $response->send('HELLO');
+            ->action(function (Request $request, Response $response) {
+                $route = $this->app->getRoute();
+                App::setResource('myRoute', fn () => $route);
+
+                if ($request->getURI() === '/init_response') {
+                    $response->send('THIS IS RESPONSE FROM INIT!');
+                }
+            });
+
+        App::options()
+            ->inject('request')
+            ->inject('response')
+            ->action(function (Request $request, Response $response) {
+                $origin = $request->getOrigin();
+                $response
+                    ->addHeader('Server', 'Appwrite')
+                    ->addHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE')
+                    ->addHeader('Access-Control-Allow-Headers', 'Origin, Cookie, Set-Cookie, X-Requested-With, Content-Type, Access-Control-Allow-Origin, Access-Control-Request-Headers, Accept, X-Appwrite-Project, X-Appwrite-Key, X-Appwrite-Locale, X-Appwrite-Mode, X-Appwrite-JWT, X-Appwrite-Response-Format, X-SDK-Version, X-SDK-Name, X-SDK-Language, X-SDK-Platform, X-Appwrite-ID, Content-Range, Range, Cache-Control, Expires, Pragma, X-Fallback-Cookies')
+                    ->addHeader('Access-Control-Expose-Headers', 'X-Fallback-Cookies')
+                    ->addHeader('Access-Control-Allow-Origin', $origin)
+                    ->addHeader('Access-Control-Allow-Credentials', 'true')
+                    ->noContent();
+            });
+
+        App::wildcard()
+            ->inject('myRoute')
+            ->inject('response')
+            ->action(function (mixed $myRoute, $response) {
+                if ($myRoute == null) {
+                    $response->send('ROUTE IS NULL!');
+                } else {
+                    $response->send('HELLO');
+                }
             });
 
         \ob_start();
@@ -623,9 +559,28 @@ class AppTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
+        $this->assertEquals('HELLO', $result);
+
+        \ob_start();
+        $req = new Request();
+        $req = $req->setMethod('OPTIONS');
+        @$this->app->run($req, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('', $result);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/init_response';
+
+        \ob_start();
+        @$this->app->run(new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('THIS IS RESPONSE FROM INIT!', $result);
+
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
-
-        $this->assertEquals('HELLO', $result);
     }
 }

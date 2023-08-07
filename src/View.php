@@ -6,9 +6,9 @@ use Exception;
 
 class View
 {
-    const FILTER_ESCAPE = 'escape';
+    public const FILTER_ESCAPE = 'escape';
 
-    const FILTER_NL2P = 'nl2p';
+    public const FILTER_NL2P = 'nl2p';
 
     /**
      * @var self|null
