@@ -606,4 +606,36 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
     }
+
+    public function testRunWithTransaction(): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $uri = $_SERVER['REQUEST_URI'] ?? null;
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/transaction-test';
+
+        $request = new Request();
+        $response = new Response();
+        $transaction = $this->app->createTransaction($request, $response);
+
+        $transaction->setResource('myResource', fn () => 'myText');
+
+        App::get('/transaction-test')
+            ->inject('myResource')
+            ->inject('response')
+            ->action(function (mixed $myResource, $response) {
+                $response->send('Resource: ' . $myResource);
+            });
+
+        \ob_start();
+        @$this->app->run($request, $response, $transaction);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('Resource: myText', $result);
+
+        $_SERVER['REQUEST_METHOD'] = $method;
+        $_SERVER['REQUEST_URI'] = $uri;
+    }
 }

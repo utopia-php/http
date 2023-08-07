@@ -593,10 +593,16 @@ class App
      *
      * @param  Request  $request
      * @param  Response  $response
+     * @param  ?Transaction  $transaction
      */
-    public function run(Request $request, Response $response): static
+    public function run(Request $request, Response $response, Transaction $transaction = null): static
     {
-        $transaction = $this->createTransaction($request, $response);
+        if(empty($transaction)) {
+            $transaction = $this->createTransaction($request, $response);
+        } else {
+            $transaction->setResource('request', fn () => $request);
+            $transaction->setResource('response', fn () => $response);
+        }
 
         $method = $request->getMethod();
         $route = $this->match($request);
