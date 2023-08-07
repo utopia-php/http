@@ -476,7 +476,7 @@ class App
      * @param  Route  $route
      * @param  Request  $request
      */
-    public function execute(Route $route, Request $request): static
+    public function execute(Route $route, Request $request, Response $response): static
     {
         $arguments = [];
         $groups = $route->getGroups();
@@ -501,10 +501,13 @@ class App
                 }
             }
 
-            $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+            if (!($response->isSent())) {
+                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
 
-            // Call the action callback with the matched positions as params
-            \call_user_func_array($route->getAction(), $arguments);
+                // Call the action callback with the matched positions as params
+                \call_user_func_array($route->getAction(), $arguments);
+            }
+
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
@@ -627,7 +630,7 @@ class App
             $response->disablePayload();
         }
 
-        if(self::REQUEST_METHOD_OPTIONS == $method) {
+        if (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
@@ -667,7 +670,7 @@ class App
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request);
+            return $this->execute($route, $request, $response);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
