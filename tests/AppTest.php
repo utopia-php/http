@@ -83,17 +83,21 @@ class AppTest extends TestCase
         App::setResource('first', fn ($second) => "first-{$second}", ['second']);
         App::setResource('second', fn () => 'second');
 
-        $second = $this->app->getResource('second');
-        $first = $this->app->getResource('first');
+        $request = new Request();
+        $response = new Response();
+        $transaction = $this->app->createTransaction($request, $response);
+
+        $second = $transaction->getResource('second');
+        $first = $transaction->getResource('first');
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        $resource = $this->app->getResource('rand');
+        $resource = $transaction->getResource('rand');
 
         $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, $this->app->getResource('rand'));
-        $this->assertEquals($resource, $this->app->getResource('rand'));
-        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $transaction->getResource('rand'));
+        $this->assertEquals($resource, $transaction->getResource('rand'));
+        $this->assertEquals($resource, $transaction->getResource('rand'));
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -107,7 +111,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request(), new Response());
+        $this->app->execute($transaction, $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -117,7 +121,12 @@ class AppTest extends TestCase
     public function testCanExecuteRoute(): void
     {
         App::setResource('rand', fn () => rand());
-        $resource = $this->app->getResource('rand');
+
+        $request = new Request();
+        $response = new Response();
+        $transaction = $this->app->createTransaction($request, $response);
+
+        $resource = $transaction->getResource('rand');
 
         $this->app
             ->error()
@@ -137,7 +146,7 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request(), new Response());
+        $this->app->execute($transaction, $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -161,7 +170,9 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->app->execute($route, $request, new Response());
+        $response = new Response();
+        $transaction->setResource('request', fn () => $request);
+        $this->app->execute($transaction, $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -181,7 +192,8 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request, new Response());
+        $response = new Response();
+        $this->app->execute($this->app->createTransaction($request, $response), $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -253,7 +265,8 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($route, $request, new Response());
+        $transaction->setResource('request', fn () => $request);
+        $this->app->execute($transaction, $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -262,7 +275,8 @@ class AppTest extends TestCase
         \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->app->execute($homepage, $request, new Response());
+        $transaction->setResource('request', fn () => $request);
+        $this->app->execute($transaction, $homepage, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -292,7 +306,9 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request(), new Response());
+        $request = new Request();
+        $response = new Response();
+        $this->app->execute($this->app->createTransaction($request, $response), $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -308,7 +324,9 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request(), new Response());
+        $request = new Request();
+        $response = new Response();
+        $this->app->execute($this->app->createTransaction($request, $response), $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -346,7 +364,9 @@ class AppTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request(), new Response());
+        $request = new Request();
+        $response = new Response();
+        $this->app->execute($this->app->createTransaction($request, $response), $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -354,7 +374,9 @@ class AppTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->app->execute($route, new Request(), new Response());
+        $request = new Request();
+        $response = new Response();
+        $this->app->execute($this->app->createTransaction($request, $response), $route, $request, $response);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -519,9 +541,10 @@ class AppTest extends TestCase
         App::init()
             ->inject('request')
             ->inject('response')
-            ->action(function (Request $request, Response $response) {
-                $route = $this->app->getRoute();
-                App::setResource('myRoute', fn () => $route);
+            ->inject('route')
+            ->inject('transaction')
+            ->action(function (Request $request, Response $response, Route $route, Transaction $transaction) {
+                $transaction->setResource('myRoute', fn () => $route);
 
                 if ($request->getURI() === '/init_response') {
                     $response->send('THIS IS RESPONSE FROM INIT!');
