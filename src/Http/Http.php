@@ -564,7 +564,7 @@ class Http
             try {
 
                 foreach (self::$startHooks as $hook) {
-                    $arguments = $this->getArguments($hook, 0, [], []);
+                    $arguments = $this->getArguments($hook, 'utopia', [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch(\Exception $e) {
@@ -573,7 +573,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, 0, [], []);
+                            $arguments = $this->getArguments($error, 'utopia', [], []);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -597,7 +597,7 @@ class Http
             try {
 
                 foreach (self::$workerStartHooks as $hook) {
-                    $arguments = $this->getArguments($hook, 0, [], []);
+                    $arguments = $this->getArguments($hook, 'utopia', [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch(\Exception $e) {
@@ -606,7 +606,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, 0, [], []);
+                            $arguments = $this->getArguments($error, 'utopia', [], []);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
