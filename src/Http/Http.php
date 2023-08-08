@@ -348,8 +348,9 @@ class Http
         }
 
         $this->resources[$context] ??= [];
+        self::$resourcesCallbacks[$name]['reset'] ??= [];
 
-        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
+        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || self::$resourcesCallbacks[$name]['reset'][$context]) {
             if (!\array_key_exists($name, self::$resourcesCallbacks)) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
@@ -360,7 +361,7 @@ class Http
             );
         }
 
-        self::$resourcesCallbacks[$name]['reset'] = false;
+        self::$resourcesCallbacks[$name]['reset'][$context] = false;
         return $this->resources[$context][$name];
     }
 
