@@ -348,9 +348,8 @@ class Http
         }
 
         $this->resources[$context] ??= [];
-        self::$resourcesCallbacks[$name]['reset'] ??= [];
 
-        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || self::$resourcesCallbacks[$name]['reset'][$context]) {
+        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || (self::$resourcesCallbacks[$name]['reset'][$context] ?? true)) {
             if (!\array_key_exists($name, self::$resourcesCallbacks)) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
@@ -397,7 +396,7 @@ class Http
         if ($name === 'utopia') {
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
-        self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
+        self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'resets' => []];
     }
 
     /**
