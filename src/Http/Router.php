@@ -69,7 +69,7 @@ class Router
     /**
      * Add route to router.
      *
-     * @param \Utopia\Route $route
+     * @param \Utopia\Http\Route $route
      * @return void
      * @throws \Exception
      */

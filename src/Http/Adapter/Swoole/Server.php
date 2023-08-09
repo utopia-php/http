@@ -2,7 +2,6 @@
 
 namespace Utopia\Http\Adapter\Swoole;
 
-use Swoole\Constant;
 use Swoole\Coroutine;
 use Utopia\Http\Adapter;
 use Swoole\Http\Server as SwooleServer;
@@ -21,7 +20,7 @@ class Server extends Adapter
     public function setConfig(array $configs)
     {
         $configs = array_merge($configs, [
-            Constant::OPTION_ENABLE_COROUTINE => true
+            'enable_coroutine' => true
         ]);
         $this->server->set($configs);
     }
