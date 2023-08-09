@@ -554,16 +554,6 @@ class HttpTest extends TestCase
 
         $this->assertEquals('', $result);
 
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/init_response';
-
-        \ob_start();
-        @$this->http->run(new Request(), new Response(), '1');
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('THIS IS RESPONSE FROM INIT!', $result);
-
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
     }

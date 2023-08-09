@@ -15,6 +15,9 @@ class Server extends Adapter
     public function __construct(string $host, string $port = null)
     {
         $this->server = new SwooleServer($host, $port);
+        $this->server->set([
+            'enable_coroutine' => true
+        ]);
     }
 
     public function setConfig(array $configs)

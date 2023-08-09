@@ -557,7 +557,8 @@ class Http
     {
         $this->server->onRequest(fn ($request, $response, $context) => $this->run($request, $response, $context));
         $this->server->onStart(function ($server) {
-            $this->resources['server'] = $server;
+            $this->resources['utopia'] ??= [];
+            $this->resources['utopia']['server'] = $server;
             self::setResource('server', function () use ($server) {
                 return $server;
             });
@@ -584,8 +585,9 @@ class Http
         });
 
         $this->server->onWorkerStart(function ($server, $workerId) {
-            $this->resources['server'] = $server;
-            $this->resources['workerId'] = $workerId;
+            $this->resources['utopia'] ??= [];
+            $this->resources['utopia']['server'] = $server;
+            $this->resources['utopia']['workerId'] = $workerId;
 
             self::setResource('server', function () use ($server) {
                 return $server;
@@ -675,7 +677,7 @@ class Http
             }
 
             $arguments = $this->getArguments($route, $context, $pathValues, $request->getParams());
-
+            \call_user_func_array($route->getAction(), $arguments);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
@@ -825,7 +827,6 @@ class Http
 
             return $this;
         }
-
         $method = $request->getMethod();
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
