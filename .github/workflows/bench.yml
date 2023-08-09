@@ -10,13 +10,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.1'
-
-    - name: Install dependencies
-      run: composer install --prefer-dist --ignore-platform-reqs
-
-    - name: Run Benchmarks
-      run: composer bench -- --progress=plain
+    - name: Run Linter
+      run: |
+        docker run --rm -v $PWD:/app composer sh -c \
+        "composer install --profile --ignore-platform-reqs && git config --global --add safe.directory /app && composer bench -- --progress=plain"

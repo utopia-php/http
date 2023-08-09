@@ -280,6 +280,16 @@ abstract class Response
     }
 
     /**
+     * Get if response was already sent
+     *
+     * @return bool
+     */
+    public function isSent(): bool
+    {
+        return $this->sent;
+    }
+
+    /**
      * Set status code
      *
      * Set HTTP response status code between available options. if status code is unknown an exception will be thrown

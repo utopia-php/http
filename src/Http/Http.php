@@ -676,8 +676,6 @@ class Http
 
             $arguments = $this->getArguments($route, $context, $pathValues, $request->getParams());
 
-            // Call the action callback with the matched positions as params
-            \call_user_func_array($route->getAction(), $arguments);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
@@ -837,7 +835,7 @@ class Http
             $response->disablePayload();
         }
 
-        if(self::REQUEST_METHOD_OPTIONS == $method) {
+        if (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
