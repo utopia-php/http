@@ -787,13 +787,11 @@ class Http
         $this->resources[$context]['request'] = $request;
         $this->resources[$context]['response'] = $response;
 
-        self::setResource('request', function () use ($request) {
-            return $request;
-        });
+        self::setResource('context', fn () => $context);
 
-        self::setResource('response', function () use ($response) {
-            return $response;
-        });
+        self::setResource('request', fn () => $request);
+
+        self::setResource('response', fn () => $response);
 
         try {
 
