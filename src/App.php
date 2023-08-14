@@ -578,10 +578,6 @@ class App
             return $route;
         });
 
-        $transaction->setResource('transaction', function () use ($transaction) {
-            return $transaction;
-        });
-
         return $transaction;
     }
 
