@@ -739,7 +739,7 @@ class App
         }
 
         if (!$validator->isValid($value)) {
-            throw new Exception('Invalid ' . $key . ': ' . $validator->getDescription(), 400);
+            throw new Exception('Invalid `' . $key . '` param: ' . $validator->getDescription(), 400);
         }
     }
 
