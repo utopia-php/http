@@ -165,6 +165,4 @@ class Route extends Hook
 
         return $pathValues;
     }
-
-
 }
