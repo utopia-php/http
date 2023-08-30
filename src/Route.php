@@ -41,7 +41,7 @@ class Route extends Hook
 
     /**
      * Route order ID.
-     * 
+     *
      * @var int
      */
     protected int $order;
