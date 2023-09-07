@@ -32,12 +32,37 @@ class Route extends Hook
      */
     protected array $pathParams = [];
 
+    /**
+     * Internal counter.
+     *
+     * @var int
+     */
+    protected static int $counter = 0;
+
+    /**
+     * Route order ID.
+     *
+     * @var int
+     */
+    protected int $order;
+
     public function __construct(string $method, string $path)
     {
         $this->path($path);
         $this->method = $method;
+        $this->order = ++self::$counter;
         $this->action = function (): void {
         };
+    }
+
+    /**
+     * Get Route Order ID
+     *
+     * @return int
+     */
+    public function getOrder(): int
+    {
+        return $this->order;
     }
 
     /**

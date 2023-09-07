@@ -188,7 +188,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error: Invalid x: Value must be a valid string and no longer than 1 chars', $result);
+        $this->assertEquals('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
 
         // With Hooks
         $resource = $this->http->getResource('rand', '1');
