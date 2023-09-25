@@ -103,7 +103,7 @@ class Router
     {
         [$alias] = self::preparePath($path);
 
-        if (array_key_exists($alias, self::$routes[$route->getMethod()])) {
+        if (array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
         }
 
