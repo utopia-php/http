@@ -829,6 +829,8 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
+        self::setResource('route', fn () => $route);
+
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
@@ -871,6 +873,8 @@ class Http
             $this->route = $route;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
+
+            self::setResource('route', fn () => $route);
         }
 
         if (null !== $route) {
