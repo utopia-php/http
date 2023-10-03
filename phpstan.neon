@@ -1,4 +1,6 @@
 parameters:
+    scanDirectories:
+        - vendor/swoole/ide-helper
     level: 5
     paths:
         - src

@@ -10,6 +10,6 @@ use function Swoole\Coroutine\run;
 $server = new Server('0.0.0.0', '80');
 $http = new Http($server, 'UTC');
 
-run(function () use($http) {
+run(function () use ($http) {
     $http->start();
 });
