@@ -34,8 +34,8 @@ class Server extends Adapter
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $context = \strval(Coroutine::getCid());
 
-            Http::setResource('swooleRequest', fn () => $request);
-            Http::setResource('swooleResponse', fn () => $response);
+            Http::setResource('swooleRequest', fn () => $request, [], $context);
+            Http::setResource('swooleResponse', fn () => $response, [], $context);
 
             call_user_func($callback, new Request($request), new Response($response), $context);
         });

@@ -349,18 +349,23 @@ class Http
 
         $this->resources[$context] ??= [];
 
-        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || (self::$resourcesCallbacks[$name]['reset'][$context] ?? true)) {
-            if (!\array_key_exists($name, self::$resourcesCallbacks)) {
+        $resourcesCallback = &self::$resourcesCallbacks[$context] ?? [];
+        if(empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
+            $resourcesCallback = &self::$resourcesCallbacks['utopia'];
+        }
+
+        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || ($resourcesCallback[$name]['reset'][$context] ?? true)) {
+            if (!\array_key_exists($name, $resourcesCallback)) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
             $this->resources[$context][$name] = \call_user_func_array(
-                self::$resourcesCallbacks[$name]['callback'],
-                $this->getResources(self::$resourcesCallbacks[$name]['injections'], $context)
+                $resourcesCallback[$name]['callback'],
+                $this->getResources($resourcesCallback[$name]['injections'], $context)
             );
         }
 
-        self::$resourcesCallbacks[$name]['reset'][$context] = false;
+        $resourcesCallback[$name]['reset'][$context] = false;
         return $this->resources[$context][$name];
     }
 
@@ -391,12 +396,15 @@ class Http
      *
      * @throws Exception
      */
-    public static function setResource(string $name, callable $callback, array $injections = []): void
+    public static function setResource(string $name, callable $callback, array $injections = [], string $context = 'utopia'): void
     {
         if ($name === 'utopia') {
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
-        self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'resets' => []];
+
+        self::$resourcesCallbacks[$context] ??= [];
+
+        self::$resourcesCallbacks[$context][$name] = ['callback' => $callback, 'injections' => $injections, 'resets' => []];
     }
 
     /**
@@ -697,7 +705,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            self::setResource('error', fn () => $e);
+            self::setResource('error', fn () => $e, [], $context);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -787,11 +795,11 @@ class Http
         $this->resources[$context]['request'] = $request;
         $this->resources[$context]['response'] = $response;
 
-        self::setResource('context', fn () => $context);
+        self::setResource('context', fn () => $context, [], $context);
 
-        self::setResource('request', fn () => $request);
+        self::setResource('request', fn () => $request, [], $context);
 
-        self::setResource('response', fn () => $response);
+        self::setResource('response', fn () => $response, [], $context);
 
         try {
 
@@ -800,7 +808,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch(\Exception $e) {
-            self::setResource('error', fn () => $e);
+            self::setResource('error', fn () => $e, [], $context);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
@@ -829,7 +837,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        self::setResource('route', fn () => $route);
+        self::setResource('route', fn () => $route, [], $context);
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -859,7 +867,7 @@ class Http
                     if (in_array('*', $error->getGroups())) {
                         self::setResource('error', function () use ($e) {
                             return $e;
-                        });
+                        }, [], $context);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
                     }
                 }
@@ -874,7 +882,7 @@ class Http
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
 
-            self::setResource('route', fn () => $route);
+            self::setResource('route', fn () => $route, [], $context);
         }
 
         if (null !== $route) {
@@ -899,7 +907,7 @@ class Http
                     if (in_array('*', $error->getGroups())) {
                         self::setResource('error', function () use ($e) {
                             return $e;
-                        });
+                        }, [], $context);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
                     }
                 }
@@ -909,7 +917,7 @@ class Http
                 if (in_array('*', $error->getGroups())) {
                     self::setResource('error', function () {
                         return new Exception('Not Found', 404);
-                    });
+                    }, [], $context);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
                 }
             }

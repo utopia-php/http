@@ -14,4 +14,10 @@ class ResponseSwooleTest extends TestCase
     {
         $this->client = new Client('http://swoole');
     }
+
+    public function testSwooleResources(): void
+    {
+        $response = $this->client->call(Client::METHOD_DELETE, '/swoole-test');
+        $this->assertEquals('DELETE', $response['body']);
+    }
 }
