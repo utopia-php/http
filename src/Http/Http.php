@@ -375,7 +375,7 @@ class Http
      * @param  array  $list
      * @return array
      */
-    public function getResources(array $list, string $context): array
+    public function getResources(array $list, string $context = 'utopia'): array
     {
         $resources = [];
 
