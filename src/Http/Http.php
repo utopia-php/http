@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Throwable;
+
 class Http
 {
     /**
@@ -563,7 +565,15 @@ class Http
 
     public function start()
     {
-        $this->server->onRequest(fn ($request, $response, $context) => $this->run($request, $response, $context));
+        $this->server->onRequest(function ($request, $response, $context) {
+            try {
+                $this->run($request, $response, $context);
+            } finally {
+                if(isset(self::$resourcesCallbacks[$context])) {
+                    unset(self::$resourcesCallbacks[$context]);
+                }
+            }
+        });
         $this->server->onStart(function ($server) {
             $this->resources['utopia'] ??= [];
             $this->resources['utopia']['server'] = $server;
