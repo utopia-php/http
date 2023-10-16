@@ -2,8 +2,6 @@
 
 namespace Utopia\Http;
 
-use Throwable;
-
 class Http
 {
     /**
