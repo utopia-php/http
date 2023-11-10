@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Utopia PHP Framework
  *
@@ -37,6 +38,9 @@ class DomainTest extends TestCase
         $this->assertEquals(true, $this->domain->isValid('example.io'));
         $this->assertEquals(true, $this->domain->isValid('example.org'));
         $this->assertEquals(true, $this->domain->isValid('example.org'));
+        $this->assertEquals(false, $this->domain->isValid('http://example.com'));
+        $this->assertEquals(false, $this->domain->isValid('https://example.com'));
+        $this->assertEquals(false, $this->domain->isValid('ftp://example.com'));
         $this->assertEquals(false, $this->domain->isValid(false));
         $this->assertEquals(false, $this->domain->isValid('.'));
         $this->assertEquals(false, $this->domain->isValid('..'));
