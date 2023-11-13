@@ -45,10 +45,6 @@ class Domain extends Validator
             return false;
         }
 
-        if (strpos($value, '://') !== false) {
-            return false;
-        }
-
         return \filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
     }
 
