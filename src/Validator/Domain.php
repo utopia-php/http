@@ -49,11 +49,7 @@ class Domain extends Validator
             return false;
         }
 
-        if (\filter_var($value, FILTER_VALIDATE_DOMAIN) === false) {
-            return false;
-        }
-
-        return true;
+        return \filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
     }
 
     /**
