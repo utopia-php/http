@@ -316,7 +316,8 @@ class AppTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
-    public function testAllowRouteOverrides() {
+    public function testAllowRouteOverrides()
+    {
         App::setAllowOverride(false);
         $this->assertFalse(App::getAllowOverride());
         App::get('/')->action(function () {
@@ -324,7 +325,7 @@ class AppTest extends TestCase
         });
 
         $this->expectException(Exception::class);
-        App::get('/')->action(function(){
+        App::get('/')->action(function () {
             echo 'Hello second';
         });
 
@@ -335,10 +336,9 @@ class AppTest extends TestCase
             echo 'Hello first';
         });
 
-        App::get('/')->action(function(){
+        App::get('/')->action(function () {
             echo 'Hello second';
         });
-        
     }
 
     public function testCanHookThrowExceptions()
