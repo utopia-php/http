@@ -324,10 +324,16 @@ class AppTest extends TestCase
             echo 'Hello first';
         });
 
-        $this->expectException(Exception::class);
-        App::get('/')->action(function () {
-            echo 'Hello second';
-        });
+        try {
+            App::get('/')->action(function () {
+                echo 'Hello second';
+            });
+            $this->fail('Failed to throw exception');
+        } catch (Exception $e) {
+            // Threw exception as expected
+            $this->assertEquals('Route for (GET:) already registered.', $e->getMessage());
+            
+        }
 
         // Test success
         App::setAllowOverride(true);
