@@ -12,6 +12,8 @@ class Router
     public const PLACEHOLDER_TOKEN = ':::';
     public const WILDCARD_TOKEN = '*';
 
+    protected static bool $allowOverride = false;
+
     /**
      * @var array<string,Route[]>
      */
@@ -41,6 +43,30 @@ class Router
     }
 
     /**
+     * Get allow override
+     *
+     *
+     * @return bool
+     */
+    public static function getAllowOverride(): bool
+    {
+        return self::$allowOverride;
+    }
+
+    /**
+     * Set Allow override
+     *
+     *
+     * @param  bool  $value
+     * @return void
+     */
+    public static function setAllowOverride(bool $value): void
+    {
+        self::$allowOverride = $value;
+    }
+
+
+    /**
      * Add route to router.
      *
      * @param \Utopia\Route $route
@@ -55,7 +81,7 @@ class Router
             throw new Exception("Method ({$route->getMethod()}) not supported.");
         }
 
-        if (array_key_exists($path, self::$routes[$route->getMethod()])) {
+        if (array_key_exists($path, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$path}) already registered.");
         }
 
@@ -77,7 +103,7 @@ class Router
     {
         [$alias] = self::preparePath($path);
 
-        if (array_key_exists($alias, self::$routes[$route->getMethod()])) {
+        if (array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
         }
 
