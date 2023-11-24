@@ -332,7 +332,6 @@ class AppTest extends TestCase
         } catch (Exception $e) {
             // Threw exception as expected
             $this->assertEquals('Route for (GET:) already registered.', $e->getMessage());
-            
         }
 
         // Test success
