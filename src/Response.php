@@ -413,7 +413,8 @@ class Response
     public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
     {
         $name = strtolower($name);
-        $this->cookies[$name] = [
+        
+        $this->cookies[] = [
             'name' => $name,
             'value' => $value,
             'expire' => $expire,
