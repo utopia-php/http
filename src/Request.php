@@ -427,7 +427,7 @@ class Request
     public function getContentRangeStart(): ?int
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['start'];
         } else {
             return null;
@@ -444,7 +444,7 @@ class Request
     public function getContentRangeEnd(): ?int
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['end'];
         } else {
             return null;
@@ -461,7 +461,7 @@ class Request
     public function getContentRangeSize(): ?int
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['size'];
         } else {
             return null;
@@ -478,7 +478,7 @@ class Request
     public function getContentRangeUnit(): ?string
     {
         $data = $this->parseContentRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['unit'];
         } else {
             return null;
@@ -495,7 +495,7 @@ class Request
     public function getRangeStart(): ?int
     {
         $data = $this->parseRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['start'];
         }
 
@@ -512,7 +512,7 @@ class Request
     public function getRangeEnd(): ?int
     {
         $data = $this->parseRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['end'];
         }
 
@@ -529,7 +529,7 @@ class Request
     public function getRangeUnit(): ?string
     {
         $data = $this->parseRange();
-        if (! empty($data)) {
+        if (!empty($data)) {
             return $data['unit'];
         }
 
@@ -621,7 +621,7 @@ class Request
              * Fallback for older PHP versions
              * that do not support generateHeaders
              */
-            if (! \function_exists('getallheaders')) {
+            if (!\function_exists('getallheaders')) {
                 $headers = [];
 
                 foreach ($_SERVER as $name => $value) {
@@ -652,7 +652,7 @@ class Request
     {
         $contentRange = $this->getHeader('content-range', '');
         $data = [];
-        if (! empty($contentRange)) {
+        if (!empty($contentRange)) {
             $contentRange = explode(' ', $contentRange);
             if (count($contentRange) !== 2) {
                 return null;
@@ -669,7 +669,7 @@ class Request
                 return null;
             }
 
-            if (! ctype_digit($rangeData[1])) {
+            if (!ctype_digit($rangeData[1])) {
                 return null;
             }
 
@@ -679,7 +679,7 @@ class Request
                 return null;
             }
 
-            if (! ctype_digit($parts[0]) || ! ctype_digit($parts[1])) {
+            if (!ctype_digit($parts[0]) || !ctype_digit($parts[1])) {
                 return null;
             }
 
@@ -721,7 +721,7 @@ class Request
             return null;
         }
 
-        if (! ctype_digit($ranges[0])) {
+        if (!ctype_digit($ranges[0])) {
             return null;
         }
 
@@ -730,7 +730,7 @@ class Request
         if (strlen($ranges[1]) === 0) {
             $data['end'] = null;
         } else {
-            if (! ctype_digit($ranges[1])) {
+            if (!ctype_digit($ranges[1])) {
                 return null;
             }
             $data['end'] = (int) $ranges[1];

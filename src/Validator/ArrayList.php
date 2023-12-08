@@ -91,7 +91,7 @@ class ArrayList extends Validator
      */
     public function isValid(mixed $value): bool
     {
-        if (! \is_array($value)) {
+        if (!\is_array($value)) {
             return false;
         }
 
@@ -100,7 +100,7 @@ class ArrayList extends Validator
         }
 
         foreach ($value as $element) {
-            if (! $this->validator->isValid($element)) {
+            if (!$this->validator->isValid($element)) {
                 return false;
             }
         }

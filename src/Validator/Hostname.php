@@ -62,7 +62,7 @@ class Hostname extends Validator
     public function isValid(mixed $value): bool
     {
         // Validate proper format
-        if (! \is_string($value) || empty($value)) {
+        if (!\is_string($value) || empty($value)) {
             return false;
         }
 
