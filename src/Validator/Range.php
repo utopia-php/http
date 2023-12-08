@@ -114,7 +114,7 @@ class Range extends Numeric
      */
     public function isValid(mixed $value): bool
     {
-        if (! parent::isValid($value)) {
+        if (!parent::isValid($value)) {
             return false;
         }
 
@@ -126,12 +126,12 @@ class Range extends Numeric
                     break; // move to check if value is within range
                 }
                 $value = $value + 0;
-                if (! is_int($value)) {
+                if (!is_int($value)) {
                     return false;
                 }
                 break;
             case self::TYPE_FLOAT:
-                if (! is_numeric($value)) {
+                if (!is_numeric($value)) {
                     return false;
                 }
                 $value = $value + 0.0;

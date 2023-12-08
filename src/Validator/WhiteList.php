@@ -41,7 +41,7 @@ class WhiteList extends Validator
         $this->strict = $strict;
         $this->type = $type;
 
-        if (! $this->strict) {
+        if (!$this->strict) {
             foreach ($this->list as $key => &$value) {
                 $this->list[$key] = \strtolower($value);
             }
@@ -110,7 +110,7 @@ class WhiteList extends Validator
 
         $value = ($this->strict) ? $value : \strtolower($value);
 
-        if (! \in_array($value, $this->list, $this->strict)) {
+        if (!\in_array($value, $this->list, $this->strict)) {
             return false;
         }
 
