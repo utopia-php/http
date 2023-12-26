@@ -18,6 +18,8 @@ class Multiple extends Validator
      */
     protected $rules = [];
 
+    protected $type = self::TYPE_MIXED;
+
     /**
      * Constructor
      *
@@ -25,18 +27,19 @@ class Multiple extends Validator
      *
      * Example:
      *
-     * $multiple = new Multiple($validator1, $validator2, $validator3);
+     * $multiple = new Multiple([$validator1, $validator2]);
+     * $multiple = new Multiple([$validator1, $validator2, $validator3], SELF::TYPE_STRING);
      */
-    public function __construct()
+    public function __construct(array $rules, ?string $type = null)
     {
-        // array of all method arguments
-        $rules = \func_get_args();
-
         foreach ($rules as $rule) {
             $this->addRule($rule);
         }
-    }
 
+        if ($type !== null) {
+            $this->type = $type;
+        }
+    }
     /**
      * Add rule
      *
@@ -63,7 +66,7 @@ class Multiple extends Validator
     {
         $description = '';
         foreach ($this->rules as $key => $rule) {
-            $description .= ++$key . '. ' . $rule->getDescription() . " \n";
+            $description .= ++$key . '. ' . $rule->getDescription() . " \\n";
         }
 
         return $description;
@@ -97,7 +100,7 @@ class Multiple extends Validator
      */
     public function getType(): string
     {
-        return self::TYPE_MIXED;
+        return $this->type;
     }
 
     /**
