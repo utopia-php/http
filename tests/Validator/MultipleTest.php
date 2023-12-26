@@ -10,11 +10,12 @@ class MultipleTest extends TestCase
 
     public function setUp(): void
     {
-        $this->validator = new Multiple([new Text(20), new URL()]);
+        $this->validator = new Multiple([new Text(20), new URL()], Multiple::TYPE_STRING);
     }
 
     public function testIsValid()
     {
+        $this->assertEquals('string', $this->validator->getType());
         $this->assertEquals("1. Value must be a valid string and at least 1 chars and no longer than 20 chars \n2. Value must be a valid URL \n", $this->validator->getDescription());
 
         // Valid URL but invalid text length
