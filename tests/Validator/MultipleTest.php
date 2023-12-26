@@ -15,7 +15,7 @@ class MultipleTest extends TestCase
 
     public function testIsValid()
     {
-        $this->assertEquals('1. Value must be a valid string and at least 1 chars and no longer than 20 chars \n2. Value must be a valid URL \n', $this->validator->getDescription());
+        $this->assertEquals("1. Value must be a valid string and at least 1 chars and no longer than 20 chars \n2. Value must be a valid URL \n", $this->validator->getDescription());
 
         // Valid URL but invalid text length
         $this->assertFalse($this->validator->isValid('http://example.com/very-long-url'));

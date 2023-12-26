@@ -66,7 +66,7 @@ class Multiple extends Validator
     {
         $description = '';
         foreach ($this->rules as $key => $rule) {
-            $description .= ++$key . '. ' . $rule->getDescription() . " \\n";
+            $description .= ++$key . '. ' . $rule->getDescription() . " \n";
         }
 
         return $description;
