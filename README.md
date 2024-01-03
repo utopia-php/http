@@ -243,6 +243,8 @@ In advanced scenarios, resources can also be injected into other resources or en
 
 Resources are designed to prepare dependencies or context for the request. Resources are not meant to do functional logic or return callbacks. For such a use case, you should use hooks.
 
+To learn more about Framework architecture and features, check out more in-depth [Getting started guide](/docs/Getting-Starting-Guide.md).
+
 ## System Requirements
 
 Utopia Framework requires PHP 8.0 or later. We recommend using the latest PHP version whenever possible.
