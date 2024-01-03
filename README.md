@@ -90,7 +90,6 @@ use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
-use function Swoole\Coroutine\run;
 
 Http::get('/')
     ->inject('request')
@@ -102,7 +101,7 @@ Http::get('/')
     );
 
 $http = new Http(new Server('0.0.0.0', '80'), 'America/New_York');
-run(fn() => $http->start());
+$http->start();
 ```
 
 ### Parameters
