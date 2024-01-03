@@ -4,9 +4,10 @@ namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Coroutine;
 use Utopia\Http\Adapter;
-use Swoole\Http\Server as SwooleServer;
+use Swoole\Coroutine\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
+use Utopia\Http\Http;
 
 class Server extends Adapter
 {
@@ -30,34 +31,24 @@ class Server extends Adapter
 
     public function onRequest(callable $callback)
     {
-        $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            call_user_func($callback, new Request($request), new Response($response), \strval(Coroutine::getCid()));
+        $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
+            $context = \strval(Coroutine::getCid());
+
+            Http::setResource('swooleRequest', fn () => $request, [], $context);
+            Http::setResource('swooleResponse', fn () => $response, [], $context);
+
+            call_user_func($callback, new Request($request), new Response($response), $context);
         });
     }
 
     public function onWorkerStart(callable $callback)
     {
-        $this->server->on('WorkerStart', $callback);
-    }
-
-    public function onBeforeReload(callable $callback)
-    {
-        $this->server->on('BeforeReload', $callback);
-    }
-
-    public function onAfterReload(callable $callback)
-    {
-        $this->server->on('AfterReload', $callback);
-    }
-
-    public function onBeforeShutdown(callable $callback)
-    {
-        $this->server->on('beforeShutdown', $callback);
+        return;
     }
 
     public function onStart(callable $callback)
     {
-        $this->server->on('start', $callback);
+        call_user_func($callback, $this);
     }
 
     public function start()

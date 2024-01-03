@@ -12,6 +12,21 @@ use Utopia\Http\Validator;
 class Assoc extends Validator
 {
     /**
+     * @var int
+     */
+    protected int $length;
+
+    /**
+     * Pass integer length to allow larger json objects
+     *
+     * @param  int  $length
+     */
+    public function __construct(int $length = 65535)
+    {
+        $this->length = $length;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
@@ -64,7 +79,7 @@ class Assoc extends Validator
         $jsonString = \json_encode($value);
         $jsonStringSize = \strlen($jsonString);
 
-        if ($jsonStringSize > 65535) {
+        if ($jsonStringSize > $this->length) {
             return false;
         }
 
