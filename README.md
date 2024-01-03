@@ -20,8 +20,6 @@ composer require utopia-php/framework
 Init your first application in `src/server.php`:
 
 ```php
-<?php
-
 require_once __DIR__.'/../vendor/autoload.php';
 
 use Utopia\Http\Http;
@@ -56,7 +54,7 @@ php -S localhost:8000 src/server2.php
 
 Send HTTP request:
 
-```
+```bash
 curl http://localhost:8000/hello-world
 ```
 
@@ -64,7 +62,7 @@ curl http://localhost:8000/hello-world
 
 Library supports server adapters to be able to run on any PHP setup. For instance, you could use FPM server, or the Swoole server.
 
-**Use PHP FPM server**
+#### Use PHP FPM server
 
 ```php
 use Utopia\Http\Http;
@@ -83,7 +81,9 @@ $http = new Http(new Server(), 'America/New_York');
 $http->start();
 ```
 
-**Using Swoole server**
+> When using PHP FPM, you can use command `php -S localhost:80 src/server.php` to run HTTP server locally
+
+#### Using Swoole server
 
 ```php
 use Utopia\Http\Http;
@@ -103,6 +103,8 @@ Http::get('/')
 $http = new Http(new Server('0.0.0.0', '80'), 'America/New_York');
 $http->start();
 ```
+
+> When using Swoole, you can use command `php src/server.php` to run HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
 
 ### Parameters
 
