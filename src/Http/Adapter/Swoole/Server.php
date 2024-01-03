@@ -9,6 +9,8 @@ use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use Utopia\Http\Http;
 
+use function Swoole\Coroutine\run;
+
 class Server extends Adapter
 {
     protected SwooleServer $server;
@@ -53,6 +55,10 @@ class Server extends Adapter
 
     public function start()
     {
-        $this->server->start();
+        if(Coroutine::getCid() === -1) {
+            run(fn () => $this->server->start());
+        } else {
+            $this->server->start();
+        }
     }
 }
