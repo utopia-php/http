@@ -352,7 +352,7 @@ class Request extends UtopiaRequest
              * Fallback for older PHP versions
              * that do not support generateHeaders
              */
-            if (! \function_exists('getallheaders')) {
+            if (!\function_exists('getallheaders')) {
                 $headers = [];
 
                 foreach ($_SERVER as $name => $value) {

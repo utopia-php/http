@@ -29,7 +29,7 @@ class Response extends UtopiaResponse
      */
     protected function end(string $content = null): void
     {
-        if (! is_null($content)) {
+        if (!is_null($content)) {
             echo $content;
         }
     }

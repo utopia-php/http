@@ -85,7 +85,7 @@ class Files
      */
     public function load(string $directory, string $root = null): void
     {
-        if (! is_readable($directory)) {
+        if (!is_readable($directory)) {
             throw new Exception("Failed to load directory: {$directory}");
         }
 
@@ -145,7 +145,7 @@ class Files
      */
     public function isFileLoaded(string $uri): bool
     {
-        if (! array_key_exists($uri, $this->loaded)) {
+        if (!array_key_exists($uri, $this->loaded)) {
             return false;
         }
 
@@ -162,7 +162,7 @@ class Files
      */
     public function getFileContents(string $uri): mixed
     {
-        if (! array_key_exists($uri, $this->loaded)) {
+        if (!array_key_exists($uri, $this->loaded)) {
             throw new Exception('File not found or not loaded: '.$uri);
         }
 
@@ -179,7 +179,7 @@ class Files
      */
     public function getFileMimeType(string $uri): mixed
     {
-        if (! array_key_exists($uri, $this->loaded)) {
+        if (!array_key_exists($uri, $this->loaded)) {
             throw new Exception('File not found or not loaded: '.$uri);
         }
 

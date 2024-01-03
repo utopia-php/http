@@ -1,8 +1,8 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
-use Utopia\Validator;
+use Utopia\Http\Validator;
 
 /**
  * Multiple

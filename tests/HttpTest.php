@@ -321,14 +321,14 @@ class HttpTest extends TestCase
 
     public function testAllowRouteOverrides()
     {
-        App::setAllowOverride(false);
-        $this->assertFalse(App::getAllowOverride());
-        App::get('/')->action(function () {
+        Http::setAllowOverride(false);
+        $this->assertFalse(Http::getAllowOverride());
+        Http::get('/')->action(function () {
             echo 'Hello first';
         });
 
         try {
-            App::get('/')->action(function () {
+            Http::get('/')->action(function () {
                 echo 'Hello second';
             });
             $this->fail('Failed to throw exception');
@@ -338,13 +338,13 @@ class HttpTest extends TestCase
         }
 
         // Test success
-        App::setAllowOverride(true);
-        $this->assertTrue(App::getAllowOverride());
-        App::get('/')->action(function () {
+        Http::setAllowOverride(true);
+        $this->assertTrue(Http::getAllowOverride());
+        Http::get('/')->action(function () {
             echo 'Hello first';
         });
 
-        App::get('/')->action(function () {
+        Http::get('/')->action(function () {
             echo 'Hello second';
         });
     }
