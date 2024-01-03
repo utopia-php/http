@@ -8,7 +8,7 @@
 
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
 
-Utopia Framework is dependency free. Any extra features such as authentication, caching will be available as standalone models in order to keep the framework core as clean, light and easy to learn.
+Utopia Framework is dependency-free. Any extra features, such as authentication or caching, will be available as standalone models in order to keep the framework core clean, light, and easy to learn.
 
 ## Getting Started
 
@@ -60,7 +60,7 @@ curl http://localhost:8000/hello-world
 
 ### Server Adapters
 
-Library supports server adapters to be able to run on any PHP setup. For instance, you could use FPM server, or the Swoole server.
+The library supports server adapters to be able to run on any PHP setup. For instance, you could use the FPM server or the Swoole server.
 
 #### Use PHP FPM server
 
@@ -81,7 +81,7 @@ $http = new Http(new Server(), 'America/New_York');
 $http->start();
 ```
 
-> When using PHP FPM, you can use command `php -S localhost:80 src/server.php` to run HTTP server locally
+> When using PHP FPM, you can use the command `php -S localhost:80 src/server.php` to run the HTTP server locally
 
 #### Using Swoole server
 
@@ -104,13 +104,13 @@ $http = new Http(new Server('0.0.0.0', '80'), 'America/New_York');
 $http->start();
 ```
 
-> When using Swoole, you can use command `php src/server.php` to run HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
+> When using Swoole, you can use the command `php src/server.php` to run the HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
 
 ### Parameters
 
-Parameters are used to recieve input into endpoint action from the HTTP request. Parameters could be defined as URL parameters, or could be defined in body with structure such as JSON.
+Parameters are used to receive input into endpoint action from the HTTP request. Parameters could be defined as URL parameters or in a body with a structure such as JSON.
 
-Every parameter must have a validator defined. Validators are simple classes that verify the input and ensure security of inputs. You can define your own validators, or use some of [built-in validators](https://github.com/utopia-php/framework/tree/master/src/Validator).
+Every parameter must have a validator defined. Validators are simple classes that verify the input and ensure the security of inputs. You can define your own validators or use some of [built-in validators](https://github.com/utopia-php/framework/tree/master/src/Validator).
 
 Define an endpoint with params:
 
@@ -123,7 +123,7 @@ Http::get('/')
     });
 ```
 
-Send HTTP requests to ensure parameter works:
+Send HTTP requests to ensure the parameter works:
 
 ```bash
 curl http://localhost:8000/hello-world
@@ -131,7 +131,7 @@ curl http://localhost:8000/hello-world?name=Utopia
 curl http://localhost:8000/hello-world?name=Appwrite
 ```
 
-It's always recommended to use params instead of getting params or body directly from the request resource. If you do that intentionally, always ensure to run validation right after fetching such a raw input.
+It's always recommended to use params instead of getting params or body directly from the request resource. If you do that intentionally, always make sure to run validation right after fetching such a raw input.
 
 ### Hooks
 
@@ -141,7 +141,7 @@ There are three types of hooks:
 - **Shutdown hooks** are executed after route action is finished, but before application shuts down
 - **Error hooks** are executed whenever there's an error in the application lifecycle.
 
-You can provide multiple hooks for each stage. If you do not assign groups to the hook, by default the hook will be executed for every route. If a group is defined on a hook, it will only run during lifecycle of a request with the same group name on the action.
+You can provide multiple hooks for each stage. If you do not assign groups to the hook, by default, the hook will be executed for every route. If a group is defined on a hook, it will only run during the lifecycle of a request with the same group name on the action.
 
 ```php
 Http::init()
@@ -166,11 +166,11 @@ Http::error()
     });
 ```
 
-Hooks are designed to be actions ran during lifecycle of requests. Hooks should include functional logic. Hooks are not designed to prepare dependencies or context for the request. For such use case you should use resources.
+Hooks are designed to be actions that run during the lifecycle of requests. Hooks should include functional logic. Hooks are not designed to prepare dependencies or context for the request. For such a use case, you should use resources.
 
 ### Groups
 
-Groups allow you to define common behaviour for multiple endpoints.
+Groups allow you to define common behavior for multiple endpoints.
 
 You can start by defining a group on an endpoint. Keep in mind you can also define multiple groups on a single endpoint.
 
@@ -203,11 +203,11 @@ Http::init()
     });
 ```
 
-Groups are designed to be actions ran during lifecycle of requests to endpoints that got some logic incommon. Groups allow you to prevent code duplication, and are designed to be defined anywhere in your source code to allow flexibility. 
+Groups are designed to be actions that run during the lifecycle of requests to endpoints that have some logic in common. Groups allow you to prevent code duplication and are designed to be defined anywhere in your source code to allow flexibility. 
 
 ### Resources
 
-Resources allows you to prepare dependencies for requests such as database connection or user which sent the request. A new instance of a resource is created for every request.
+Resources allow you to prepare dependencies for requests such as database connection or the user who sent the request. A new instance of a resource is created for every request.
 
 Define a resource:
 
@@ -228,7 +228,7 @@ Http::get('/')
     });
 ```
 
-Inject resource into hook:
+Inject resource into a hook:
 
 ```php
 Http::shutdown()
@@ -239,9 +239,9 @@ Http::shutdown()
     });
 ```
 
-In advanced scenarios, resources can also be injected into other resources or endpoint params.
+In advanced scenarios, resources can also be injected into other resources or endpoint parameters.
 
-Resources are designed to prepare dependencies or context for the request. Resources are not meant to do functional logic or return callbacks. For such use case you should use hooks.
+Resources are designed to prepare dependencies or context for the request. Resources are not meant to do functional logic or return callbacks. For such a use case, you should use hooks.
 
 ## System Requirements
 
@@ -249,7 +249,7 @@ Utopia Framework requires PHP 8.0 or later. We recommend using the latest PHP ve
 
 ## More from Utopia
 
-Our ecosystem support other thin PHP projects aiming to extend the core PHP Utopia framework.
+Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia framework.
 
 Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project. 
 
