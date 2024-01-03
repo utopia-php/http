@@ -127,7 +127,7 @@ class Text extends Validator
 
         if (\count($this->allowList) > 0) {
             foreach (\str_split($value) as $char) {
-                if (! \in_array($char, $this->allowList)) {
+                if (!\in_array($char, $this->allowList)) {
                     return false;
                 }
             }

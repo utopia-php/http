@@ -319,6 +319,36 @@ class HttpTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
+    public function testAllowRouteOverrides()
+    {
+        App::setAllowOverride(false);
+        $this->assertFalse(App::getAllowOverride());
+        App::get('/')->action(function () {
+            echo 'Hello first';
+        });
+
+        try {
+            App::get('/')->action(function () {
+                echo 'Hello second';
+            });
+            $this->fail('Failed to throw exception');
+        } catch (\Exception $e) {
+            // Threw exception as expected
+            $this->assertEquals('Route for (GET:) already registered.', $e->getMessage());
+        }
+
+        // Test success
+        App::setAllowOverride(true);
+        $this->assertTrue(App::getAllowOverride());
+        App::get('/')->action(function () {
+            echo 'Hello first';
+        });
+
+        App::get('/')->action(function () {
+            echo 'Hello second';
+        });
+    }
+
     public function testCanHookThrowExceptions()
     {
         $this->http

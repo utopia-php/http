@@ -249,7 +249,7 @@ abstract class Response
      */
     public function __construct(float $time = 0)
     {
-        $this->startTime = (! empty($time)) ? $time : \microtime(true);
+        $this->startTime = (!empty($time)) ? $time : \microtime(true);
     }
 
     /**
@@ -262,7 +262,7 @@ abstract class Response
      */
     public function setContentType(string $type, string $charset = ''): static
     {
-        $this->contentType = $type.((! empty($charset) ? '; charset='.$charset : ''));
+        $this->contentType = $type.((!empty($charset) ? '; charset='.$charset : ''));
 
         return $this;
     }
@@ -300,7 +300,7 @@ abstract class Response
      */
     public function setStatusCode(int $code = 200): static
     {
-        if (! \array_key_exists($code, $this->statusCodes)) {
+        if (!\array_key_exists($code, $this->statusCodes)) {
             throw new Exception('Unknown HTTP status code');
         }
 
@@ -413,7 +413,8 @@ abstract class Response
     public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
     {
         $name = strtolower($name);
-        $this->cookies[$name] = [
+
+        $this->cookies[] = [
             'name' => $name,
             'value' => $value,
             'expire' => $expire,
@@ -436,9 +437,9 @@ abstract class Response
      */
     public function removeCookie(string $name): static
     {
-        if (isset($this->headers[$name])) {
-            unset($this->cookies[$name]);
-        }
+        $this->cookies = array_filter($this->cookies, function ($cookie) use ($name) {
+            return $cookie['name'] !== $name;
+        });
 
         return $this;
     }
@@ -477,7 +478,7 @@ abstract class Response
             ->appendCookies()
             ->appendHeaders();
 
-        if (! $this->disablePayload) {
+        if (!$this->disablePayload) {
             $length = strlen($body);
 
             $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
@@ -519,7 +520,12 @@ abstract class Response
      * @param  string  $content
      * @return void
      */
-    abstract protected function end(string $content = null): void;
+    protected function end(string $content = null): void
+    {
+        if (!is_null($content)) {
+            echo $content;
+        }
+    }
 
     /**
      * Output response
@@ -547,7 +553,7 @@ abstract class Response
             ->appendCookies()
             ->appendHeaders();
 
-        if (! $this->disablePayload) {
+        if (!$this->disablePayload) {
             $this->write($body);
             if ($end) {
                 $this->disablePayload();
@@ -570,7 +576,7 @@ abstract class Response
         $this->sendStatus($this->statusCode);
 
         // Send content type header
-        if (! empty($this->contentType)) {
+        if (!empty($this->contentType)) {
             $this->addHeader('Content-Type', $this->contentType);
         }
 
@@ -712,7 +718,7 @@ abstract class Response
      */
     public function json($data): void
     {
-        if (! is_array($data) && ! $data instanceof \stdClass) {
+        if (!is_array($data) && !$data instanceof \stdClass) {
             throw new \Exception('Invalid JSON input var');
         }
 

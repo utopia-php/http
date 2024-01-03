@@ -72,7 +72,7 @@ class Assoc extends Validator
      */
     public function isValid($value): bool
     {
-        if (! \is_array($value)) {
+        if (!\is_array($value)) {
             return false;
         }
 

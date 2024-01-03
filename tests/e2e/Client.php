@@ -55,7 +55,7 @@ class Client
     public function call(string $method, string $path = '', array $headers = [], array $params = [])
     {
         usleep(50000);
-        $ch = curl_init($this->baseUrl.$path.(($method == self::METHOD_GET && ! empty($params)) ? '?'.http_build_query($params) : ''));
+        $ch = curl_init($this->baseUrl.$path.(($method == self::METHOD_GET && !empty($params)) ? '?'.http_build_query($params) : ''));
         $responseHeaders = [];
         $responseStatus = -1;
         $responseType = '';

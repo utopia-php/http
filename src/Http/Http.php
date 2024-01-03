@@ -333,6 +333,29 @@ class Http
     }
 
     /**
+     * Get allow override
+     *
+     *
+     * @return bool
+     */
+    public static function getAllowOverride(): bool
+    {
+        return Router::getAllowOverride();
+    }
+
+    /**
+     * Set Allow override
+     *
+     *
+     * @param  bool  $value
+     * @return void
+     */
+    public static function setAllowOverride(bool $value): void
+    {
+        Router::setAllowOverride($value);
+    }
+
+    /**
      * If a resource has been created return it, otherwise create it and then return it
      *
      * @param  string  $name

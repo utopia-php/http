@@ -74,12 +74,12 @@ class FloatValidator extends Validator
     public function isValid(mixed $value): bool
     {
         if ($this->loose) {
-            if (! \is_numeric($value)) {
+            if (!\is_numeric($value)) {
                 return false;
             }
             $value = $value + 0;
         }
-        if (! \is_float($value) && ! \is_int($value)) {
+        if (!\is_float($value) && !\is_int($value)) {
             return false;
         }
 
