@@ -110,7 +110,7 @@ $http->start();
 
 Parameters are used to receive input into endpoint action from the HTTP request. Parameters could be defined as URL parameters or in a body with a structure such as JSON.
 
-Every parameter must have a validator defined. Validators are simple classes that verify the input and ensure the security of inputs. You can define your own validators or use some of [built-in validators](https://github.com/utopia-php/framework/tree/master/src/Validator).
+Every parameter must have a validator defined. Validators are simple classes that verify the input and ensure the security of inputs. You can define your own validators or use some of [built-in validators](/src/Http/Validator).
 
 Define an endpoint with params:
 
