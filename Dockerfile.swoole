@@ -26,4 +26,4 @@ COPY --from=step0 /usr/local/src/vendor /usr/src/code/vendor
 
 EXPOSE 80
 
-CMD ["php", "tests/e2e/server_swoole.php"]
+CMD ["php", "tests/e2e/server-swoole.php"]
