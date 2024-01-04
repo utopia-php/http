@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +17,7 @@ class IntegerTest extends TestCase
         $this->assertFalse($validator->isValid(true));
         $this->assertFalse($validator->isValid(false));
         $this->assertFalse($validator->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_INTEGER, $validator->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_INTEGER, $validator->getType());
     }
 
     public function testCanValidateLoosely()
@@ -31,6 +31,6 @@ class IntegerTest extends TestCase
         $this->assertFalse($validator->isValid(true));
         $this->assertFalse($validator->isValid(false));
         $this->assertFalse($validator->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_INTEGER, $validator->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_INTEGER, $validator->getType());
     }
 }

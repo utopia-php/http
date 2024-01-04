@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -15,7 +15,7 @@ class ArrayListTest extends TestCase
         $this->assertFalse($arrayList->isValid(['string', 'string', 3]));
         $this->assertFalse($arrayList->isValid('string'));
         $this->assertFalse($arrayList->isValid('string'));
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $arrayList->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_STRING, $arrayList->getType());
         $this->assertInstanceOf(Text::class, $arrayList->getValidator());
     }
 
@@ -25,7 +25,7 @@ class ArrayListTest extends TestCase
         $this->assertTrue($arrayList->isValid([1, 2, 3]));
         $this->assertFalse($arrayList->isValid(1));
         $this->assertFalse($arrayList->isValid('string'));
-        $this->assertEquals(\Utopia\Validator::TYPE_MIXED, $arrayList->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_MIXED, $arrayList->getType());
         $this->assertInstanceOf(Numeric::class, $arrayList->getValidator());
     }
 
@@ -35,7 +35,7 @@ class ArrayListTest extends TestCase
         $this->assertTrue($arrayList->isValid([1]));
         $this->assertTrue($arrayList->isValid([1, 2]));
         $this->assertFalse($arrayList->isValid([1, 2, 3]));
-        $this->assertEquals($arrayList->getType(), \Utopia\Validator::TYPE_MIXED);
+        $this->assertEquals($arrayList->getType(), \Utopia\Http\Validator::TYPE_MIXED);
         $this->assertInstanceOf(Numeric::class, $arrayList->getValidator());
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +22,7 @@ class BooleanTest extends TestCase
         $this->assertFalse($boolean->isValid('string'));
         $this->assertFalse($boolean->isValid(1.2));
         $this->assertFalse($boolean->isArray());
-        $this->assertEquals($boolean->getType(), \Utopia\Validator::TYPE_BOOLEAN);
+        $this->assertEquals($boolean->getType(), \Utopia\Http\Validator::TYPE_BOOLEAN);
     }
 
     public function testCanValidateLoosely()
@@ -41,6 +41,6 @@ class BooleanTest extends TestCase
         $this->assertFalse($boolean->isValid('string'));
         $this->assertFalse($boolean->isValid(1.2));
         $this->assertFalse($boolean->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_BOOLEAN, $boolean->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_BOOLEAN, $boolean->getType());
     }
 }

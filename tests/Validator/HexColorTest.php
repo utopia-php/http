@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -21,6 +21,6 @@ class HexColorTest extends TestCase
         $this->assertFalse($hexColor->isValid('ffff'));
         $this->assertFalse($hexColor->isArray());
 
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $hexColor->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_STRING, $hexColor->getType());
     }
 }

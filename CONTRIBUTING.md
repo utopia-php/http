@@ -64,6 +64,12 @@ $ git push origin [name_of_your_new_branch]
 8. After approval, merge your PR
 9. GitHub will automatically delete the branch after the merge is done. (they can still be restored).
 
+### Testing
+
+- `docker-compose up -d`
+- `docker-compose exec web  vendor/bin/phpunit --configuration phpunit.xml`
+- `docker-compose exec web vendor/bin/psalm --show-info=true`
+
 ## Introducing New Features
 
 We would 💖 you to contribute to Framework, but we would also like to make sure Framework is as great as possible and loyal to its vision and mission statement 🙏.

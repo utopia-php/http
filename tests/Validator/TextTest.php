@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +17,7 @@ class TextTest extends TestCase
         $this->assertFalse($validator->isValid(['seven', 8, 9.0]));
         $this->assertFalse($validator->isValid(false));
         $this->assertFalse($validator->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $validator->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_STRING, $validator->getType());
     }
 
     public function testCanValidateBoundaries(): void

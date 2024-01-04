@@ -1,10 +1,10 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Http\Tests;
 
-use Utopia\Request as UtopiaRequest;
+use Utopia\Http\Adapter\FPM\Request as UtopiaFPMRequest;
 
-class UtopiaRequestTest extends UtopiaRequest
+class UtopiaFPMRequestTest extends UtopiaFPMRequest
 {
     private static ?array $params;
 

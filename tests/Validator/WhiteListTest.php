@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -22,7 +22,7 @@ class WhiteListTest extends TestCase
         $this->assertFalse($whiteList->isValid(5));
         $this->assertFalse($whiteList->isArray());
         $this->assertEquals($whiteList->getList(), ['string1', 'string2', 3, 4]);
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $whiteList->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_STRING, $whiteList->getType());
     }
 
     public function testCanValidateLoosely(): void

@@ -29,13 +29,14 @@ class Client
      *
      * @var string
      */
-    protected $baseUrl = 'http://web';
+    protected $baseUrl;
 
     /**
      * SDK constructor.
      */
-    public function __construct()
+    public function __construct(string $baseUrl = 'http://fpm')
     {
+        $this->baseUrl = $baseUrl;
     }
 
     /**

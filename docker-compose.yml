@@ -1,10 +1,29 @@
 version: '3'
 
 services:
-    web:
-        build: .
+    fpm:
+        build:
+            context: .
+            dockerfile: Dockerfile.fpm
         ports:
             - "9020:80"
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
+        networks:
+            - testing
+        depends_on:
+            - swoole
+    swoole:
+        build:
+            context: .
+            dockerfile: Dockerfile.swoole
+        ports: 
+            - "9501:80"
+        volumes:
+            - ./src:/usr/src/code/src
+            - ./tests:/usr/src/code/tests
+        networks:
+            - testing
+networks:
+  testing:
