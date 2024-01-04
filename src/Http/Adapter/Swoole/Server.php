@@ -15,20 +15,12 @@ class Server extends Adapter
 {
     protected SwooleServer $server;
 
-    public function __construct(string $host, string $port = null)
+    public function __construct(string $host, string $port = null, array $settings = [])
     {
         $this->server = new SwooleServer($host, $port);
-        $this->server->set([
+        $this->server->set(\array_merge($settings, [
             'enable_coroutine' => true
-        ]);
-    }
-
-    public function setConfig(array $configs)
-    {
-        $configs = array_merge($configs, [
-            'enable_coroutine' => true
-        ]);
-        $this->server->set($configs);
+        ]));
     }
 
     public function onRequest(callable $callback)
