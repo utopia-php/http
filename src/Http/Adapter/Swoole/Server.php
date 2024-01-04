@@ -35,11 +35,6 @@ class Server extends Adapter
         });
     }
 
-    public function onWorkerStart(callable $callback)
-    {
-        call_user_func($callback, $this);
-    }
-
     public function onStart(callable $callback)
     {
         call_user_func($callback, $this);

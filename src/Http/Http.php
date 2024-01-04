@@ -98,13 +98,6 @@ class Http
     protected static array $startHooks = [];
 
     /**
-     * Worker Start hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $workerStartHooks = [];
-
-    /**
      * Request hooks
      *
      * @var Hook[]
@@ -563,13 +556,6 @@ class Http
         return $this->files->getFileMimeType($uri);
     }
 
-    public static function onWorkerStart(): Hook
-    {
-        $hook = new Hook();
-        self::$workerStartHooks[] = $hook;
-        return $hook;
-    }
-
     public static function onStart(): Hook
     {
         $hook = new Hook();
@@ -604,40 +590,6 @@ class Http
             try {
 
                 foreach (self::$startHooks as $hook) {
-                    $arguments = $this->getArguments($hook, 'utopia', [], []);
-                    \call_user_func_array($hook->getAction(), $arguments);
-                }
-            } catch(\Exception $e) {
-                self::setResource('error', fn () => $e);
-
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (in_array('*', $error->getGroups())) {
-                        try {
-                            $arguments = $this->getArguments($error, 'utopia', [], []);
-                            \call_user_func_array($error->getAction(), $arguments);
-                        } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                        }
-                    }
-                }
-            }
-        });
-
-        $this->server->onWorkerStart(function ($server, $workerId) {
-            $this->resources['utopia'] ??= [];
-            $this->resources['utopia']['server'] = $server;
-            $this->resources['utopia']['workerId'] = $workerId;
-
-            self::setResource('server', function () use ($server) {
-                return $server;
-            });
-            self::setResource('workerId', function () use ($workerId) {
-                return $workerId;
-            });
-
-            try {
-
-                foreach (self::$workerStartHooks as $hook) {
                     $arguments = $this->getArguments($hook, 'utopia', [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
@@ -1004,7 +956,6 @@ class Http
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
-        self::$workerStartHooks = [];
         self::$startHooks = [];
     }
 }
