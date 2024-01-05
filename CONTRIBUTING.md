@@ -1,6 +1,6 @@
 # Contributing
 
-We would ❤️ for you to contribute to `utopia-php/http` and help make it better! We want contributing to this library to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
+We would ❤️ for you to contribute to Utopia HTTP and help make it better! We want contributing to this library to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
 
 ## How to Start?
 
@@ -106,4 +106,4 @@ Submitting documentation updates, enhancements, designs, or bug fixes. Spelling 
 
 ### Helping Someone
 
-Searching for Utopia-PHP on Discord, GitHub, or StackOverflow and helping someone else who needs help. You can also help by teaching others how to contribute to this repo!
+Searching for Utopia HTTP on Discord, GitHub, or StackOverflow and helping someone else who needs help. You can also help by teaching others how to contribute to this repo!

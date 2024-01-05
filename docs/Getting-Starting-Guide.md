@@ -1,4 +1,4 @@
-# Getting Started with Utopia-PHP
+# Getting Started with Utopia HTTP
 
 # Intro
 Utopia HTTP is an easy-to-use PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. It follows an architecture like Express and is based on the declarative programming approach. Documenting and writing code are usually seen as two separate tasks and very often, documentation loses priority in the software development lifecycle. Utopia unifies the two with a flexible API that allows your code to be self-documenting. What’s interesting about Utopia is its ability to accept metadata along with it’s route definitions. This metadata can then be used for various purposes like generating documentation, swagger specifications and more.
@@ -283,5 +283,5 @@ If you have PHP and Composer installed on your device, you can run Utopia apps l
 
 > Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
 
-Wonderful! 😄  You’re all set to create a basic demo app using the Utopia Http. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
+Wonderful! 😄  You’re all set to create a basic demo app using the Utopia HTTP. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
 
