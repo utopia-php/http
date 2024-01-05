@@ -1,10 +1,11 @@
 {
     "name": "utopia-php/http",
-    "description": "A simple, light and advanced PHP framework",
+    "description": "A simple, light and advanced PHP HTTP framework",
     "type": "library",
     "keywords": [
         "php",
         "framework",
+        "http",
         "upf"
     ],
     "license": "MIT",

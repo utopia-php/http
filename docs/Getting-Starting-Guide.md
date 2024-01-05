@@ -1,7 +1,7 @@
 # Getting Started with Utopia-PHP
 
 # Intro
-Utopia Framework is an easy-to-use PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. It follows an architecture like Express and is based on the declarative programming approach. Documenting and writing code are usually seen as two separate tasks and very often, documentation loses priority in the software development lifecycle. Utopia unifies the two with a flexible API that allows your code to be self-documenting. What’s interesting about Utopia is its ability to accept metadata along with it’s route definitions. This metadata can then be used for various purposes like generating documentation, swagger specifications and more.
+Utopia Http is an easy-to-use PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. It follows an architecture like Express and is based on the declarative programming approach. Documenting and writing code are usually seen as two separate tasks and very often, documentation loses priority in the software development lifecycle. Utopia unifies the two with a flexible API that allows your code to be self-documenting. What’s interesting about Utopia is its ability to accept metadata along with it’s route definitions. This metadata can then be used for various purposes like generating documentation, swagger specifications and more.
 
 # Defining Routes
 If you’re new to Utopia, let’s get started by looking at an example of a basic GET route for an application that you can create using Utopia. We'll be using a [Swoole server](https://github.com/swoole/swoole-src) in this example, but you should be able to extend it to any HTTP server.
@@ -279,9 +279,9 @@ Http::shutdown(function($request) {
 
 
 # Running Locally
-If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the utopia-php/http dependency using `composer require utopia-php/http` command.
+If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the Utopia-PHP/http dependency using `composer require utopia-php/http` command.
 
-> Utopia Framework requires PHP 7.3 or later. We recommend using the latest PHP version whenever possible.
+> Utopia Http requires PHP 8.0 or later. We recommend using the latest PHP version whenever possible.
 
-Wonderful! 😄  You’re all set to create a basic demo app using the Utopia framework. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
+Wonderful! 😄  You’re all set to create a basic demo app using the Utopia Http. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
 
