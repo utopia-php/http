@@ -1,6 +1,6 @@
 # Contributing
 
-We would ❤️ for you to contribute to Utopia-PHP Http and help make it better! We want contributing to Http to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
+We would ❤️ for you to contribute to `utopia-php/http` and help make it better! We want contributing to this library to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
 
 ## How to Start?
 
