@@ -2,8 +2,8 @@
     <img height="45" src="docs/logo.png" alt="Logo">
 </p>
 
-[![Build Status](https://travis-ci.org/utopia-php/framework.svg?branch=master)](https://travis-ci.org/utopia-php/framework)
-![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/framework.svg)
+[![Build Status](https://travis-ci.org/utopia-php/http.svg?branch=master)](https://travis-ci.org/utopia-php/http)
+![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/http.svg)
 [![Discord](https://img.shields.io/discord/564160730845151244?label=discord)](https://discord.gg/GSeTUeA)
 
 Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
@@ -14,7 +14,7 @@ Utopia Framework is dependency-free. Any extra features, such as authentication 
 
 Install using composer:
 ```bash
-composer require utopia-php/framework
+composer require utopia-php/http
 ```
 
 Init your first application in `src/server.php`:
@@ -49,7 +49,7 @@ $http->start();
 Run HTTP server:
 
 ```bash
-php -S localhost:8000 src/server2.php 
+php -S localhost:8000 src/server2.php
 ```
 
 Send HTTP request:
@@ -203,7 +203,7 @@ Http::init()
     });
 ```
 
-Groups are designed to be actions that run during the lifecycle of requests to endpoints that have some logic in common. Groups allow you to prevent code duplication and are designed to be defined anywhere in your source code to allow flexibility. 
+Groups are designed to be actions that run during the lifecycle of requests to endpoints that have some logic in common. Groups allow you to prevent code duplication and are designed to be defined anywhere in your source code to allow flexibility.
 
 ### Resources
 
@@ -253,7 +253,7 @@ Utopia Framework requires PHP 8.0 or later. We recommend using the latest PHP ve
 
 Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia framework.
 
-Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project. 
+Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project.
 
 You can find all libraries in [GitHub Utopia organization](https://github.com/utopia-php).
 
@@ -263,7 +263,7 @@ All code contributions - including those of people having commit access - must g
 
 Fork the project, create a feature branch, and send us a pull request.
 
-You can refer to the [Contributing Guide](https://github.com/utopia-php/framework/blob/master/CONTRIBUTING.md) for more info.
+You can refer to the [Contributing Guide](https://github.com/utopia-php/http/blob/master/CONTRIBUTING.md) for more info.
 
 For security issues, please email security@appwrite.io instead of posting a public issue in GitHub.
 

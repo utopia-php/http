@@ -15,6 +15,9 @@ jobs:
       with:
         php-version: '8.1'
 
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+
     - name: Setup Docker
       run: docker-compose up -d --build
 
@@ -23,6 +26,6 @@ jobs:
 
     - name: Run FPM Tests
       run: docker compose exec fpm vendor/bin/phpunit --configuration phpunit.xml
-    
+
     - name: Run Swoole Tests
       run: docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml

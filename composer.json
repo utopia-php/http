@@ -1,5 +1,5 @@
 {
-    "name": "utopia-php/framework",
+    "name": "utopia-php/http",
     "description": "A simple, light and advanced PHP framework",
     "type": "library",
     "keywords": [
