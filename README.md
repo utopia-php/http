@@ -2,19 +2,20 @@
     <img height="45" src="docs/logo.png" alt="Logo">
 </p>
 
-[![Build Status](https://travis-ci.org/utopia-php/framework.svg?branch=master)](https://travis-ci.org/utopia-php/framework)
-![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/framework.svg)
+[![Build Status](https://travis-ci.org/utopia-php/http.svg?branch=master)](https://travis-ci.org/utopia-php/http)
+![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/http.svg)
 [![Discord](https://img.shields.io/discord/564160730845151244?label=discord)](https://discord.gg/GSeTUeA)
 
-Utopia Framework is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
+Utopia Http is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
 
-Utopia Framework is dependency-free. Any extra features, such as authentication or caching, will be available as standalone models in order to keep the framework core clean, light, and easy to learn.
+Utopia Http is dependency-free. Any extra features, such as authentication or caching are available as standalone models in order to keep the framework core clean, light, and easy to learn.
 
 ## Getting Started
 
-Install using composer:
+Install using Composer:
+
 ```bash
-composer require utopia-php/framework
+composer require utopia-php/http
 ```
 
 Init your first application in `src/server.php`:
@@ -49,7 +50,7 @@ $http->start();
 Run HTTP server:
 
 ```bash
-php -S localhost:8000 src/server2.php 
+php -S localhost:8000 src/server.php 
 ```
 
 Send HTTP request:
@@ -60,7 +61,7 @@ curl http://localhost:8000/hello-world
 
 ### Server Adapters
 
-The library supports server adapters to be able to run on any PHP setup. For instance, you could use the FPM server or the Swoole server.
+The library supports server adapters to be able to run on any PHP setup. Youx1s could use the FPM server or the Swoole server.
 
 #### Use PHP FPM server
 
@@ -243,15 +244,15 @@ In advanced scenarios, resources can also be injected into other resources or en
 
 Resources are designed to prepare dependencies or context for the request. Resources are not meant to do functional logic or return callbacks. For such a use case, you should use hooks.
 
-To learn more about Framework architecture and features, check out more in-depth [Getting started guide](/docs/Getting-Starting-Guide.md).
+To learn more about Http architecture and features, check out more in-depth [Getting started guide](/docs/Getting-Starting-Guide.md).
 
 ## System Requirements
 
-Utopia Framework requires PHP 8.0 or later. We recommend using the latest PHP version whenever possible.
+Utopia Http requires PHP 8.0 or later. We recommend using the latest PHP version whenever possible.
 
 ## More from Utopia
 
-Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia framework.
+Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia Http.
 
 Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project. 
 
@@ -263,7 +264,7 @@ All code contributions - including those of people having commit access - must g
 
 Fork the project, create a feature branch, and send us a pull request.
 
-You can refer to the [Contributing Guide](https://github.com/utopia-php/framework/blob/master/CONTRIBUTING.md) for more info.
+You can refer to the [Contributing Guide](https://github.com/utopia-php/http/blob/master/CONTRIBUTING.md) for more info.
 
 For security issues, please email security@appwrite.io instead of posting a public issue in GitHub.
 

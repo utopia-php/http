@@ -1,6 +1,6 @@
 {
     "name": "utopia-php/http-app",
     "require": {
-        "utopia-php/framework": "0.33.*"
+        "utopia-php/http": "0.33.*"
     }
 }
