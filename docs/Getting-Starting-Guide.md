@@ -279,7 +279,7 @@ Http::shutdown(function($request) {
 
 
 # Running Locally
-If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the Utopia-PHP/http dependency using `composer require utopia-php/http` command.
+If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the `utopia-php/http` dependency using `composer require utopia-php/http` command.
 
 > Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
 
