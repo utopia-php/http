@@ -204,7 +204,7 @@ Http::init()
     });
 ```
 
-Groups are designed to be actions that run during the lifecycle of requests to endpoints that have some logic in common. Groups allow you to prevent code duplication and are designed to be defined anywhere in your source code to allow flexibility. 
+Groups are designed to be actions that run during the lifecycle of requests to endpoints that have some logic in common. Groups allow you to prevent code duplication and are designed to be defined anywhere in your source code to allow flexibility.
 
 ### Resources
 
@@ -254,7 +254,7 @@ Utopia Http requires PHP 8.0 or later. We recommend using the latest PHP version
 
 Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia Http.
 
-Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project. 
+Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project.
 
 You can find all libraries in [GitHub Utopia organization](https://github.com/utopia-php).
 
