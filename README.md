@@ -6,9 +6,9 @@
 ![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/http.svg)
 [![Discord](https://img.shields.io/discord/564160730845151244?label=discord)](https://discord.gg/GSeTUeA)
 
-Utopia Http is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
+Utopia HTTP is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
 
-Utopia Http is dependency-free. Any extra features, such as authentication or caching are available as standalone models in order to keep the framework core clean, light, and easy to learn.
+Utopia HTTP is dependency-free. Any extra features, such as authentication or caching are available as standalone models in order to keep the framework core clean, light, and easy to learn.
 
 ## Getting Started
 
@@ -61,7 +61,7 @@ curl http://localhost:8000/hello-world
 
 ### Server Adapters
 
-The library supports server adapters to be able to run on any PHP setup. Youx1s could use the FPM server or the Swoole server.
+The library supports server adapters to be able to run on any PHP setup. You could use the FPM or Swoole server.
 
 #### Use PHP FPM server
 
@@ -244,15 +244,15 @@ In advanced scenarios, resources can also be injected into other resources or en
 
 Resources are designed to prepare dependencies or context for the request. Resources are not meant to do functional logic or return callbacks. For such a use case, you should use hooks.
 
-To learn more about Http architecture and features, check out more in-depth [Getting started guide](/docs/Getting-Starting-Guide.md).
+To learn more about architecture and features for this library, check out more in-depth [Getting started guide](/docs/Getting-Starting-Guide.md).
 
 ## System Requirements
 
-Utopia Http requires PHP 8.0 or later. We recommend using the latest PHP version whenever possible.
+Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
 
 ## More from Utopia
 
-Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia Http.
+Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia HTTP.
 
 Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project.
 
