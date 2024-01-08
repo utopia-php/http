@@ -84,7 +84,7 @@ class View
         }
 
         if (is_string($value) && $escapeHtml) {
-            $value = htmlspecialchars($value, encoding: 'UTF-8');
+            $value = \htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         }
 
         $this->params[$key] = $value;
