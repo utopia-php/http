@@ -83,4 +83,10 @@ class ViewTest extends TestCase
     {
         $this->assertEquals('<p>line1</p><p>line2</p>', $this->view->print("line1\n\nline2", View::FILTER_NL2P));
     }
+
+    public function testCanSetParamWithEscapedHtml()
+    {
+        $this->view->setParam('key', '<html>value</html>');
+        $this->assertEquals('&lt;html&gt;value&lt;/html&gt;', $this->view->getParam('key', 'default'));
+    }
 }

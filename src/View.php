@@ -77,10 +77,14 @@ class View
      *
      * @throws Exception
      */
-    public function setParam(string $key, mixed $value): static
+    public function setParam(string $key, mixed $value, bool $escapeHtml = true): static
     {
         if (\strpos($key, '.') !== false) {
             throw new Exception('$key can\'t contain a dot "." character');
+        }
+
+        if (is_string($value) && $escapeHtml) {
+            $value = \htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
         }
 
         $this->params[$key] = $value;
