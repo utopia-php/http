@@ -1,16 +1,16 @@
 # Contributing
 
-We would ❤️ for you to contribute to Framework and help make it better! We want contributing to Framework to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
+We would ❤️ for you to contribute to Utopia HTTP and help make it better! We want contributing to this library to be fun, enjoyable, and educational for anyone and everyone. All contributions are welcome, including issues, new docs as well as updates and tweaks, blog posts, workshops, and more.
 
 ## How to Start?
 
 If you are worried or don’t know where to start, check out our next section explaining what kind of help we could use and where can you get involved. You can reach out with questions to [Eldad Fux (@eldadfux)](https://twitter.com/eldadfux) or [@appwrite_io](https://twitter.com/appwrite_io) on Twitter, and anyone from the [Appwrite team on Discord](https://discord.gg/GSeTUeA). You can also submit an issue, and a maintainer can guide you!
 
-You can get an in-depth understanding of the Utopia-PHP framework in our [Getting Started](docs/Getting-Starting-Guide.md) guide.
+You can get an in-depth understanding of Utopia HTTP in our [Getting Started](docs/Getting-Starting-Guide.md) guide.
 
 ## Code of Conduct
 
-Help us keep framework open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
+Help us keep Utopia HTTP open and inclusive. Please read and follow our [Code of Conduct](/CODE_OF_CONDUCT.md).
 
 ## Submit a Pull Request 🚀
 
@@ -72,33 +72,33 @@ $ git push origin [name_of_your_new_branch]
 
 ## Introducing New Features
 
-We would 💖 you to contribute to Framework, but we would also like to make sure Framework is as great as possible and loyal to its vision and mission statement 🙏.
+We would 💖 you to contribute to Utopia HTTP, but we would also like to make sure this library is as great as possible and loyal to its vision and mission statement 🙏.
 
 For us to find the right balance, please open an issue explaining your ideas before introducing a new pull request.
 
-This will allow the Framework community to have sufficient discussion about the new feature value and how it fits in the product roadmap and vision.
+This will allow the community to have sufficient discussion about the new feature value and how it fits in the product roadmap and vision.
 
-This is also important for the Framework lead developers to be able to give technical input and different emphasis regarding the feature design and architecture. Some bigger features might need to go through our [RFC process](https://github.com/appwrite/rfc).
+This is also important for the repository owners to be able to give technical input and different emphasis regarding the feature design and architecture. Some bigger features might need to go through our [RFC process](https://github.com/appwrite/rfc).
 
 ## Other Ways to Help
 
-Pull requests are great, but there are many other areas where you can help Framework
+Pull requests are great, but there are many other areas where you can help:
 
 ### Blogging & Speaking
 
-Blogging, speaking about, or creating tutorials about one of Framework's many features is great way to contribute and help our project grow.
+Creating blog posts, giving talks, or developing tutorials about one of this library's many features are excellent ways to contribute and help our project grow.
 
 ### Presenting at Meetups
 
-Presenting at meetups and conferences about your Framework projects. Your unique challenges and successes in building things with Framework can provide great speaking material. We’d love to review your talk abstract/CFP, so get in touch with us if you’d like some help!
+Presenting at meetups and conferences about your Utopia projects. Your unique challenges and successes in building things with this library can provide great speaking material. We’d love to review your conference talk abstract, so get in touch with us if you’d like some help!
 
 ### Sending Feedbacks & Reporting Bugs
 
-Sending feedback is a great way for us to understand your different use cases of Framework better. If you had any issues, bugs, or want to share about your experience, feel free to do so on our GitHub issues page or at our [Discord channel](https://discord.gg/GSeTUeA).
+Sending feedback is a great way for us to understand your different use cases of this library better. If you had any issues, bugs, or want to share about your experience, feel free to do so on our GitHub issues page or at our [Discord channel](https://discord.gg/GSeTUeA).
 
 ### Submitting New Ideas
 
-If you think Framework could use a new feature, please open an issue on our GitHub repository, stating as much information as you can think about your new idea and it's implications. We would also use this issue to gather more information, get more feedback from the community, and have a proper discussion about the new feature.
+If you think this library could use a new feature, please open an issue on our GitHub repository, stating as much information as you can think about your new idea and it's implications. We would also use this issue to gather more information, get more feedback from the community, and have a proper discussion about the new feature.
 
 ### Improving Documentation
 
@@ -106,4 +106,4 @@ Submitting documentation updates, enhancements, designs, or bug fixes. Spelling 
 
 ### Helping Someone
 
-Searching for Framework on Discord, GitHub, or StackOverflow and helping someone else who needs help. You can also help by teaching others how to contribute to Framework's repo!
+Searching for Utopia HTTP on Discord, GitHub, or StackOverflow and helping someone else who needs help. You can also help by teaching others how to contribute to this repo!

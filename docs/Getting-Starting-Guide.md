@@ -1,10 +1,10 @@
-# Getting Started with Utopia-PHP
+# Getting Started with Utopia HTTP
 
 # Intro
-Utopia Framework is an easy-to-use PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. It follows an architecture like Express and is based on the declarative programming approach. Documenting and writing code are usually seen as two separate tasks and very often, documentation loses priority in the software development lifecycle. Utopia unifies the two with a flexible API that allows your code to be self-documenting. What’s interesting about Utopia is its ability to accept metadata along with it’s route definitions. This metadata can then be used for various purposes like generating documentation, swagger specifications and more.
+Utopia HTTP is an easy-to-use PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. It follows an architecture like Express and is based on the declarative programming approach. Documenting and writing code are usually seen as two separate tasks and very often, documentation loses priority in the software development lifecycle. Utopia unifies the two with a flexible API that allows your code to be self-documenting. What’s interesting about Utopia is its ability to accept metadata along with it’s route definitions. This metadata can then be used for various purposes like generating documentation, swagger specifications and more.
 
 # Defining Routes
-If you’re new to Utopia, let’s get started by looking at an example of a basic GET route for an application that you can create using Utopia. We'll be using a [Swoole server](https://github.com/swoole/swoole-src) in this example, but you should be able to extend it to any HTTP server.  
+If you’re new to Utopia, let’s get started by looking at an example of a basic GET route for an application that you can create using Utopia. We'll be using a [Swoole server](https://github.com/swoole/swoole-src) in this example, but you should be able to extend it to any HTTP server.
 
 ## Basic GET Route
 
@@ -17,7 +17,7 @@ use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 
 $http = new Server("0.0.0.0", 8080);
- 
+
 Http::get('/')
    ->inject('request')
    ->inject('response')
@@ -27,7 +27,7 @@ Http::get('/')
            $response->send("<div> Hello World! </div>");
        }
 /*
-   Configure your HTTP server to respond with the Utopia http.   
+   Configure your HTTP server to respond with the Utopia http.
 */
 
 $http->on('request', function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
@@ -39,12 +39,12 @@ $http->on('request', function (SwooleRequest $swooleRequest, SwooleResponse $swo
 
 $http->start();
 ```
- 
+
 
 Any route in Utopia would require you to `inject` the dependencies ( `$request` and `$response` in this case ) and define the controller by passing a callback to the `action` function. As you might have already guessed, `$request` and `$response` refer to the objects of the HTTP server library you’re using, for example, Swoole in this case. `action` defines the callback function that would be called when the GET request is executed. In this case, raw HTML is returned as a `$response`.
 
 ## More Endpoints
-You can perform basic CRUD operations like GET, POST, PUT and DELETE using Utopia. Let’s assume there's a file `todos.json` that stores a list of todo objects with the following structure. In a real-world scenario, you would be fetching this information from a database.  
+You can perform basic CRUD operations like GET, POST, PUT and DELETE using Utopia. Let’s assume there's a file `todos.json` that stores a list of todo objects with the following structure. In a real-world scenario, you would be fetching this information from a database.
 
 ```json
 [
@@ -88,9 +88,9 @@ You might have noticed an additional property in the above example, i.e. `param`
 All the parameters need to be defined using the `param` property which accepts the following - `$key`, `$default`, `$validator`, `$description`, `$optional` and `$injections`.
 
 There are typically 3 types of parameters:
-1. Path params ( eg: `/api/users/<userID>` ) 
+1. Path params ( eg: `/api/users/<userID>` )
 2. Query Params ( eg: `/api/users?userId=<userID>`)
-3. Body Params ( These are passed in the request body in POST and PUT requests. ) 
+3. Body Params ( These are passed in the request body in POST and PUT requests. )
 
 Let's take a look at how these three types of params are taken care of by Utopia:
 
@@ -100,7 +100,7 @@ Let's take a look at how these three types of params are taken care of by Utopia
 
 3. Body Parameters are specified using the `->param()` function as well.
 
-Each of these params then become available to the `->action()` callback function in the same order that they were declared in. 
+Each of these params then become available to the `->action()` callback function in the same order that they were declared in.
 
 ### Returning a Response
 Based on the type of the response you wish to return, multiple options can be used:
@@ -120,7 +120,7 @@ $response->json(['Goodbye' => 'World']);
 JSON objects can be returned by passing the JSON object inside `$response->json()`.
 
 
-### Setting Response Status 
+### Setting Response Status
 
 You can set a status code for your response using the `setStatusCode()` function of utopia's response object.
 
@@ -130,7 +130,7 @@ $response
     ->send('')
 ```
 
-You can find the details of other status codes by visiting our [GitHub repository](https://github.com/utopia-php/framework/blob/master/src/Response.php).
+You can find the details of other status codes by visiting our [GitHub repository](https://github.com/utopia-php/http/blob/master/src/Response.php).
 
 
 # Advanced Utopia
@@ -149,28 +149,28 @@ use Utopia\Http\Validator\Wildcard;
 $http = new Server("0.0.0.0", 8080);
 
 Http::init(function($response) {
-   /* 
-      Example of global init method. Do stuff that is common to all your endpoints in all groups. 
+   /*
+      Example of global init method. Do stuff that is common to all your endpoints in all groups.
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response']);
 
 Http::init(function($response) {
-   /* 
+   /*
       Example of init method for group1. Do stuff that is common to all your endpoints in group1.
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], 'group1');
 
 Http::init(function($response) {
-   /* 
-      Example of init method for group2. Do stuff that is common to all your endpoints in group2. 
+   /*
+      Example of init method for group2. Do stuff that is common to all your endpoints in group2.
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], 'group2');
 
 Http::shutdown(function($request) {
-   /* 
+   /*
      Example of global shutdown method. Do stuff that needs to be performed at the end of each request for all groups.
      '*' (Wildcard validator) is optional.
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..
@@ -179,7 +179,7 @@ Http::shutdown(function($request) {
 }, ['request'], '*');
 
 Http::shutdown(function($request) {
-   /* 
+   /*
      Example of shutdown method of group1. Do stuff that needs to be performed at the end of each request for all groups.
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..
    */
@@ -211,7 +211,7 @@ Http::put('/todos/:id')
            $response->json($data);
        }
    );
-   
+
 $http->start();
 ```
 
@@ -224,7 +224,7 @@ For each endpoint, you can add the following properties described below. Let’s
 `groups` are used to define common functions that need to be executed. When you add a callback function to a group, the init hooks of the respective group are executed before the individual actions are executed.
 
 * #### Labels
-`label` can be used to store metadata that is related to your endpoint. It’s a key-value store. Some use-cases can be using label to generate the documentation or the swagger specifications. 
+`label` can be used to store metadata that is related to your endpoint. It’s a key-value store. Some use-cases can be using label to generate the documentation or the swagger specifications.
 
 * #### Injections
 Since each action in Utopia depends on certain resources, `inject` is used to add the dependencies. `$response` and `$request` can be injected into the service. Utopia provides the http static functions to make global resources available to all utopia endpoints.
@@ -238,7 +238,7 @@ Since each action in Utopia depends on certain resources, `inject` is used to ad
 Now that you’re familiar with routing in Utopia, let’s dive into the lifecycle of a utopia request in detail and learn about some of the lifecycle methods.
 
 ## Init and Shutdown Methods
- 
+
 The Utopia http goes through the following lifecycle whenever it receives any request:
 
 ![untitled@2x](https://user-images.githubusercontent.com/43381712/146966398-0f4af03b-213e-47d7-9002-01983053c5aa.png)
@@ -248,7 +248,7 @@ In case an error occurs anywhere during the execution, the workflow executes the
 The init and shutdown methods take three params:
 
     1. Callback function
-    2. Array of resources required by the callback 
+    2. Array of resources required by the callback
     3. The endpoint group for which the callback is intended to run
 
 * ### Init
@@ -256,9 +256,9 @@ The init and shutdown methods take three params:
 init method is executed in the beginning when the program execution begins. Here’s an example of the init method, where the init method is executed for all groups indicated by the wildcard symbol `'*'`.
 ```php
 Http::init(function($response) {
-   /* 
-      Do stuff that is common to all your endpoints. 
-      This can include things like authentication and authorisation checks, implementing rate limits and so on.. 
+   /*
+      Do stuff that is common to all your endpoints.
+      This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], '*');
 ```
@@ -269,8 +269,8 @@ Utopia's shutdown callback is used to perform cleanup tasks after a request. Thi
 
 ```php
 Http::shutdown(function($request) {
-   /* 
-     Do stuff that needs to be performed at the end of each request. 
+   /*
+     Do stuff that needs to be performed at the end of each request.
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..
    */
 
@@ -279,9 +279,9 @@ Http::shutdown(function($request) {
 
 
 # Running Locally
-If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the Utopia-PHP/framework dependency using `composer require utopia-php/framework` command.
+If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the `utopia-php/http` dependency using `composer require utopia-php/http` command.
 
-> Utopia Framework requires PHP 7.3 or later. We recommend using the latest PHP version whenever possible.
+> Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
 
-Wonderful! 😄  You’re all set to create a basic demo app using the Utopia framework. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
+Wonderful! 😄  You’re all set to create a basic demo app using the Utopia HTTP. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
 

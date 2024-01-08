@@ -34,7 +34,7 @@ body:
   - type: dropdown
     id: utopia-version
     attributes:
-      label: "🎲 Utopia Framework version"
+      label: "🎲 Utopia HTTP version"
       description: "What version of Utopia are you running?"
       options:
         - Version 0.18.x
