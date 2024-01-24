@@ -6,6 +6,17 @@ use PHPUnit\Framework\TestCase;
 
 class ArrayListTest extends TestCase
 {
+    public function testDescription(): void
+    {
+        $arrayList = new ArrayList(new Integer());
+        $this->assertFalse($arrayList->isValid(['text']));
+        $this->assertEquals('Value must a valid array and Value must be a valid integer', $arrayList->getDescription());
+
+        $arrayList = new ArrayList(new Integer(), 3);
+        $this->assertFalse($arrayList->isValid(['a', 'b', 'c', 'd']));
+        $this->assertEquals('Value must a valid array no longer than 3 items and Value must be a valid integer', $arrayList->getDescription());
+    }
+
     public function testCanValidateTextValues(): void
     {
         $arrayList = new ArrayList(new Text(100));

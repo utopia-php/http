@@ -44,7 +44,13 @@ class ArrayList extends Validator
      */
     public function getDescription(): string
     {
-        return 'Value must a valid array and '.$this->validator->getDescription();
+        $msg = 'Value must a valid array';
+
+        if($this->length > 0) {
+            $msg .= ' no longer than ' . $this->length . ' items';
+        }
+
+        return $msg . ' and ' . $this->validator->getDescription();
     }
 
     /**
