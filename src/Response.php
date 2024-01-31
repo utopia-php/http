@@ -115,6 +115,8 @@ class Response
 
     public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
 
+    public const STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
+
     public const STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
 
     public const STATUS_CODE_NOT_IMPLEMENTED = 501;
@@ -168,6 +170,7 @@ class Response
         self::STATUS_CODE_EXPECTATION_FAILED => 'Expectation Failed',
         self::STATUS_CODE_TOO_EARLY => 'Too Early',
         self::STATUS_CODE_TOO_MANY_REQUESTS => 'Too Many Requests',
+        self::STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS => 'Unavailable For Legal Reasons',
         self::STATUS_CODE_INTERNAL_SERVER_ERROR => 'Internal Server Error',
         self::STATUS_CODE_NOT_IMPLEMENTED => 'Not Implemented',
         self::STATUS_CODE_BAD_GATEWAY => 'Bad Gateway',
