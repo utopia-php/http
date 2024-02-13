@@ -232,13 +232,7 @@ class Hook
      */
     public function getParamsValues(): array
     {
-        $values = [];
-
-        foreach ($this->params as $key => $param) {
-            $values[$key] = $param['value'];
-        }
-
-        return $values;
+        return array_map(fn($param) => $param['value'], $this->params);
     }
 
     /**
