@@ -12,11 +12,12 @@ class Response extends UtopiaResponse
      * Send output
      *
      * @param  string  $content
-     * @return void
+     * @return bool False if write cannot complete, such as request ended by client
      */
-    protected function write(string $content): void
+    public function write(string $content): bool
     {
         echo $content;
+        return true;
     }
 
     /**
@@ -27,7 +28,7 @@ class Response extends UtopiaResponse
      * @param  string  $content
      * @return void
      */
-    protected function end(string $content = null): void
+    public function end(string $content = null): void
     {
         if (!is_null($content)) {
             echo $content;
@@ -55,7 +56,7 @@ class Response extends UtopiaResponse
      * @param  string  $value
      * @return void
      */
-    protected function sendHeader(string $key, string $value): void
+    public function sendHeader(string $key, string $value): void
     {
         \header($key.': '.$value);
     }

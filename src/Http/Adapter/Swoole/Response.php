@@ -32,11 +32,11 @@ class Response extends UtopiaResponse
      * Write
      *
      * @param  string  $content
-     * @return void
+     * @return bool False if write cannot complete, such as request ended by client
      */
-    protected function write(string $content): void
+    public function write(string $content): bool
     {
-        $this->swoole->write($content);
+        return $this->swoole->write($content);
     }
 
     /**
@@ -45,7 +45,7 @@ class Response extends UtopiaResponse
      * @param  string|null  $content
      * @return void
      */
-    protected function end(string $content = null): void
+    public function end(string $content = null): void
     {
         $this->swoole->end($content);
     }
@@ -68,7 +68,7 @@ class Response extends UtopiaResponse
      * @param  string  $value
      * @return void
      */
-    protected function sendHeader(string $key, string $value): void
+    public function sendHeader(string $key, string $value): void
     {
         $this->swoole->header($key, $value);
     }

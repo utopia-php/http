@@ -511,9 +511,9 @@ abstract class Response
      * Send output
      *
      * @param  string  $content
-     * @return void
+     * @return bool False if write cannot complete, such as request ended by client
      */
-    abstract protected function write(string $content): void;
+    abstract public function write(string $content): bool;
 
     /**
      * End
@@ -523,12 +523,7 @@ abstract class Response
      * @param  string  $content
      * @return void
      */
-    protected function end(string $content = null): void
-    {
-        if (!is_null($content)) {
-            echo $content;
-        }
-    }
+    abstract public function end(string $content = null): void;
 
     /**
      * Output response
@@ -608,7 +603,7 @@ abstract class Response
      * @param  string  $value
      * @return void
      */
-    abstract protected function sendHeader(string $key, string $value): void;
+    abstract public function sendHeader(string $key, string $value): void;
 
     /**
      * Send Cookie
