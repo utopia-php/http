@@ -599,6 +599,9 @@ class App
             $paramExists = $existsInRequest || $existsInValues;
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
+            if (\is_callable($arg)) {
+                $arg = \call_user_func_array($arg, $this->getResources($param['injections']));
+            }
             $value = $existsInValues ? $values[$key] : $arg;
 
             if (!$param['skipValidation']) {
