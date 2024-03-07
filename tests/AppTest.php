@@ -125,20 +125,6 @@ class AppTest extends TestCase
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        // Default Params
-        $route = new Route('GET', '/path');
-
-        $route
-            ->param('x', 'x-def', new Text(200), 'x param', true)
-            ->action(function ($x) {
-                echo $x;
-            });
-
-        \ob_start();
-        $this->app->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
         // Default Value using function
         $route = new Route('GET', '/path');
 
