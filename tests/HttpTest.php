@@ -127,7 +127,7 @@ class HttpTest extends TestCase
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        // Default Params 
+        // Default Params
         $route = new Route('GET', '/path');
 
         $route
@@ -147,7 +147,7 @@ class HttpTest extends TestCase
         $route
             ->param('x', function ($first, $second) {
                 return $first . '-' . $second;
-            } , new Text(200), 'x param', true, ['first', 'second'])
+            }, new Text(200), 'x param', true, ['first', 'second'])
             ->action(function ($x) {
                 echo $x;
             });
