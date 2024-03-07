@@ -117,7 +117,7 @@ class HttpTest extends TestCase
         $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
-    public function testCanGetDefaultValue(): void
+    public function testCanGetDefaultValueWithFunction(): void
     {
         App::setResource('first', fn ($second) => "first-{$second}", ['second']);
         App::setResource('second', fn () => 'second');
