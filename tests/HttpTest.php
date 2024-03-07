@@ -119,27 +119,13 @@ class HttpTest extends TestCase
 
     public function testCanGetDefaultValueWithFunction(): void
     {
-        App::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        App::setResource('second', fn () => 'second');
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
 
-        $second = $this->app->getResource('second');
-        $first = $this->app->getResource('first');
+        $second = $this->http->getResource('second');
+        $first = $this->http->getResource('first');
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
-
-        // Default Params
-        $route = new Route('GET', '/path');
-
-        $route
-            ->param('x', 'x-def', new Text(200), 'x param', true)
-            ->action(function ($x) {
-                echo $x;
-            });
-
-        \ob_start();
-        $this->app->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
 
         // Default Value using function
         $route = new Route('GET', '/path');
@@ -153,7 +139,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->app->execute($route, new Request(), new Response());
+        $this->http->execute($route, new Request(), '1');
         $result = \ob_get_contents();
         \ob_end_clean();
 
