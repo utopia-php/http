@@ -117,6 +117,49 @@ class HttpTest extends TestCase
         $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
+    public function testCanGetDefaultValue(): void
+    {
+        App::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        App::setResource('second', fn () => 'second');
+
+        $second = $this->app->getResource('second');
+        $first = $this->app->getResource('first');
+        $this->assertEquals('second', $second);
+        $this->assertEquals('first-second', $first);
+
+        // Default Params 
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->action(function ($x) {
+                echo $x;
+            });
+
+        \ob_start();
+        $this->app->execute($route, new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        // Default Value using function
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', function ($first, $second) {
+                return $first . '-' . $second;
+            } , new Text(200), 'x param', true, ['first', 'second'])
+            ->action(function ($x) {
+                echo $x;
+            });
+
+        \ob_start();
+        $this->app->execute($route, new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('first-second-second', $result);
+    }
+
     public function testCanExecuteRoute(): void
     {
         Http::setResource('rand', fn () => rand());
