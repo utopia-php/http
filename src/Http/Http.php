@@ -126,6 +126,9 @@ class Http
      */
     protected Adapter $server;
 
+    protected string|null $requestClass = null;
+    protected string|null $responseClass = null;
+
     /**
      * Http
      *
@@ -137,6 +140,16 @@ class Http
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
+    }
+
+    public function setResponseClass(string $responseClass)
+    {
+        $this->responseClass = $responseClass;
+    }
+
+    public function setRequestClass(string $requestClass)
+    {
+        $this->requestClass = $requestClass;
     }
 
     /**
@@ -774,6 +787,14 @@ class Http
      */
     public function run(Request $request, Response $response, string $context): static
     {
+        if(!\is_null($this->requestClass)) {
+            $request = new $this->requestClass($request);
+        }
+
+        if(!\is_null($this->responseClass)) {
+            $response = new $this->responseClass($response);
+        }
+
         $this->resources[$context] = [];
         $this->resources[$context]['request'] = $request;
         $this->resources[$context]['response'] = $response;
