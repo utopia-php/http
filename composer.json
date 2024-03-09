@@ -11,7 +11,8 @@
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-            "Utopia\\": "src/"
+            "Utopia\\": "src/",
+            "Tests\\E2E\\": "tests/e2e"
         }
     },
     "scripts": {
