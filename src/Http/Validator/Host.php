@@ -53,11 +53,7 @@ class Host extends Validator
 
         $hostnameValidator = new Hostname($this->whitelist);
 
-        if (!$hostnameValidator->isValid(\parse_url($value, PHP_URL_HOST))) {
-            return false;
-        }
-
-        return true;
+        return $hostnameValidator->isValid(\parse_url($value, PHP_URL_HOST));
     }
 
     /**
