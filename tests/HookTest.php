@@ -1,10 +1,10 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Validator\Numeric;
-use Utopia\Validator\Text;
+use Utopia\Http\Validator\Numeric;
+use Utopia\Http\Validator\Text;
 
 class HookTest extends TestCase
 {

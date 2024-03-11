@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Validator;
+namespace Utopia\Http\Validator;
 
 use PHPUnit\Framework\TestCase;
 
@@ -16,6 +16,6 @@ class WildcardTest extends TestCase
         $this->assertTrue($validator->isValid(true));
         $this->assertTrue($validator->isValid(false));
         $this->assertFalse($validator->isArray());
-        $this->assertEquals(\Utopia\Validator::TYPE_STRING, $validator->getType());
+        $this->assertEquals(\Utopia\Http\Validator::TYPE_STRING, $validator->getType());
     }
 }

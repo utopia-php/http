@@ -1,17 +1,19 @@
 {
-    "name": "utopia-php/framework",
-    "description": "A simple, light and advanced PHP framework",
+    "name": "utopia-php/http",
+    "description": "A simple, light and advanced PHP HTTP framework",
     "type": "library",
     "keywords": [
         "php",
         "framework",
+        "http",
         "upf"
     ],
     "license": "MIT",
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-            "Utopia\\": "src/"
+            "Utopia\\": "src/",
+            "Tests\\E2E\\": "tests/e2e"
         }
     },
     "scripts": {
@@ -22,11 +24,13 @@
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.0",
+        "ext-swoole": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",
         "laravel/pint": "^1.2",
+        "swoole/ide-helper": "4.8.3",
         "phpstan/phpstan": "^1.10",
         "phpbench/phpbench": "^1.2"
     }
