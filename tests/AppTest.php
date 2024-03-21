@@ -142,6 +142,22 @@ class AppTest extends TestCase
         \ob_end_clean();
 
         $this->assertEquals('first-second-second', $result);
+
+        /** Try to pass a param that is a PHP callable */
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', '', new Text(200), 'x param', true, ['first', 'second'])
+            ->action(function ($x) {
+                echo $x;
+            });
+
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => 'count']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('count', $result);
     }
 
     public function testCanExecuteRoute(): void
