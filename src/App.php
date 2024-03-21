@@ -607,7 +607,7 @@ class App
                     $arg = $param['default'];
                 }
             }
-            
+
             $value = $existsInValues ? $values[$key] : $arg;
 
             if (!$param['skipValidation']) {
