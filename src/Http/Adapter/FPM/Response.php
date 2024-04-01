@@ -40,9 +40,10 @@ class Response extends UtopiaResponse
      * Send Status Code
      *
      * @param  int  $statusCode
+     * @param  string  $reason
      * @return void
      */
-    protected function sendStatus(int $statusCode): void
+    protected function sendStatus(int $statusCode, string $reason): void
     {
         http_response_code($statusCode);
     }

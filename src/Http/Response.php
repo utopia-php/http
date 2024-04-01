@@ -571,7 +571,7 @@ abstract class Response
     protected function appendHeaders(): static
     {
         // Send status code header
-        $this->sendStatus($this->statusCode);
+        $this->sendStatus($this->statusCode, $this->statusCodes[$this->statusCode] ?? 'Unknown HTTP status code');
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -590,9 +590,10 @@ abstract class Response
      * Send Status Code
      *
      * @param  int  $statusCode
+     * @param  string  $reason
      * @return void
      */
-    abstract protected function sendStatus(int $statusCode): void;
+    abstract protected function sendStatus(int $statusCode, string $reason): void;
 
     /**
      * Send Header

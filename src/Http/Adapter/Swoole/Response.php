@@ -54,11 +54,12 @@ class Response extends UtopiaResponse
      * Send Status Code
      *
      * @param  int  $statusCode
+     * @param  string  $reason
      * @return void
      */
-    protected function sendStatus(int $statusCode): void
+    protected function sendStatus(int $statusCode, string $reason = ''): void
     {
-        $this->swoole->status((string) $statusCode);
+        $this->swoole->status((string) $statusCode, $reason);
     }
 
     /**
