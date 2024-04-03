@@ -117,6 +117,35 @@ class HttpTest extends TestCase
         $this->assertEquals('x-def-y-def-' . $resource, $result);
     }
 
+    public function testCanGetDefaultValueWithFunction(): void
+    {
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
+
+        $second = $this->http->getResource('second');
+        $first = $this->http->getResource('first');
+        $this->assertEquals('second', $second);
+        $this->assertEquals('first-second', $first);
+
+        // Default Value using function
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('x', function ($first, $second) {
+                return $first . '-' . $second;
+            }, new Text(200), 'x param', true, ['first', 'second'])
+            ->action(function ($x) {
+                echo $x;
+            });
+
+        \ob_start();
+        $this->http->execute($route, new Request(), '1');
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('first-second-second', $result);
+    }
+
     public function testCanExecuteRoute(): void
     {
         Http::setResource('rand', fn () => rand());
