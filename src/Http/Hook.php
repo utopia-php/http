@@ -2,7 +2,9 @@
 
 namespace Utopia\Http;
 
-class Hook
+use Utopia\DI\Injection;
+
+class Hook extends Injection
 {
     /**
      * Description
@@ -37,13 +39,6 @@ class Hook
     protected array $labels = [];
 
     /**
-     * Action Callback
-     *
-     * @var callable
-     */
-    protected $action;
-
-    /**
      * Injections
      *
      * List of route required injections for action callback
@@ -51,12 +46,6 @@ class Hook
      * @var array
      */
     protected array $injections = [];
-
-    public function __construct()
-    {
-        $this->action = function (): void {
-        };
-    }
 
     /**
      * Add Description
@@ -140,7 +129,7 @@ class Hook
      */
     public function action(callable $action): static
     {
-        $this->action = $action;
+        $this->setCallback($action);
 
         return $this;
     }
@@ -152,37 +141,20 @@ class Hook
      */
     public function getAction()
     {
-        return $this->action;
+        return $this->getCallback();
     }
 
     /**
-     * Get Injections
+     * Depenedency
      *
-     * @return array
-     */
-    public function getInjections(): array
-    {
-        return $this->injections;
-    }
-
-    /**
-     * Inject
-     *
-     * @param  string  $injection
-     * @return static
+     * @param  string  $name
+     * @return self
      *
      * @throws Exception
      */
-    public function inject(string $injection): static
+    public function dependency(string $name): self
     {
-        if (array_key_exists($injection, $this->injections)) {
-            throw new Exception('Injection already declared for '.$injection);
-        }
-
-        $this->injections[$injection] = [
-            'name' => $injection,
-            'order' => count($this->params) + count($this->injections),
-        ];
+        parent::dependency($name);
 
         return $this;
     }
@@ -211,6 +183,8 @@ class Hook
             'value' => null,
             'order' => count($this->params) + count($this->injections),
         ];
+
+        $this->dependency($key);
 
         return $this;
     }

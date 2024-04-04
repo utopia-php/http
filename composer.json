@@ -25,7 +25,8 @@
     },
     "require": {
         "php": ">=8.0",
-        "ext-swoole": "*"
+        "ext-swoole": "*",
+        "utopia-php/di": "dev-main"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",
@@ -33,5 +34,11 @@
         "swoole/ide-helper": "4.8.3",
         "phpstan/phpstan": "^1.10",
         "phpbench/phpbench": "^1.2"
-    }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/utopia-php/di"
+        }
+    ]
 }

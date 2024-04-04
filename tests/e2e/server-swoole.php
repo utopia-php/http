@@ -4,14 +4,15 @@ require_once __DIR__.'/init.php';
 
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
+use Utopia\DI\Container;
 use Utopia\Http\Adapter\Swoole\Server;
 use Utopia\Http\Http;
 
 use function Swoole\Coroutine\run;
 
 Http::delete('/swoole-test')
-    ->inject('swooleRequest')
-    ->inject('swooleResponse')
+    ->dependency('swooleRequest')
+    ->dependency('swooleResponse')
     ->action(function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
         $method = $swooleRequest->getMethod();
         $swooleResponse->header('Content-Type', 'text/plain');
@@ -22,7 +23,7 @@ Http::delete('/swoole-test')
     });
 
 $server = new Server('0.0.0.0', '80');
-$http = new Http($server, 'UTC');
+$http = new Http($server, new Container(), 'UTC');
 
 run(function () use ($http) {
     $http->start();

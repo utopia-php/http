@@ -13,20 +13,20 @@ ini_set('display_socket_timeout', '-1');
 error_reporting(E_ALL);
 
 Http::get('/')
-    ->inject('response')
+    ->dependency('response')
     ->action(function (Response $response) {
         $response->send('Hello World!');
     });
 
 Http::get('/value/:value')
     ->param('value', '', new Text(64))
-    ->inject('response')
+    ->dependency('response')
     ->action(function (string $value, Response $response) {
         $response->send($value);
     });
 
 Http::get('/chunked')
-    ->inject('response')
+    ->dependency('response')
     ->action(function (Response $response) {
         foreach (['Hello ', 'World!'] as $key => $word) {
             $response->chunk($word, $key == 1);
@@ -34,13 +34,13 @@ Http::get('/chunked')
     });
 
 Http::get('/redirect')
-    ->inject('response')
+    ->dependency('response')
     ->action(function (Response $response) {
         $response->redirect('/');
     });
 
 Http::get('/humans.txt')
-    ->inject('response')
+    ->dependency('response')
     ->action(function (Response $response) {
         $response->noContent();
     });

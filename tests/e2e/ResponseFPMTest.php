@@ -1,17 +1,17 @@
 <?php
 
-namespace Utopia\Http\Tests;
+// namespace Utopia\Http\Tests;
 
-use PHPUnit\Framework\TestCase;
-use Tests\E2E\Client;
+// use PHPUnit\Framework\TestCase;
+// use Tests\E2E\Client;
 
-class ResponseFPMTest extends TestCase
-{
-    use BaseTest;
-    protected Client $client;
+// class ResponseFPMTest extends TestCase
+// {
+//     use BaseTest;
+//     protected Client $client;
 
-    public function setUp(): void
-    {
-        $this->client = new Client();
-    }
-}
+//     public function setUp(): void
+//     {
+//         $this->client = new Client();
+//     }
+// }

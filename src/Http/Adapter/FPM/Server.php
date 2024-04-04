@@ -16,9 +16,6 @@ class Server extends Adapter
         $request = new Request();
         $response = new Response();
 
-        Http::setResource('fpmRequest', fn () => $request);
-        Http::setResource('fpmResponse', fn () => $response);
-
         call_user_func($callback, $request, $response, 'fpm');
     }
 

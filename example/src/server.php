@@ -9,7 +9,7 @@ use Utopia\Http\Validator\Text;
 
 Http::get('/')
     ->param('name', 'World', new Text(256), 'Name to greet. Optional, max length 256.', true)
-    ->inject('response')
+    ->dependency('response')
     ->action(function (string $name, Response $response) {
         $response->send('Hello ' . $name);
     });
