@@ -320,6 +320,24 @@ class Http
     }
 
     /**
+     * Get Container
+     * 
+     * @return Container
+     */
+    public function getContainer(): Container
+    {
+        return $this->container;
+    }
+
+    /**
+     * Set Container
+     */
+    public function setContainer(Container $container): void
+    {
+        $this->container = $container;
+    }
+
+    /**
      * Get allow override
      *
      *
@@ -370,18 +388,6 @@ class Http
     public static function isStage(): bool
     {
         return self::MODE_TYPE_STAGE === self::$mode;
-    }
-
-    /**
-     * Get Routes
-     *
-     * Get all application routes
-     *
-     * @return array
-     */
-    public static function getRoutes(): array
-    {
-        return Router::getRoutes();
     }
 
     /**
@@ -493,7 +499,7 @@ class Http
                 )
             ;
 
-            $this->run($request, $response, $context);
+            $this->run($context);
         });
 
         $this->server->onStart(function ($server) {
@@ -524,7 +530,7 @@ class Http
                         try {
                             $this->prepare($this->container, $error, [], [])->inject($error);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                         }
                     }
                 }
@@ -540,10 +546,9 @@ class Http
      * Find matching route given current user request
      *
      * @param  Request  $request
-     * @param  bool  $fresh If true, will not match any cached route
      * @return null|Route
      */
-    public function match(Request $request, bool $fresh = true): ?Route
+    public function match(Request $request): ?Route
     {
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
         $method = $request->getMethod();
@@ -558,9 +563,8 @@ class Http
      * @param  Route  $route
      * @param  Request  $request
      */
-    public function execute(Route $route, Request $request, Container $context): static
+    protected function execute(Route $route, Request $request, Container $context): static
     {
-        $arguments = [];
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
 
@@ -612,7 +616,7 @@ class Http
                         try {
                             $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                         }
                     }
                 }
@@ -623,7 +627,7 @@ class Http
                     try {
                         $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                     }
                 }
             }
@@ -687,8 +691,9 @@ class Http
 
             $hook->setParamValue($key, $value);
 
-            return $context;
         }
+        
+        return $context;
     }
 
     /**
@@ -723,7 +728,7 @@ class Http
                     try {
                         $this->prepare($context, $error)->inject($hook);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                     }
                 }
             }
