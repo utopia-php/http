@@ -508,7 +508,7 @@ class Http
 
             try {
                 foreach (self::$startHooks as $hook) {
-                    $this->prepare($this->container, $hook, [], [])->dependency($hook);
+                    $this->prepare($this->container, $hook, [], [])->inject($hook);
                 }
             } catch(\Exception $e) {
                             
@@ -522,7 +522,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $this->prepare($this->container, $error, [], [])->dependency($error);
+                            $this->prepare($this->container, $error, [], [])->inject($error);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                         }
@@ -568,7 +568,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->dependency($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
                     }
                 }
             }
@@ -576,17 +576,17 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->dependency($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
                     }
                 }
             }
 
-            $this->prepare($context, $route, $pathValues, $request->getParams())->dependency($route);
+            $this->prepare($context, $route, $pathValues, $request->getParams())->inject($route);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->dependency($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
                     }
                 }
             }
@@ -594,7 +594,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->dependency($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
                     }
                 }
             }
@@ -610,7 +610,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $this->prepare($context, $error, $pathValues, $request->getParams())->dependency($error);
+                            $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                         }
@@ -621,7 +621,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $this->prepare($context, $error, $pathValues, $request->getParams())->dependency($error);
+                        $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                     }
@@ -703,11 +703,12 @@ class Http
     public function run(Container $context): static
     {
         $request = $context->get('request');
+        $response = $context->get('response');
         
         try {
 
             foreach (self::$requestHooks as $hook) {
-                $this->prepare($context, $hook)->dependency($hook);
+                $this->prepare($context, $hook)->inject($hook);
             }
         } catch(\Exception $e) {
             $dependency = new Dependency();
@@ -720,7 +721,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $this->prepare($context, $error)->dependency($hook);
+                        $this->prepare($context, $error)->inject($hook);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                     }
@@ -762,7 +763,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            $this->prepare($context, $option, [], $request->getParams())->dependency($option);
+                            $this->prepare($context, $option, [], $request->getParams())->inject($option);
                         }
                     }
                 }
@@ -770,7 +771,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        $this->prepare($context, $option, [], $request->getParams())->dependency($option);
+                        $this->prepare($context, $option, [], $request->getParams())->inject($option);
                     }
                 }
             } catch (\Throwable $e) {
@@ -784,7 +785,7 @@ class Http
                             )
                         ;
 
-                        $this->prepare($context, $error, [], $request->getParams())->dependency($error);
+                        $this->prepare($context, $error, [], $request->getParams())->inject($error);
                     }
                 }
             }
@@ -812,14 +813,14 @@ class Http
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         if (in_array($group, $option->getGroups())) {
-                            $this->prepare($context, $option, [], $request->getParams())->dependency($option);
+                            $this->prepare($context, $option, [], $request->getParams())->inject($option);
                         }
                     }
                 }
 
                 foreach (self::$options as $option) { // Global options hooks
                     if (in_array('*', $option->getGroups())) {
-                        $this->prepare($context, $option, [], $request->getParams())->dependency($option);
+                        $this->prepare($context, $option, [], $request->getParams())->inject($option);
                     }
                 }
             } catch (\Throwable $e) {
@@ -832,7 +833,7 @@ class Http
                             )
                         ;
 
-                        $this->prepare($context, $error, [], $request->getParams())->dependency($error);
+                        $this->prepare($context, $error, [], $request->getParams())->inject($error);
                     }
                 }
             }
@@ -846,7 +847,7 @@ class Http
                         )
                     ;
 
-                    $this->prepare($context, $error, [], $request->getParams())->dependency($error);
+                    $this->prepare($context, $error, [], $request->getParams())->inject($error);
                 }
             }
         }
@@ -886,7 +887,7 @@ class Http
                 $dependency->dependency($injection);
             }
 
-            $validator = $context->dependency($dependency);
+            $validator = $context->inject($dependency);
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
