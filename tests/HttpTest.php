@@ -443,7 +443,6 @@ class HttpTest extends TestCase
         foreach ($requests as $request) {
             Http::get($request['path']);
 
-var_dump($request['url']);
             $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
             $_SERVER['REQUEST_URI'] = $request['url'];
             
@@ -487,7 +486,26 @@ var_dump($request['url']);
             });
 
         \ob_start();
-        $this->http->run($this->context);
+
+
+        $context = new Container();
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(fn () => new Request());
+        
+        $response = new Dependency();
+        $response
+            ->setName('response')
+            ->setCallback(fn () => new Response());
+
+        $context
+            ->set($request)
+            ->set($response)
+        ;
+
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 

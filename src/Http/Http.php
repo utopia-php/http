@@ -711,7 +711,6 @@ class Http
         $response = $context->get('response');
         
         try {
-
             foreach (self::$requestHooks as $hook) {
                 $this->prepare($context, $hook)->inject($hook);
             }
