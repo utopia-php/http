@@ -845,11 +845,11 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     $dependency = new Dependency();
-                    $this->container->set($dependency
-                            ->setName('error')
-                            ->setCallback(fn () => $e)
-                        )
-                    ;
+                    $dependency
+                        ->setName('error')
+                        ->setCallback(fn () => new Exception('Not Found', 404));
+
+                    $context->set($dependency);
 
                     $this->prepare($context, $error, [], $request->getParams())->inject($error);
                 }

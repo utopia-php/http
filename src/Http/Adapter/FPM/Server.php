@@ -3,7 +3,6 @@
 namespace Utopia\Http\Adapter\FPM;
 
 use Utopia\Http\Adapter;
-use Utopia\Http\Http;
 
 class Server extends Adapter
 {

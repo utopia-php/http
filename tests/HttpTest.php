@@ -78,6 +78,23 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
+        $context = new Container();
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(fn () => new Request());
+        
+        $response = new Dependency();
+        $response
+            ->setName('response')
+            ->setCallback(fn () => new Response());
+
+        $context
+            ->set($request)
+            ->set($response)
+        ;
+
         $this->http
             ->error()
             ->dependency('error')
@@ -86,7 +103,7 @@ class HttpTest extends TestCase
             });
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = $this->http->addRoute('GET', '/path');
 
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
@@ -96,12 +113,43 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), new Container());
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
+    }
 
-        // With Params
-        $route = new Route('GET', '/path');
+    public function testCanExecuteRouteWithParams(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/path';
+        $context = new Container();
+        $requestObj = new UtopiaFPMRequestTest();
+        $responseObj = new Response();
+        
+        $requestObj::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(fn () => $requestObj);
+        
+        $response = new Dependency();
+        $response
+            ->setName('response')
+            ->setCallback(fn () => $responseObj);
+
+        $context
+            ->set($request)
+            ->set($response)
+        ;
+
+        $this->http
+            ->error()
+            ->dependency('error')
+            ->action(function ($error) {
+                echo 'error: ' . $error->getMessage();
+            });
+            
+        $route = $this->http->addRoute('GET', '/path');
 
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
@@ -117,16 +165,14 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request, $this->context);
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
-
-        // $this->assertEquals($resource . '-param-x-param-y', $result);
+        $resource = 'dasdasd';
+        $this->assertEquals($resource . '-param-x-param-y', $result);
 
         // With Error
-        $route = new Route('GET', '/path');
+        $route = $this->http->addRoute('GET', '/path');
 
         $route
             ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)

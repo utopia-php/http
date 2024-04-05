@@ -7,7 +7,6 @@ use Utopia\Http\Adapter;
 use Swoole\Coroutine\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\Http\Http;
 
 use function Swoole\Coroutine\run;
 
