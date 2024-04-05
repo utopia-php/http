@@ -16,7 +16,7 @@ export const options = {
         timeUnit: '1s',
         startRate: 50,
         stages: [
-          { target: 1000, duration: '30s' }, // linearly go from 50 iters/s to 200 iters/s for 30s
+          { target: 10000, duration: '1m' }, // linearly go from 50 iters/s to 200 iters/s for 30s
         //   { target: 500, duration: '0' }, // instantly jump to 500 iters/s
         //   { target: 500, duration: '10m' }, // continue with 500 iters/s for 10 minutes
         ],
