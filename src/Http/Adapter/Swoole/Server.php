@@ -16,9 +16,24 @@ class Server extends Adapter
 
     public function __construct(string $host, string $port = null, array $settings = [])
     {
+        $workerNumber = swoole_cpu_num() * 6;
         $this->server = new SwooleServer($host, $port);
         $this->server->set(\array_merge($settings, [
-            'enable_coroutine' => true
+            'open_http2_protocol' => true,
+            // 'http_compression' => true,
+            // 'http_compression_level' => 6,
+            
+            // Server
+            // 'log_level' => 2,
+            'dispatch_mode' => 3,
+            'worker_num' => $workerNumber,
+            'reactor_num' => swoole_cpu_num() * 2,
+            'task_worker_num' => $workerNumber,
+            'open_cpu_affinity' => true,
+
+            // Coroutine
+            'enable_coroutine' => true,
+            'max_coroutine' => 300000,
         ]));
     }
 
@@ -26,6 +41,8 @@ class Server extends Adapter
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             call_user_func($callback, new Request($request), new Response($response));
+            // go(function () use ($request, $response, $callback) {
+            // });
         });
     }
 

@@ -19,7 +19,7 @@ services:
             context: .
             dockerfile: Dockerfile.swoole
         ports: 
-            - "9501:80"
+            - "9500:80"
         volumes:
             - ./src:/usr/src/code/src
             - ./tests:/usr/src/code/tests

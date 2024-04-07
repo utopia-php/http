@@ -2,6 +2,7 @@
 
 require_once __DIR__.'/../../vendor/autoload.php';
 
+use Swoole\Coroutine\System;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Validator\Text;
@@ -14,8 +15,13 @@ error_reporting(E_ALL);
 
 Http::get('/')
     ->dependency('response')
-    ->action(function (Response $response) {
-        $response->send('Hello World!');
+    ->dependency('key')
+    ->action(function (Response $response, string $key) {
+        if (rand(0, 50) == 1){
+            System::sleep(1);
+        }
+
+        $response->send($key);
     });
 
 Http::get('/value/:value')
@@ -43,4 +49,11 @@ Http::get('/humans.txt')
     ->dependency('response')
     ->action(function (Response $response) {
         $response->noContent();
+    });
+
+Http::error()
+    ->dependency('error')
+    ->dependency('response')
+    ->action(function (Throwable $error, Response $response) {
+        $response->send($error->getMessage());
     });
