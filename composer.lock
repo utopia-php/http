@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a0fa34d8715378591c16534833ef0d42",
+    "content-hash": "511121b35d74a4c039929792092b94bf",
     "packages": [
         {
             "name": "utopia-php/di",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "833c8e0895d34adda298328cfa17369c6e7792e6"
+                "reference": "0bb7af5693bc131f4d2ce34d3f732d41e6637679"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/833c8e0895d34adda298328cfa17369c6e7792e6",
-                "reference": "833c8e0895d34adda298328cfa17369c6e7792e6",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/0bb7af5693bc131f4d2ce34d3f732d41e6637679",
+                "reference": "0bb7af5693bc131f4d2ce34d3f732d41e6637679",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "source": "https://github.com/utopia-php/di/tree/main",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2024-04-08T19:47:18+00:00"
+            "time": "2024-04-08T22:41:41+00:00"
         }
     ],
     "packages-dev": [
@@ -3511,6 +3511,8 @@
         "php": ">=8.0",
         "ext-swoole": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {
+        "ext-xdebug": "*"
+    },
     "plugin-api-version": "2.6.0"
 }
