@@ -12,6 +12,6 @@ class ResponseSwooleTest extends TestCase
 
     public function setUp(): void
     {
-        $this->client = new Client('http://localhost:9500');
+        $this->client = new Client('http://swoole');
     }
 }
