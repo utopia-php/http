@@ -14,19 +14,19 @@ ini_set('display_socket_timeout', '-1');
 error_reporting(E_ALL);
 
 Http::wildcard()
-    ->dependency('response')
+    ->inject('response')
     ->action(function ($response) {
         $response->send('WILDCARD');
     });
 
 Http::get('/')
-    ->dependency('response')
+    ->inject('response')
     ->action(function (Response $response) {
         $response->send('Hello World!');
     });
 
 Http::get('/headers')
-    ->dependency('response')
+    ->inject('response')
     ->action(function (Response $response) {
         $response
             ->addHeader('key1', 'value1')
@@ -35,8 +35,8 @@ Http::get('/headers')
     });
 
 Http::get('/keys')
-    ->dependency('response')
-    ->dependency('key')
+    ->inject('response')
+    ->inject('key')
     ->action(function (Response $response, string $key) {
         if (rand(0, 50) == 1) {
             System::sleep(1);
@@ -47,13 +47,13 @@ Http::get('/keys')
 
 Http::get('/value/:value')
     ->param('value', '', new Text(64))
-    ->dependency('response')
+    ->inject('response')
     ->action(function (string $value, Response $response) {
         $response->send($value);
     });
 
 Http::get('/chunked')
-    ->dependency('response')
+    ->inject('response')
     ->action(function (Response $response) {
         foreach (['Hello ', 'World!'] as $key => $word) {
             $response->chunk($word, $key == 1);
@@ -61,26 +61,26 @@ Http::get('/chunked')
     });
 
 Http::get('/redirect')
-    ->dependency('response')
+    ->inject('response')
     ->action(function (Response $response) {
         $response->redirect('/');
     });
 
 Http::get('/humans.txt')
-    ->dependency('response')
+    ->inject('response')
     ->action(function (Response $response) {
         $response->noContent();
     });
 
 Http::delete('/no-content')
-    ->dependency('response')
+    ->inject('response')
     ->action(function (Response $response) {
         $response->noContent();
     });
 
 Http::error()
-    ->dependency('error')
-    ->dependency('response')
+    ->inject('error')
+    ->inject('response')
     ->action(function (Throwable $error, Response $response) {
         $response->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
     });

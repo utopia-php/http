@@ -756,8 +756,7 @@ class Http
             $dependency
                 ->setName('route')
                 ->setCallback(fn () => $route)
-        )
-        ;
+        );
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -880,7 +879,7 @@ class Http
             ;
 
             foreach ($param['injections'] as $injection) {
-                $dependency->dependency($injection);
+                $dependency->inject($injection);
             }
 
             $validator = $context->inject($dependency);

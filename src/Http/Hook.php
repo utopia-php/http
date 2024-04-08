@@ -152,9 +152,9 @@ class Hook extends Injection
      *
      * @throws Exception
      */
-    public function dependency(string $name): self
+    public function inject(string $name): self
     {
-        parent::dependency($name);
+        parent::inject($name);
 
         return $this;
     }
@@ -184,7 +184,7 @@ class Hook extends Injection
             'order' => count($this->params) + count($this->injections),
         ];
 
-        $this->dependency($key);
+        $this->inject($key);
 
         return $this;
     }

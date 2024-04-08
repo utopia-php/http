@@ -60,8 +60,8 @@ class HookTest extends TestCase
     {
         $main = $this->hook
             ->setName('test')
-            ->dependency('user')
-            ->dependency('time')
+            ->inject('user')
+            ->inject('time')
             ->setCallback(function ($user, $time) {
                 return $user . ':' . $time;
             });

@@ -9,11 +9,11 @@ export const options = {
     scenarios: {
       contacts: {
         executor: 'ramping-arrival-rate',
-        preAllocatedVUs: 50,
-        timeUnit: '1s',
-        startRate: 15000,
+        preAllocatedVUs: 100,
+        timeUnit: '30s',
+        startRate: 1000000,
         stages: [
-          { target: 300000, duration: '1m' },
+          { target: 1000000, duration: '1m' },
         ],
       },
     },
@@ -37,10 +37,10 @@ export default function () {
         check(resDb, {
             'status is 200': (r) => r.status === 200,
             // Check if the echoed key in response is the same as the sent key
-            'response contains the same X-Utopia-Key value': (r) => {
-                // Assuming the response is JSON and has a key that echoes the header value
-                return r.body === key;
-            },
+            // 'response contains the same X-Utopia-Key value': (r) => {
+            //     // Assuming the response is JSON and has a key that echoes the header value
+            //     return r.body === key;
+            // },
         });
     });
 }

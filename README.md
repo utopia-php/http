@@ -29,8 +29,8 @@ use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
 Http::get('/hello-world') // Define Route
-    ->dependency('request')
-    ->dependency('response')
+    ->inject('request')
+    ->inject('response')
     ->action(
         function(Request $request, Response $response) {
             $response
@@ -71,7 +71,7 @@ use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
 Http::get('/')
-    ->dependency('response')
+    ->inject('response')
     ->action(
         function(Response $response) {
             $response->send('Hello from PHP FPM');
@@ -93,8 +93,8 @@ use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
 
 Http::get('/')
-    ->dependency('request')
-    ->dependency('response')
+    ->inject('request')
+    ->inject('response')
     ->action(
         function(Request $request, Response $response) {
             $response->send('Hello from Swoole');
@@ -118,7 +118,7 @@ Define an endpoint with params:
 ```php
 Http::get('/')
     ->param('name', 'World', new Text(256), 'Name to greet. Optional, max length 256.', true)
-    ->dependency('response')
+    ->inject('response')
     ->action(function(string $name, Response $response) {
         $response->send('Hello ' . $name);
     });
@@ -146,20 +146,20 @@ You can provide multiple hooks for each stage. If you do not assign groups to th
 
 ```php
 Http::init()
-    ->dependency('request')
+    ->inject('request')
     ->action(function(Request $request) {
         \var_dump("Recieved: " . $request->getMethod() . ' ' . $request->getURI());
     });
 
 Http::shutdown()
-    ->dependency('response')
+    ->inject('response')
     ->action(function(Response $response) {
         \var_dump('Responding with status code: ' . $response->getStatusCode());
     });
 
 Http::error()
-    ->dependency('error')
-    ->dependency('response')
+    ->inject('error')
+    ->inject('response')
     ->action(function(\Throwable $error, Response $response) {
         $response
             ->setStatusCode(500)
@@ -178,7 +178,7 @@ You can start by defining a group on an endpoint. Keep in mind you can also defi
 ```php
 Http::get('/v1/health')
     ->groups(['api', 'public'])
-    ->dependency('response')
+    ->inject('response')
     ->action(
         function(Response $response) {
             $response->send('OK');
@@ -191,8 +191,8 @@ Now you can define hooks that would apply only to specific groups. Remember, hoo
 ```php
 Http::init()
     ->groups(['api'])
-    ->dependency('request')
-    ->dependency('response')
+    ->inject('request')
+    ->inject('response')
     ->action(function(Request $request, Response $response) {
         $apiKey = $request->getHeader('x-api-key', '');
 
@@ -222,8 +222,8 @@ Inject resource into endpoint action:
 
 ```php
 Http::get('/')
-    ->dependency('timing')
-    ->dependency('response')
+    ->inject('timing')
+    ->inject('response')
     ->action(function(float $timing, Response $response) {
         $response->send('Request Unix timestamp: ' . \strval($timing));
     });
@@ -233,7 +233,7 @@ Inject resource into a hook:
 
 ```php
 Http::shutdown()
-    ->dependency('timing')
+    ->inject('timing')
     ->action(function(float $timing) {
         $difference = \microtime(true) - $timing;
         \var_dump("Request took: " . $difference . " seconds");

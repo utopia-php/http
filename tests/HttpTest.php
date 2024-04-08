@@ -103,7 +103,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->error()
-            ->dependency('error')
+            ->inject('error')
             ->action(function ($error) {
                 echo 'error: ' . $error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine();
             });
@@ -168,7 +168,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->error()
-            ->dependency('error')
+            ->inject('error')
             ->action(function ($error) {
                 echo 'error: ' . $error->getMessage();
             });
@@ -178,7 +178,7 @@ class HttpTest extends TestCase
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->param('y', 'y-def', new Text(200), 'y param', true)
-            ->dependency('rand')
+            ->inject('rand')
             ->param('z', 'z-def', function ($rand) {
                 echo $rand . '-';
 
@@ -209,7 +209,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->error()
-            ->dependency('error')
+            ->inject('error')
             ->action(function ($error) {
                 echo 'error: ' . $error->getMessage();
             });
@@ -252,7 +252,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->init()
-            ->dependency('rand')
+            ->inject('rand')
             ->action(function ($rand) {
                 echo 'init-' . $rand . '-';
             });
@@ -295,7 +295,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->error()
-            ->dependency('error')
+            ->inject('error')
             ->action(function ($error) {
                 echo 'error: ' . $error->getMessage();
             });
@@ -509,7 +509,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->error()
-            ->dependency('error')
+            ->inject('error')
             ->action(function ($error) {
                 echo 'error: ' . $error->getMessage();
             });
@@ -653,7 +653,7 @@ class HttpTest extends TestCase
     {
         // Test head requests
         Http::get('/path')
-            ->dependency('response')
+            ->inject('response')
             ->action(function ($response) {
                 echo 'HELLO';
             });
@@ -692,8 +692,8 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         Http::init()
-            ->dependency('route')
-            ->dependency('di')
+            ->inject('route')
+            ->inject('di')
             ->action(function (Route $route, Container $di) {
                 $dependency = new Dependency();
                 $dependency->setName('myRoute');
@@ -702,20 +702,20 @@ class HttpTest extends TestCase
             });
 
         Http::wildcard()
-            ->dependency('response')
+            ->inject('response')
             ->action(function (Response $response) {
                 echo 'HELLO';
             });
 
         Http::get('/')
-            ->dependency('response')
+            ->inject('response')
             ->action(function (Response $response) {
                 $response->send('root /');
             });
 
         Http::error()
-            ->dependency('error')
-            ->dependency('response')
+            ->inject('error')
+            ->inject('response')
             ->action(function (Throwable $error, Response $response) {
                 $response->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
             });

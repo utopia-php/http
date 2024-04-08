@@ -19,8 +19,8 @@ use Swoole\Http\Response as SwooleResponse;
 $http = new Server("0.0.0.0", 8080);
 
 Http::get('/')
-   ->dependency('request')
-   ->dependency('response')
+   ->inject('request')
+   ->inject('response')
    ->action(
        function($request, $response) {
            // Return raw HTML
@@ -63,7 +63,7 @@ Http::put('/todos/:id')
    ->param('id', "", new Wildcard(), 'id of the todo')
    ->param('task', "", new Wildcard(), 'name of the todo')
    ->param('is_complete', true, new Wildcard(), 'task complete or not')
-   ->dependency('response')
+   ->inject('response')
    ->action(
        function($id, $task, $is_complete, $response) {
            $path = \realpath('/http/http/todos.json');
@@ -194,7 +194,7 @@ Http::put('/todos/:id')
    ->param('id', "", new Wildcard(), 'id of the todo')
    ->param('task', "", new Wildcard(), 'name of the todo')
    ->param('is_complete', true, new Wildcard(), 'task complete or not')
-   ->dependency('response')
+   ->inject('response')
    ->action(
        function($id, $task, $is_complete, $response) {
            $path = \realpath('/http/http/todos.json');

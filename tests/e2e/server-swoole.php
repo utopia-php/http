@@ -17,7 +17,7 @@ $dependency = new Dependency();
 
 $dependency
     ->setName('key')
-    ->dependency('request')
+    ->inject('request')
     ->setCallback(function (Request $request) {
         return $request->getHeader('x-utopia-key', 'unknown');
     });

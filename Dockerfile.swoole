@@ -1,10 +1,5 @@
 FROM composer:2.0 AS step0
 
-
-ARG TESTING=true
-
-ENV TESTING=$TESTING
-
 WORKDIR /usr/local/src/
 
 COPY composer.* /usr/local/src/
@@ -14,15 +9,33 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
 FROM appwrite/base:0.9.0 as final
+
 LABEL maintainer="team@appwrite.io"
+
+ARG TESTING=true
+ARG DEBUG=true
+
+ENV TESTING=$TESTING
+ENV DEBUG=$DEBUG
+
+RUN \
+  if [ "$DEBUG" == "true" ]; then \
+    apk add boost boost-dev; \
+  fi
 
 WORKDIR /usr/src/code
 
+COPY ./dev /usr/src/code/dev
 COPY ./src /usr/src/code/src
 COPY ./tests /usr/src/code/tests
 COPY ./phpunit.xml /usr/src/code/phpunit.xml
 COPY ./phpbench.json /usr/src/code/phpbench.json
 COPY --from=step0 /usr/local/src/vendor /usr/src/code/vendor
+
+# Enable Extensions
+RUN if [ "$DEBUG" == "true" ]; then cp /usr/src/code/dev/xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini; fi
+RUN if [ "$DEBUG" = "false" ]; then rm -rf /usr/src/code/dev; fi
+RUN if [ "$DEBUG" = "false" ]; then rm -f /usr/local/lib/php/extensions/no-debug-non-zts-20220829/xdebug.so; fi
 
 EXPOSE 80
 
