@@ -23,11 +23,6 @@ class Response extends UtopiaResponse
         parent::__construct(\microtime(true));
     }
 
-    public function getSwooleResponse(): SwooleResponse
-    {
-        return $this->swoole;
-    }
-
     /**
      * Write
      *
