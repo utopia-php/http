@@ -38,7 +38,7 @@ Http::get('/keys')
     ->dependency('response')
     ->dependency('key')
     ->action(function (Response $response, string $key) {
-        if (rand(0, 50) == 1){
+        if (rand(0, 50) == 1) {
             System::sleep(1);
         }
 

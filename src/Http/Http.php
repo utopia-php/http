@@ -323,7 +323,7 @@ class Http
 
     /**
      * Get Container
-     * 
+     *
      * @return Container
      */
     public function getContainer(): Container
@@ -480,22 +480,24 @@ class Http
         $this->server->onRequest(function ($request, $response) {
             $context = clone $this->container;
             $dependency = new Dependency();
-            
+
             if(!\is_null($this->requestClass)) {
                 $request = new $this->requestClass($request);
             }
-    
+
             if(!\is_null($this->responseClass)) {
                 $response = new $this->responseClass($response);
             }
-    
+
             $context = clone $this->container;
-            
-            $context->set(clone $dependency
+
+            $context->set(
+                clone $dependency
                     ->setName('request')
                     ->setCallback(fn () => $request)
-                )
-                ->set(clone $dependency
+            )
+                ->set(
+                    clone $dependency
                     ->setName('response')
                     ->setCallback(fn () => $response)
                 )
@@ -505,10 +507,11 @@ class Http
         });
 
         $this->server->onStart(function ($server) {
-            
+
             $dependency = new Dependency();
             $this->container
-                ->set($dependency
+                ->set(
+                    $dependency
                     ->setName('server')
                     ->setCallback(fn () => $server)
                 )
@@ -519,12 +522,13 @@ class Http
                     $this->prepare($this->container, $hook, [], [])->inject($hook, true);
                 }
             } catch(\Exception $e) {
-                            
+
                 $dependency = new Dependency();
-                $this->container->set($dependency
+                $this->container->set(
+                    $dependency
                         ->setName('error')
                         ->setCallback(fn () => $e)
-                    )
+                )
                 ;
 
                 foreach (self::$errors as $error) { // Global error hooks
@@ -606,10 +610,11 @@ class Http
             }
         } catch (\Throwable $e) {
             $dependency = new Dependency();
-            $context->set($dependency
+            $context->set(
+                $dependency
                     ->setName('error')
                     ->setCallback(fn () => $e)
-                )
+            )
             ;
 
             foreach ($groups as $group) {
@@ -680,10 +685,10 @@ class Http
                 ->setName($key)
                 ->setCallback(fn () => $value)
             ;
-            
+
             $context->set($dependencyForValue);
         }
-        
+
         return $context;
     }
 
@@ -700,17 +705,18 @@ class Http
     {
         $request = $context->get('request'); /** @var Request $request */
         $response = $context->get('response'); /** @var Response $response */
-        
+
         try {
             foreach (self::$requestHooks as $hook) {
                 $this->prepare($context, $hook)->inject($hook, true);
             }
         } catch(\Exception $e) {
             $dependency = new Dependency();
-            $context->set($dependency
+            $context->set(
+                $dependency
                     ->setName('error')
                     ->setCallback(fn () => $e)
-                )
+            )
             ;
 
             foreach (self::$errors as $error) { // Global error hooks
@@ -747,10 +753,11 @@ class Http
         }
 
         $dependency = new Dependency();
-        $context->set($dependency
+        $context->set(
+            $dependency
                 ->setName('route')
                 ->setCallback(fn () => $route)
-            )
+        )
         ;
 
         if (self::REQUEST_METHOD_HEAD == $method) {
@@ -780,10 +787,11 @@ class Http
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
                         $dependency = new Dependency();
-                        $this->container->set($dependency
+                        $this->container->set(
+                            $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
-                            )
+                        )
                         ;
 
                         $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
@@ -815,10 +823,11 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         $dependency = new Dependency();
-                        $this->container->set($dependency
+                        $this->container->set(
+                            $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
-                            )
+                        )
                         ;
 
                         $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
@@ -870,7 +879,7 @@ class Http
                 ->setName($key)
                 ->setCallback($param['validator'])
             ;
-            
+
             foreach ($param['injections'] as $injection) {
                 $dependency->dependency($injection);
             }

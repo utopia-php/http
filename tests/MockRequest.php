@@ -32,7 +32,7 @@ class MockRequest extends UtopiaFPMRequest
         if (\array_key_exists($key, $params)) {
             return $params[$key];
         }
-        
+
         return $default;
     }
 

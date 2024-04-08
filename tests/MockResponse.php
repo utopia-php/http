@@ -5,7 +5,7 @@ namespace Utopia\Http\Tests;
 use Utopia\Http\Adapter\FPM\Response as UtopiaFPMResponse;
 
 class MockResponse extends UtopiaFPMResponse
-{    
+{
     /**
      * Send Status Code
      *

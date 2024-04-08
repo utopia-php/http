@@ -65,7 +65,7 @@ class HookTest extends TestCase
             ->setCallback(function ($user, $time) {
                 return $user . ':' . $time;
             });
-        
+
         $user = new Dependency();
         $user
             ->setName('user')

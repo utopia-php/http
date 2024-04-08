@@ -31,7 +31,7 @@ class HttpTest extends TestCase
         $request
             ->setName('request')
             ->setCallback(fn () => new Request());
-        
+
         $response = new Dependency();
         $response
             ->setName('response')
@@ -153,7 +153,7 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-    
+
         $rand = new Dependency();
         $rand
             ->setName('rand')
@@ -165,14 +165,14 @@ class HttpTest extends TestCase
             ->set($request)
             ->set($rand)
         ;
-        
+
         $this->http
             ->error()
             ->dependency('error')
             ->action(function ($error) {
                 echo 'error: ' . $error->getMessage();
             });
-            
+
         $route = $this->http->addRoute('GET', '/test-params');
 
         $route
@@ -195,7 +195,7 @@ class HttpTest extends TestCase
         $resource = $context->get('rand');
         $this->assertEquals($resource . '-param-x-param-y', $result);
     }
-    
+
     public function testCanExecuteRouteWithParamsWithError(): void
     {
         $route = $this->http->addRoute('GET', '/test-params-error');
@@ -226,7 +226,7 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-        
+
         $rand = new Dependency();
         $rand
             ->setName('rand')
@@ -238,7 +238,7 @@ class HttpTest extends TestCase
             ->set($request)
             ->set($rand)
         ;
-        
+
         $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
@@ -292,7 +292,7 @@ class HttpTest extends TestCase
             ->action(function () {
                 echo '-(shutdown-homepage)';
             });
-        
+
         $this->http
             ->error()
             ->dependency('error')
@@ -331,7 +331,7 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-        
+
         $rand = new Dependency();
         $rand
             ->setName('rand')
@@ -343,7 +343,7 @@ class HttpTest extends TestCase
             ->set($request)
             ->set($rand)
         ;
-        
+
         $resource = $context->get('rand');
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -369,12 +369,12 @@ class HttpTest extends TestCase
             ->setCallback(function () {
                 return rand(0, 1000);
             });
-        
+
         $context
             ->set($request)
             ->set($rand)
         ;
-        
+
         $resource = $context->get('rand');
         \ob_start();
         $this->http->run($context);
@@ -417,11 +417,11 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-        
+
         $context
             ->set($request)
         ;
-        
+
         \ob_start();
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -447,11 +447,11 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-        
+
         $context
             ->set($request)
         ;
-        
+
         \ob_start();
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -531,7 +531,7 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-        
+
         $context
             ->set($request)
         ;
@@ -554,10 +554,10 @@ class HttpTest extends TestCase
                 $request->setMethod('GET');
                 return $request;
             });
-        
+
         $context
             ->set($request)
-        ;   
+        ;
 
         \ob_start();
         $this->http->run($context);
@@ -640,7 +640,7 @@ class HttpTest extends TestCase
 
             $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
             $_SERVER['REQUEST_URI'] = $request['url'];
-            
+
             $context = clone $this->context;
 
             $this->http->run($context);
@@ -666,12 +666,12 @@ class HttpTest extends TestCase
         $request = new Dependency();
         $request
             ->setName('request')
-            ->setCallback(function() {
+            ->setCallback(function () {
                 $_SERVER['REQUEST_METHOD'] = 'HEAD';
                 $_SERVER['REQUEST_URI'] = '/path';
                 return new Request();
             });
-        
+
         $this->context
             ->set($request)
         ;
@@ -719,7 +719,7 @@ class HttpTest extends TestCase
             ->action(function (Throwable $error, Response $response) {
                 $response->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
             });
-        
+
         $context = clone $this->context;
 
         \ob_start();

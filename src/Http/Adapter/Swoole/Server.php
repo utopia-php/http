@@ -20,9 +20,9 @@ class Server extends Adapter
         $this->server = new SwooleServer($host, $port);
         $this->server->set(\array_merge($settings, [
             'open_http2_protocol' => true,
-            // 'http_compression' => true,
-            // 'http_compression_level' => 6,
-            
+            'http_compression' => true,
+            'http_compression_level' => 6,
+
             // Server
             // 'log_level' => 2,
             'dispatch_mode' => 3,
