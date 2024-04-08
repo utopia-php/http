@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "d9083138c56ffe6fdfe001a0f95e118a1553e717"
+                "reference": "833c8e0895d34adda298328cfa17369c6e7792e6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/d9083138c56ffe6fdfe001a0f95e118a1553e717",
-                "reference": "d9083138c56ffe6fdfe001a0f95e118a1553e717",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/833c8e0895d34adda298328cfa17369c6e7792e6",
+                "reference": "833c8e0895d34adda298328cfa17369c6e7792e6",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "source": "https://github.com/utopia-php/di/tree/main",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2024-04-08T12:48:49+00:00"
+            "time": "2024-04-08T19:47:18+00:00"
         }
     ],
     "packages-dev": [
