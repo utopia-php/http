@@ -28,7 +28,7 @@ class Response extends UtopiaResponse
      * @param  string  $content
      * @return void
      */
-    public function end(string $content = null): void
+    public function end(string $content = ''): void
     {
         if (!is_null($content)) {
             echo $content;

@@ -221,9 +221,11 @@ class Http
      */
     public static function wildcard(): Route
     {
-        self::$wildcardRoute = new Route('', '');
+        $route = new Route('', '');
 
-        return self::$wildcardRoute;
+        self::$wildcardRoute = $route;
+
+        return $route;
     }
 
     /**
@@ -514,7 +516,7 @@ class Http
 
             try {
                 foreach (self::$startHooks as $hook) {
-                    $this->prepare($this->container, $hook, [], [])->inject($hook);
+                    $this->prepare($this->container, $hook, [], [])->inject($hook, true);
                 }
             } catch(\Exception $e) {
                             
@@ -528,7 +530,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $this->prepare($this->container, $error, [], [])->inject($error);
+                            $this->prepare($this->container, $error, [], [])->inject($error, true);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                         }
@@ -563,7 +565,7 @@ class Http
      * @param  Route  $route
      * @param  Request  $request
      */
-    protected function execute(Route $route, Request $request, Container $context): static
+    protected function lifecycle(Route $route, Request $request, Container $context): static
     {
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
@@ -572,7 +574,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
@@ -580,25 +582,25 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
 
-            $this->prepare($context, $route, $pathValues, $request->getParams())->inject($route);
+            $this->prepare($context, $route, $pathValues, $request->getParams())->inject($route, true);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
 
             if ($route->getHook()) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
+                foreach (self::$shutdown as $hook) { // Global shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
@@ -614,7 +616,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error);
+                            $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                         }
@@ -625,7 +627,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error);
+                        $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                     }
@@ -633,7 +635,6 @@ class Http
             }
         }
 
-        // Reset resources for the context
         unset($context);
 
         return $this;
@@ -656,25 +657,8 @@ class Http
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
-            
-            if (\is_callable($arg)) {
-
-                $dependency = new Dependency();
-                $dependency
-                    ->setName($key)
-                    ->setCallback($arg)
-                ;
-                
-                foreach ($param['injections'] as $injection) {
-                    $dependency->dependency($injection);
-                }
-
-                $context->set($dependency);
-            }
 
             $value = $existsInValues ? $values[$key] : $arg;
-
-            // TODO @eldad should we add dependency injection for values as well?
 
             /**
              * Validation
@@ -691,6 +675,13 @@ class Http
 
             $hook->setParamValue($key, $value);
 
+            $dependencyForValue = new Dependency();
+            $dependencyForValue
+                ->setName($key)
+                ->setCallback(fn () => $value)
+            ;
+            
+            $context->set($dependencyForValue);
         }
         
         return $context;
@@ -707,12 +698,12 @@ class Http
      */
     public function run(Container $context): static
     {
-        $request = $context->get('request');
-        $response = $context->get('response');
+        $request = $context->get('request'); /** @var Request $request */
+        $response = $context->get('response'); /** @var Response $response */
         
         try {
             foreach (self::$requestHooks as $hook) {
-                $this->prepare($context, $hook)->inject($hook);
+                $this->prepare($context, $hook)->inject($hook, true);
             }
         } catch(\Exception $e) {
             $dependency = new Dependency();
@@ -725,7 +716,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $this->prepare($context, $error)->inject($hook);
+                        $this->prepare($context, $error)->inject($hook, true);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                     }
@@ -749,6 +740,12 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
+        if (null === $route && null !== self::$wildcardRoute) {
+            $route = self::$wildcardRoute;
+            $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $route->path($path);
+        }
+
         $dependency = new Dependency();
         $context->set($dependency
                 ->setName('route')
@@ -767,7 +764,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            $this->prepare($context, $option, [], $request->getParams())->inject($option);
+                            $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                         }
                     }
                 }
@@ -775,7 +772,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        $this->prepare($context, $option, [], $request->getParams())->inject($option);
+                        $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                     }
                 }
             } catch (\Throwable $e) {
@@ -789,7 +786,7 @@ class Http
                             )
                         ;
 
-                        $this->prepare($context, $error, [], $request->getParams())->inject($error);
+                        $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                     }
                 }
             }
@@ -797,34 +794,21 @@ class Http
             return $this;
         }
 
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $route->path($path);
-
-            $dependency = new Dependency();
-            $context->set($dependency
-                    ->setName('route')
-                    ->setCallback(fn () => $route)
-                )
-            ;
-        }
-
         if (null !== $route) {
-            return $this->execute($route, $request, $context);
+            return $this->lifecycle($route, $request, $context);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         if (in_array($group, $option->getGroups())) {
-                            $this->prepare($context, $option, [], $request->getParams())->inject($option);
+                            $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                         }
                     }
                 }
 
                 foreach (self::$options as $option) { // Global options hooks
                     if (in_array('*', $option->getGroups())) {
-                        $this->prepare($context, $option, [], $request->getParams())->inject($option);
+                        $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                     }
                 }
             } catch (\Throwable $e) {
@@ -837,7 +821,7 @@ class Http
                             )
                         ;
 
-                        $this->prepare($context, $error, [], $request->getParams())->inject($error);
+                        $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                     }
                 }
             }
@@ -851,7 +835,7 @@ class Http
 
                     $context->set($dependency);
 
-                    $this->prepare($context, $error, [], $request->getParams())->inject($error);
+                    $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                 }
             }
         }

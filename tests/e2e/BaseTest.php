@@ -18,6 +18,24 @@ trait BaseTest
         $this->assertEquals('123', $response['body']);
     }
 
+    public function testHeaders()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/headers');
+        $this->assertCount(9, $response['headers']);
+        $this->assertEquals('value1', $response['headers']['key1']);
+        $this->assertEquals('value2', $response['headers']['key2']);
+        $this->assertNotEmpty($response['body']);
+    }
+
+    public function testHead()
+    {
+        $response = $this->client->call(Client::METHOD_HEAD, '/headers');
+        $this->assertCount(9, $response['headers']);
+        $this->assertEquals('value1', $response['headers']['key1']);
+        $this->assertEquals('value2', $response['headers']['key2']);
+        $this->assertEmpty(trim($response['body']));
+    }
+
     public function testChunkResponse()
     {
         $response = $this->client->call(Client::METHOD_GET, '/chunked');

@@ -37,10 +37,10 @@ class Response extends UtopiaResponse
     /**
      * End
      *
-     * @param  string|null  $content
+     * @param  string  $content
      * @return void
      */
-    public function end(string $content = null): void
+    public function end(string $content = ''): void
     {
         $this->swoole->end($content);
     }

@@ -25,6 +25,15 @@ Http::get('/')
         $response->send('Hello World!');
     });
 
+Http::get('/headers')
+    ->dependency('response')
+    ->action(function (Response $response) {
+        $response
+            ->addHeader('key1', 'value1')
+            ->addHeader('key2', 'value2')
+            ->send('Hello World!');
+    });
+
 Http::get('/keys')
     ->dependency('response')
     ->dependency('key')
@@ -40,7 +49,6 @@ Http::get('/value/:value')
     ->param('value', '', new Text(64))
     ->dependency('response')
     ->action(function (string $value, Response $response) {
-        var_dump($value);
         $response->send($value);
     });
 

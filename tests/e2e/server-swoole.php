@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__.'/init.php';
 
-use Swoole\Http\Request as SwooleRequest;
-use Swoole\Http\Response as SwooleResponse;
 use Swoole\Runtime;
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;

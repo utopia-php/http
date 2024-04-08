@@ -501,7 +501,7 @@ abstract class Response
 
             $this->disablePayload();
         } else {
-            $this->end();
+            $this->end("\n");
         }
     }
 
@@ -523,7 +523,7 @@ abstract class Response
      * @param  string  $content
      * @return void
      */
-    abstract public function end(string $content = null): void;
+    abstract public function end(string $content = ''): void;
 
     /**
      * Output response
