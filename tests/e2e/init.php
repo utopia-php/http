@@ -13,7 +13,19 @@ ini_set('display_startup_errors', '1');
 ini_set('display_socket_timeout', '-1');
 error_reporting(E_ALL);
 
+Http::wildcard()
+    ->dependency('response')
+    ->action(function ($response) {
+        $response->send('WILDCARD');
+    });
+
 Http::get('/')
+    ->dependency('response')
+    ->action(function (Response $response) {
+        $response->send('Hello World!');
+    });
+
+Http::get('/keys')
     ->dependency('response')
     ->dependency('key')
     ->action(function (Response $response, string $key) {
@@ -28,6 +40,7 @@ Http::get('/value/:value')
     ->param('value', '', new Text(64))
     ->dependency('response')
     ->action(function (string $value, Response $response) {
+        var_dump($value);
         $response->send($value);
     });
 
@@ -55,5 +68,5 @@ Http::error()
     ->dependency('error')
     ->dependency('response')
     ->action(function (Throwable $error, Response $response) {
-        $response->send($error->getMessage());
+        $response->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
     });
