@@ -72,6 +72,12 @@ Http::get('/humans.txt')
         $response->noContent();
     });
 
+Http::delete('/no-content')
+    ->dependency('response')
+    ->action(function (Response $response) {
+        $response->noContent();
+    });
+
 Http::error()
     ->dependency('error')
     ->dependency('response')

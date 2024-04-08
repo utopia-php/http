@@ -475,7 +475,10 @@ abstract class Response
 
         $this->sent = true;
 
-        $this->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime));
+        $this
+            ->addHeader('Server', 'Utopia/Http')
+            ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
+        ;
 
         $this
             ->appendCookies()
@@ -501,7 +504,7 @@ abstract class Response
 
             $this->disablePayload();
         } else {
-            $this->end("\n");
+            $this->end();
         }
     }
 
