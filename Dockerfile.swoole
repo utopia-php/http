@@ -16,6 +16,12 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
 
 FROM appwrite/base:0.9.0 as final
 
+ARG TESTING=true
+ARG DEBUG=true
+
+ENV TESTING=$TESTING
+ENV DEBUG=$DEBUG
+
 LABEL maintainer="team@appwrite.io"
 
 RUN \
