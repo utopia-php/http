@@ -13,6 +13,13 @@ ini_set('display_startup_errors', '1');
 ini_set('display_socket_timeout', '-1');
 error_reporting(E_ALL);
 
+Http::init()
+    ->inject('response')
+    ->action(function ($response) {
+        $response->addHeader('X-Engine', 'Utopia');
+    });
+
+
 Http::wildcard()
     ->inject('response')
     ->action(function ($response) {
@@ -69,7 +76,9 @@ Http::get('/redirect')
 Http::get('/humans.txt')
     ->inject('response')
     ->action(function (Response $response) {
-        $response->noContent();
+        $response
+            ->setStatusCode(200)
+            ->text('humans.txt');
     });
 
 Http::delete('/no-content')

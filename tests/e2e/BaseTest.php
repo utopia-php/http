@@ -55,9 +55,11 @@ trait BaseTest
         $this->assertEquals('Hello World!', $response['body']);
     }
 
-    public function testFile()
+    public function testHumans()
     {
         $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
-        $this->assertEquals(204, $response['headers']['status-code']);
+        $this->assertEquals('humans.txt', $response['body']);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('Utopia', $response['headers']['x-engine']);
     }
 }
