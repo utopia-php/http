@@ -81,13 +81,6 @@ class Http
     protected static array $startHooks = [];
 
     /**
-     * Request hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $requestHooks = [];
-
-    /**
      * Route
      *
      * Memory cached result for chosen route
@@ -468,13 +461,6 @@ class Http
         return $hook;
     }
 
-    public static function onRequest(): Hook
-    {
-        $hook = new Hook();
-        self::$requestHooks[] = $hook;
-        return $hook;
-    }
-
     public function start()
     {
         $this->server->onRequest(function ($request, $response) {
@@ -704,30 +690,6 @@ class Http
     {
         $request = $context->get('request'); /** @var Request $request */
         $response = $context->get('response'); /** @var Response $response */
-
-        try {
-            foreach (self::$requestHooks as $hook) {
-                $this->prepare($context, $hook)->inject($hook, true);
-            }
-        } catch(\Exception $e) {
-            $dependency = new Dependency();
-            $context->set(
-                $dependency
-                    ->setName('error')
-                    ->setCallback(fn () => $e)
-            )
-            ;
-
-            foreach (self::$errors as $error) { // Global error hooks
-                if (in_array('*', $error->getGroups())) {
-                    try {
-                        $this->prepare($context, $error)->inject($hook, true);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
-                    }
-                }
-            }
-        }
 
         if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
