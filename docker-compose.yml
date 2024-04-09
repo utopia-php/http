@@ -4,7 +4,7 @@ services:
             context: .
             dockerfile: Dockerfile.fpm
         ports:
-            - "9020:80"
+            - "9500:80"
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
@@ -17,7 +17,7 @@ services:
             context: .
             dockerfile: Dockerfile.swoole
         ports: 
-            - "9500:80"
+            - "9501:80"
         volumes:
             - ./dev:/usr/src/code/dev:rw
             - ./src:/usr/src/code/src
@@ -25,11 +25,5 @@ services:
             - ./tmp/xdebug:/tmp/xdebug
         networks:
             - testing
-    # webgrind:
-    #     image: jokkedk/webgrind:latest
-    #     ports:
-    #     - "9501:80"
-    #     volumes:
-    #     - ./xdebug:/tmp
 networks:
   testing:

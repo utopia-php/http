@@ -1,5 +1,11 @@
 FROM composer:2.0 AS step0
 
+ARG TESTING=true
+ARG DEBUG=true
+
+ENV TESTING=$TESTING
+ENV DEBUG=$DEBUG
+
 WORKDIR /usr/local/src/
 
 COPY composer.* /usr/local/src/
@@ -11,12 +17,6 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
 FROM appwrite/base:0.9.0 as final
 
 LABEL maintainer="team@appwrite.io"
-
-ARG TESTING=true
-ARG DEBUG=true
-
-ENV TESTING=$TESTING
-ENV DEBUG=$DEBUG
 
 RUN \
   if [ "$DEBUG" == "true" ]; then \
