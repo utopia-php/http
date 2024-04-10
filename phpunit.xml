@@ -10,7 +10,6 @@
         >
     <testsuites>
         <testsuite name="Application Test Suite">
-            <file>./tests/e2e/init.php</file>
             <file>./tests/e2e/Client.php</file>
             <file>./tests/MockRequest.php</file>
             <file>./tests/MockResponse.php</file>

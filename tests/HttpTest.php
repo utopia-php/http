@@ -635,13 +635,23 @@ class HttpTest extends TestCase
             ],
         ];
 
-        foreach ($requests as $request) {
-            Http::get($request['path']);
-
-            $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
-            $_SERVER['REQUEST_URI'] = $request['url'];
+        foreach ($requests as $requestObj) {
+            Http::get($requestObj['path']);
 
             $context = clone $this->context;
+
+            $request = new Dependency();
+            $request
+                ->setName('request')
+                ->setCallback(function () use ($requestObj) {
+                    $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
+                    $_SERVER['REQUEST_URI'] = $requestObj['url'];
+                    return new Request();
+                });
+
+            $context
+                ->set($request)
+            ;
 
             $this->http->run($context);
 
@@ -661,7 +671,6 @@ class HttpTest extends TestCase
         \ob_start();
 
         $context = clone $this->context;
-
 
         $request = new Dependency();
         $request
