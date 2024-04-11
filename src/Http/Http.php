@@ -475,6 +475,8 @@ class Http
                 $response = new $this->responseClass($response);
             }
 
+            var_dump('start req/res set');
+
             $context = clone $this->container;
 
             $context->set(
@@ -488,6 +490,8 @@ class Http
                     ->setCallback(fn () => $response)
                 )
             ;
+
+            var_dump('end  req/res set');
 
             $this->run($context);
         });
@@ -557,10 +561,12 @@ class Http
      */
     protected function lifecycle(Route $route, Request $request, Container $context): static
     {
+        var_dump('start lifecycle');
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
 
         try {
+            var_dump('start global init hooks');
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
@@ -569,6 +575,7 @@ class Http
                 }
             }
 
+            var_dump('start group init hooks');
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
@@ -577,8 +584,10 @@ class Http
                 }
             }
 
+            var_dump('start route hook');
             $this->prepare($context, $route, $pathValues, $request->getParams())->inject($route, true);
 
+            var_dump('start group shutdown hooks');
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
@@ -587,6 +596,7 @@ class Http
                 }
             }
 
+            var_dump('start global shutdown hooks');
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Global shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
@@ -603,24 +613,26 @@ class Http
             )
             ;
 
+            var_dump('route group error block');
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
                             $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
+                            throw new Exception('Group error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                         }
                     }
                 }
             }
 
+            var_dump('global error block');
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
                         $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
+                        throw new Exception('Global error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                     }
                 }
             }
@@ -691,6 +703,7 @@ class Http
         $request = $context->get('request'); /** @var Request $request */
         $response = $context->get('response'); /** @var Response $response */
 
+        var_dump('start check file loaded');
         if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
 
@@ -702,11 +715,14 @@ class Http
 
             return $this;
         }
+        var_dump('end check file loaded');
 
         $method = $request->getMethod();
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
+        var_dump('end route match');
 
+        var_dump('check wildcard route');
         if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
@@ -719,12 +735,15 @@ class Http
                 ->setName('route')
                 ->setCallback(fn () => $route)
         );
+        var_dump('start set route as DI');
 
+        var_dump('start head check');
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
         }
 
+        var_dump('start options check');
         if (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
@@ -765,6 +784,7 @@ class Http
         if (null !== $route) {
             return $this->lifecycle($route, $request, $context);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
+            var_dump('options block');
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
@@ -780,6 +800,7 @@ class Http
                     }
                 }
             } catch (\Throwable $e) {
+                var_dump('global errors hook');
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         $dependency = new Dependency();
@@ -795,6 +816,7 @@ class Http
                 }
             }
         } else {
+            var_dump('error block for not found');
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     $dependency = new Dependency();
