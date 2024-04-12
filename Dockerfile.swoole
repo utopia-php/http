@@ -1,7 +1,7 @@
 FROM composer:2.0 AS step0
 
-ARG TESTING=true
-ARG DEBUG=true
+ARG TESTING=false
+ARG DEBUG=false
 
 ENV TESTING=$TESTING
 ENV DEBUG=$DEBUG
@@ -16,8 +16,8 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
 
 FROM appwrite/base:0.9.0 as final
 
-ARG TESTING=true
-ARG DEBUG=true
+ARG TESTING=false
+ARG DEBUG=false
 
 ENV TESTING=$TESTING
 ENV DEBUG=$DEBUG

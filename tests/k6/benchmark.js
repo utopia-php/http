@@ -9,11 +9,11 @@ export const options = {
     scenarios: {
       contacts: {
         executor: 'ramping-arrival-rate',
-        preAllocatedVUs: 100,
+        preAllocatedVUs: 1000,
         timeUnit: '30s',
         startRate: 1000000,
         stages: [
-          { target: 1000000, duration: '1m' },
+          { target: 1000000, duration: '10m' },
         ],
       },
     },
@@ -32,7 +32,11 @@ export default function () {
             }
         };
 
-        const resDb = http.get('http://localhost:9500/', config);
+        const resDb = http.get('http://localhost:9401', config);
+
+        if(resDb.status !== 200) {
+            console.log(`Error: ${resDb.status}`);
+        }
 
         check(resDb, {
             'status is 200': (r) => r.status === 200,

@@ -3,6 +3,7 @@
 require_once __DIR__.'/../../vendor/autoload.php';
 
 use Swoole\Coroutine\System;
+use Swoole\Database\PDOPool;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Validator\Text;
@@ -85,6 +86,24 @@ Http::delete('/no-content')
     ->inject('response')
     ->action(function (Response $response) {
         $response->noContent();
+    });
+
+Http::get('/db-ping')
+    ->inject('pool')
+    ->inject('response')
+    ->action(function (PDOPool $pool, Response $response) {
+        $pdo = $pool->get();
+
+        $statement = $pdo->query('SELECT 1;');
+        $output = '';
+        while ($row = $statement->fetch()) {
+            // var_dump('worked!');
+            $output .= $row[0];
+        }
+
+        $pool->put($pdo);
+
+        $response->send($output);
     });
 
 Http::error()

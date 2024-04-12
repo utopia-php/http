@@ -2,11 +2,11 @@
 
 namespace Utopia\Http\Adapter\Swoole;
 
-use Swoole\Coroutine;
+use PDO;
+use PDOException;
 use Utopia\Http\Adapter;
-use Swoole\Coroutine\Http\Server as SwooleServer;
-use Swoole\Http\Request as SwooleRequest;
-use Swoole\Http\Response as SwooleResponse;
+use Swoole\Http\Server as SwooleServer;
+use Swoole\Runtime;
 
 use function Swoole\Coroutine\run;
 
@@ -24,25 +24,24 @@ class Server extends Adapter
             // 'http_compression_level' => 6,
 
             // Server
-            // 'log_level' => 2,
-            'dispatch_mode' => 3,
-            'worker_num' => $workerNumber,
-            'reactor_num' => swoole_cpu_num() * 2,
-            'task_worker_num' => $workerNumber,
-            'open_cpu_affinity' => true,
+            // 'log_level' => 0,
+            'dispatch_mode' => 2,
+            // 'worker_num' => $workerNumber,
+            // 'reactor_num' => swoole_cpu_num() * 2,
+            // 'task_worker_num' => $workerNumber,
+            // 'open_cpu_affinity' => true,
 
             // Coroutine
-            'enable_coroutine' => true,
-            'max_coroutine' => 300000,
+            // 'enable_coroutine' => true,
+            // 'max_coroutine' => 1000,
         ]));
     }
 
     public function onRequest(callable $callback)
     {
-        $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
+    
+        $this->server->on('request', function ($request, $response) use ($callback) {
             call_user_func($callback, new Request($request), new Response($response));
-            // go(function () use ($request, $response, $callback) {
-            // });
         });
     }
 
@@ -53,10 +52,7 @@ class Server extends Adapter
 
     public function start()
     {
-        if(Coroutine::getCid() === -1) {
-            run(fn () => $this->server->start());
-        } else {
-            $this->server->start();
-        }
+        Runtime::enableCoroutine();
+        return $this->server->start();
     }
 }
