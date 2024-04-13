@@ -492,7 +492,7 @@ class Http
             $this->run($context);
         });
 
-        $this->server->onStart(function ($server) {
+        $this->server->onStart(function () {
             $container = clone $this->container;
 
             $dependency = new Dependency();
@@ -500,7 +500,7 @@ class Http
                 ->set(
                     $dependency
                     ->setName('server')
-                    ->setCallback(fn () => $server)
+                    ->setCallback(fn () => $this->server)
                 )
             ;
 
