@@ -2,8 +2,6 @@
 
 namespace Utopia\Http\Adapter\Swoole;
 
-use PDO;
-use PDOException;
 use Utopia\Http\Adapter;
 use Swoole\Http\Server as SwooleServer;
 use Swoole\Runtime;
@@ -39,7 +37,6 @@ class Server extends Adapter
 
     public function onRequest(callable $callback)
     {
-    
         $this->server->on('request', function ($request, $response) use ($callback) {
             go(function () use ($request, $response, $callback) {
                 call_user_func($callback, new Request($request), new Response($response));

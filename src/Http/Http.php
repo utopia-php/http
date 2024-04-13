@@ -493,9 +493,10 @@ class Http
         });
 
         $this->server->onStart(function ($server) {
+            $container = clone $this->container;
 
             $dependency = new Dependency();
-            $this->container
+            $container
                 ->set(
                     $dependency
                     ->setName('server')
@@ -505,12 +506,12 @@ class Http
 
             try {
                 foreach (self::$startHooks as $hook) {
-                    $this->prepare($this->container, $hook, [], [])->inject($hook, true);
+                    $this->prepare($container, $hook, [], [])->inject($hook, true);
                 }
             } catch(\Exception $e) {
 
                 $dependency = new Dependency();
-                $this->container->set(
+                $container->set(
                     $dependency
                         ->setName('error')
                         ->setCallback(fn () => $e)
@@ -520,7 +521,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $this->prepare($this->container, $error, [], [])->inject($error, true);
+                            $this->prepare($container, $error, [], [])->inject($error, true);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
                         }
