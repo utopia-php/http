@@ -46,7 +46,7 @@ class Server extends Adapter
 
     public function onStart(callable $callback)
     {
-        $this->server->on('request', function () use ($callback) {
+        $this->server->on('start', function () use ($callback) {
             go(function () use ($callback) {
                 call_user_func($callback, $this);
             });
