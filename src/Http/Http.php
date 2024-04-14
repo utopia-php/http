@@ -718,7 +718,7 @@ class Http
         $context->set(
             $dependency
                 ->setName('route')
-                ->setCallback(fn () => $route)
+                ->setCallback(fn () => $route ?? new Route($request->getMethod(), $request->getURI()))
         );
 
         if (self::REQUEST_METHOD_HEAD == $method) {

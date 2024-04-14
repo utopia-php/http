@@ -655,7 +655,8 @@ class HttpTest extends TestCase
 
             $this->http->run($context);
 
-            $this->assertEquals(null, $context->get('route'));
+            $this->assertEquals($_SERVER['REQUEST_METHOD'], $context->get('route')->getMethod());
+            $this->assertEquals($_SERVER['REQUEST_URI'], $context->get('route')->getPath());
         }
     }
 

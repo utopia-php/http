@@ -32,11 +32,11 @@ Http::init()
     });
 
 
-Http::wildcard()
-    ->inject('response')
-    ->action(function ($response) {
-        $response->send('WILDCARD');
-    });
+// Http::wildcard()
+//     ->inject('response')
+//     ->action(function ($response) {
+//         $response->send('WILDCARD');
+//     });
 
 Http::get('/')
     ->inject('response')
