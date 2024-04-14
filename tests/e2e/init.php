@@ -1,9 +1,8 @@
 <?php
 
-require_once __DIR__.'/../../vendor/autoload.php';
-
 use Swoole\Coroutine\System;
 use Swoole\Database\PDOPool;
+use Utopia\DI\Dependency;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Validator\Text;
@@ -13,6 +12,18 @@ ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
 ini_set('display_socket_timeout', '-1');
 error_reporting(E_ALL);
+
+global $container;
+
+$dependency = new Dependency();
+
+$dependency
+    ->setName('num')
+    ->setCallback(function () {
+        return 10;
+    });
+
+$container->set($dependency);
 
 Http::init()
     ->inject('response')
@@ -106,9 +117,18 @@ Http::get('/db-ping')
         $response->send($output);
     });
 
+Http::get('/param-injection')
+    ->inject('response')
+    ->param('param', 'default', fn($num) => new Text($num), 'test param', false, ['num'])
+    ->action(function (Response $response, string $param) {
+        $response->send('Hello World!' . $param);
+    });
+
 Http::error()
     ->inject('error')
     ->inject('response')
     ->action(function (Throwable $error, Response $response) {
-        $response->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
+        $response
+            ->setStatusCode($error->getCode())
+            ->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
     });

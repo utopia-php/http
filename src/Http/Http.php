@@ -837,7 +837,7 @@ class Http
 
             $dependency = new Dependency();
             $dependency
-                ->setName($key)
+                ->setName('_validator:'.$key)
                 ->setCallback($param['validator'])
             ;
 

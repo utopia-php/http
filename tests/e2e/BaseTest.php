@@ -62,4 +62,15 @@ trait BaseTest
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals('Utopia', $response['headers']['x-engine']);
     }
+
+    public function testParamInjection()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/param-injection?param=1234567891011');
+        $this->assertEquals(400, $response['headers']['status-code']);
+        $this->assertStringStartsWith('Invalid `param` param: Value must be a valid string and at least 1 chars and no longer than 10 chars', $response['body']);
+
+        $response = $this->client->call(Client::METHOD_GET, '/param-injection?param=test4573');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertStringStartsWith('Hello World!test4573', $response['body']);
+    }
 }

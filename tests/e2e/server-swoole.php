@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/init.php';
+require_once __DIR__.'/../../vendor/autoload.php';
 
 use Swoole\Database\PDOConfig;
 use Swoole\Database\PDOPool;
@@ -9,6 +9,10 @@ use Utopia\DI\Dependency;
 use Utopia\Http\Request;
 use Utopia\Http\Adapter\Swoole\Server;
 use Utopia\Http\Http;
+
+$container = new Container();
+
+require_once __DIR__.'/init.php';
 
 $pool = new PDOPool((new PDOConfig)
     ->withHost('mariadb')
@@ -20,7 +24,6 @@ $pool = new PDOPool((new PDOConfig)
     ->withPassword('password')
 , 9000);
 
-$container = new Container();
 
 $dependency = new Dependency();
 
