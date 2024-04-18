@@ -7,55 +7,6 @@
     "content-hash": "f961290f450cd8657302383ece07a86b",
     "packages": [
         {
-            "name": "utopia-php/cli",
-            "version": "0.17.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/utopia-php/cli.git",
-                "reference": "0829fd5215afe88f53f3091cedc808da801fd1bb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/cli/zipball/0829fd5215afe88f53f3091cedc808da801fd1bb",
-                "reference": "0829fd5215afe88f53f3091cedc808da801fd1bb",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=7.4",
-                "utopia-php/framework": "0.34.*"
-            },
-            "require-dev": {
-                "laravel/pint": "1.2.*",
-                "phpunit/phpunit": "^9.3",
-                "squizlabs/php_codesniffer": "^3.6",
-                "vimeo/psalm": "4.0.1"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Utopia\\CLI\\": "src/CLI"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A simple CLI library to manage command line applications",
-            "keywords": [
-                "cli",
-                "command line",
-                "framework",
-                "php",
-                "upf",
-                "utopia"
-            ],
-            "support": {
-                "issues": "https://github.com/utopia-php/cli/issues",
-                "source": "https://github.com/utopia-php/cli/tree/0.17.0"
-            },
-            "time": "2024-01-24T11:37:29+00:00"
-        },
-        {
             "name": "utopia-php/di",
             "version": "dev-main",
             "source": {
@@ -118,70 +69,21 @@
             "time": "2024-04-18T20:06:02+00:00"
         },
         {
-            "name": "utopia-php/framework",
-            "version": "0.34.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/utopia-php/http.git",
-                "reference": "fd126c02b78cc80678c9638f7b335dfb4a841b78"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/http/zipball/fd126c02b78cc80678c9638f7b335dfb4a841b78",
-                "reference": "fd126c02b78cc80678c9638f7b335dfb4a841b78",
-                "shasum": ""
-            },
-            "require": {
-                "ext-swoole": "*",
-                "php": ">=8.0"
-            },
-            "require-dev": {
-                "laravel/pint": "^1.2",
-                "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan": "^1.10",
-                "phpunit/phpunit": "^9.5.25",
-                "swoole/ide-helper": "4.8.3"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Utopia\\Http\\": "src/Http"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "A simple, light and advanced PHP HTTP framework",
-            "keywords": [
-                "framework",
-                "http",
-                "php",
-                "upf"
-            ],
-            "support": {
-                "issues": "https://github.com/utopia-php/http/issues",
-                "source": "https://github.com/utopia-php/http/tree/0.34.2"
-            },
-            "time": "2024-02-20T11:36:56+00:00"
-        },
-        {
             "name": "utopia-php/servers",
             "version": "dev-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "afde8000e4d87ab1bb3cceba1c17e2506292123a"
+                "reference": "253ae7c51be0f0ade4e8ffb3e8c142cc27819374"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/afde8000e4d87ab1bb3cceba1c17e2506292123a",
-                "reference": "afde8000e4d87ab1bb3cceba1c17e2506292123a",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/253ae7c51be0f0ade4e8ffb3e8c142cc27819374",
+                "reference": "253ae7c51be0f0ade4e8ffb3e8c142cc27819374",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.0",
-                "utopia-php/cli": "0.17.*",
                 "utopia-php/di": "dev-main"
             },
             "require-dev": {
@@ -235,7 +137,7 @@
                 "source": "https://github.com/utopia-php/servers/tree/dev",
                 "issues": "https://github.com/utopia-php/servers/issues"
             },
-            "time": "2024-04-18T20:05:13+00:00"
+            "time": "2024-04-18T20:40:06+00:00"
         }
     ],
     "packages-dev": [
