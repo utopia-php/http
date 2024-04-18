@@ -4,8 +4,9 @@ namespace Utopia\Http;
 
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
+use Utopia\Servers\Base;
 
-class Http
+class Http extends Base
 {
     /**
      * Request method constants
@@ -19,50 +20,9 @@ class Http
     public const REQUEST_METHOD_HEAD = 'HEAD';
 
     /**
-     * Mode Type
-     */
-    public const MODE_TYPE_DEVELOPMENT = 'development';
-    public const MODE_TYPE_STAGE = 'stage';
-    public const MODE_TYPE_PRODUCTION = 'production';
-
-    /**
      * @var Files
      */
     protected Files $files;
-
-    /**
-     * Current running mode
-     *
-     * @var string
-     */
-    protected static string $mode = '';
-
-    /**
-     * Errors
-     *
-     * Errors callbacks
-     *
-     * @var Hook[]
-     */
-    protected static array $errors = [];
-
-    /**
-     * Init
-     *
-     * A callback function that is initialized on application start
-     *
-     * @var Hook[]
-     */
-    protected static array $init = [];
-
-    /**
-     * Shutdown
-     *
-     * A callback function that is initialized on application end
-     *
-     * @var Hook[]
-     */
-    protected static array $shutdown = [];
 
     /**
      * Options
@@ -72,22 +32,6 @@ class Http
      * @var Hook[]
      */
     protected static array $options = [];
-
-    /**
-     * Server Start hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $startHooks = [];
-
-    /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     *
-     * @var Route|null
-     */
-    protected ?Route $route = null;
 
     /**
      * Wildcard route
@@ -101,11 +45,6 @@ class Http
      * @var Adapter
      */
     protected Adapter $server;
-
-    /**
-     * @var Container
-     */
-    protected Container $container;
 
     protected string|null $requestClass = null;
     protected string|null $responseClass = null;
@@ -222,40 +161,6 @@ class Http
     }
 
     /**
-     * Init
-     *
-     * Set a callback function that will be initialized on application start
-     *
-     * @return Hook
-     */
-    public static function init(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$init[] = $hook;
-
-        return $hook;
-    }
-
-    /**
-     * Shutdown
-     *
-     * Set a callback function that will be initialized on application end
-     *
-     * @return Hook
-     */
-    public static function shutdown(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$shutdown[] = $hook;
-
-        return $hook;
-    }
-
-    /**
      * Options
      *
      * Set a callback function for all request with options method
@@ -268,23 +173,6 @@ class Http
         $hook->groups(['*']);
 
         self::$options[] = $hook;
-
-        return $hook;
-    }
-
-    /**
-     * Error
-     *
-     * An error callback for failed or no matched requests
-     *
-     * @return Hook
-     */
-    public static function error(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$errors[] = $hook;
 
         return $hook;
     }
@@ -315,24 +203,6 @@ class Http
     }
 
     /**
-     * Get Container
-     *
-     * @return Container
-     */
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
-
-    /**
-     * Set Container
-     */
-    public function setContainer(Container $container): void
-    {
-        $this->container = $container;
-    }
-
-    /**
      * Get allow override
      *
      *
@@ -353,36 +223,6 @@ class Http
     public static function setAllowOverride(bool $value): void
     {
         Router::setAllowOverride($value);
-    }
-
-    /**
-     * Is http in production mode?
-     *
-     * @return bool
-     */
-    public static function isProduction(): bool
-    {
-        return self::MODE_TYPE_PRODUCTION === self::$mode;
-    }
-
-    /**
-     * Is http in development mode?
-     *
-     * @return bool
-     */
-    public static function isDevelopment(): bool
-    {
-        return self::MODE_TYPE_DEVELOPMENT === self::$mode;
-    }
-
-    /**
-     * Is http in stage mode?
-     *
-     * @return bool
-     */
-    public static function isStage(): bool
-    {
-        return self::MODE_TYPE_STAGE === self::$mode;
     }
 
     /**
@@ -454,13 +294,6 @@ class Http
         return $this->files->getFileMimeType($uri);
     }
 
-    public static function onStart(): Hook
-    {
-        $hook = new Hook();
-        self::$startHooks[] = $hook;
-        return $hook;
-    }
-
     public function start()
     {
         $this->server->onRequest(function ($request, $response) {
@@ -505,7 +338,7 @@ class Http
             ;
 
             try {
-                foreach (self::$startHooks as $hook) {
+                foreach (self::$start as $hook) {
                     $this->prepare($container, $hook, [], [])->inject($hook, true);
                 }
             } catch(\Exception $e) {
@@ -630,53 +463,6 @@ class Http
         unset($context);
 
         return $this;
-    }
-
-    /**
-     * Prepare hook for injection, add dependencies, run validation.
-     *
-     * @param  Hook  $hook
-     * @param  array  $values
-     * @param  array  $requestParams
-     * @return Container
-     *
-     * @throws Exception
-     */
-    protected function prepare(Container $context, Hook $hook, array $values = [], array $requestParams = []): Container
-    {
-        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $existsInRequest = \array_key_exists($key, $requestParams);
-            $existsInValues = \array_key_exists($key, $values);
-            $paramExists = $existsInRequest || $existsInValues;
-            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
-
-            $value = $existsInValues ? $values[$key] : $arg;
-
-            /**
-             * Validation
-             */
-            if (!$param['skipValidation']) {
-                if (!$paramExists && !$param['optional']) {
-                    throw new Exception('Param "' . $key . '" is not optional.', 400);
-                }
-
-                if ($paramExists) {
-                    $this->validate($key, $param, $value, $context);
-                }
-            }
-
-            $hook->setParamValue($key, $value);
-
-            $dependencyForValue = new Dependency();
-            $dependencyForValue
-                ->setName($key)
-                ->setCallback(fn () => $value)
-            ;
-
-            $context->set($dependencyForValue);
-        }
-
-        return $context;
     }
 
     /**
@@ -814,50 +600,6 @@ class Http
     }
 
     /**
-     * Validate Param
-     *
-     * Creates an validator instance and validate given value with given rules.
-     *
-     * @param  string  $key
-     * @param  array  $param
-     * @param  mixed  $value
-     * @return void
-     *
-     * @throws Exception
-     */
-    protected function validate(string $key, array $param, mixed $value, Container $context): void
-    {
-        if ($param['optional'] && \is_null($value)) {
-            return;
-        }
-
-        $validator = $param['validator']; // checking whether the class exists
-
-        if (\is_callable($validator)) {
-
-            $dependency = new Dependency();
-            $dependency
-                ->setName('_validator:'.$key)
-                ->setCallback($param['validator'])
-            ;
-
-            foreach ($param['injections'] as $injection) {
-                $dependency->inject($injection);
-            }
-
-            $validator = $context->inject($dependency);
-        }
-
-        if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
-            throw new Exception('Validator object is not an instance of the Validator class', 500);
-        }
-
-        if (!$validator->isValid($value)) {
-            throw new Exception('Invalid `' . $key . '` param: ' . $validator->getDescription(), 400);
-        }
-    }
-
-    /**
      * Reset all the static variables
      *
      * @return void
@@ -865,11 +607,7 @@ class Http
     public static function reset(): void
     {
         Router::reset();
-        self::$mode = '';
-        self::$errors = [];
-        self::$init = [];
-        self::$shutdown = [];
         self::$options = [];
-        self::$startHooks = [];
+        parent::reset();
     }
 }
