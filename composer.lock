@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "0bb7af5693bc131f4d2ce34d3f732d41e6637679"
+                "reference": "fb3c45b268018b87dcbbf87ad943ced9eea3bbe2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/0bb7af5693bc131f4d2ce34d3f732d41e6637679",
-                "reference": "0bb7af5693bc131f4d2ce34d3f732d41e6637679",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/fb3c45b268018b87dcbbf87ad943ced9eea3bbe2",
+                "reference": "fb3c45b268018b87dcbbf87ad943ced9eea3bbe2",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "source": "https://github.com/utopia-php/di/tree/main",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2024-04-08T22:41:41+00:00"
+            "time": "2024-04-18T20:06:02+00:00"
         }
     ],
     "packages-dev": [
@@ -796,16 +796,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.66",
+            "version": "1.10.67",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "94779c987e4ebd620025d9e5fdd23323903950bd"
+                "reference": "16ddbe776f10da6a95ebd25de7c1dbed397dc493"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/94779c987e4ebd620025d9e5fdd23323903950bd",
-                "reference": "94779c987e4ebd620025d9e5fdd23323903950bd",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/16ddbe776f10da6a95ebd25de7c1dbed397dc493",
+                "reference": "16ddbe776f10da6a95ebd25de7c1dbed397dc493",
                 "shasum": ""
             },
             "require": {
@@ -848,13 +848,9 @@
                 {
                     "url": "https://github.com/phpstan",
                     "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/phpstan/phpstan",
-                    "type": "tidelift"
                 }
             ],
-            "time": "2024-03-28T16:17:31+00:00"
+            "time": "2024-04-16T07:22:02+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
