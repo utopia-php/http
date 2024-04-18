@@ -74,12 +74,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "253ae7c51be0f0ade4e8ffb3e8c142cc27819374"
+                "reference": "43881ed83f97cb31af7f940db74c520c70b914ab"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/253ae7c51be0f0ade4e8ffb3e8c142cc27819374",
-                "reference": "253ae7c51be0f0ade4e8ffb3e8c142cc27819374",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/43881ed83f97cb31af7f940db74c520c70b914ab",
+                "reference": "43881ed83f97cb31af7f940db74c520c70b914ab",
                 "shasum": ""
             },
             "require": {
@@ -94,7 +94,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "Utopia\\Queue\\": "src/Servers"
+                    "Utopia\\Servers\\": "src/Servers"
                 }
             },
             "autoload-dev": {
@@ -137,7 +137,7 @@
                 "source": "https://github.com/utopia-php/servers/tree/dev",
                 "issues": "https://github.com/utopia-php/servers/issues"
             },
-            "time": "2024-04-18T20:40:06+00:00"
+            "time": "2024-04-18T20:51:43+00:00"
         }
     ],
     "packages-dev": [
