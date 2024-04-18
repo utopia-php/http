@@ -14,15 +14,14 @@ $container = new Container();
 
 require_once __DIR__.'/init.php';
 
-$pool = new PDOPool((new PDOConfig)
+$pool = new PDOPool((new PDOConfig())
     ->withHost('mariadb')
     ->withPort(3306)
     // ->withUnixSocket('/tmp/mysql.sock')
     ->withDbName('test')
     ->withCharset('utf8mb4')
     ->withUsername('user')
-    ->withPassword('password')
-, 9000);
+    ->withPassword('password'), 9000);
 
 
 $dependency = new Dependency();

@@ -6,8 +6,6 @@ use Utopia\Http\Adapter;
 use Swoole\Http\Server as SwooleServer;
 use Swoole\Runtime;
 
-use function Swoole\Coroutine\run;
-
 class Server extends Adapter
 {
     protected SwooleServer $server;

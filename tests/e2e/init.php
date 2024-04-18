@@ -119,7 +119,7 @@ Http::get('/db-ping')
 
 Http::get('/param-injection')
     ->inject('response')
-    ->param('param', 'default', fn($num) => new Text($num), 'test param', false, ['num'])
+    ->param('param', 'default', fn ($num) => new Text($num), 'test param', false, ['num'])
     ->action(function (Response $response, string $param) {
         $response->send('Hello World!' . $param);
     });

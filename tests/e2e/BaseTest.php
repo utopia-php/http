@@ -73,7 +73,7 @@ trait BaseTest
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertStringStartsWith('Hello World!test4573', $response['body']);
     }
-    
+
     public function testNotFound()
     {
         $response = $this->client->call(Client::METHOD_GET, '/non-existing-page');
