@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "fb3c45b268018b87dcbbf87ad943ced9eea3bbe2"
+                "reference": "a0c8be65c19570c80e904d58f54bdd901d1d5d9c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/fb3c45b268018b87dcbbf87ad943ced9eea3bbe2",
-                "reference": "fb3c45b268018b87dcbbf87ad943ced9eea3bbe2",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/a0c8be65c19570c80e904d58f54bdd901d1d5d9c",
+                "reference": "a0c8be65c19570c80e904d58f54bdd901d1d5d9c",
                 "shasum": ""
             },
             "require": {
@@ -66,7 +66,7 @@
                 "source": "https://github.com/utopia-php/di/tree/main",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2024-04-18T20:06:02+00:00"
+            "time": "2024-04-22T21:22:44+00:00"
         },
         {
             "name": "utopia-php/servers",
@@ -74,12 +74,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "20bb7ab93c21d0ae37bc309d41b70ddf2a78a6fd"
+                "reference": "e7eee7f82399c89adc28cf79912a9a41d7bb3233"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/20bb7ab93c21d0ae37bc309d41b70ddf2a78a6fd",
-                "reference": "20bb7ab93c21d0ae37bc309d41b70ddf2a78a6fd",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/e7eee7f82399c89adc28cf79912a9a41d7bb3233",
+                "reference": "e7eee7f82399c89adc28cf79912a9a41d7bb3233",
                 "shasum": ""
             },
             "require": {
@@ -137,7 +137,7 @@
                 "source": "https://github.com/utopia-php/servers/tree/dev",
                 "issues": "https://github.com/utopia-php/servers/issues"
             },
-            "time": "2024-04-21T18:53:43+00:00"
+            "time": "2024-04-22T21:23:28+00:00"
         }
     ],
     "packages-dev": [
