@@ -476,7 +476,7 @@ abstract class Response
         $this->sent = true;
 
         $this
-            ->addHeader('Server', 'Utopia/Http')
+            ->addHeader('Server', array_key_exists('Server', $this->headers) ? $this->headers['Server'] : 'Utopia/Http')
             ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
         ;
 
