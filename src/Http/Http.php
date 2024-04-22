@@ -534,7 +534,7 @@ class Http extends Base
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
                         $dependency = new Dependency();
-                        $$context->set(
+                        $context->set(
                             $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
