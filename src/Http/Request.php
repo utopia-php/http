@@ -243,7 +243,7 @@ abstract class Request
      * Method for setting HTTP GET request query string
      *
      * @param string $value
-     * @return string
+     * @return static
      */
     abstract public function setQueryString(string $value): static;
 
