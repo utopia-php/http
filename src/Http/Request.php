@@ -91,6 +91,19 @@ abstract class Request
     }
 
     /**
+     * Set query string parameters
+     *
+     * @param  array  $params
+     * @return static
+     */
+    public function setQuery(array $params): static
+    {
+        $this->queryString = $params;
+
+        return $this;
+    }
+
+    /**
      * Get payload
      *
      * Method for querying HTTP request payload parameters. If $key is not found $default value will be returned.
@@ -203,10 +216,7 @@ abstract class Request
      *
      * @return string
      */
-    public function getURI(): string
-    {
-        return $this->getServer('REQUEST_URI') ?? '';
-    }
+    abstract public function getURI(): string;
 
     /**
      * Get Path
@@ -217,6 +227,25 @@ abstract class Request
      * @return static
      */
     abstract public function setURI(string $uri): static;
+
+    /**
+     * Get query string
+     *
+     * Method for querying HTTP GET request query string
+     *
+     * @return string
+     */
+    abstract public function getQueryString(): string;
+    
+    /**
+     * Set query string
+     *
+     * Method for setting HTTP GET request query string
+     * 
+     * @param string $value
+     * @return string
+     */
+    abstract public function setQueryString(string $value): static;
 
     /**
      * Get files
@@ -454,18 +483,6 @@ abstract class Request
         return null;
     }
 
-    /**
-     * Set query string parameters
-     *
-     * @param  array  $params
-     * @return static
-     */
-    public function setQueryString(array $params): static
-    {
-        $this->queryString = $params;
-
-        return $this;
-    }
 
     /**
      * Set payload parameters

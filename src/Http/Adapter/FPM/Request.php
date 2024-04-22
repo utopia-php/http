@@ -164,6 +164,33 @@ class Request extends UtopiaRequest
 
         return $this;
     }
+    
+    /**
+     * Get Query String
+     *
+     * Return HTTP request query string
+     *
+     * @return string
+     */
+    public function getQueryString(): string
+    {
+        return $this->getServer('QUERY_STRING') ?? '';
+    }
+
+    /**
+     * Set Query String
+     *
+     * Set HTTP request query string
+     *
+     * @param  string  $uri
+     * @return static
+     */
+    public function setQueryString(string $value): static
+    {
+        $this->setServer('QUERY_STRING', $value);
+
+        return $this;
+    }
 
     /**
      * Get files
