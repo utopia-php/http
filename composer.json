@@ -9,6 +9,7 @@
         "upf"
     ],
     "license": "MIT",
+    "minimum-stability": "dev",
     "autoload": {
         "psr-4": {
             "Utopia\\": "src/"
@@ -29,7 +30,7 @@
     "require": {
         "php": ">=8.0",
         "ext-swoole": "*",
-        "utopia-php/di": "dev-main"
+        "utopia-php/servers": "dev-dev"
     },
     "require-dev": {
         "ext-xdebug": "*",
@@ -40,6 +41,10 @@
         "phpbench/phpbench": "^1.2"
     },
     "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/utopia-php/servers"
+        },
         {
             "type": "vcs",
             "url": "https://github.com/utopia-php/di"
