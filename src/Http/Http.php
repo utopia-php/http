@@ -534,7 +534,7 @@ class Http extends Base
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
                         $dependency = new Dependency();
-                        $this->container->set(
+                        $$context->set(
                             $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
@@ -570,7 +570,7 @@ class Http extends Base
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         $dependency = new Dependency();
-                        $this->container->set(
+                        $context->set(
                             $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
