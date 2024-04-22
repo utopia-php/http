@@ -196,7 +196,7 @@ class Request extends UtopiaRequest
      *
      * Set HTTP request query string
      *
-     * @param  string  $uri
+     * @param  string  $value
      * @return static
      */
     public function setQueryString(string $value): static
