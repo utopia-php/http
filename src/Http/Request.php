@@ -236,12 +236,12 @@ abstract class Request
      * @return string
      */
     abstract public function getQueryString(): string;
-    
+
     /**
      * Set query string
      *
      * Method for setting HTTP GET request query string
-     * 
+     *
      * @param string $value
      * @return string
      */

@@ -164,7 +164,7 @@ class Request extends UtopiaRequest
 
         return $this;
     }
-    
+
     /**
      * Get Query String
      *
