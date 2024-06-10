@@ -33,6 +33,16 @@ class Router
     protected static array $params = [];
 
     /**
+     * Get all registered routes.
+     *
+     * @return array
+     */
+    public static function getRoutes(): array
+    {
+        return self::$routes;
+    }
+
+    /**
      * Get allow override
      *
      *
