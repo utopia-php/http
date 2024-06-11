@@ -404,6 +404,12 @@ class Http extends Base
         return Router::match($method, $url);
     }
 
+
+    public function execute(Route $route, Request $request, Container $context): self
+    {
+        return  $this->lifecycle($route, $request, $context);
+    }
+
     /**
      * Execute a given route with middlewares and error handling
      *
