@@ -297,7 +297,6 @@ class Http extends Base
     public function start()
     {
         $this->server->onRequest(function ($request, $response) {
-            $context = clone $this->container;
             $dependency = new Dependency();
 
             if(!\is_null($this->requestClass)) {
@@ -319,6 +318,16 @@ class Http extends Base
                     clone $dependency
                     ->setName('response')
                     ->setCallback(fn () => $response)
+                )
+                ->set(
+                    clone $dependency
+                        ->setName('http')
+                        ->setCallback(fn () => $this)
+                )
+                ->set(
+                    clone $dependency
+                        ->setName('context')
+                        ->setCallback(fn () => $context)
                 )
             ;
 
