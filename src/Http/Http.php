@@ -203,6 +203,18 @@ class Http extends Base
     }
 
     /**
+     * Get Routes
+     *
+     * Get all application routes
+     *
+     * @return array
+     */
+    public static function getRoutes(): array
+    {
+        return Router::getRoutes();
+    }
+
+    /**
      * Get allow override
      *
      *
