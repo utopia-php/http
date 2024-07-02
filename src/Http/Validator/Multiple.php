@@ -16,9 +16,14 @@ class Multiple extends Validator
     /**
      * @var Validator[]
      */
-    protected $rules = [];
+    protected $validators = [];
 
     protected $type = self::TYPE_MIXED;
+    protected $rule = self::RULE_ALL;
+
+    public const RULE_ALL = "ruleAll";
+    public const RULE_ANY = "ruleAny";
+    public const RULE_NONE = "ruleNone";
 
     /**
      * Constructor
@@ -29,26 +34,32 @@ class Multiple extends Validator
      *
      * $multiple = new Multiple([$validator1, $validator2]);
      * $multiple = new Multiple([$validator1, $validator2, $validator3], self::TYPE_STRING);
+     *
+     * Rule is set to define criteria of validation:
+     * RULE_ANY: At least one validator must pass
+     * RULE_ALL: All validators must pass
+     * RULE_NONE: No validators must pass - all validators must fail
      */
-    public function __construct(array $rules, ?string $type = self::TYPE_MIXED)
+    public function __construct(array $validators, ?string $type = self::TYPE_MIXED, ?string $rule = self::RULE_ALL)
     {
-        foreach ($rules as $rule) {
-            $this->addRule($rule);
+        foreach ($validators as $validator) {
+            $this->addValidator($validator);
         }
 
         $this->type = $type;
+        $this->rule = $rule;
     }
     /**
-     * Add rule
+     * Add validator
      *
-     * Add a new rule to the end of the rules containing array
+     * Add a new validator to check against during isVaid() call
      *
-     * @param Validator $rule
+     * @param Validator $validator
      * @return $this
      */
-    public function addRule(Validator $rule)
+    public function addValidator(Validator $validator)
     {
-        $this->rules[] = $rule;
+        $this->validators[] = $validator;
 
         return $this;
     }
@@ -63,7 +74,7 @@ class Multiple extends Validator
     public function getDescription(): string
     {
         $description = '';
-        foreach ($this->rules as $key => $rule) {
+        foreach ($this->validators as $key => $rule) {
             $description .= ++$key . '. ' . $rule->getDescription() . " \n";
         }
 
@@ -80,10 +91,27 @@ class Multiple extends Validator
      */
     public function isValid(mixed $value): bool
     {
-        foreach ($this->rules as $rule) { /* @var $rule Validator */
-            if (false === $rule->isValid($value)) {
-                return false;
+        foreach ($this->validators as $rule) { /* @var $rule Validator */
+            $valid = $rule->isValid($value);
+
+            // Oprimization improvements
+            if($this->rule === self::RULE_ALL) {
+                if(!$valid) {
+                    return false;
+                }
+            } if($this->rule === self::RULE_NONE) {
+                if($valid) {
+                    return false;
+                }
+            } if($this->rule === self::RULE_ANY) {
+                if($valid) {
+                    return true;
+                }
             }
+        }
+
+        if($this->rule === self::RULE_ANY) {
+            return false;
         }
 
         return true;

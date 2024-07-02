@@ -32,4 +32,30 @@ class MultipleTest extends TestCase
         $this->assertFalse($this->validator->isValid('example.com/hello-world'));
         $this->assertFalse($this->validator->isValid(''));
     }
+
+    public function testRules()
+    {
+        $validTextValidUrl = 'http://example.com';
+        $validTextInvalidUrl = 'hello world';
+        $invalidTextValidUrl = 'http://example.com/very-long-url';
+        $invalidTextInvalidUrl = 'Some very long text that is also not an URL';
+
+        $vaidator = new Multiple([new Text(20), new URL()], Multiple::TYPE_STRING, Multiple::RULE_ALL);
+        $this->assertTrue($vaidator->isValid($validTextValidUrl));
+        $this->assertFalse($vaidator->isValid($validTextInvalidUrl));
+        $this->assertFalse($vaidator->isValid($invalidTextValidUrl));
+        $this->assertFalse($vaidator->isValid($invalidTextInvalidUrl));
+
+        $vaidator = new Multiple([new Text(20), new URL()], Multiple::TYPE_STRING, Multiple::RULE_ANY);
+        $this->assertTrue($vaidator->isValid($validTextValidUrl));
+        $this->assertTrue($vaidator->isValid($validTextInvalidUrl));
+        $this->assertTrue($vaidator->isValid($invalidTextValidUrl));
+        $this->assertFalse($vaidator->isValid($invalidTextInvalidUrl));
+
+        $vaidator = new Multiple([new Text(20), new URL()], Multiple::TYPE_STRING, Multiple::RULE_NONE);
+        $this->assertFalse($vaidator->isValid($validTextValidUrl));
+        $this->assertFalse($vaidator->isValid($validTextInvalidUrl));
+        $this->assertFalse($vaidator->isValid($invalidTextValidUrl));
+        $this->assertTrue($vaidator->isValid($invalidTextInvalidUrl));
+    }
 }
