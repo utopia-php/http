@@ -11,6 +11,8 @@ use Utopia\Http\Validator;
  */
 class NoneOf extends Validator
 {
+    protected ?Validator $failedRule = null;
+
     /**
      * @param array<Validator> $validators
      */
@@ -28,8 +30,9 @@ class NoneOf extends Validator
     public function getDescription(): string
     {
         $description = '';
-        foreach ($this->validators as $key => $rule) {
-            $description .= ++$key . '. ' . $rule->getDescription() . " \n";
+
+        if(!(\is_null($this->failedRule))) {
+            $description .= $this->failedRule->getDescription();
         }
 
         return $description;
@@ -49,6 +52,7 @@ class NoneOf extends Validator
             $valid = $rule->isValid($value);
 
             if($valid) {
+                $this->failedRule = $rule;
                 return false;
             }
         }
