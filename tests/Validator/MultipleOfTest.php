@@ -16,7 +16,7 @@ class MultipleOfTest extends TestCase
         $validator = new AllOf([new Text(20), new URL()], Validator::TYPE_STRING);
 
         $this->assertEquals('string', $validator->getType());
-        $this->assertEquals("1Value must be a valid string and at least 1 chars and no longer than 20 chars", $validator->getDescription());
+        $this->assertEquals("Value must be a valid string and at least 1 chars and no longer than 20 chars", $validator->getDescription());
 
         // Valid URL but invalid text length
         $this->assertFalse($validator->isValid('http://example.com/very-long-url'));
