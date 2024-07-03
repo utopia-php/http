@@ -2,12 +2,8 @@
 
 namespace Utopia\Http\Adapter\SwooleCoroutine;
 
-use Swoole\Coroutine;
 use Utopia\Http\Adapter;
 use Swoole\Coroutine\Http\Server as SwooleServer;
-use Swoole\Http\Request as SwooleRequest;
-use Swoole\Http\Response as SwooleResponse;
-use Utopia\Http\Http;
 
 use function Swoole\Coroutine\run;
 
@@ -25,27 +21,22 @@ class Server extends Adapter
 
     public function onRequest(callable $callback)
     {
-        $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            $context = \strval(Coroutine::getCid());
-
-            Http::setResource('swooleRequest', fn () => $request, [], $context);
-            Http::setResource('swooleResponse', fn () => $response, [], $context);
-
-            call_user_func($callback, new Request($request), new Response($response), $context);
+        $this->server->handle('/', function ($request, $response) use ($callback) {
+            call_user_func($callback, new Request($request), new Response($response));
         });
     }
 
     public function onStart(callable $callback)
     {
-        call_user_func($callback, $this);
+        go(function () use ($callback) {
+            call_user_func($callback, $this);
+        });
     }
 
     public function start()
     {
-        if(Coroutine::getCid() === -1) {
-            run(fn () => $this->server->start());
-        } else {
+        go(function () {
             $this->server->start();
-        }
+        });
     }
 }
