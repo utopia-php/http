@@ -335,13 +335,7 @@ class Http extends Base
                     clone $dependency
                         ->setName('http')
                         ->setCallback(fn () => $this)
-                )
-                ->set(
-                    clone $dependency
-                        ->setName('context')
-                        ->setCallback(fn () => $context)
-                )
-            ;
+                );
 
             $this->run($context);
         });
