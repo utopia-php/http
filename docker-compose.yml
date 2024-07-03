@@ -16,8 +16,21 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.swoole
-        ports: 
+        ports:
             - "9401:80"
+        volumes:
+            - ./dev:/usr/src/code/dev:rw
+            - ./src:/usr/src/code/src
+            - ./tests:/usr/src/code/tests
+            - ./tmp/xdebug:/tmp/xdebug
+        networks:
+            - testing
+    swoole-coroutine:
+        build:
+            context: .
+            dockerfile: Dockerfile.swoole_coroutines
+        ports:
+            - "9402:80"
         volumes:
             - ./dev:/usr/src/code/dev:rw
             - ./src:/usr/src/code/src
