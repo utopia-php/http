@@ -53,7 +53,7 @@ class Http extends Base
      * Http
      *
      * @param Adapter $server
-     * @param  string  $timezone
+     * @param string $timezone
      */
     public function __construct(Adapter $server, Container $container, string $timezone)
     {
@@ -84,7 +84,7 @@ class Http extends Base
      *
      * Add GET request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function get(string $url): Route
@@ -97,7 +97,7 @@ class Http extends Base
      *
      * Add POST request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function post(string $url): Route
@@ -110,7 +110,7 @@ class Http extends Base
      *
      * Add PUT request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function put(string $url): Route
@@ -123,7 +123,7 @@ class Http extends Base
      *
      * Add PATCH request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function patch(string $url): Route
@@ -136,7 +136,7 @@ class Http extends Base
      *
      * Add DELETE request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function delete(string $url): Route
@@ -194,7 +194,7 @@ class Http extends Base
      *
      * Set current mode
      *
-     * @param  string  $value
+     * @param string $value
      * @return void
      */
     public static function setMode(string $value): void
@@ -229,7 +229,7 @@ class Http extends Base
      * Set Allow override
      *
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return void
      */
     public static function setAllowOverride(bool $value): void
@@ -242,8 +242,8 @@ class Http extends Base
      *
      * Add routing route method, path and callback
      *
-     * @param  string  $method
-     * @param  string  $url
+     * @param string $method
+     * @param string $url
      * @return Route
      */
     public static function addRoute(string $method, string $url): Route
@@ -258,12 +258,12 @@ class Http extends Base
     /**
      * Load directory.
      *
-     * @param  string  $directory
-     * @param  string|null  $root
+     * @param string $directory
+     * @param string|null $root
      * @return void
      *
      * @throws \Exception
-    */
+     */
     public function loadFiles(string $directory, string $root = null): void
     {
         $this->files->load($directory, $root);
@@ -272,7 +272,7 @@ class Http extends Base
     /**
      * Is file loaded.
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return bool
      */
     protected function isFileLoaded(string $uri): bool
@@ -283,7 +283,7 @@ class Http extends Base
     /**
      * Get file contents.
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return string
      *
      * @throws \Exception
@@ -296,7 +296,7 @@ class Http extends Base
     /**
      * Get file MIME type.
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return string
      *
      * @throws \Exception
@@ -311,31 +311,25 @@ class Http extends Base
         $this->server->onRequest(function ($request, $response) {
             $dependency = new Dependency();
 
-            if(!\is_null($this->requestClass)) {
+            if (!\is_null($this->requestClass)) {
                 $request = new $this->requestClass($request);
             }
 
-            if(!\is_null($this->responseClass)) {
+            if (!\is_null($this->responseClass)) {
                 $response = new $this->responseClass($response);
             }
 
             $context = clone $this->container;
 
-            $context->set(
-                clone $dependency
-                    ->setName('request')
-                    ->setCallback(fn () => $request)
-            )
-                ->set(
-                    clone $dependency
-                    ->setName('response')
-                    ->setCallback(fn () => $response)
-                )
-                ->set(
-                    clone $dependency
-                        ->setName('http')
-                        ->setCallback(fn () => $this)
-                );
+            $context->set(clone $dependency->setName('request')->setCallback(fn () => $request))
+                ->set(clone $dependency->setName('response')->setCallback(fn () => $response));
+
+            // More base injection for GraphQL only
+            if($request->getUri() === '/v1/graphql') {
+                $context->set(clone $dependency->setName('http')->setCallback(fn () => $this))
+                    ->set(clone $dependency->setName('context')->setCallback(fn () => $context));
+            }
+
 
             $this->run($context);
         });
@@ -347,31 +341,28 @@ class Http extends Base
             $container
                 ->set(
                     $dependency
-                    ->setName('server')
-                    ->setCallback(fn () => $this->server)
-                )
-            ;
+                        ->setName('server')
+                        ->setCallback(fn () => $this->server)
+                );
 
             try {
                 foreach (self::$start as $hook) {
                     $this->prepare($container, $hook, [], [])->inject($hook, true);
                 }
-            } catch(\Exception $e) {
-
+            } catch (\Exception $e) {
                 $dependency = new Dependency();
                 $container->set(
                     $dependency
                         ->setName('error')
                         ->setCallback(fn () => $e)
-                )
-                ;
+                );
 
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
                             $this->prepare($container, $error, [], [])->inject($error, true);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
                     }
                 }
@@ -386,7 +377,7 @@ class Http extends Base
      *
      * Find matching route given current user request
      *
-     * @param  Request  $request
+     * @param Request $request
      * @return null|Route
      */
     public function match(Request $request): ?Route
@@ -401,14 +392,14 @@ class Http extends Base
 
     public function execute(Route $route, Request $request, Container $context): self
     {
-        return  $this->lifecycle($route, $request, $context);
+        return $this->lifecycle($route, $request, $context);
     }
 
     /**
      * Execute a given route with middlewares and error handling
      *
-     * @param  Route  $route
-     * @param  Request  $request
+     * @param Route $route
+     * @param Request $request
      */
     protected function lifecycle(Route $route, Request $request, Container $context): static
     {
@@ -455,8 +446,7 @@ class Http extends Base
                 $dependency
                     ->setName('error')
                     ->setCallback(fn () => $e)
-            )
-            ;
+            );
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -464,7 +454,7 @@ class Http extends Base
                         try {
                             $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                         } catch (\Throwable $e) {
-                            throw new Exception('Group error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
+                            throw new Exception('Group error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
                     }
                 }
@@ -475,7 +465,7 @@ class Http extends Base
                     try {
                         $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                     } catch (\Throwable $e) {
-                        throw new Exception('Global error handler had an error: ' . $e->getMessage(). ' on: ' . $e->getFile().':'.$e->getLine(), 500, $e);
+                        throw new Exception('Global error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                     }
                 }
             }
@@ -496,8 +486,10 @@ class Http extends Base
      */
     public function run(Container $context): static
     {
-        $request = $context->get('request'); /** @var Request $request */
-        $response = $context->get('response'); /** @var Response $response */
+        $request = $context->get('request');
+        /** @var Request $request */
+        $response = $context->get('response');
+        /** @var Response $response */
 
         if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
@@ -559,8 +551,7 @@ class Http extends Base
                             $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
-                        )
-                        ;
+                        );
 
                         $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                     }
@@ -595,8 +586,7 @@ class Http extends Base
                             $dependency
                                 ->setName('error')
                                 ->setCallback(fn () => $e)
-                        )
-                        ;
+                        );
 
                         $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                     }

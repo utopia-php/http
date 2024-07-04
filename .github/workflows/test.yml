@@ -29,3 +29,6 @@ jobs:
 
     - name: Run Swoole Tests
       run: docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml
+
+    - name: Run Swoole Corotuine Tests
+      run: docker compose exec swoole-coroutine vendor/bin/phpunit --configuration phpunit.xml

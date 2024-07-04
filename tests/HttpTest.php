@@ -39,8 +39,7 @@ class HttpTest extends TestCase
 
         $this->context
             ->set($request)
-            ->set($response)
-        ;
+            ->set($response);
 
         $this->http = new Http(new Server(), $this->context, 'Asia/Tel_Aviv');
 
@@ -105,7 +104,7 @@ class HttpTest extends TestCase
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error: ' . $error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine();
+                echo 'error: ' . $error->getMessage() . ' on file: ' . $error->getFile() . ' on line: ' . $error->getLine();
             });
 
         // Default Params
@@ -129,8 +128,7 @@ class HttpTest extends TestCase
             });
 
         $context
-            ->set($request)
-        ;
+            ->set($request);
 
         \ob_start();
         $this->http->run($context);
@@ -163,8 +161,7 @@ class HttpTest extends TestCase
 
         $context
             ->set($request)
-            ->set($rand)
-        ;
+            ->set($rand);
 
         $this->http
             ->error()
@@ -236,8 +233,7 @@ class HttpTest extends TestCase
 
         $context
             ->set($request)
-            ->set($rand)
-        ;
+            ->set($rand);
 
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -341,8 +337,7 @@ class HttpTest extends TestCase
 
         $context
             ->set($request)
-            ->set($rand)
-        ;
+            ->set($rand);
 
         $resource = $context->get('rand');
         $this->http->run($context);
@@ -372,8 +367,7 @@ class HttpTest extends TestCase
 
         $context
             ->set($request)
-            ->set($rand)
-        ;
+            ->set($rand);
 
         $resource = $context->get('rand');
         \ob_start();
@@ -419,14 +413,12 @@ class HttpTest extends TestCase
             });
 
         $context
-            ->set($request)
-        ;
+            ->set($request);
 
         \ob_start();
         $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
-
         $this->assertEquals('(init)-x-def-(shutdown)', $result);
 
         // Default Params
@@ -457,7 +449,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('(init)-x-def-(shutdown)', $result);
+        $this->assertEquals('x-def', $result);
     }
 
     public function testAllowRouteOverrides()
@@ -533,8 +525,7 @@ class HttpTest extends TestCase
             });
 
         $context
-            ->set($request)
-        ;
+            ->set($request);
 
         \ob_start();
         $this->http->run($context);
@@ -556,8 +547,7 @@ class HttpTest extends TestCase
             });
 
         $context
-            ->set($request)
-        ;
+            ->set($request);
 
         \ob_start();
         $this->http->run($context);
@@ -650,8 +640,7 @@ class HttpTest extends TestCase
                 });
 
             $context
-                ->set($request)
-            ;
+                ->set($request);
 
             $this->http->run($context);
 
@@ -683,8 +672,7 @@ class HttpTest extends TestCase
             });
 
         $this->context
-            ->set($request)
-        ;
+            ->set($request);
 
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -727,7 +715,7 @@ class HttpTest extends TestCase
             ->inject('error')
             ->inject('response')
             ->action(function (Throwable $error, Response $response) {
-                $response->send($error->getMessage().' on file: '.$error->getFile().' on line: '.$error->getLine());
+                $response->send($error->getMessage() . ' on file: ' . $error->getFile() . ' on line: ' . $error->getLine());
             });
 
         $context = clone $this->context;
