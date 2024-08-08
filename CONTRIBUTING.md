@@ -66,9 +66,9 @@ $ git push origin [name_of_your_new_branch]
 
 ### Testing
 
-- `docker-compose up -d`
-- `docker-compose exec web  vendor/bin/phpunit --configuration phpunit.xml`
-- `docker-compose exec web vendor/bin/psalm --show-info=true`
+- `docker compose up -d`
+- `docker compose exec web  vendor/bin/phpunit --configuration phpunit.xml`
+- `docker compose exec web vendor/bin/psalm --show-info=true`
 
 ## Introducing New Features
 
