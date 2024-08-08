@@ -475,7 +475,10 @@ abstract class Response
 
         $this->sent = true;
 
-        $this->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime));
+        $this
+            ->addHeader('Server', array_key_exists('Server', $this->headers) ? $this->headers['Server'] : 'Utopia/Http')
+            ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
+        ;
 
         $this
             ->appendCookies()
@@ -523,7 +526,7 @@ abstract class Response
      * @param  string  $content
      * @return void
      */
-    abstract public function end(string $content = null): void;
+    abstract public function end(string $content = ''): void;
 
     /**
      * Output response

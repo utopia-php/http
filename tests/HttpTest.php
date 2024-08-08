@@ -3,15 +3,19 @@
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Http\Tests\UtopiaFPMRequestTest;
+use Throwable;
+use Utopia\DI\Container;
+use Utopia\DI\Dependency;
+use Utopia\Http\Tests\MockRequest as Request;
+use Utopia\Http\Tests\MockResponse as Response;
 use Utopia\Http\Validator\Text;
-use Utopia\Http\Adapter\FPM\Request;
-use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
 class HttpTest extends TestCase
 {
     protected ?Http $http;
+
+    protected Container $context;
 
     protected ?string $method;
 
@@ -20,7 +24,28 @@ class HttpTest extends TestCase
     public function setUp(): void
     {
         Http::reset();
-        $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
+
+        $this->context = new Container();
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(fn () => new Request());
+
+        $response = new Dependency();
+        $response
+            ->setName('response')
+            ->setCallback(fn () => new Response());
+
+        $this->context
+            ->set($request)
+            ->set($response);
+
+        $this->http = new Http(new Server(), $this->context, 'Asia/Tel_Aviv');
+
+        $this->http->setRequestClass(Request::class);
+        $this->http->setResponseClass(Response::class);
+
         $this->saveRequest();
     }
 
@@ -71,95 +96,19 @@ class HttpTest extends TestCase
         $this->assertTrue(Http::isStage());
     }
 
-    public function testCanGetEnvironmentVariable(): void
-    {
-        // Mock
-        $_SERVER['key'] = 'value';
-
-        $this->assertEquals(Http::getEnv('key'), 'value');
-        $this->assertEquals(Http::getEnv('unknown', 'test'), 'test');
-    }
-
-    public function testCanGetResources(): void
-    {
-        Http::setResource('rand', fn () => rand());
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
-
-        $second = $this->http->getResource('second', '1');
-        $first = $this->http->getResource('first', '1');
-        $this->assertEquals('second', $second);
-        $this->assertEquals('first-second', $first);
-
-        $resource = $this->http->getResource('rand', '1');
-
-        $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, $this->http->getResource('rand', '1'));
-        $this->assertEquals($resource, $this->http->getResource('rand', '1'));
-        $this->assertEquals($resource, $this->http->getResource('rand', '1'));
-
-        // Default Params
-        $route = new Route('GET', '/path');
-
-        $route
-            ->inject('rand')
-            ->param('x', 'x-def', new Text(200), 'x param', true)
-            ->param('y', 'y-def', new Text(200), 'y param', true)
-            ->action(function ($x, $y, $rand) {
-                echo $x . '-' . $y . '-' . $rand;
-            });
-
-        \ob_start();
-        $this->http->execute($route, new Request(), '1');
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('x-def-y-def-' . $resource, $result);
-    }
-
-    public function testCanGetDefaultValueWithFunction(): void
-    {
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
-
-        $second = $this->http->getResource('second');
-        $first = $this->http->getResource('first');
-        $this->assertEquals('second', $second);
-        $this->assertEquals('first-second', $first);
-
-        // Default Value using function
-        $route = new Route('GET', '/path');
-
-        $route
-            ->param('x', function ($first, $second) {
-                return $first . '-' . $second;
-            }, new Text(200), 'x param', true, ['first', 'second'])
-            ->action(function ($x) {
-                echo $x;
-            });
-
-        \ob_start();
-        $this->http->execute($route, new Request(), '1');
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('first-second-second', $result);
-    }
-
     public function testCanExecuteRoute(): void
     {
-        Http::setResource('rand', fn () => rand());
-        $resource = $this->http->getResource('rand', '1');
+        $context = clone $this->context;
 
         $this->http
             ->error()
             ->inject('error')
             ->action(function ($error) {
-                echo 'error: ' . $error->getMessage();
+                echo 'error: ' . $error->getMessage() . ' on file: ' . $error->getFile() . ' on line: ' . $error->getLine();
             });
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = $this->http->addRoute('GET', '/path');
 
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
@@ -168,14 +117,60 @@ class HttpTest extends TestCase
                 echo $x . '-' . $y;
             });
 
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request([]);
+                $request->setURI('/path');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $context
+            ->set($request);
+
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        // With Params
-        $resource = $this->http->getResource('rand', '1');
-        $route = new Route('GET', '/path');
+        $this->assertEquals('x-def-y-def', $result);
+    }
+
+    public function testCanExecuteRouteWithParams(): void
+    {
+        $context = clone $this->context;
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
+                $request->setURI('/test-params');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $rand = new Dependency();
+        $rand
+            ->setName('rand')
+            ->setCallback(function () {
+                return rand(0, 1000);
+            });
+
+        $context
+            ->set($request)
+            ->set($rand);
+
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) {
+                echo 'error: ' . $error->getMessage();
+            });
+
+        $route = $this->http->addRoute('GET', '/test-params');
 
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
@@ -191,17 +186,16 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request, '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
-
+        $resource = $context->get('rand');
         $this->assertEquals($resource . '-param-x-param-y', $result);
+    }
 
-        // With Error
-        $resource = $this->http->getResource('rand', '1');
-        $route = new Route('GET', '/path');
+    public function testCanExecuteRouteWithParamsWithError(): void
+    {
+        $route = $this->http->addRoute('GET', '/test-params-error');
 
         $route
             ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
@@ -210,17 +204,48 @@ class HttpTest extends TestCase
                 echo $x . '-', $y;
             });
 
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) {
+                echo 'error: ' . $error->getMessage();
+            });
+
         \ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, '1');
+        $context = clone $this->context;
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
+                $request->setURI('/test-params-error');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $rand = new Dependency();
+        $rand
+            ->setName('rand')
+            ->setCallback(function () {
+                return rand(0, 1000);
+            });
+
+        $context
+            ->set($request)
+            ->set($rand);
+
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
+    }
 
-        // With Hooks
-        $resource = $this->http->getResource('rand', '1');
+    public function testCanExecuteRouteWithParamsWithHooks(): void
+    {
+        $context = clone $this->context;
+
         $this->http
             ->init()
             ->inject('rand')
@@ -230,6 +255,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->shutdown()
+            ->desc('global shutdown')
             ->action(function () {
                 echo '-shutdown';
             });
@@ -243,6 +269,7 @@ class HttpTest extends TestCase
 
         $this->http
             ->shutdown()
+            ->desc('api shutdown')
             ->groups(['api'])
             ->action(function () {
                 echo '-(shutdown-api)';
@@ -262,7 +289,14 @@ class HttpTest extends TestCase
                 echo '-(shutdown-homepage)';
             });
 
-        $route = new Route('GET', '/path');
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) {
+                echo 'error: ' . $error->getMessage();
+            });
+
+        $route = $this->http->addRoute('GET', '/path-1');
 
         $route
             ->groups(['api'])
@@ -272,7 +306,7 @@ class HttpTest extends TestCase
                 echo $x . '-', $y;
             });
 
-        $homepage = new Route('GET', '/path');
+        $homepage = $this->http->addRoute('GET', '/path-2');
 
         $homepage
             ->groups(['homepage'])
@@ -283,19 +317,61 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, '1');
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
+                $request->setURI('/path-1');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $rand = new Dependency();
+        $rand
+            ->setName('rand')
+            ->setCallback(function () {
+                return rand(0, 1000);
+            });
+
+        $context
+            ->set($request)
+            ->set($rand);
+
+        $resource = $context->get('rand');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
-        $resource = $this->http->getResource('rand', '1');
+        $context = clone $this->context;
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
+                $request->setURI('/path-2');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $rand = new Dependency();
+        $rand
+            ->setName('rand')
+            ->setCallback(function () {
+                return rand(0, 1000);
+            });
+
+        $context
+            ->set($request)
+            ->set($rand);
+
+        $resource = $context->get('rand');
         \ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request, '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -304,6 +380,8 @@ class HttpTest extends TestCase
 
     public function testCanAddAndExecuteHooks()
     {
+        $context = clone $this->context;
+
         $this->http
             ->init()
             ->action(function () {
@@ -317,22 +395,34 @@ class HttpTest extends TestCase
             });
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = $this->http->addRoute('GET', '/path-3');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->action(function ($x) {
                 echo $x;
             });
 
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request([]);
+                $request->setURI('/path-3');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $context
+            ->set($request);
+
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
-
         $this->assertEquals('(init)-x-def-(shutdown)', $result);
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = $this->http->addRoute('GET', '/path-4');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->hook(false)
@@ -340,8 +430,22 @@ class HttpTest extends TestCase
                 echo $x;
             });
 
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request([]);
+                $request->setURI('/path-4');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $context
+            ->set($request)
+        ;
+
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -380,6 +484,8 @@ class HttpTest extends TestCase
 
     public function testCanHookThrowExceptions()
     {
+        $context = clone $this->context;
+
         $this->http
             ->init()
             ->param('y', '', new Text(5), 'y param', false)
@@ -388,49 +494,67 @@ class HttpTest extends TestCase
             });
 
         $this->http
-            ->error()
-            ->inject('error')
-            ->action(function ($error) {
-                echo 'error-' . $error->getMessage();
-            });
-
-        $this->http
             ->shutdown()
             ->action(function () {
                 echo '-(shutdown)';
             });
 
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) {
+                echo 'error: ' . $error->getMessage();
+            });
+
         // param not provided for init
-        $route = new Route('GET', '/path');
+        $route = Http::addRoute('GET', '/path-5');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->action(function ($x) {
                 echo $x;
             });
 
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request([]);
+                $request->setURI('/path-5');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $context
+            ->set($request);
+
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error-Param "y" is not optional.', $result);
+        $this->assertEquals('error: Param "y" is not optional.', $result);
+
+        $context = clone $this->context;
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $request = new Request(['y' => 'y-def']);
+                $request->setURI('/path-5');
+                $request->setMethod('GET');
+                return $request;
+            });
+
+        $context
+            ->set($request);
 
         \ob_start();
-        $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request(), '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
-    }
-
-    public function testCanSetRoute()
-    {
-        $route = new Route('GET', '/path');
-
-        $this->assertEquals($this->http->getRoute(), null);
-        $this->http->setRoute($route);
-        $this->assertEquals($this->http->getRoute(), $route);
     }
 
     public function providerRouteMatching(): array
@@ -480,8 +604,8 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $url;
 
-        $this->assertEquals($expected, $this->http->match(new Request()));
-        $this->assertEquals($expected, $this->http->getRoute());
+        $route = $this->http->match(new Request());
+        $this->assertEquals($expected, $route);
     }
 
     public function testNoMismatchRoute(): void
@@ -501,72 +625,58 @@ class HttpTest extends TestCase
             ],
         ];
 
-        foreach ($requests as $request) {
-            Http::get($request['path']);
+        foreach ($requests as $requestObj) {
+            Http::get($requestObj['path']);
 
-            $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
-            $_SERVER['REQUEST_URI'] = $request['url'];
+            $context = clone $this->context;
 
-            $route = $this->http->match(new Request(), fresh: true);
+            $request = new Dependency();
+            $request
+                ->setName('request')
+                ->setCallback(function () use ($requestObj) {
+                    $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
+                    $_SERVER['REQUEST_URI'] = $requestObj['url'];
+                    return new Request();
+                });
 
-            $this->assertEquals(null, $route);
-            $this->assertEquals(null, $this->http->getRoute());
-        }
-    }
+            $context
+                ->set($request);
 
-    public function testCanMatchFreshRoute(): void
-    {
-        $route1 = Http::get('/path1');
-        $route2 = Http::get('/path2');
+            $this->http->run($context);
 
-        try {
-            // Match first request
-            $_SERVER['REQUEST_METHOD'] = 'HEAD';
-            $_SERVER['REQUEST_URI'] = '/path1';
-            $matched = $this->http->match(new Request());
-            $this->assertEquals($route1, $matched);
-            $this->assertEquals($route1, $this->http->getRoute());
-
-            // Second request match returns cached route
-            $_SERVER['REQUEST_METHOD'] = 'HEAD';
-            $_SERVER['REQUEST_URI'] = '/path2';
-            $request2 = new Request();
-            $matched = $this->http->match($request2, fresh: false);
-            $this->assertEquals($route1, $matched);
-            $this->assertEquals($route1, $this->http->getRoute());
-
-            // Fresh match returns new route
-            $matched = $this->http->match($request2, fresh: true);
-            $this->assertEquals($route2, $matched);
-            $this->assertEquals($route2, $this->http->getRoute());
-        } catch (\Exception $e) {
-            $this->fail($e->getMessage());
+            $this->assertEquals($_SERVER['REQUEST_METHOD'], $context->get('route')->getMethod());
+            $this->assertEquals($_SERVER['REQUEST_URI'], $context->get('route')->getPath());
         }
     }
 
     public function testCanRunRequest(): void
     {
         // Test head requests
-
-        $method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
-        $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
-
-        $_SERVER['REQUEST_METHOD'] = 'HEAD';
-        $_SERVER['REQUEST_URI'] = '/path';
-
         Http::get('/path')
             ->inject('response')
             ->action(function ($response) {
-                $response->send('HELLO');
+                echo 'HELLO';
             });
 
         \ob_start();
-        $this->http->run(new Request(), new Response(), '1');
+
+        $context = clone $this->context;
+
+        $request = new Dependency();
+        $request
+            ->setName('request')
+            ->setCallback(function () {
+                $_SERVER['REQUEST_METHOD'] = 'HEAD';
+                $_SERVER['REQUEST_URI'] = '/path';
+                return new Request();
+            });
+
+        $this->context
+            ->set($request);
+
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
-
-        $_SERVER['REQUEST_METHOD'] = $method;
-        $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
     }
@@ -580,34 +690,46 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         Http::init()
-            ->action(function () {
-                $route = $this->http->getRoute();
-                Http::setResource('myRoute', fn () => $route);
+            ->inject('route')
+            ->inject('di')
+            ->action(function (Route $route, Container $di) {
+                $dependency = new Dependency();
+                $dependency->setName('myRoute');
+                $dependency->setCallback(fn () => $route);
+                $di->set($dependency);
             });
-
 
         Http::wildcard()
-            ->inject('myRoute')
             ->inject('response')
-            ->action(function (mixed $myRoute, $response) {
-                if ($myRoute == null) {
-                    $response->send('ROUTE IS NULL!');
-                } else {
-                    $response->send('HELLO');
-                }
+            ->action(function (Response $response) {
+                echo 'HELLO';
             });
 
+        Http::get('/')
+            ->inject('response')
+            ->action(function (Response $response) {
+                $response->send('root /');
+            });
+
+        Http::error()
+            ->inject('error')
+            ->inject('response')
+            ->action(function (Throwable $error, Response $response) {
+                $response->send($error->getMessage() . ' on file: ' . $error->getFile() . ' on line: ' . $error->getLine());
+            });
+
+        $context = clone $this->context;
+
         \ob_start();
-        @$this->http->run(new Request(), new Response(), '1');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('HELLO', $result);
 
         \ob_start();
-        $req = new Request();
-        $req = $req->setMethod('OPTIONS');
-        @$this->http->run($req, new Response(), '1');
+        $context->get('request')->setMethod('OPTIONS');
+        $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
 

@@ -12,7 +12,7 @@ class Response extends UtopiaResponse
      *
      * @var SwooleResponse
      */
-    protected $swoole;
+    public $swoole;
 
     /**
      * Response constructor.
@@ -21,11 +21,6 @@ class Response extends UtopiaResponse
     {
         $this->swoole = $response;
         parent::__construct(\microtime(true));
-    }
-
-    public function getSwooleResponse(): SwooleResponse
-    {
-        return $this->swoole;
     }
 
     /**
@@ -42,10 +37,10 @@ class Response extends UtopiaResponse
     /**
      * End
      *
-     * @param  string|null  $content
+     * @param  string  $content
      * @return void
      */
-    public function end(string $content = null): void
+    public function end(string $content = ''): void
     {
         $this->swoole->end($content);
     }

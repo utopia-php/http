@@ -7,7 +7,7 @@ use Swoole\Database\PDOPool;
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\Http\Request;
-use Utopia\Http\Adapter\Swoole\Server;
+use Utopia\Http\Adapter\SwooleCoroutine\Server;
 use Utopia\Http\Http;
 
 $container = new Container();
