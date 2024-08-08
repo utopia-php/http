@@ -48,8 +48,7 @@ class RouteTest extends TestCase
 
     public function testCanSetAndGetAction()
     {
-        $this->assertEquals(function (): void {
-        }, $this->route->getAction());
+        $this->assertEquals(null, $this->route->getAction());
 
         $this->route->action(fn () => 'hello world');
 
@@ -65,21 +64,6 @@ class RouteTest extends TestCase
             ->param('y', '', new Text(10));
 
         $this->assertCount(2, $this->route->getParams());
-    }
-
-    public function testCanInjectResources()
-    {
-        $this->assertEquals([], $this->route->getInjections());
-
-        $this->route
-            ->inject('user')
-            ->inject('time')
-            ->action(function () {
-            });
-
-        $this->assertCount(2, $this->route->getInjections());
-        $this->assertEquals('user', $this->route->getInjections()['user']['name']);
-        $this->assertEquals('time', $this->route->getInjections()['time']['name']);
     }
 
     public function testCanSetAndGetLabels()

@@ -61,6 +61,10 @@ class Client
         $responseType = '';
         $responseBody = '';
 
+        if($method == self::METHOD_HEAD) {
+            curl_setopt($ch, CURLOPT_NOBODY, true);
+        }
+
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);

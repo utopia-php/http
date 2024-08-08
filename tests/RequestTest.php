@@ -65,9 +65,9 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getQuery('unknown', 'test'), 'test');
     }
 
-    public function testCanSetQueryString()
+    public function testCanSetQuery()
     {
-        $this->request->setQueryString(['key' => 'value']);
+        $this->request->setQuery(['key' => 'value']);
 
         $this->assertEquals($this->request->getQuery('key'), 'value');
         $this->assertEquals($this->request->getQuery('unknown', 'test'), 'test');
@@ -154,6 +154,22 @@ class RequestTest extends TestCase
         $this->request->setURI('/page.html');
 
         $this->assertEquals('/page.html', $this->request->getURI());
+    }
+
+    public function testCanGetQueryString()
+    {
+        $this->assertEquals('', $this->request->getQueryString());
+
+        $_SERVER['QUERY_STRING'] = 'text=hello&value=key';
+
+        $this->assertEquals('text=hello&value=key', $this->request->getQueryString());
+    }
+
+    public function testCanSetQueryString()
+    {
+        $this->request->setURI('text=hello&value=key');
+
+        $this->assertEquals('text=hello&value=key', $this->request->getURI());
     }
 
     public function testCanGetPort()

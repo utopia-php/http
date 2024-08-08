@@ -166,6 +166,33 @@ class Request extends UtopiaRequest
     }
 
     /**
+     * Get Query String
+     *
+     * Return HTTP request query string
+     *
+     * @return string
+     */
+    public function getQueryString(): string
+    {
+        return $this->getServer('QUERY_STRING') ?? '';
+    }
+
+    /**
+     * Set Query String
+     *
+     * Set HTTP request query string
+     *
+     * @param  string  $value
+     * @return static
+     */
+    public function setQueryString(string $value): static
+    {
+        $this->setServer('QUERY_STRING', $value);
+
+        return $this;
+    }
+
+    /**
      * Get files
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.

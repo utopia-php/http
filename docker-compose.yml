@@ -1,12 +1,10 @@
-version: '3'
-
 services:
     fpm:
         build:
             context: .
             dockerfile: Dockerfile.fpm
         ports:
-            - "9020:80"
+            - "9400:80"
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
@@ -18,12 +16,42 @@ services:
         build:
             context: .
             dockerfile: Dockerfile.swoole
-        ports: 
-            - "9501:80"
+        ports:
+            - "9401:80"
         volumes:
+            - ./dev:/usr/src/code/dev:rw
             - ./src:/usr/src/code/src
             - ./tests:/usr/src/code/tests
+            - ./tmp/xdebug:/tmp/xdebug
         networks:
             - testing
+    swoole-coroutine:
+        build:
+            context: .
+            dockerfile: Dockerfile.swoole_coroutines
+        ports:
+            - "9402:80"
+        volumes:
+            - ./dev:/usr/src/code/dev:rw
+            - ./src:/usr/src/code/src
+            - ./tests:/usr/src/code/tests
+            - ./tmp/xdebug:/tmp/xdebug
+        networks:
+            - testing
+
+    mariadb:
+        image: mariadb:10.11 # fix issues when upgrading using: mysql_upgrade -u root -p
+        container_name: mariadb
+        networks:
+            - testing
+        ports:
+            - "3307:3306"
+        environment:
+            - MYSQL_ROOT_PASSWORD=root
+            - MYSQL_DATABASE=test
+            - MYSQL_USER=user
+            - MYSQL_PASSWORD=password
+        command: "mysqld --innodb-flush-method=fsync --max-connections=10000"
+
 networks:
   testing:

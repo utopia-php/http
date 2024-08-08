@@ -12,6 +12,6 @@ class ResponseFPMTest extends TestCase
 
     public function setUp(): void
     {
-        $this->client = new Client();
+        $this->client = new Client('http://fpm');
     }
 }

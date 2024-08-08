@@ -51,8 +51,6 @@ class Route extends Hook
         $this->path($path);
         $this->method = $method;
         $this->order = ++self::$counter;
-        $this->action = function (): void {
-        };
     }
 
     /**

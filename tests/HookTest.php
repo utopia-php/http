@@ -3,6 +3,8 @@
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\DI\Container;
+use Utopia\DI\Dependency;
 use Utopia\Http\Validator\Numeric;
 use Utopia\Http\Validator\Text;
 
@@ -38,11 +40,8 @@ class HookTest extends TestCase
 
     public function testActionCanBeSet()
     {
-        $this->assertEquals(function () {
-        }, $this->hook->getAction());
-
         $this->hook->action(fn () => 'hello world');
-
+        $this->assertIsCallable($this->hook->getAction());
         $this->assertEquals('hello world', $this->hook->getAction()());
     }
 
@@ -59,17 +58,38 @@ class HookTest extends TestCase
 
     public function testResourcesCanBeInjected()
     {
-        $this->assertEquals([], $this->hook->getInjections());
-
-        $this->hook
+        $main = $this->hook
+            ->setName('test')
             ->inject('user')
             ->inject('time')
-            ->action(function () {
+            ->setCallback(function ($user, $time) {
+                return $user . ':' . $time;
             });
 
-        $this->assertCount(2, $this->hook->getInjections());
-        $this->assertEquals('user', $this->hook->getInjections()['user']['name']);
-        $this->assertEquals('time', $this->hook->getInjections()['time']['name']);
+        $user = new Dependency();
+        $user
+            ->setName('user')
+            ->setCallback(function () {
+                return 'user';
+            });
+
+        $time = new Dependency();
+        $time
+            ->setName('time')
+            ->setCallback(function () {
+                return '00:00:00';
+            });
+
+        $context = new Container();
+
+        $context
+            ->set($user)
+            ->set($time)
+        ;
+
+        $result = $context->inject($main);
+
+        $this->assertEquals('user:00:00:00', $result);
     }
 
     public function testParamValuesCanBeSet()

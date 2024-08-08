@@ -4,6 +4,7 @@ namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Http\Adapter\FPM\Response;
+use Utopia\Http\Tests\MockResponse;
 
 class FPMResponseTest extends TestCase
 {
@@ -11,7 +12,7 @@ class FPMResponseTest extends TestCase
 
     public function setUp(): void
     {
-        $this->response = new Response();
+        $this->response = new MockResponse();
     }
 
     public function tearDown(): void
