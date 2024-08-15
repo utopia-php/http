@@ -16,7 +16,7 @@ jobs:
         php-version: '8.0'
 
     - name: Setup Docker
-      run: docker-compose up -d --build
+      run: docker compose up -d --build
 
     - name: Wait for Server to be ready
       run: sleep 10
