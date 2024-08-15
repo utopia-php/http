@@ -21,6 +21,18 @@ class AnyOf extends Validator
     }
 
     /**
+     * Get Validators
+     *
+     * Returns validators array
+     *
+     * @return array<Validator>
+     */
+    public function getValidators(): array
+    {
+        return $this->validators;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
