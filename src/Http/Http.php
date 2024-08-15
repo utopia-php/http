@@ -325,7 +325,7 @@ class Http extends Base
                 ->set(clone $dependency->setName('response')->setCallback(fn () => $response));
 
             // More base injection for GraphQL only
-            if($request->getUri() === '/v1/graphql') {
+            if ($request->getUri() === '/v1/graphql') {
                 $context->set(clone $dependency->setName('http')->setCallback(fn () => $this))
                     ->set(clone $dependency->setName('context')->setCallback(fn () => $context));
             }

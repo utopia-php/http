@@ -41,7 +41,7 @@ class AnyOf extends Validator
      */
     public function getDescription(): string
     {
-        if(!(\is_null($this->failedRule))) {
+        if (!(\is_null($this->failedRule))) {
             $description = $this->failedRule->getDescription();
         } else {
             $description = $this->validators[0]->getDescription();
@@ -65,7 +65,7 @@ class AnyOf extends Validator
 
             $this->failedRule = $rule;
 
-            if($valid) {
+            if ($valid) {
                 return true;
             }
         }

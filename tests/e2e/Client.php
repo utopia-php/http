@@ -61,7 +61,7 @@ class Client
         $responseType = '';
         $responseBody = '';
 
-        if($method == self::METHOD_HEAD) {
+        if ($method == self::METHOD_HEAD) {
             curl_setopt($ch, CURLOPT_NOBODY, true);
         }
 

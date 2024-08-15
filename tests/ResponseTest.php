@@ -37,7 +37,7 @@ class FPMResponseTest extends TestCase
 
         try {
             $this->response->setStatusCode(0); // Unknown status code
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             $this->assertInstanceOf('\Exception', $e);
 
             return;
