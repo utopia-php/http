@@ -7,7 +7,7 @@ use Utopia\Http\Validator;
 /**
  * Ensure no validators from a list passed the check
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class NoneOf extends Validator
 {

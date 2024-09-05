@@ -9,7 +9,7 @@ use Utopia\Http\Validator;
  *
  * Multiple validator is a container of multiple validations each acting as a rule.
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class Multiple extends Validator
 {

@@ -7,7 +7,7 @@ use Utopia\Http\Validator;
 /**
  * Ensure at least one validator from a list passed the check
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class AnyOf extends Validator
 {
