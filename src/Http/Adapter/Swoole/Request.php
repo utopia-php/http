@@ -12,7 +12,7 @@ class Request extends UtopiaRequest
      *
      * @var SwooleRequest
      */
-    protected SwooleRequest $swoole;
+    public SwooleRequest $swoole;
 
     /**
      * Request constructor.
@@ -180,6 +180,33 @@ class Request extends UtopiaRequest
     }
 
     /**
+     * Get Query String
+     *
+     * Return HTTP request query string
+     *
+     * @return string
+     */
+    public function getQueryString(): string
+    {
+        return $this->getServer('query_string') ?? '';
+    }
+
+    /**
+     * Set Query String
+     *
+     * Set HTTP request query string
+     *
+     * @param  string  $value
+     * @return static
+     */
+    public function setQueryString(string $value): static
+    {
+        $this->setServer('query_string', $value);
+
+        return $this;
+    }
+
+    /**
      * Get Referer
      *
      * Return HTTP referer header
@@ -299,11 +326,6 @@ class Request extends UtopiaRequest
         }
 
         return $this;
-    }
-
-    public function getSwooleRequest(): SwooleRequest
-    {
-        return $this->swoole;
     }
 
     /**

@@ -7,7 +7,7 @@ use Utopia\Http\Validator;
 /**
  * Ensure at least one validator from a list passed the check
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class AnyOf extends Validator
 {
@@ -21,6 +21,18 @@ class AnyOf extends Validator
     }
 
     /**
+     * Get Validators
+     *
+     * Returns validators array
+     *
+     * @return array<Validator>
+     */
+    public function getValidators(): array
+    {
+        return $this->validators;
+    }
+
+    /**
      * Get Description
      *
      * Returns validator description
@@ -29,7 +41,7 @@ class AnyOf extends Validator
      */
     public function getDescription(): string
     {
-        if(!(\is_null($this->failedRule))) {
+        if (!(\is_null($this->failedRule))) {
             $description = $this->failedRule->getDescription();
         } else {
             $description = $this->validators[0]->getDescription();
@@ -53,7 +65,7 @@ class AnyOf extends Validator
 
             $this->failedRule = $rule;
 
-            if($valid) {
+            if ($valid) {
                 return true;
             }
         }

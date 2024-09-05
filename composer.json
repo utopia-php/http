@@ -12,22 +12,28 @@
     "minimum-stability": "stable",
     "autoload": {
         "psr-4": {
-            "Utopia\\": "src/",
+            "Utopia\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
             "Tests\\E2E\\": "tests/e2e"
         }
     },
     "scripts": {
         "lint": "vendor/bin/pint --test",
         "format": "vendor/bin/pint",
-        "check": "vendor/bin/phpstan analyse -c phpstan.neon",
+        "check": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit=256M",
         "test": "vendor/bin/phpunit --configuration phpunit.xml",
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
     "require": {
         "php": ">=8.0",
-        "ext-swoole": "*"
+        "ext-swoole": "*",
+        "utopia-php/servers": "0.1.*"
     },
     "require-dev": {
+        "ext-xdebug": "*",
         "phpunit/phpunit": "^9.5.25",
         "laravel/pint": "^1.2",
         "swoole/ide-helper": "4.8.3",

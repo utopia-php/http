@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
-class Exception extends \Exception
+use Utopia\Servers\Exception as ServersException;
+
+class Exception extends ServersException
 {
 }

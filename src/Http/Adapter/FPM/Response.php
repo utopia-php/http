@@ -28,9 +28,9 @@ class Response extends UtopiaResponse
      * @param  string  $content
      * @return void
      */
-    public function end(string $content = null): void
+    public function end(string $content = ''): void
     {
-        if (!is_null($content)) {
+        if (!empty($content)) {
             echo $content;
         }
     }
@@ -40,9 +40,10 @@ class Response extends UtopiaResponse
      * Send Status Code
      *
      * @param  int  $statusCode
+     * @param  string  $reason
      * @return void
      */
-    protected function sendStatus(int $statusCode): void
+    protected function sendStatus(int $statusCode, string $reason): void
     {
         http_response_code($statusCode);
     }

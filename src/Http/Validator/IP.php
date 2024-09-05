@@ -10,7 +10,7 @@ use Utopia\Http\Validator;
  *
  * Validate that an variable is a valid IP address
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class IP extends Validator
 {

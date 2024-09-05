@@ -9,7 +9,7 @@ use Utopia\Http\Validator;
  *
  * Validate that a host is allowed from given whitelisted hosts list
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class Host extends Validator
 {

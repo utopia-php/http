@@ -9,7 +9,7 @@ use Utopia\Http\Validator;
  *
  * Validate that an variable is a valid domain address
  *
- * @package Utopia\Validator
+ * @package Utopia\Http\Validator
  */
 class Domain extends Validator
 {

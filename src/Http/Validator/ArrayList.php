@@ -46,7 +46,7 @@ class ArrayList extends Validator
     {
         $msg = 'Value must a valid array';
 
-        if($this->length > 0) {
+        if ($this->length > 0) {
             $msg .= ' no longer than ' . $this->length . ' items';
         }
 

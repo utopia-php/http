@@ -475,7 +475,10 @@ abstract class Response
 
         $this->sent = true;
 
-        $this->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime));
+        $this
+            ->addHeader('Server', array_key_exists('Server', $this->headers) ? $this->headers['Server'] : 'Utopia/Http')
+            ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
+        ;
 
         $this
             ->appendCookies()
@@ -523,7 +526,7 @@ abstract class Response
      * @param  string  $content
      * @return void
      */
-    abstract public function end(string $content = null): void;
+    abstract public function end(string $content = ''): void;
 
     /**
      * Output response
@@ -571,7 +574,7 @@ abstract class Response
     protected function appendHeaders(): static
     {
         // Send status code header
-        $this->sendStatus($this->statusCode);
+        $this->sendStatus($this->statusCode, $this->statusCodes[$this->statusCode] ?? 'Unknown HTTP status code');
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -590,9 +593,10 @@ abstract class Response
      * Send Status Code
      *
      * @param  int  $statusCode
+     * @param  string  $reason
      * @return void
      */
-    abstract protected function sendStatus(int $statusCode): void;
+    abstract protected function sendStatus(int $statusCode, string $reason): void;
 
     /**
      * Send Header

@@ -52,6 +52,10 @@ class MultipleOfTest extends TestCase
         $this->assertTrue($vaidator->isValid($invalidTextValidUrl));
         $this->assertFalse($vaidator->isValid($invalidTextInvalidUrl));
 
+        $this->assertCount(2, $vaidator->getValidators());
+        $this->assertEquals("Utopia\Http\Validator\Text", \get_class($vaidator->getValidators()[0]));
+        $this->assertEquals("Utopia\Http\Validator\URL", \get_class($vaidator->getValidators()[1]));
+
         $vaidator = new NoneOf([new Text(20), new URL()], Validator::TYPE_STRING);
         $this->assertFalse($vaidator->isValid($validTextValidUrl));
         $this->assertFalse($vaidator->isValid($validTextInvalidUrl));

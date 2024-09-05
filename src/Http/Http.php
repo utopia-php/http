@@ -2,84 +2,27 @@
 
 namespace Utopia\Http;
 
-class Http
+use Utopia\DI\Container;
+use Utopia\DI\Dependency;
+use Utopia\Servers\Base;
+
+class Http extends Base
 {
     /**
      * Request method constants
      */
     public const REQUEST_METHOD_GET = 'GET';
-
     public const REQUEST_METHOD_POST = 'POST';
-
     public const REQUEST_METHOD_PUT = 'PUT';
-
     public const REQUEST_METHOD_PATCH = 'PATCH';
-
     public const REQUEST_METHOD_DELETE = 'DELETE';
-
     public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
-
     public const REQUEST_METHOD_HEAD = 'HEAD';
-
-    /**
-     * Mode Type
-     */
-    public const MODE_TYPE_DEVELOPMENT = 'development';
-
-    public const MODE_TYPE_STAGE = 'stage';
-
-    public const MODE_TYPE_PRODUCTION = 'production';
-
-    /**
-     * @var array
-     */
-    protected array $resources = [
-        'error' => null,
-    ];
 
     /**
      * @var Files
      */
     protected Files $files;
-
-    /**
-     * @var array
-     */
-    protected static array $resourcesCallbacks = [];
-
-    /**
-     * Current running mode
-     *
-     * @var string
-     */
-    protected static string $mode = '';
-
-    /**
-     * Errors
-     *
-     * Errors callbacks
-     *
-     * @var Hook[]
-     */
-    protected static array $errors = [];
-
-    /**
-     * Init
-     *
-     * A callback function that is initialized on application start
-     *
-     * @var Hook[]
-     */
-    protected static array $init = [];
-
-    /**
-     * Shutdown
-     *
-     * A callback function that is initialized on application end
-     *
-     * @var Hook[]
-     */
-    protected static array $shutdown = [];
 
     /**
      * Options
@@ -89,29 +32,6 @@ class Http
      * @var Hook[]
      */
     protected static array $options = [];
-
-    /**
-     * Server Start hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $startHooks = [];
-
-    /**
-     * Request hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $requestHooks = [];
-
-    /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     *
-     * @var Route|null
-     */
-    protected ?Route $route = null;
 
     /**
      * Wildcard route
@@ -126,17 +46,37 @@ class Http
      */
     protected Adapter $server;
 
+    protected string|null $requestClass = null;
+    protected string|null $responseClass = null;
+
     /**
      * Http
      *
      * @param Adapter $server
-     * @param  string  $timezone
+     * @param string $timezone
      */
-    public function __construct(Adapter $server, string $timezone)
+    public function __construct(Adapter $server, Container $container, string $timezone)
     {
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
+        $this->container = $container;
+    }
+
+    /**
+     * Set Request Class
+     */
+    public function setResponseClass(string $responseClass)
+    {
+        $this->responseClass = $responseClass;
+    }
+
+    /**
+     * Set Request Class
+     */
+    public function setRequestClass(string $requestClass)
+    {
+        $this->requestClass = $requestClass;
     }
 
     /**
@@ -144,7 +84,7 @@ class Http
      *
      * Add GET request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function get(string $url): Route
@@ -157,7 +97,7 @@ class Http
      *
      * Add POST request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function post(string $url): Route
@@ -170,7 +110,7 @@ class Http
      *
      * Add PUT request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function put(string $url): Route
@@ -183,7 +123,7 @@ class Http
      *
      * Add PATCH request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function patch(string $url): Route
@@ -196,7 +136,7 @@ class Http
      *
      * Add DELETE request route
      *
-     * @param  string  $url
+     * @param string $url
      * @return Route
      */
     public static function delete(string $url): Route
@@ -213,43 +153,11 @@ class Http
      */
     public static function wildcard(): Route
     {
-        self::$wildcardRoute = new Route('', '');
+        $route = new Route('', '');
 
-        return self::$wildcardRoute;
-    }
+        self::$wildcardRoute = $route;
 
-    /**
-     * Init
-     *
-     * Set a callback function that will be initialized on application start
-     *
-     * @return Hook
-     */
-    public static function init(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$init[] = $hook;
-
-        return $hook;
-    }
-
-    /**
-     * Shutdown
-     *
-     * Set a callback function that will be initialized on application end
-     *
-     * @return Hook
-     */
-    public static function shutdown(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$shutdown[] = $hook;
-
-        return $hook;
+        return $route;
     }
 
     /**
@@ -270,37 +178,6 @@ class Http
     }
 
     /**
-     * Error
-     *
-     * An error callback for failed or no matched requests
-     *
-     * @return Hook
-     */
-    public static function error(): Hook
-    {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$errors[] = $hook;
-
-        return $hook;
-    }
-
-    /**
-     * Get env var
-     *
-     * Method for querying env varialbles. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string|null  $default
-     * @return string|null
-     */
-    public static function getEnv(string $key, string $default = null): ?string
-    {
-        return $_SERVER[$key] ?? $default;
-    }
-
-    /**
      * Get Mode
      *
      * Get current mode
@@ -317,12 +194,24 @@ class Http
      *
      * Set current mode
      *
-     * @param  string  $value
+     * @param string $value
      * @return void
      */
     public static function setMode(string $value): void
     {
         self::$mode = $value;
+    }
+
+    /**
+     * Get Routes
+     *
+     * Get all application routes
+     *
+     * @return array
+     */
+    public static function getRoutes(): array
+    {
+        return Router::getRoutes();
     }
 
     /**
@@ -340,7 +229,7 @@ class Http
      * Set Allow override
      *
      *
-     * @param  bool  $value
+     * @param bool $value
      * @return void
      */
     public static function setAllowOverride(bool $value): void
@@ -349,151 +238,12 @@ class Http
     }
 
     /**
-     * If a resource has been created return it, otherwise create it and then return it
-     *
-     * @param  string  $name
-     * @param  bool  $fresh
-     * @return mixed
-     *
-     * @throws Exception
-     */
-    public function getResource(string $name, string $context = 'utopia', bool $fresh = false): mixed
-    {
-        if ($name === 'utopia') {
-            return $this;
-        }
-
-        $this->resources[$context] ??= [];
-
-        $resourcesCallback = &self::$resourcesCallbacks[$context] ?? [];
-        if(empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
-            $resourcesCallback = &self::$resourcesCallbacks['utopia'];
-        }
-
-        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || ($resourcesCallback[$name]['reset'][$context] ?? true)) {
-            if (!\array_key_exists($name, $resourcesCallback)) {
-                throw new Exception('Failed to find resource: "' . $name . '"');
-            }
-
-            $this->resources[$context][$name] = \call_user_func_array(
-                $resourcesCallback[$name]['callback'],
-                $this->getResources($resourcesCallback[$name]['injections'], $context)
-            );
-        }
-
-        $resourcesCallback[$name]['reset'][$context] = false;
-        return $this->resources[$context][$name];
-    }
-
-    /**
-     * Get Resources By List
-     *
-     * @param  array  $list
-     * @return array
-     */
-    public function getResources(array $list, string $context = 'utopia'): array
-    {
-        $resources = [];
-
-        foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name, $context);
-        }
-
-        return $resources;
-    }
-
-    /**
-     * Set a new resource callback
-     *
-     * @param  string  $name
-     * @param  callable  $callback
-     * @param  array  $injections
-     * @return void
-     *
-     * @throws Exception
-     */
-    public static function setResource(string $name, callable $callback, array $injections = [], string $context = 'utopia'): void
-    {
-        if ($name === 'utopia') {
-            throw new Exception("'utopia' is a reserved keyword.", 500);
-        }
-
-        self::$resourcesCallbacks[$context] ??= [];
-
-        self::$resourcesCallbacks[$context][$name] = ['callback' => $callback, 'injections' => $injections, 'resets' => []];
-    }
-
-    /**
-     * Is http in production mode?
-     *
-     * @return bool
-     */
-    public static function isProduction(): bool
-    {
-        return self::MODE_TYPE_PRODUCTION === self::$mode;
-    }
-
-    /**
-     * Is http in development mode?
-     *
-     * @return bool
-     */
-    public static function isDevelopment(): bool
-    {
-        return self::MODE_TYPE_DEVELOPMENT === self::$mode;
-    }
-
-    /**
-     * Is http in stage mode?
-     *
-     * @return bool
-     */
-    public static function isStage(): bool
-    {
-        return self::MODE_TYPE_STAGE === self::$mode;
-    }
-
-    /**
-     * Get Routes
-     *
-     * Get all application routes
-     *
-     * @return array
-     */
-    public static function getRoutes(): array
-    {
-        return Router::getRoutes();
-    }
-
-    /**
-     * Get the current route
-     *
-     * @return null|Route
-     */
-    public function getRoute(): ?Route
-    {
-        return $this->route ?? null;
-    }
-
-    /**
-     * Set the current route
-     *
-     * @param  Route  $route
-     */
-    public function setRoute(Route $route): self
-    {
-        $this->route = $route;
-
-        return $this;
-    }
-
-    /**
      * Add Route
      *
      * Add routing route method, path and callback
      *
-     * @param  string  $method
-     * @param  string  $url
+     * @param string $method
+     * @param string $url
      * @return Route
      */
     public static function addRoute(string $method, string $url): Route
@@ -508,12 +258,12 @@ class Http
     /**
      * Load directory.
      *
-     * @param  string  $directory
-     * @param  string|null  $root
+     * @param string $directory
+     * @param string|null $root
      * @return void
      *
      * @throws \Exception
-    */
+     */
     public function loadFiles(string $directory, string $root = null): void
     {
         $this->files->load($directory, $root);
@@ -522,7 +272,7 @@ class Http
     /**
      * Is file loaded.
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return bool
      */
     protected function isFileLoaded(string $uri): bool
@@ -533,7 +283,7 @@ class Http
     /**
      * Get file contents.
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return string
      *
      * @throws \Exception
@@ -546,7 +296,7 @@ class Http
     /**
      * Get file MIME type.
      *
-     * @param  string  $uri
+     * @param string $uri
      * @return string
      *
      * @throws \Exception
@@ -556,53 +306,63 @@ class Http
         return $this->files->getFileMimeType($uri);
     }
 
-    public static function onStart(): Hook
-    {
-        $hook = new Hook();
-        self::$startHooks[] = $hook;
-        return $hook;
-    }
-
-    public static function onRequest(): Hook
-    {
-        $hook = new Hook();
-        self::$requestHooks[] = $hook;
-        return $hook;
-    }
-
     public function start()
     {
-        $this->server->onRequest(function ($request, $response, $context) {
-            try {
-                $this->run($request, $response, $context);
-            } finally {
-                if(isset(self::$resourcesCallbacks[$context])) {
-                    unset(self::$resourcesCallbacks[$context]);
-                }
-            }
-        });
-        $this->server->onStart(function ($server) {
-            $this->resources['utopia'] ??= [];
-            $this->resources['utopia']['server'] = $server;
-            self::setResource('server', function () use ($server) {
-                return $server;
-            });
-            try {
+        $this->server->onRequest(function ($request, $response) {
+            $dependency = new Dependency();
 
-                foreach (self::$startHooks as $hook) {
-                    $arguments = $this->getArguments($hook, 'utopia', [], []);
-                    \call_user_func_array($hook->getAction(), $arguments);
+            if (!\is_null($this->requestClass)) {
+                $request = new $this->requestClass($request);
+            }
+
+            if (!\is_null($this->responseClass)) {
+                $response = new $this->responseClass($response);
+            }
+
+            $context = clone $this->container;
+
+            $context->set(clone $dependency->setName('request')->setCallback(fn () => $request))
+                ->set(clone $dependency->setName('response')->setCallback(fn () => $response));
+
+            // More base injection for GraphQL only
+            if ($request->getUri() === '/v1/graphql') {
+                $context->set(clone $dependency->setName('http')->setCallback(fn () => $this))
+                    ->set(clone $dependency->setName('context')->setCallback(fn () => $context));
+            }
+
+
+            $this->run($context);
+        });
+
+        $this->server->onStart(function () {
+            $container = clone $this->container;
+
+            $dependency = new Dependency();
+            $container
+                ->set(
+                    $dependency
+                        ->setName('server')
+                        ->setCallback(fn () => $this->server)
+                );
+
+            try {
+                foreach (self::$start as $hook) {
+                    $this->prepare($container, $hook, [], [])->inject($hook, true);
                 }
-            } catch(\Exception $e) {
-                self::setResource('error', fn () => $e);
+            } catch (\Exception $e) {
+                $dependency = new Dependency();
+                $container->set(
+                    $dependency
+                        ->setName('error')
+                        ->setCallback(fn () => $e)
+                );
 
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, 'utopia', [], []);
-                            \call_user_func_array($error->getAction(), $arguments);
+                            $this->prepare($container, $error, [], [])->inject($error, true);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
                     }
                 }
@@ -617,34 +377,32 @@ class Http
      *
      * Find matching route given current user request
      *
-     * @param  Request  $request
-     * @param  bool  $fresh If true, will not match any cached route
+     * @param Request $request
      * @return null|Route
      */
-    public function match(Request $request, bool $fresh = true): ?Route
+    public function match(Request $request): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
-        }
-
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        return Router::match($method, $url);
+    }
 
-        return $this->route;
+
+    public function execute(Route $route, Request $request, Container $context): self
+    {
+        return $this->lifecycle($route, $request, $context);
     }
 
     /**
      * Execute a given route with middlewares and error handling
      *
-     * @param  Route  $route
-     * @param  Request  $request
+     * @param Route $route
+     * @param Request $request
      */
-    public function execute(Route $route, Request $request, string $context): static
+    protected function lifecycle(Route $route, Request $request, Container $context): static
     {
-        $arguments = [];
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
 
@@ -652,8 +410,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
@@ -661,43 +418,43 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
 
-            $arguments = $this->getArguments($route, $context, $pathValues, $request->getParams());
-            \call_user_func_array($route->getAction(), $arguments);
+            $this->prepare($context, $route, $pathValues, $request->getParams())->inject($route, true);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
 
             if ($route->getHook()) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
+                foreach (self::$shutdown as $hook) { // Global shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
+                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
                     }
                 }
             }
         } catch (\Throwable $e) {
-            self::setResource('error', fn () => $e, [], $context);
+            $dependency = new Dependency();
+            $context->set(
+                $dependency
+                    ->setName('error')
+                    ->setCallback(fn () => $e)
+            );
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $context, $pathValues, $request->getParams());
-                            \call_user_func_array($error->getAction(), $arguments);
+                            $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Group error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
                     }
                 }
@@ -706,64 +463,17 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $context, $pathValues, $request->getParams());
-                        \call_user_func_array($error->getAction(), $arguments);
+                        $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        throw new Exception('Global error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                     }
                 }
             }
         }
 
-        // Reset resources for the context
-        $this->resources[$context] = [];
+        unset($context);
 
         return $this;
-    }
-
-    /**
-     * Get Arguments
-     *
-     * @param  Hook  $hook
-     * @param  array  $values
-     * @param  array  $requestParams
-     * @return array
-     *
-     * @throws Exception
-     */
-    protected function getArguments(Hook $hook, string $context, array $values, array $requestParams): array
-    {
-        $arguments = [];
-        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $existsInRequest = \array_key_exists($key, $requestParams);
-            $existsInValues = \array_key_exists($key, $values);
-            $paramExists = $existsInRequest || $existsInValues;
-
-            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
-            if (\is_callable($arg)) {
-                $arg = \call_user_func_array($arg, $this->getResources($param['injections']));
-            }
-            $value = $existsInValues ? $values[$key] : $arg;
-
-            if (!$param['skipValidation']) {
-                if (!$paramExists && !$param['optional']) {
-                    throw new Exception('Param "' . $key . '" is not optional.', 400);
-                }
-
-                if ($paramExists) {
-                    $this->validate($key, $param, $value, $context);
-                }
-            }
-
-            $hook->setParamValue($key, $value);
-            $arguments[$param['order']] = $value;
-        }
-
-        foreach ($hook->getInjections() as $key => $injection) {
-            $arguments[$injection['order']] = $this->getResource($injection['name'], $context);
-        }
-
-        return $arguments;
     }
 
     /**
@@ -772,41 +482,14 @@ class Http
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
      *
-     * @param Request $request
-     * @param Response $response;
+     * @param Container $context
      */
-    public function run(Request $request, Response $response, string $context): static
+    public function run(Container $context): static
     {
-        $this->resources[$context] = [];
-        $this->resources[$context]['request'] = $request;
-        $this->resources[$context]['response'] = $response;
-
-        self::setResource('context', fn () => $context, [], $context);
-
-        self::setResource('request', fn () => $request, [], $context);
-
-        self::setResource('response', fn () => $response, [], $context);
-
-        try {
-
-            foreach (self::$requestHooks as $hook) {
-                $arguments = $this->getArguments($hook, $context, [], []);
-                \call_user_func_array($hook->getAction(), $arguments);
-            }
-        } catch(\Exception $e) {
-            self::setResource('error', fn () => $e, [], $context);
-
-            foreach (self::$errors as $error) { // Global error hooks
-                if (in_array('*', $error->getGroups())) {
-                    try {
-                        $arguments = $this->getArguments($error, $context, [], []);
-                        \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                    }
-                }
-            }
-        }
+        $request = $context->get('request');
+        /** @var Request $request */
+        $response = $context->get('response');
+        /** @var Response $response */
 
         if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
@@ -819,11 +502,23 @@ class Http
 
             return $this;
         }
+
         $method = $request->getMethod();
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        self::setResource('route', fn () => $route, [], $context);
+        if (null === $route && null !== self::$wildcardRoute) {
+            $route = self::$wildcardRoute;
+            $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $route->path($path);
+        }
+
+        $dependency = new Dependency();
+        $context->set(
+            $dependency
+                ->setName('route')
+                ->setCallback(fn () => $route ?? new Route($request->getMethod(), $request->getURI()))
+        );
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -836,7 +531,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                            $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                         }
                     }
                 }
@@ -844,17 +539,21 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                        $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
-                        }, [], $context);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
+                        $dependency = new Dependency();
+                        $context->set(
+                            $dependency
+                                ->setName('error')
+                                ->setCallback(fn () => $e)
+                        );
+
+                        $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                     }
                 }
             }
@@ -862,87 +561,53 @@ class Http
             return $this;
         }
 
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $route->path($path);
-
-            self::setResource('route', fn () => $route, [], $context);
-        }
-
         if (null !== $route) {
-            return $this->execute($route, $request, $context);
+            return $this->lifecycle($route, $request, $context);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                            $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                         }
                     }
                 }
 
                 foreach (self::$options as $option) { // Global options hooks
                     if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                        $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
-                        }, [], $context);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
+                        $dependency = new Dependency();
+                        $context->set(
+                            $dependency
+                                ->setName('error')
+                                ->setCallback(fn () => $e)
+                        );
+
+                        $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                     }
                 }
             }
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', function () {
-                        return new Exception('Not Found', 404);
-                    }, [], $context);
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
+                    $dependency = new Dependency();
+                    $dependency
+                        ->setName('error')
+                        ->setCallback(fn () => new Exception('Not Found', 404));
+
+                    $context->set($dependency);
+
+                    $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
                 }
             }
         }
 
         return $this;
-    }
-
-    /**
-     * Validate Param
-     *
-     * Creates an validator instance and validate given value with given rules.
-     *
-     * @param  string  $key
-     * @param  array  $param
-     * @param  mixed  $value
-     * @return void
-     *
-     * @throws Exception
-     */
-    protected function validate(string $key, array $param, mixed $value, $context): void
-    {
-        if ($param['optional'] && \is_null($value)) {
-            return;
-        }
-
-        $validator = $param['validator']; // checking whether the class exists
-
-        if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->getResources($param['injections'], $context));
-        }
-
-        if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
-            throw new Exception('Validator object is not an instance of the Validator class', 500);
-        }
-
-        if (!$validator->isValid($value)) {
-            throw new Exception('Invalid `' . $key . '` param: ' . $validator->getDescription(), 400);
-        }
     }
 
     /**
@@ -953,12 +618,7 @@ class Http
     public static function reset(): void
     {
         Router::reset();
-        self::$resourcesCallbacks = [];
-        self::$mode = '';
-        self::$errors = [];
-        self::$init = [];
-        self::$shutdown = [];
         self::$options = [];
-        self::$startHooks = [];
+        parent::reset();
     }
 }

@@ -45,4 +45,4 @@ RUN if [ "$DEBUG" = "false" ]; then rm -f /usr/local/lib/php/extensions/no-debug
 
 EXPOSE 80
 
-CMD ["php", "tests/e2e/server-swoole.php"]
+CMD ["php", "tests/e2e/server-swoole-coroutine.php"]
