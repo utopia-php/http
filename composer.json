@@ -30,7 +30,7 @@
     "require": {
         "php": ">=8.0",
         "ext-swoole": "*",
-        "utopia-php/servers": "0.1.* "
+        "utopia-php/servers": "0.1.*"
     },
     "require-dev": {
         "ext-xdebug": "*",
