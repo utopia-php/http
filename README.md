@@ -31,14 +31,6 @@ use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
-class User {
-    public string $name;
-    
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-    }
-}
 // Creating the dependency injection container
 $container = new Container();
 
@@ -46,7 +38,8 @@ $container = new Container();
 $user = new Dependency();
 $user
     ->setName('user')
-    ->setCallback(fn () => new User('John Doe'));
+    ->inject('request') // We can insert and use other injections as well
+    ->setCallback(fn (Request $request) => $request->getHeader('x-user-id', 'John Doe'));
 
 $container->add($user);
     
@@ -56,12 +49,12 @@ Http::get('/hello-world')
     ->inject('response') // Auto-injected each request
     ->inject('user')
     ->action(
-        function(Request $request, Response $response, User $user) {
+        function(Request $request, Response $response, string $user) {
             $response
               ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
               ->addHeader('Expires', '0')
               ->addHeader('Pragma', 'no-cache')
-              ->json(['Hello' => 'World', 'User is' => $user->name]);
+              ->json(['message' => 'Hello World', 'user' => $user]);
         }
     );
 
