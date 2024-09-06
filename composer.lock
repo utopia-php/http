@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f765427b1ac629c58be95cd57ffacda3",
+    "content-hash": "c4792cc35f9049e4c6f683e6582f6a68",
     "packages": [
         {
             "name": "utopia-php/di",
@@ -56,16 +56,16 @@
         },
         {
             "name": "utopia-php/servers",
-            "version": "0.1.0",
+            "version": "0.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "7d9e4f364fb1ab1889fb89ca96eb9946467cb09c"
+                "reference": "fd5c8d32778f265256c1936372a071b944f5ba8a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/7d9e4f364fb1ab1889fb89ca96eb9946467cb09c",
-                "reference": "7d9e4f364fb1ab1889fb89ca96eb9946467cb09c",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/fd5c8d32778f265256c1936372a071b944f5ba8a",
+                "reference": "fd5c8d32778f265256c1936372a071b944f5ba8a",
                 "shasum": ""
             },
             "require": {
@@ -103,9 +103,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utopia-php/servers/issues",
-                "source": "https://github.com/utopia-php/servers/tree/0.1.0"
+                "source": "https://github.com/utopia-php/servers/tree/0.1.1"
             },
-            "time": "2024-08-08T14:31:39+00:00"
+            "time": "2024-09-06T02:25:56+00:00"
         }
     ],
     "packages-dev": [
@@ -837,16 +837,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.1",
+            "version": "1.12.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "d8ed7fffa66de1db0d2972267d8ed1d8fa0fe5a2"
+                "reference": "0ca1c7bb55fca8fe6448f16fff0f311ccec960a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/d8ed7fffa66de1db0d2972267d8ed1d8fa0fe5a2",
-                "reference": "d8ed7fffa66de1db0d2972267d8ed1d8fa0fe5a2",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/0ca1c7bb55fca8fe6448f16fff0f311ccec960a1",
+                "reference": "0ca1c7bb55fca8fe6448f16fff0f311ccec960a1",
                 "shasum": ""
             },
             "require": {
@@ -891,7 +891,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-09-03T19:55:22+00:00"
+            "time": "2024-09-05T16:09:28+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -3548,11 +3548,11 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.0",
-        "ext-swoole": "*"
+        "php": ">=8.0"
     },
     "platform-dev": {
-        "ext-xdebug": "*"
+        "ext-xdebug": "*",
+        "ext-swoole": "*"
     },
     "plugin-api-version": "2.6.0"
 }

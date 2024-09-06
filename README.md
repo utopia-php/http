@@ -107,7 +107,7 @@ $http->start();
 
 > When using Swoole, you can use the command `php src/server.php` to run the HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
 
-### Parameters
+### Parameters
 
 Parameters are used to receive input into endpoint action from the HTTP request. Parameters could be defined as URL parameters or in a body with a structure such as JSON.
 
