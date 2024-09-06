@@ -9,15 +9,17 @@ use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
 use Utopia\Http\Validator\Text;
 
-
-class User {
-    function __construct(public $name) {}
+class User
+{
+    public function __construct(public $name)
+    {
+    }
 }
 
 $container = new Container();
 
 $user = new Dependency();
-$user->setName('user')->setCallback(fn() => new User("Demo user"));
+$user->setName('user')->setCallback(fn () => new User("Demo user"));
 $container->set($user);
 
 Http::get('/')
@@ -34,5 +36,5 @@ Http::get('/user')
         $response->send('Hello ' . $user->name);
     });
 
-$http = new Http(new Server('0.0.0.0', '80'), $container,'America/New_York');
+$http = new Http(new Server('0.0.0.0', '80'), $container, 'America/New_York');
 $http->start();
