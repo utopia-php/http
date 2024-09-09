@@ -123,7 +123,7 @@ class Router
             return null;
         }
 
-        $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
+        $parts = array_values(array_filter(explode('/', $path), fn ($segment) => $segment !== ''));
         $length = count($parts) - 1;
         $filteredParams = array_filter(self::$params, fn ($i) => $i <= $length);
 
