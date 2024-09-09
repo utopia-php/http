@@ -50,7 +50,11 @@ class ArrayList extends Validator
             $msg .= ' no longer than ' . $this->length . ' items';
         }
 
-        return $msg . ' and ' . $this->validator->getDescription();
+        if (!empty($this->validator->getDescription())) {
+            $msg .= ' and ' . $this->validator->getDescription();
+        }
+
+        return $msg;
     }
 
     /**
