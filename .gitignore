@@ -1,3 +1,5 @@
 /vendor/
 /.idea/
 *.cache
+.history
+.phpactor.json
