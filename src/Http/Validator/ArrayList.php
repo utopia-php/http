@@ -12,9 +12,14 @@ use Utopia\Http\Validator;
 class ArrayList extends Validator
 {
     /**
+     * @var ?Validator
+     */
+    protected ?Validator $validator;
+
+    /**
      * @var Validator
      */
-    protected Validator $validator;
+    protected Validator $cleanValidator;
 
     /**
      * @var int
@@ -31,7 +36,7 @@ class ArrayList extends Validator
      */
     public function __construct(Validator $validator, int $length = 0)
     {
-        $this->validator = $validator;
+        $this->cleanValidator = $validator;
         $this->length = $length;
     }
 
@@ -50,7 +55,7 @@ class ArrayList extends Validator
             $msg .= ' no longer than ' . $this->length . ' items';
         }
 
-        if (!empty($this->validator->getDescription())) {
+        if ($this->validator != null && !empty($this->validator->getDescription())) {
             $msg .= ' and ' . $this->validator->getDescription();
         }
 
@@ -78,7 +83,7 @@ class ArrayList extends Validator
      */
     public function getType(): string
     {
-        return $this->validator->getType();
+        return $this->cleanValidator->getType();
     }
 
     /**
@@ -88,7 +93,7 @@ class ArrayList extends Validator
      */
     public function getValidator(): Validator
     {
-        return $this->validator;
+        return $this->cleanValidator;
     }
 
     /**
@@ -101,6 +106,8 @@ class ArrayList extends Validator
      */
     public function isValid(mixed $value): bool
     {
+        $this->validator = null;
+
         if (!\is_array($value)) {
             return false;
         }
@@ -108,6 +115,8 @@ class ArrayList extends Validator
         if ($this->length && \count($value) > $this->length) {
             return false;
         }
+
+        $this->validator = clone $this->cleanValidator;
 
         foreach ($value as $element) {
             if (!$this->validator->isValid($element)) {
