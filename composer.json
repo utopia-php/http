@@ -29,11 +29,11 @@
     },
     "require": {
         "php": ">=8.0",
-        "ext-swoole": "*",
         "utopia-php/servers": "0.1.*"
     },
     "require-dev": {
         "ext-xdebug": "*",
+        "ext-swoole": "*",
         "phpunit/phpunit": "^9.5.25",
         "laravel/pint": "^1.2",
         "swoole/ide-helper": "4.8.3",

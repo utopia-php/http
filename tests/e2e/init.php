@@ -124,6 +124,14 @@ Http::get('/param-injection')
         $response->send('Hello World!' . $param);
     });
 
+Http::get('/json')
+    ->inject('response')
+    ->param('name', 'World', new Text(256), 'Name to greet. Optional, max length 256.', true)
+    ->action(function (Response $response, string $name) {
+        $response->addHeader('Content-Type', 'application/json');
+        $response->json(['message' => "Hello {$name}"]);
+    });
+
 Http::error()
     ->inject('error')
     ->inject('response')
