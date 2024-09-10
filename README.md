@@ -8,7 +8,7 @@
 
 Utopia HTTP is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
 
-Utopia HTTP is dependency-free. Any extra features, such as authentication or caching are available as standalone models in order to keep the framework core clean, light, and easy to learn.
+Utopia HTTP is *almost* dependency-free. Any extra features, such as authentication or caching are available as standalone models in order to keep the framework core clean, light, and easy to learn.
 
 ## Getting Started
 
@@ -20,30 +20,47 @@ composer require utopia-php/http
 
 Init your first application in `src/server.php`:
 
+
 ```php
 require_once __DIR__.'/../vendor/autoload.php';
 
+use Utopia\DI\Container;
+use Utopia\DI\Dependency;
 use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
-Http::get('/hello-world') // Define Route
-    ->inject('request')
-    ->inject('response')
+// Creating the dependency injection container
+$container = new Container();
+
+// Adding a user dependency to the container
+$user = new Dependency();
+$user
+    ->setName('user')
+    ->inject('request') // We can insert and use other injections as well
+    ->setCallback(fn (Request $request) => $request->getHeader('x-user-id', 'John Doe'));
+
+$container->add($user);
+    
+// Defining Route    
+Http::get('/hello-world') 
+    ->inject('request')  // Auto-injected each request
+    ->inject('response') // Auto-injected each request
+    ->inject('user')
     ->action(
-        function(Request $request, Response $response) {
+        function(Request $request, Response $response, string $user) {
             $response
               ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
               ->addHeader('Expires', '0')
               ->addHeader('Pragma', 'no-cache')
-              ->json(['Hello' => 'World']);
+              ->json(['message' => 'Hello World', 'user' => $user]);
         }
     );
 
 Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-$http = new Http(new Server(), 'America/New_York');
+$http = new Http(new Server(), $container, 'America/New_York');
 $http->start();
 ```
 
@@ -66,6 +83,7 @@ The library supports server adapters to be able to run on any PHP setup. You cou
 #### Use PHP FPM server
 
 ```php
+use Utopia\DI\Container;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
@@ -78,7 +96,7 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server(), 'America/New_York');
+$http = new Http(new Server(), new Container() 'America/New_York');
 $http->start();
 ```
 
@@ -87,6 +105,7 @@ $http->start();
 #### Using Swoole server
 
 ```php
+use Utopia\DI\Container;
 use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
@@ -101,13 +120,13 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server('0.0.0.0', '80'), 'America/New_York');
+$http = new Http(new Server('0.0.0.0', '80' , ['open_http2_protocol' => true]), new Container(), 'America/New_York');
 $http->start();
 ```
 
 > When using Swoole, you can use the command `php src/server.php` to run the HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
 
-### Parameters
+### Parameters
 
 Parameters are used to receive input into endpoint action from the HTTP request. Parameters could be defined as URL parameters or in a body with a structure such as JSON.
 
@@ -206,16 +225,24 @@ Http::init()
 
 Groups are designed to be actions that run during the lifecycle of requests to endpoints that have some logic in common. Groups allow you to prevent code duplication and are designed to be defined anywhere in your source code to allow flexibility.
 
-### Resources
+### Injections
 
-Resources allow you to prepare dependencies for requests such as database connection or the user who sent the request. A new instance of a resource is created for every request.
+Injections allow you to prepare dependencies for requests such as database connection or the user who sent the request. A new instance of a resource is created for every request.
 
-Define a resource:
+We define an injection using a Container:
 
 ```php
-Http::setResource('timing', function() {
-    return \microtime(true);
-});
+use Utopia\DI\Container;
+use Utopia\DI\Dependency;
+
+$container = new Container();
+
+$timing = new Dependency();
+$timing
+    ->setName('timing')
+    ->setCallback(fn () => \microtime(true));
+
+$container->add($timing);
 ```
 
 Inject resource into endpoint action:
