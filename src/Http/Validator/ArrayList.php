@@ -105,14 +105,14 @@ class ArrayList extends Validator
             return false;
         }
 
-        if ($this->length && \count($value) > $this->length) {
-            return false;
-        }
-
         foreach ($value as $element) {
             if (!$this->validator->isValid($element)) {
                 return false;
             }
+        }
+
+        if ($this->length && \count($value) > $this->length) {
+            return false;
         }
 
         return true;
