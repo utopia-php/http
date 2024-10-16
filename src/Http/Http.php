@@ -49,6 +49,9 @@ class Http extends Base
     protected string|null $requestClass = null;
     protected string|null $responseClass = null;
 
+    protected bool $compression = false;
+    protected int $compressionLevel = 0;
+
     /**
      * Http
      *
@@ -77,6 +80,15 @@ class Http extends Base
     public function setRequestClass(string $requestClass)
     {
         $this->requestClass = $requestClass;
+    }
+
+    /**
+     * Set Compression
+     */
+    public function setCompression(bool $compression, int $compressionLevel = 0)
+    {
+        $this->compression = $compression;
+        $this->compressionLevel = $compressionLevel;
     }
 
     /**
@@ -317,6 +329,11 @@ class Http extends Base
 
             if (!\is_null($this->responseClass)) {
                 $response = new $this->responseClass($response);
+
+                if ($this->compression) {
+                    $response->setAcceptEncoding($request->getHeader('accept-encoding') ?? '');
+                    $response->setCompressionLevel($this->compressionLevel ?? 1);
+                }
             }
 
             $context = clone $this->container;
