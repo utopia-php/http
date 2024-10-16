@@ -482,9 +482,9 @@ abstract class Response
         return $this->cookies;
     }
 
-    public function getEncoding(): ?string
+    public function getEncoding(): string|null
     {
-        if (empty($this->acceptEncoding || isset($this->compressed[$this->contentType]))) {
+        if (empty($this->acceptEncoding || !isset($this->compressed[$this->contentType]))) {
             return null;
         }
 
@@ -495,10 +495,12 @@ abstract class Response
         if (strpos($this->acceptEncoding, 'gzip') !== false && function_exists('gzencode')) {
             return 'gzip';
         }
-        
+
         if (strpos($this->acceptEncoding, 'deflate') !== false && function_exists('gzdeflate')) {
             return 'deflate';
         }
+
+        return null;
     }
 
     /**
@@ -532,7 +534,7 @@ abstract class Response
         // Compress body
         $encoding = $this->getEncoding();
         if ($encoding) {
-            switch($encoding) {
+            switch ($encoding) {
                 case 'br':
                     $body = brotli_compress($body, $this->compressionLevel);
                     break;
