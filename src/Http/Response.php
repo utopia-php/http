@@ -255,7 +255,7 @@ abstract class Response
     /**
      * @var int
      */
-    protected int $minCompressionSize = 1024;
+    protected int $compressionMinSize = COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
      * Response constructor.
@@ -300,11 +300,11 @@ abstract class Response
      *
      * Set minimum size for compression to be applied in bytes.
      *
-     * @param  int  $minCompressionSize
+     * @param  int  $compressionMinSize
      */
-    public function setMinCompressionSize(int $minCompressionSize): static
+    public function setcompressionMinSize(int $compressionMinSize): static
     {
-        $this->minCompressionSize = $minCompressionSize;
+        $this->compressionMinSize = $compressionMinSize;
         return $this;
     }
 
@@ -529,7 +529,7 @@ abstract class Response
         if (
             !empty($this->acceptEncoding) &&
             isset($this->compressed[$this->contentType]) &&
-            strlen($body) > $this->minCompressionSize
+            strlen($body) > $this->compressionMinSize
         ) {
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, [
                 Compression::BROTLI,
