@@ -50,6 +50,7 @@ class Http extends Base
     protected string|null $responseClass = null;
 
     protected bool $compression = false;
+    protected int $minCompressionSize = 1024;
 
     /**
      * Http
@@ -87,6 +88,14 @@ class Http extends Base
     public function setCompression(bool $compression)
     {
         $this->compression = $compression;
+    }
+
+    /**
+     * Set minimum compression size
+     */
+    public function setMinCompressionSize(int $minCompressionSize)
+    {
+        $this->minCompressionSize = $minCompressionSize;
     }
 
     /**
@@ -330,6 +339,7 @@ class Http extends Base
 
                 if ($this->compression) {
                     $response->setAcceptEncoding($request->getHeader('accept-encoding') ?? '');
+                    $response->setMinCompressionSize($this->minCompressionSize);
                 }
             }
 

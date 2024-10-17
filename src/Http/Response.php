@@ -253,6 +253,11 @@ abstract class Response
     protected string $acceptEncoding = '';
 
     /**
+     * @var int
+     */
+    protected int $minCompressionSize = 1024;
+
+    /**
      * Response constructor.
      *
      * @param  float  $time response start time
@@ -287,6 +292,19 @@ abstract class Response
     public function setAcceptEncoding(string $acceptEncoding): static
     {
         $this->acceptEncoding = $acceptEncoding;
+        return $this;
+    }
+
+    /**
+     * Set min compression size
+     *
+     * Set minimum size for compression to be applied in bytes.
+     *
+     * @param  int  $minCompressionSize
+     */
+    public function setMinCompressionSize(int $minCompressionSize): static
+    {
+        $this->minCompressionSize = $minCompressionSize;
         return $this;
     }
 
@@ -511,7 +529,7 @@ abstract class Response
         if (
             !empty($this->acceptEncoding) &&
             isset($this->compressed[$this->contentType]) &&
-            strlen($body) > 1024
+            strlen($body) > $this->minCompressionSize
         ) {
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, [
                 Compression::BROTLI,
