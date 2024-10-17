@@ -30,7 +30,14 @@
     "require": {
         "php": ">=8.0",
         "ext-swoole": "*",
-        "utopia-php/servers": "0.1.*"
+        "utopia-php/servers": "0.1.*",
+        "utopia-php/compression": "dev-feat-utopia-compression"
+    },
+    "repositories": {
+        "utopia-php/compression": {
+            "type": "git",
+            "url": "https://github.com/utopia-php/compression"
+        }
     },
     "require-dev": {
         "ext-xdebug": "*",

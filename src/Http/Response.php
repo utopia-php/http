@@ -1,6 +1,7 @@
 <?php
 
 namespace Utopia\Http;
+use Utopia\Compression\Compression;
 
 abstract class Response
 {
@@ -251,11 +252,6 @@ abstract class Response
     protected string $acceptEncoding = '';
 
     /**
-     * @var int
-     */
-    protected int $compressionLevel = 0;
-
-    /**
      * Response constructor.
      *
      * @param  float  $time response start time
@@ -482,27 +478,6 @@ abstract class Response
         return $this->cookies;
     }
 
-    public function getEncoding(): string|null
-    {
-        if (empty($this->acceptEncoding || !isset($this->compressed[$this->contentType]))) {
-            return null;
-        }
-
-        if (strpos($this->acceptEncoding, 'br') !== false && function_exists('brotli_compress')) {
-            return 'br';
-        }
-
-        if (strpos($this->acceptEncoding, 'gzip') !== false && function_exists('gzencode')) {
-            return 'gzip';
-        }
-
-        if (strpos($this->acceptEncoding, 'deflate') !== false && function_exists('gzdeflate')) {
-            return 'deflate';
-        }
-
-        return null;
-    }
-
     /**
      * Output response
      *
@@ -532,21 +507,22 @@ abstract class Response
         }
 
         // Compress body
-        $encoding = $this->getEncoding();
-        if ($encoding) {
-            switch ($encoding) {
-                case 'br':
-                    $body = brotli_compress($body, $this->compressionLevel);
-                    break;
-                case 'gzip':
-                    $body = gzencode($body, $this->compressionLevel);
-                    break;
-                case 'deflate':
-                    $body = gzdeflate($body, $this->compressionLevel);
-                    break;
+        if (
+            !empty($this->acceptEncoding) && 
+            isset($this->compressed[$this->contentType]) &&
+            strlen($body) > 1024
+        ) {
+            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, [
+                Compression::BROTLI,
+                Compression::GZIP,
+                Compression::DEFLATE,
+            ]);
+
+            if ($algorithm) {
+                $body = $algorithm->compress($body);
+                $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
+                $this->addHeader('Vary', 'Accept-Encoding');
             }
-            $this->addHeader('Content-Encoding', $encoding);
-            $this->addHeader('Vary', 'Accept-Encoding');
         }
 
         $headerSize = strlen(implode("\n", $this->headers));
