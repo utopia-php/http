@@ -6,10 +6,10 @@ use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\Servers\Base;
 
-const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
-
 class Http extends Base
 {
+    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+
     /**
      * Request method constants
      */
@@ -20,6 +20,7 @@ class Http extends Base
     public const REQUEST_METHOD_DELETE = 'DELETE';
     public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
     public const REQUEST_METHOD_HEAD = 'HEAD';
+
 
     /**
      * @var Files
@@ -52,7 +53,7 @@ class Http extends Base
     protected string|null $responseClass = null;
 
     protected bool $compression = false;
-    protected int $compressionMinSize = COMPRESSION_MIN_SIZE_DEFAULT;
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
      * Http

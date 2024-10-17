@@ -255,7 +255,7 @@ abstract class Response
     /**
      * @var int
      */
-    protected int $compressionMinSize = COMPRESSION_MIN_SIZE_DEFAULT;
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
      * Response constructor.
