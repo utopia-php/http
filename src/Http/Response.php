@@ -1,6 +1,7 @@
 <?php
 
 namespace Utopia\Http;
+
 use Utopia\Compression\Compression;
 
 abstract class Response
@@ -508,7 +509,7 @@ abstract class Response
 
         // Compress body
         if (
-            !empty($this->acceptEncoding) && 
+            !empty($this->acceptEncoding) &&
             isset($this->compressed[$this->contentType]) &&
             strlen($body) > 1024
         ) {
