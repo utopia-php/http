@@ -70,6 +70,7 @@ $ git push origin [name_of_your_new_branch]
 - `docker compose exec fpm vendor/bin/phpunit --configuration phpunit.xml`
 - `docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml`
 - `docker compose exec swoole-coroutine vendor/bin/phpunit --configuration phpunit.xml`
+- `docker compose exec swoole-compression vendor/bin/phpunit --configuration phpunit.xml`
 
 ## Introducing New Features
 
