@@ -8,6 +8,8 @@ use Utopia\Servers\Base;
 
 class Http extends Base
 {
+    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+
     /**
      * Request method constants
      */
@@ -18,6 +20,7 @@ class Http extends Base
     public const REQUEST_METHOD_DELETE = 'DELETE';
     public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
     public const REQUEST_METHOD_HEAD = 'HEAD';
+
 
     /**
      * @var Files
@@ -49,6 +52,9 @@ class Http extends Base
     protected string|null $requestClass = null;
     protected string|null $responseClass = null;
 
+    protected bool $compression = false;
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+
     /**
      * Http
      *
@@ -77,6 +83,22 @@ class Http extends Base
     public function setRequestClass(string $requestClass)
     {
         $this->requestClass = $requestClass;
+    }
+
+    /**
+     * Set Compression
+     */
+    public function setCompression(bool $compression)
+    {
+        $this->compression = $compression;
+    }
+
+    /**
+     * Set minimum compression size
+     */
+    public function setcompressionMinSize(int $compressionMinSize)
+    {
+        $this->compressionMinSize = $compressionMinSize;
     }
 
     /**
@@ -317,6 +339,11 @@ class Http extends Base
 
             if (!\is_null($this->responseClass)) {
                 $response = new $this->responseClass($response);
+
+                if ($this->compression) {
+                    $response->setAcceptEncoding($request->getHeader('accept-encoding') ?? '');
+                    $response->setcompressionMinSize($this->compressionMinSize);
+                }
             }
 
             $context = clone $this->container;
