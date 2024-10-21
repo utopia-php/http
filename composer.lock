@@ -12,16 +12,9 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/compression",
-                "reference": "a41c2c769ecaab5dc4b7efecf005457a11f29f87"
+                "reference": "cd5974ea5eb0126d31fea55bb631420a0565a838"
             },
             "require": {
-                "ext-brotli": "*",
-                "ext-fileinfo": "*",
-                "ext-lz4": "*",
-                "ext-snappy": "*",
-                "ext-xz": "*",
-                "ext-zlib": "*",
-                "ext-zstd": "*",
                 "php": ">=8.0"
             },
             "require-dev": {
@@ -59,7 +52,7 @@
                 "upf",
                 "utopia"
             ],
-            "time": "2024-10-17T12:19:31+00:00"
+            "time": "2024-10-17T13:52:54+00:00"
         },
         {
             "name": "utopia-php/di",
@@ -893,16 +886,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.6",
+            "version": "1.12.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "dc4d2f145a88ea7141ae698effd64d9df46527ae"
+                "reference": "dc2b9976bd8b0f84ec9b0e50cc35378551de7af0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dc4d2f145a88ea7141ae698effd64d9df46527ae",
-                "reference": "dc4d2f145a88ea7141ae698effd64d9df46527ae",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dc2b9976bd8b0f84ec9b0e50cc35378551de7af0",
+                "reference": "dc2b9976bd8b0f84ec9b0e50cc35378551de7af0",
                 "shasum": ""
             },
             "require": {
@@ -947,7 +940,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-10-06T15:03:59+00:00"
+            "time": "2024-10-18T11:12:07+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
