@@ -21,7 +21,6 @@ class Http extends Base
     public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
     public const REQUEST_METHOD_HEAD = 'HEAD';
 
-
     /**
      * @var Files
      */
@@ -52,6 +51,9 @@ class Http extends Base
     protected string|null $requestClass = null;
     protected string|null $responseClass = null;
 
+    /**
+     * Compression
+     */
     protected bool $compression = false;
     protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
