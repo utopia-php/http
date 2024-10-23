@@ -302,7 +302,7 @@ abstract class Response
      *
      * @param  int  $compressionMinSize
      */
-    public function setcompressionMinSize(int $compressionMinSize): static
+    public function setCompressionMinSize(int $compressionMinSize): static
     {
         $this->compressionMinSize = $compressionMinSize;
         return $this;

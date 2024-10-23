@@ -96,7 +96,7 @@ class Http extends Base
     /**
      * Set minimum compression size
      */
-    public function setcompressionMinSize(int $compressionMinSize)
+    public function setCompressionMinSize(int $compressionMinSize)
     {
         $this->compressionMinSize = $compressionMinSize;
     }
@@ -342,7 +342,7 @@ class Http extends Base
 
                 if ($this->compression) {
                     $response->setAcceptEncoding($request->getHeader('accept-encoding') ?? '');
-                    $response->setcompressionMinSize($this->compressionMinSize);
+                    $response->setCompressionMinSize($this->compressionMinSize);
                 }
             }
 
