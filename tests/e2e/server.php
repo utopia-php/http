@@ -50,4 +50,5 @@ $request = new Request();
 $response = new Response();
 
 $app = new App('UTC');
+$app->setCompression(true);
 $app->run($request, $response);
