@@ -31,7 +31,7 @@
         "php": ">=8.0",
         "ext-swoole": "*",
         "utopia-php/servers": "0.1.*",
-        "utopia-php/compression": "dev-feat-utopia-compression"
+        "utopia-php/compression": "0.1.*"
     },
     "repositories": {
         "utopia-php/compression": {

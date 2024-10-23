@@ -4,15 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2768a94b89de6af19ca17a6b2f056c83",
+    "content-hash": "a21c06ac7fd9c0de3c88317678e96685",
     "packages": [
         {
             "name": "utopia-php/compression",
-            "version": "dev-feat-utopia-compression",
+            "version": "0.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/compression",
-                "reference": "cd5974ea5eb0126d31fea55bb631420a0565a838"
+                "reference": "8c6d9bcb5b0972faa27e5bf70923c20403aaf25c"
             },
             "require": {
                 "php": ">=8.0"
@@ -52,7 +52,7 @@
                 "upf",
                 "utopia"
             ],
-            "time": "2024-10-17T13:52:54+00:00"
+            "time": "2024-10-23T10:17:46+00:00"
         },
         {
             "name": "utopia-php/di",
@@ -3593,9 +3593,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "utopia-php/compression": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
