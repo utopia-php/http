@@ -667,7 +667,7 @@ class App
     public function run(Request $request, Response $response): static
     {
         if ($this->compression) {
-            $response->setAcceptEncoding($request->getHeader('accept-encoding') ?? '');
+            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
             $response->setCompressionMinSize($this->compressionMinSize);
         }
 

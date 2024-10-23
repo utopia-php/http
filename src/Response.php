@@ -295,7 +295,7 @@ class Response
         return $this;
     }
 
-     /**
+    /**
      * Set min compression size
      *
      * Set minimum size for compression to be applied in bytes.
@@ -516,7 +516,7 @@ class Response
         $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
 
         $this->appendCookies()->appendHeaders();
-    
+
         // Send response
         if ($this->disablePayload) {
             $this->end();
