@@ -1,10 +1,10 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use Utopia\Compression\Compression;
 
-class Response
+abstract class Response
 {
     /**
      * HTTP content types
@@ -255,7 +255,7 @@ class Response
     /**
      * @var int
      */
-    protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
      * Response constructor.
@@ -295,7 +295,7 @@ class Response
         return $this;
     }
 
-     /**
+    /**
      * Set min compression size
      *
      * Set minimum size for compression to be applied in bytes.
@@ -511,12 +511,14 @@ class Response
             return;
         }
 
+        $this->sent = true;
+
         $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
         $this->addHeader('Server', $serverHeader);
         $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
 
         $this->appendCookies()->appendHeaders();
-    
+
         // Send response
         if ($this->disablePayload) {
             $this->end();
@@ -565,12 +567,9 @@ class Response
      * Send output
      *
      * @param  string  $content
-     * @return void
+     * @return bool False if write cannot complete, such as request ended by client
      */
-    protected function write(string $content): void
-    {
-        echo $content;
-    }
+    abstract public function write(string $content): bool;
 
     /**
      * End
@@ -580,12 +579,7 @@ class Response
      * @param  string  $content
      * @return void
      */
-    protected function end(string $content = null): void
-    {
-        if (!is_null($content)) {
-            echo $content;
-        }
-    }
+    abstract public function end(string $content = ''): void;
 
     /**
      * Output response
@@ -633,7 +627,7 @@ class Response
     protected function appendHeaders(): static
     {
         // Send status code header
-        $this->sendStatus($this->statusCode);
+        $this->sendStatus($this->statusCode, $this->statusCodes[$this->statusCode] ?? 'Unknown HTTP status code');
 
         // Send content type header
         if (!empty($this->contentType)) {
@@ -652,12 +646,10 @@ class Response
      * Send Status Code
      *
      * @param  int  $statusCode
+     * @param  string  $reason
      * @return void
      */
-    protected function sendStatus(int $statusCode): void
-    {
-        http_response_code($statusCode);
-    }
+    abstract protected function sendStatus(int $statusCode, string $reason): void;
 
     /**
      * Send Header
@@ -668,10 +660,7 @@ class Response
      * @param  string  $value
      * @return void
      */
-    protected function sendHeader(string $key, string $value): void
-    {
-        \header($key.': '.$value);
-    }
+    abstract public function sendHeader(string $key, string $value): void;
 
     /**
      * Send Cookie
@@ -683,15 +672,7 @@ class Response
      * @param  array  $options
      * @return void
      */
-    protected function sendCookie(string $name, string $value, array $options): void
-    {
-        // Use proper PHP keyword name
-        $options['expires'] = $options['expire'];
-        unset($options['expire']);
-
-        // Set the cookie
-        \setcookie($name, $value, $options);
-    }
+    abstract protected function sendCookie(string $name, string $value, array $options): void;
 
     /**
      * Append cookies
