@@ -33,12 +33,6 @@
         "utopia-php/servers": "0.1.*",
         "utopia-php/compression": "0.1.*"
     },
-    "repositories": {
-        "utopia-php/compression": {
-            "type": "git",
-            "url": "https://github.com/utopia-php/compression"
-        }
-    },
     "require-dev": {
         "ext-xdebug": "*",
         "phpunit/phpunit": "^9.5.25",
