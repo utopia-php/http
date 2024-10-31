@@ -56,6 +56,7 @@ class Http extends Base
      */
     protected bool $compression = false;
     protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected mixed $compressionSupported;
 
     /**
      * Http
@@ -88,7 +89,7 @@ class Http extends Base
     }
 
     /**
-     * Set Compression
+     * Set compression
      */
     public function setCompression(bool $compression)
     {
@@ -101,6 +102,14 @@ class Http extends Base
     public function setCompressionMinSize(int $compressionMinSize)
     {
         $this->compressionMinSize = $compressionMinSize;
+    }
+
+    /**
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported)
+    {
+        $this->compressionSupported = $compressionSupported;
     }
 
     /**
@@ -345,6 +354,7 @@ class Http extends Base
                 if ($this->compression) {
                     $response->setAcceptEncoding($request->getHeader('accept-encoding') ?? '');
                     $response->setCompressionMinSize($this->compressionMinSize);
+                    $response->setCompressionSupported($this->compressionSupported);
                 }
             }
 
