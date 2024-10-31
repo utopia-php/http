@@ -258,6 +258,11 @@ class Response
     protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
+     * @var mixed
+     */
+    protected mixed $compressionSupported;
+
+    /**
      * Response constructor.
      *
      * @param  float  $time response start time
@@ -305,6 +310,17 @@ class Response
     public function setCompressionMinSize(int $compressionMinSize): static
     {
         $this->compressionMinSize = $compressionMinSize;
+        return $this;
+    }
+
+    /**
+     * Set supported compression algorithms
+     * 
+     * @param mixed  $compressionSupported
+     */
+    public function setCompressionSupported(mixed $compressionSupported): static
+    {
+        $this->compressionSupported = $compressionSupported;
         return $this;
     }
 
@@ -529,11 +545,7 @@ class Response
             isset($this->compressed[$this->contentType]) &&
             strlen($body) > $this->compressionMinSize
         ) {
-            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, [
-                Compression::BROTLI,
-                Compression::GZIP,
-                Compression::DEFLATE,
-            ]);
+            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
 
             if ($algorithm) {
                 $body = $algorithm->compress($body);

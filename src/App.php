@@ -109,6 +109,7 @@ class App
      */
     protected bool $compression = false;
     protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected mixed $compressionSupported;
 
     /**
      * App
@@ -134,6 +135,14 @@ class App
     public function setCompressionMinSize(int $compressionMinSize)
     {
         $this->compressionMinSize = $compressionMinSize;
+    }
+
+    /**
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported)
+    {
+        $this->compressionSupported = $compressionSupported;
     }
 
     /**
@@ -669,6 +678,7 @@ class App
         if ($this->compression) {
             $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
             $response->setCompressionMinSize($this->compressionMinSize);
+            $response->setCompressionSupported($this->compressionSupported);
         }
 
         $this->resources['request'] = $request;
