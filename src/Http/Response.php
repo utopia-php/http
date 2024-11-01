@@ -260,7 +260,7 @@ abstract class Response
     /**
      * @var mixed
      */
-    protected mixed $compressionSupported;
+    protected mixed $compressionSupported = [];
 
     /**
      * Response constructor.

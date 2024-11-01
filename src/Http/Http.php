@@ -56,7 +56,7 @@ class Http extends Base
      */
     protected bool $compression = false;
     protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
-    protected mixed $compressionSupported;
+    protected mixed $compressionSupported = [];
 
     /**
      * Http
