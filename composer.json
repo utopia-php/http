@@ -22,7 +22,8 @@
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
     "require": {
-        "php": ">=8.0"
+        "php": ">=8.3",
+        "open-telemetry/api": "^1.1"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",

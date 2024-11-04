@@ -2,6 +2,8 @@
 
 namespace Utopia;
 
+use OpenTelemetry\API\Instrumentation\CachedInstrumentation;
+
 class App
 {
     /**
@@ -501,9 +503,14 @@ class App
      */
     public function execute(Route $route, Request $request, Response $response): static
     {
-        $arguments = [];
+        static $instrumentation = new CachedInstrumentation('utopia/http');
+        static $requestDuration = $instrumentation->meter()->createHistogram("request_duration", "seconds");
+        static $responseSize = $instrumentation->meter()->createHistogram("response_size", "bytes");
+
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
+
+        $startTime = microtime(true);
 
         try {
             if ($route->getHook()) {
@@ -575,6 +582,16 @@ class App
                     }
                 }
             }
+        } finally {
+            $endTime = microtime(true);
+
+            $attributes = [
+                'http.request.method' => $route->getMethod(),
+                'http.request.path' => $route->getPath(),
+                'http.response.status' => $response->getStatusCode(),
+            ];
+            $requestDuration->record($endTime-$startTime, $attributes);
+            $responseSize->record($response->getSize(), $attributes);
         }
 
         return $this;
