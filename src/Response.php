@@ -2,6 +2,7 @@
 
 namespace Utopia;
 
+use Utopia\CLI\Console;
 use Utopia\Compression\Compression;
 
 class Response
@@ -315,7 +316,7 @@ class Response
 
     /**
      * Set supported compression algorithms
-     * 
+     *
      * @param mixed  $compressionSupported
      */
     public function setCompressionSupported(mixed $compressionSupported): static
@@ -540,6 +541,10 @@ class Response
         }
 
         // Compress body
+        Console::log('Accept-Encoding: '.$this->acceptEncoding . ' - ' . $this->compressionMinSize);
+        Console::log('Content-Type: '.$this->contentType . ' - ' . $this->compressed[$this->contentType]);
+        Console::log('Content-Length: '.strlen($body) . ' - ' . $this->compressionMinSize);
+
         if (
             !empty($this->acceptEncoding) &&
             isset($this->compressed[$this->contentType]) &&
@@ -547,8 +552,15 @@ class Response
         ) {
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
 
+            Console::log('Compression Algorithm: '.($algorithm ? $algorithm->getName() : 'none'));
+
             if ($algorithm) {
+                Console::log('Body before compression: '.strlen($body));
+
                 $body = $algorithm->compress($body);
+
+                Console::log('Body after compression: '.strlen($body));
+
                 $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
                 $this->addHeader('Vary', 'Accept-Encoding');
             }
