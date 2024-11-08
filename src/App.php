@@ -4,6 +4,8 @@ namespace Utopia;
 
 class App
 {
+    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+
     /**
      * Request method constants
      */
@@ -103,6 +105,13 @@ class App
     protected static ?Route $wildcardRoute = null;
 
     /**
+     * Compression
+     */
+    protected bool $compression = false;
+    protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected mixed $compressionSupported = [];
+
+    /**
      * App
      *
      * @param  string  $timezone
@@ -110,6 +119,30 @@ class App
     public function __construct(string $timezone)
     {
         \date_default_timezone_set($timezone);
+    }
+
+    /**
+     * Set Compression
+     */
+    public function setCompression(bool $compression)
+    {
+        $this->compression = $compression;
+    }
+
+    /**
+     * Set minimum compression size
+     */
+    public function setCompressionMinSize(int $compressionMinSize)
+    {
+        $this->compressionMinSize = $compressionMinSize;
+    }
+
+    /**
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported)
+    {
+        $this->compressionSupported = $compressionSupported;
     }
 
     /**
@@ -642,6 +675,12 @@ class App
      */
     public function run(Request $request, Response $response): static
     {
+        if ($this->compression) {
+            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
+            $response->setCompressionMinSize($this->compressionMinSize);
+            $response->setCompressionSupported($this->compressionSupported);
+        }
+
         $this->resources['request'] = $request;
         $this->resources['response'] = $response;
 

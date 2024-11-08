@@ -67,7 +67,7 @@ class ViewTest extends TestCase
             $this->view->setRendered(false);
             $this->view->setPath('just-a-broken-string.phtml');
             $this->view->render();
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             return;
         }
 
