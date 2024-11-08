@@ -525,19 +525,11 @@ abstract class Response
             return;
         }
 
-        $this->sent = true;
-
         $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
         $this->addHeader('Server', $serverHeader);
         $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
 
-        $this->appendCookies()->appendHeaders();
-
-        // Send response
-        if ($this->disablePayload) {
-            $this->end();
-            return;
-        }
+        $this->appendCookies();
 
         // Compress body
         if (
@@ -552,6 +544,14 @@ abstract class Response
                 $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
                 $this->addHeader('Vary', 'Accept-Encoding');
             }
+        }
+
+        $this->appendHeaders();
+
+        // Send response
+        if ($this->disablePayload) {
+            $this->end();
+            return;
         }
 
         $headerSize = strlen(implode("\n", $this->headers));
