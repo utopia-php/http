@@ -2,7 +2,6 @@
 
 namespace Utopia;
 
-use Utopia\CLI\Console;
 use Utopia\Compression\Compression;
 
 class Response
