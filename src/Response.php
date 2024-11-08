@@ -529,7 +529,6 @@ class Response
 
         $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
         $this->addHeader('Server', $serverHeader);
-        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
 
         $this->appendCookies();
 
@@ -544,10 +543,12 @@ class Response
             if ($algorithm) {
                 $body = $algorithm->compress($body);
                 $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
+                $this->addHeader('X-Utopia-Compression', '1');
                 $this->addHeader('Vary', 'Accept-Encoding');
             }
         }
 
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
         $this->appendHeaders();
 
         // Send response
