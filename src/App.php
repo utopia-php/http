@@ -2,6 +2,9 @@
 
 namespace Utopia;
 
+use Utopia\Telemetry\Adapter as Telemetry;
+use Utopia\Telemetry\Adapter\Noop as NoopTelemetry;
+
 class App
 {
     public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
@@ -111,6 +114,8 @@ class App
     protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
     protected mixed $compressionSupported = [];
 
+    protected Metrics $metrics;
+
     /**
      * App
      *
@@ -119,6 +124,7 @@ class App
     public function __construct(string $timezone)
     {
         \date_default_timezone_set($timezone);
+        $this->metrics = new Metrics(new NoopTelemetry());
     }
 
     /**
@@ -143,6 +149,17 @@ class App
     public function setCompressionSupported(mixed $compressionSupported)
     {
         $this->compressionSupported = $compressionSupported;
+    }
+
+    /**
+     * Set telemetry adapter.
+     *
+     * @param Telemetry $telemetry
+     * @return void
+     */
+    public function setTelemetry(Telemetry $telemetry)
+    {
+        $this->metrics = new Metrics($telemetry);
     }
 
     /**
@@ -665,7 +682,24 @@ class App
     }
 
     /**
-     * Run
+     * Run: wrapper function to record telemetry. All domain logic should happen in `runInternal`.
+     */
+    public function run(Request $request, Response $response): static
+    {
+        $this->metrics->increaseActiveRequest($request);
+
+        $start = microtime(true);
+        $result = $this->runInternal($request, $response);
+
+        $requestDuration = microtime(true) - $start;
+        $this->metrics->recordMetrics($request, $response, $this->getRoute(), $requestDuration);
+        $this->metrics->decreaseActiveRequest($request);
+
+        return $result;
+    }
+
+    /**
+     * Run internal
      *
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
@@ -673,7 +707,7 @@ class App
      * @param  Request  $request
      * @param  Response  $response
      */
-    public function run(Request $request, Response $response): static
+    private function runInternal(Request $request, Response $response): static
     {
         if ($this->compression) {
             $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));

@@ -23,8 +23,15 @@
     },
     "require": {
         "php": ">=8.0",
-        "utopia-php/compression": "0.1.*"
+        "utopia-php/compression": "0.1.*",
+        "utopia-php/telemetry": "dev-initial-commit"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/utopia-php/telemetry"
+        }
+    ],
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",
         "laravel/pint": "^1.2",
