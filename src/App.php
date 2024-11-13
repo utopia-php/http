@@ -3,7 +3,9 @@
 namespace Utopia;
 
 use Utopia\Telemetry\Adapter as Telemetry;
-use Utopia\Telemetry\Adapter\Noop as NoopTelemetry;
+use Utopia\Telemetry\Adapter\None as NoTelemetry;
+use Utopia\Telemetry\Histogram;
+use Utopia\Telemetry\UpDownCounter;
 
 class App
 {
@@ -114,7 +116,10 @@ class App
     protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
     protected mixed $compressionSupported = [];
 
-    protected Metrics $metrics;
+    private Histogram $requestDuration;
+    private UpDownCounter $activeRequests;
+    private Histogram $requestBodySize;
+    private Histogram $responseBodySize;
 
     /**
      * App
@@ -124,7 +129,7 @@ class App
     public function __construct(string $timezone)
     {
         \date_default_timezone_set($timezone);
-        $this->metrics = new Metrics(new NoopTelemetry());
+        $this->setTelemetry(new NoTelemetry());
     }
 
     /**
@@ -159,7 +164,20 @@ class App
      */
     public function setTelemetry(Telemetry $telemetry)
     {
-        $this->metrics = new Metrics($telemetry);
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestduration
+        $this->requestDuration = $telemetry->createHistogram(
+            'http.server.request.duration',
+            's',
+            null,
+            ['ExplicitBucketBoundaries' =>  [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]]
+        );
+
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserveractive_requests
+        $this->activeRequests = $telemetry->createUpDownCounter('http.server.active_requests', '{request}');
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestbodysize
+        $this->requestBodySize = $telemetry->createHistogram('http.server.request.body.size', 'By');
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverresponsebodysize
+        $this->responseBodySize = $telemetry->createHistogram('http.server.response.body.size', 'By');
     }
 
     /**
@@ -686,14 +704,29 @@ class App
      */
     public function run(Request $request, Response $response): static
     {
-        $this->metrics->increaseActiveRequest($request);
+        $this->activeRequests->add(1, [
+            'http.request.method' => $request->getMethod(),
+            'url.scheme' => $request->getProtocol(),
+        ]);
 
         $start = microtime(true);
         $result = $this->runInternal($request, $response);
 
         $requestDuration = microtime(true) - $start;
-        $this->metrics->recordMetrics($request, $response, $this->getRoute(), $requestDuration);
-        $this->metrics->decreaseActiveRequest($request);
+        $attributes = [
+            'url.scheme' => $request->getProtocol(),
+            'http.request.method' => $request->getMethod(),
+            // use ->match(fresh: true) to get the matched internal route, not any wildcard route
+            'http.route' => $this->match($request, fresh: true)?->getPath(),
+            'http.response.status_code' => $response->getStatusCode(),
+        ];
+        $this->requestDuration->record($requestDuration, $attributes);
+        $this->requestBodySize->record($request->getSize(), $attributes);
+        $this->responseBodySize->record($response->getSize(), $attributes);
+        $this->activeRequests->add(-1, [
+            'http.request.method' => $request->getMethod(),
+            'url.scheme' => $request->getProtocol(),
+        ]);
 
         return $result;
     }

@@ -37,5 +37,11 @@
         "laravel/pint": "^1.2",
         "phpstan/phpstan": "^1.10",
         "phpbench/phpbench": "^1.2"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": false,
+            "tbachert/spi": false
+        }
     }
 }

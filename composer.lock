@@ -1843,12 +1843,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/telemetry.git",
-                "reference": "654896edcefa4cc4ce61af0944bf732febd62f95"
+                "reference": "5023d4cbcd4691a802df8cd115fd6fb767536c5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/telemetry/zipball/654896edcefa4cc4ce61af0944bf732febd62f95",
-                "reference": "654896edcefa4cc4ce61af0944bf732febd62f95",
+                "url": "https://api.github.com/repos/utopia-php/telemetry/zipball/5023d4cbcd4691a802df8cd115fd6fb767536c5b",
+                "reference": "5023d4cbcd4691a802df8cd115fd6fb767536c5b",
                 "shasum": ""
             },
             "require": {
@@ -1901,7 +1901,7 @@
                 "source": "https://github.com/utopia-php/telemetry/tree/initial-commit",
                 "issues": "https://github.com/utopia-php/telemetry/issues"
             },
-            "time": "2024-11-11T15:15:39+00:00"
+            "time": "2024-11-12T10:11:09+00:00"
         }
     ],
     "packages-dev": [
@@ -2634,16 +2634,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.12.9",
+            "version": "1.12.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "ceb937fb39a92deabc02d20709cf14b2c452502c"
+                "reference": "fc463b5d0fe906dcf19689be692c65c50406a071"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ceb937fb39a92deabc02d20709cf14b2c452502c",
-                "reference": "ceb937fb39a92deabc02d20709cf14b2c452502c",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/fc463b5d0fe906dcf19689be692c65c50406a071",
+                "reference": "fc463b5d0fe906dcf19689be692c65c50406a071",
                 "shasum": ""
             },
             "require": {
@@ -2688,7 +2688,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-11-10T17:10:04+00:00"
+            "time": "2024-11-11T15:37:09+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
