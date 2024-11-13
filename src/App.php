@@ -162,7 +162,7 @@ class App
      * @param Telemetry $telemetry
      * @return void
      */
-    public function setTelemetry(Telemetry $telemetry)
+    public function setTelemetry(Telemetry $telemetry): void
     {
         // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestduration
         $this->requestDuration = $telemetry->createHistogram(
