@@ -102,6 +102,14 @@ class App
     protected ?Route $route = null;
 
     /**
+     * Matched Route
+     *
+     * During runtime $this->route might be overwritten with the wildcard route to keep custom functions working with
+     * paths not declared in the Router. Keep a copy of the original matched app route.
+     */
+    protected ?Route $matchedRoute = null;
+
+    /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
      *
@@ -716,8 +724,7 @@ class App
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            // use ->match(fresh: true) to get the matched internal route, not any wildcard route
-            'http.route' => $this->match($request, fresh: true)?->getPath(),
+            'http.route' => $this->matchedRoute?->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -761,6 +768,7 @@ class App
 
         $method = $request->getMethod();
         $route = $this->match($request);
+        $this->matchedRoute = $route;
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
         if (self::REQUEST_METHOD_HEAD == $method) {
