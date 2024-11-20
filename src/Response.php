@@ -542,6 +542,7 @@ class Response
 
             if ($algorithm) {
                 $body = $algorithm->compress($body);
+                $this->addHeader('Content-Length', \strlen($body));
                 $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
                 $this->addHeader('X-Utopia-Compression', 'true');
                 $this->addHeader('Vary', 'Accept-Encoding');
