@@ -1,34 +1,36 @@
 services:
-    fpm:
-        build:
-            context: .
-            dockerfile: Dockerfile.fpm
-        ports:
-            - "9400:80"
-        volumes:
-            - ./src:/usr/share/nginx/html/src
-            - ./tests:/usr/share/nginx/html/tests
-        networks:
-            - testing
-        depends_on:
-            - swoole
-    swoole:
-        build:
-            context: .
-            dockerfile: Dockerfile.swoole
-        ports:
-            - "9401:80"
-        volumes:
-            - ./dev:/usr/src/code/dev:rw
-            - ./src:/usr/src/code/src
-            - ./tests:/usr/src/code/tests
-            - ./tmp/xdebug:/tmp/xdebug
-        networks:
-            - testing
+    # fpm:
+    #     build:
+    #         context: .
+    #         dockerfile: Dockerfile.fpm
+    #     ports:
+    #         - "9400:80"
+    #     volumes:
+    #         - ./src:/usr/share/nginx/html/src
+    #         - ./tests:/usr/share/nginx/html/tests
+    #     networks:
+    #         - testing
+    #     depends_on:
+    #         - swoole
+    # swoole:
+    #     build:
+    #         context: .
+    #         dockerfile: Dockerfile.swoole
+    #     ports:
+    #         - "9401:80"
+    #     volumes:
+    #         - ./dev:/usr/src/code/dev:rw
+    #         - ./src:/usr/src/code/src
+    #         - ./tests:/usr/src/code/tests
+    #         - ./tmp/xdebug:/tmp/xdebug
+    #     networks:
+    #         - testing
     swoole-coroutine:
         build:
             context: .
             dockerfile: Dockerfile.swoole_coroutines
+            args:
+                - DEBUG=true
         ports:
             - "9402:80"
         volumes:
