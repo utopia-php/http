@@ -659,4 +659,145 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
     }
+
+    public function testErrorHandlerFailure(): void
+    {
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action(function($error) {
+                throw new \Exception('Error handler failed');
+            });
+
+        $route = new Route('GET', '/path');
+        $route
+            ->action(function() {
+                throw new \Exception('Route action failed');
+            });
+
+        try {
+            $this->app->execute($route, new Request(), new Response());
+            $this->fail('Should have thrown an exception');
+        } catch (\Exception $e) {
+            $this->assertEquals('Error handler had an error: Error handler failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+            $this->assertInstanceOf(\Exception::class, $e->getPrevious());
+            $this->assertEquals('Error handler failed', $e->getPrevious()->getMessage());
+        }
+    }
+
+    public function testOptionsHandlerFailure(): void
+    {
+        $this->app
+            ->error()
+            ->inject('error')
+            ->action(function($error) {
+                throw new \Exception('Options error handler failed');
+            });
+
+        // Set up an options handler that throws
+        App::options()
+            ->action(function() {
+                throw new \Exception('Options handler failed');
+            });
+
+        $request = new UtopiaRequestTest();
+        $request->setMethod('OPTIONS');
+
+        try {
+            $this->app->run($request, new Response());
+            $this->fail('Should have thrown an exception');
+        } catch (\Exception $e) {
+            $this->assertEquals('Error handler had an error: Options error handler failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+        }
+    }
+
+    public function testNotFoundErrorHandlerFailure(): void
+    {
+        // Set up error handler that throws for 404 cases
+        $this->app
+            ->error()
+            ->action(function() {
+                throw new \Exception('404 error handler failed');
+            });
+
+        $request = new UtopiaRequestTest();
+        $request->setMethod('GET');
+        $request->setURI('/nonexistent-path');
+
+        try {
+            $this->app->run($request, new Response());
+            $this->fail('Should have thrown an exception');
+        } catch (\Exception $e) {
+            $this->assertEquals('Error handler had an error: 404 error handler failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+            $this->assertInstanceOf(\Exception::class, $e->getPrevious());
+            $this->assertEquals('404 error handler failed', $e->getPrevious()->getMessage());
+        }
+    }
+
+    public function testGroupErrorHandlerFailure(): void
+    {
+        // Set up group-specific error handler that throws
+        $this->app
+            ->error()
+            ->groups(['api'])
+            ->action(function() {
+                throw new \Exception('Group error handler failed');
+            });
+
+        $route = new Route('GET', '/api/test');
+        $route
+            ->groups(['api'])
+            ->action(function() {
+                throw new \Exception('Route action failed');
+            });
+
+        try {
+            $this->app->execute($route, new Request(), new Response());
+            $this->fail('Should have thrown an exception');
+        } catch (\Exception $e) {
+            $this->assertEquals('Error handler had an error: Group error handler failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+            $this->assertInstanceOf(\Exception::class, $e->getPrevious());
+            $this->assertEquals('Group error handler failed', $e->getPrevious()->getMessage());
+        }
+    }
+
+    public function testErrorHandlerChaining(): void
+    {
+        // Set up multiple error handlers to test chaining behavior
+        $this->app
+            ->error()
+            ->groups(['api'])
+            ->action(function() {
+                throw new \Exception('First error handler failed');
+            });
+
+        $this->app
+            ->error()
+            ->action(function() {
+                throw new \Exception('Second error handler failed');
+            });
+
+        $route = new Route('GET', '/api/test');
+        $route
+            ->groups(['api'])
+            ->action(function() {
+                throw new \Exception('Original error');
+            });
+
+        try {
+            $this->app->execute($route, new Request(), new Response());
+            $this->fail('Should have thrown an exception');
+        } catch (\Exception $e) {
+            $this->assertEquals('Error handler had an error: First error handler failed', $e->getMessage());
+            $this->assertEquals(500, $e->getCode());
+            
+            // Verify the error chain
+            $this->assertInstanceOf(\Exception::class, $e->getPrevious());
+            $this->assertEquals('First error handler failed', $e->getPrevious()->getMessage());
+        }
+    }
 }
