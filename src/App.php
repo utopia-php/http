@@ -800,7 +800,6 @@ class App
                         self::setResource('error', function () use ($e) {
                             return $e;
                         });
-
                         try {
                             $arguments = $this->getArguments($error, [], $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
