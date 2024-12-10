@@ -800,7 +800,12 @@ class App
                         self::setResource('error', function () use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                        try {
+                            $arguments = $this->getArguments($error, [], $request->getParams());
+                            \call_user_func_array($error->getAction(), $arguments);
+                        } catch (\Throwable $e) {
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        }
                     }
                 }
             }
@@ -838,7 +843,12 @@ class App
                         self::setResource('error', function () use ($e) {
                             return $e;
                         });
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                        try {
+                            $arguments = $this->getArguments($error, [], $request->getParams());
+                            \call_user_func_array($error->getAction(), $arguments);
+                        } catch (\Throwable $e) {
+                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        }
                     }
                 }
             }
@@ -848,7 +858,12 @@ class App
                     self::setResource('error', function () {
                         return new Exception('Not Found', 404);
                     });
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                    try {
+                        $arguments = $this->getArguments($error, [], $request->getParams());
+                        \call_user_func_array($error->getAction(), $arguments);
+                    } catch (\Throwable $e) {
+                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                    }
                 }
             }
         }
