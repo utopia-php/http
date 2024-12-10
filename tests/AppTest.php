@@ -665,13 +665,13 @@ class AppTest extends TestCase
         $this->app
             ->error()
             ->inject('error')
-            ->action(function($error) {
+            ->action(function ($error) {
                 throw new \Exception('Error handler failed');
             });
 
         $route = new Route('GET', '/path');
         $route
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('Route action failed');
             });
 
@@ -691,13 +691,13 @@ class AppTest extends TestCase
         $this->app
             ->error()
             ->inject('error')
-            ->action(function($error) {
+            ->action(function ($error) {
                 throw new \Exception('Options error handler failed');
             });
 
         // Set up an options handler that throws
         App::options()
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('Options handler failed');
             });
 
@@ -718,7 +718,7 @@ class AppTest extends TestCase
         // Set up error handler that throws for 404 cases
         $this->app
             ->error()
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('404 error handler failed');
             });
 
@@ -743,14 +743,14 @@ class AppTest extends TestCase
         $this->app
             ->error()
             ->groups(['api'])
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('Group error handler failed');
             });
 
         $route = new Route('GET', '/api/test');
         $route
             ->groups(['api'])
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('Route action failed');
             });
 
@@ -771,20 +771,20 @@ class AppTest extends TestCase
         $this->app
             ->error()
             ->groups(['api'])
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('First error handler failed');
             });
 
         $this->app
             ->error()
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('Second error handler failed');
             });
 
         $route = new Route('GET', '/api/test');
         $route
             ->groups(['api'])
-            ->action(function() {
+            ->action(function () {
                 throw new \Exception('Original error');
             });
 
@@ -794,7 +794,7 @@ class AppTest extends TestCase
         } catch (\Exception $e) {
             $this->assertEquals('Error handler had an error: First error handler failed', $e->getMessage());
             $this->assertEquals(500, $e->getCode());
-            
+
             // Verify the error chain
             $this->assertInstanceOf(\Exception::class, $e->getPrevious());
             $this->assertEquals('First error handler failed', $e->getPrevious()->getMessage());
