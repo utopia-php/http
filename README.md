@@ -41,7 +41,7 @@ $user
     ->inject('request') // We can insert and use other injections as well
     ->setCallback(fn (Request $request) => $request->getHeader('x-user-id', 'John Doe'));
 
-$container->add($user);
+$container->set($user);
     
 // Defining Route    
 Http::get('/hello-world') 
