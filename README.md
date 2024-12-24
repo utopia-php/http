@@ -96,7 +96,7 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server(), new Container() 'America/New_York');
+$http = new Http(new Server(), new Container(), 'America/New_York');
 $http->start();
 ```
 
