@@ -364,7 +364,7 @@ abstract class Response
      * @param  string  $key
      * @param  string  $value
      */
-    public function addHeader(string $key, string $value): static
+    public function addHeader(string $key, ?string $value): static
     {
         $this->headers[$key] = $value;
 
@@ -413,7 +413,7 @@ abstract class Response
      * @param  bool  $httponly
      * @param  string  $sameSite
      */
-    public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
+    public function addCookie(string $name, ?string $value = null, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httponly = null, ?string $sameSite = null): static
     {
         $name = strtolower($name);
 

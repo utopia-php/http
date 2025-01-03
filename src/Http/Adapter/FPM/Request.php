@@ -36,7 +36,7 @@ class Request extends UtopiaRequest
      * @param  string|null  $default
      * @return string|null
      */
-    public function getServer(string $key, string $default = null): ?string
+    public function getServer(string $key, ?string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
     }
