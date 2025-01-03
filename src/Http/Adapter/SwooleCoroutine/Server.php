@@ -9,7 +9,7 @@ class Server extends Adapter
 {
     protected SwooleServer $server;
 
-    public function __construct(string $host, string $port = null, array $settings = [])
+    public function __construct(string $host, ?string $port = null, array $settings = [])
     {
         $this->server = new SwooleServer($host, $port, false, true);
         $this->server->set(\array_merge($settings, [
