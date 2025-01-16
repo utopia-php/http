@@ -598,8 +598,9 @@ class Response
 
         $this->appendCookies();
 
-        // Compress body
+        // Compress body only if all conditions are met:
         if (
+            empty($this->headers['content-encoding']) &&
             !empty($this->acceptEncoding) &&
             $this->isCompressible($this->contentType) &&
             strlen($body) > $this->compressionMinSize
