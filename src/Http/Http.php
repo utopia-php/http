@@ -4,6 +4,10 @@ namespace Utopia\Http;
 
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
+use Utopia\Telemetry\Adapter as Telemetry;
+use Utopia\Telemetry\Adapter\None as NoTelemetry;
+use Utopia\Telemetry\Histogram;
+use Utopia\Telemetry\UpDownCounter;
 use Utopia\Servers\Base;
 
 class Http extends Base
@@ -49,6 +53,11 @@ class Http extends Base
     protected string|null $requestClass = null;
     protected string|null $responseClass = null;
 
+    private Histogram $requestDuration;
+    private UpDownCounter $activeRequests;
+    private Histogram $requestBodySize;
+    private Histogram $responseBodySize;
+
     /**
      * Http
      *
@@ -61,6 +70,7 @@ class Http extends Base
         $this->files = new Files();
         $this->server = $server;
         $this->container = $container;
+        $this->setTelemetry(new NoTelemetry());
     }
 
     /**
@@ -77,6 +87,30 @@ class Http extends Base
     public function setRequestClass(string $requestClass)
     {
         $this->requestClass = $requestClass;
+    }
+
+    /**
+     * Set telemetry adapter.
+     *
+     * @param Telemetry $telemetry
+     * @return void
+     */
+    public function setTelemetry(Telemetry $telemetry): void
+    {
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestduration
+        $this->requestDuration = $telemetry->createHistogram(
+            'http.server.request.duration',
+            's',
+            null,
+            ['ExplicitBucketBoundaries' =>  [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]]
+        );
+
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserveractive_requests
+        $this->activeRequests = $telemetry->createUpDownCounter('http.server.active_requests', '{request}');
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestbodysize
+        $this->requestBodySize = $telemetry->createHistogram('http.server.request.body.size', 'By');
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverresponsebodysize
+        $this->responseBodySize = $telemetry->createHistogram('http.server.response.body.size', 'By');
     }
 
     /**
@@ -477,14 +511,51 @@ class Http extends Base
     }
 
     /**
-     * Run
+     * Run: wrapper function to record telemetry. All domain logic should happen in `runInternal`.
+     */
+    public function run(Container $context): static
+    {
+        $request = $context->get('request');
+        /** @var Request $request */
+        $response = $context->get('response');
+        /** @var Response $response */
+
+        $this->activeRequests->add(1, [
+            'http.request.method' => $request->getMethod(),
+            'url.scheme' => $request->getProtocol(),
+        ]);
+
+        $start = microtime(true);
+        $result = $this->runInternal($context);
+
+        $requestDuration = microtime(true) - $start;
+        $attributes = [
+            'url.scheme' => $request->getProtocol(),
+            'http.request.method' => $request->getMethod(),
+            // use ->match() to get the matched request route, not the wildcard route
+            'http.route' => $this->match($request)?->getPath(),
+            'http.response.status_code' => $response->getStatusCode(),
+        ];
+        $this->requestDuration->record($requestDuration, $attributes);
+        $this->requestBodySize->record($request->getSize(), $attributes);
+        $this->responseBodySize->record($response->getSize(), $attributes);
+        $this->activeRequests->add(-1, [
+            'http.request.method' => $request->getMethod(),
+            'url.scheme' => $request->getProtocol(),
+        ]);
+
+        return $result;
+    }
+
+    /**
+     * Run internal
      *
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
      *
      * @param Container $context
      */
-    public function run(Container $context): static
+    private function runInternal(Container $context): static
     {
         $request = $context->get('request');
         /** @var Request $request */

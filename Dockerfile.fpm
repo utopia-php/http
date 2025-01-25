@@ -13,11 +13,11 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM php:8.0-cli-alpine as final
+FROM php:8.1-cli-alpine as final
 LABEL maintainer="team@appwrite.io"
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PHP_VERSION=8
+    PHP_VERSION=82
 
 RUN \
   apk add --no-cache --virtual .deps \
