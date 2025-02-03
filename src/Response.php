@@ -182,21 +182,75 @@ class Response
     ];
 
     /**
-     * Mime Types with compression support
+     * Mime Types with compressible content
      *
      * @var array
      */
-    protected $compressed = [
+    private static $compressible = [
+        // Text
+        'text/html' => true,
+        'text/richtext' => true,
         'text/plain' => true,
         'text/css' => true,
-        'text/javascript' => true,
+        'text/x-script' => true,
+        'text/x-component' => true,
+        'text/x-java-source' => true,
+        'text/x-markdown' => true,
+        
+        // JavaScript
         'application/javascript' => true,
-        'text/html' => true,
-        'text/html; charset=UTF-8' => true,
+        'application/x-javascript' => true,
+        'text/javascript' => true,
+        'text/js' => true,
+        
+        // Icons
+        'image/x-icon' => true,
+        'image/vnd.microsoft.icon' => true,
+        
+        // Scripts
+        'application/x-perl' => true,
+        'application/x-httpd-cgi' => true,
+        
+        // XML and JSON
+        'text/xml' => true,
+        'application/xml' => true,
+        'application/rss+xml' => true,
+        'application/vnd.api+json' => true,
+        'application/x-protobuf' => true,
         'application/json' => true,
-        'application/json; charset=UTF-8' => true,
+        'application/manifest+json' => true,
+        'application/ld+json' => true,
+        'application/graphql+json' => true,
+        'application/geo+json' => true,
+        
+        // Multipart
+        'multipart/bag' => true,
+        'multipart/mixed' => true,
+        
+        // XHTML
+        'application/xhtml+xml' => true,
+        
+        // Fonts
+        'font/ttf' => true,
+        'font/otf' => true,
+        'font/x-woff' => true,
         'image/svg+xml' => true,
-        'application/xml+rss' => true,
+        'application/vnd.ms-fontobject' => true,
+        'application/ttf' => true,
+        'application/x-ttf' => true,
+        'application/otf' => true,
+        'application/x-otf' => true,
+        'application/truetype' => true,
+        'application/opentype' => true,
+        'application/x-opentype' => true,
+        'application/font-woff' => true,
+        'application/eot' => true,
+        'application/font' => true,
+        'application/font-sfnt' => true,
+        
+        // WebAssembly
+        'application/wasm' => true,
+        'application/javascript-binast' => true,
     ];
 
     public const COOKIE_SAMESITE_NONE = 'None';
@@ -270,6 +324,18 @@ class Response
     public function __construct(float $time = 0)
     {
         $this->startTime = (!empty($time)) ? $time : \microtime(true);
+    }
+
+    private function isCompressible(?string $contentType): bool
+    {
+        if (!$contentType) {
+            return false;
+        }
+
+        // Strip any parameters (e.g. ;charset=utf-8)
+        $contentType = strtolower(trim(explode(';', $contentType)[0]));
+
+        return isset(self::$compressible[$contentType]);
     }
 
     /**
@@ -536,7 +602,7 @@ class Response
         if (
             empty($this->headers['content-encoding']) &&
             !empty($this->acceptEncoding) &&
-            isset($this->compressed[$this->contentType]) &&
+            $this->isCompressible($this->contentType) &&
             strlen($body) > $this->compressionMinSize
         ) {
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
