@@ -2,7 +2,7 @@
 
 namespace Utopia\Validator\URL;
 
-class Patterns
+class Pattern
 {
     public array $schemes;
     public array $hosts;
