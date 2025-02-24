@@ -43,4 +43,17 @@ class ResponseTest extends TestCase
         $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
         $this->assertEquals(204, $response['headers']['status-code']);
     }
+
+    public function testEarlyResponse()
+    {
+        // Ensure response from action is not recieved
+        $response = $this->client->call(Client::METHOD_GET, '/early-response');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertNotEquals('Action response', $response['body']);
+
+        // 2nd request would catch if action from first ran
+        $response = $this->client->call(Client::METHOD_GET, '/early-response');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('Init response. Actioned before: no', $response['body']);
+    }
 }
