@@ -639,6 +639,8 @@ class Response
             $this->end();
         }
 
+        $this->sent = true;
+
         $this->disablePayload();
     }
 

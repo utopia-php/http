@@ -46,6 +46,25 @@ App::get('/humans.txt')
         $response->noContent();
     });
 
+
+// Endpoints for early response
+// Meant to run twice, so init hook can know if action ran
+$earlyResponseAction = 'no';
+App::init()
+    ->groups(['early-response'])
+    ->inject('response')
+    ->action(function (Response $response) use ($earlyResponseAction) {
+        $response->send('Init response. Actioned before: ' . $earlyResponseAction);
+    });
+
+App::get('/early-response')
+    ->groups(['early-response'])
+    ->inject('response')
+    ->action(function (Response $response) use (&$earlyResponseAction) {
+        $earlyResponseAction = 'yes';
+        $response->send('Action response');
+    });
+
 $request = new Request();
 $response = new Response();
 
