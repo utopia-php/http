@@ -196,21 +196,21 @@ class Response
         'text/x-component' => true,
         'text/x-java-source' => true,
         'text/x-markdown' => true,
-        
+
         // JavaScript
         'application/javascript' => true,
         'application/x-javascript' => true,
         'text/javascript' => true,
         'text/js' => true,
-        
+
         // Icons
         'image/x-icon' => true,
         'image/vnd.microsoft.icon' => true,
-        
+
         // Scripts
         'application/x-perl' => true,
         'application/x-httpd-cgi' => true,
-        
+
         // XML and JSON
         'text/xml' => true,
         'application/xml' => true,
@@ -222,14 +222,14 @@ class Response
         'application/ld+json' => true,
         'application/graphql+json' => true,
         'application/geo+json' => true,
-        
+
         // Multipart
         'multipart/bag' => true,
         'multipart/mixed' => true,
-        
+
         // XHTML
         'application/xhtml+xml' => true,
-        
+
         // Fonts
         'font/ttf' => true,
         'font/otf' => true,
@@ -247,7 +247,7 @@ class Response
         'application/eot' => true,
         'application/font' => true,
         'application/font-sfnt' => true,
-        
+
         // WebAssembly
         'application/wasm' => true,
         'application/javascript-binast' => true,
@@ -598,8 +598,9 @@ class Response
 
         $this->appendCookies();
 
-        // Compress body
+        // Compress body only if all conditions are met:
         if (
+            empty($this->headers['content-encoding']) &&
             !empty($this->acceptEncoding) &&
             $this->isCompressible($this->contentType) &&
             strlen($body) > $this->compressionMinSize
