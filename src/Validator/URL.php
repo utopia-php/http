@@ -3,6 +3,7 @@
 namespace Utopia\Validator;
 
 use Utopia\Validator;
+use Utopia\Validator\URL\Pattern;
 
 /**
  * URL
@@ -13,14 +14,17 @@ use Utopia\Validator;
  */
 class URL extends Validator
 {
-    protected array $allowedSchemes;
+    /**
+     * @var array<Pattern>
+     */
+    protected array $patterns;
 
     /**
-     * @param array $allowedSchemes
+     * @param array<Pattern> $patterns
      */
-    public function __construct(array $allowedSchemes = [])
+    public function __construct(array $patterns = [])
     {
-        $this->allowedSchemes = $allowedSchemes;
+        $this->patterns = $patterns;
     }
 
     /**
@@ -32,8 +36,8 @@ class URL extends Validator
      */
     public function getDescription(): string
     {
-        if (!empty($this->allowedSchemes)) {
-            return 'Value must be a valid URL with following schemes (' . \implode(', ', $this->allowedSchemes) . ')';
+        if (!empty($this->patterns)) {
+            return 'Value must be a valid URL matching one of the following patterns (' . \implode(', ', $this->patterns) . ')';
         }
 
         return 'Value must be a valid URL';
@@ -49,15 +53,38 @@ class URL extends Validator
      */
     public function isValid($value): bool
     {
-        if (\filter_var($value, FILTER_VALIDATE_URL) === false) {
+        $parsed = $this->parseUrl($value);
+        if (!$parsed) {
             return false;
         }
 
-        if (!empty($this->allowedSchemes) && !\in_array(\parse_url($value, PHP_URL_SCHEME), $this->allowedSchemes)) {
-            return false;
+        if (empty($this->patterns)) {
+            return true;
         }
 
-        return true;
+        foreach ($this->patterns as $pattern) {
+            $schemeMatch = empty($pattern->schemes) || in_array($parsed['scheme'], $pattern->schemes);
+            $hostMatch = empty($pattern->hosts) || in_array($parsed['host'], $pattern->hosts);
+
+            if ($schemeMatch && $hostMatch) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function parseUrl($value): mixed
+    {
+        $parsed = \parse_url($value);
+
+        // `parse_url` returns false if the URL is invalid, and when hostname is missing.
+        // In this case, try to extract the scheme using regex.
+        if (!$parsed && $matches = \preg_match('/^([a-z]+):\/\//', $value, $matches)) {
+            $parsed = ['scheme' => $matches[1] ?? ''];
+        }
+
+        return $parsed;
     }
 
     /**
