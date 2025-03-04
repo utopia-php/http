@@ -86,7 +86,7 @@ class Router
         }
 
         foreach ($params as $key => $index) {
-            $route->setPathParam($key, $index);
+            $route->setPathParam($path, $key, $index);
         }
 
         self::$routes[$route->getMethod()][$path] = $route;
@@ -108,7 +108,7 @@ class Router
         }
 
         foreach ($params as $key => $index) {
-            $route->setPathParam($key, $index);
+            $route->setPathParam($alias, $key, $index);
         }
 
         self::$routes[$route->getMethod()][$alias] = $route;
@@ -142,7 +142,7 @@ class Router
             );
 
             if (array_key_exists($match, self::$routes[$method])) {
-                return self::$routes[$method][$match];
+                return (self::$routes[$method][$match])->path($match);
             }
         }
 
@@ -151,7 +151,7 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (array_key_exists($match, self::$routes[$method])) {
-            return self::$routes[$method][$match];
+            return (self::$routes[$method][$match])->path($match);
         }
 
         /**
@@ -161,7 +161,7 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (array_key_exists($match, self::$routes[$method])) {
-                return self::$routes[$method][$match];
+                return (self::$routes[$method][$match])->path($match);
             }
         }
 

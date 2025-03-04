@@ -59,6 +59,15 @@ App::post('/functions/deployment')
         $response->send('ID:' . $deploymentId);
     });
 
+App::post('/databases/:databaseId/collections/:collectionId')
+    ->alias('/database/collections/:collectionId')
+    ->param('databaseId', '', new Text(64, 0), '', true)
+    ->param('collectionId', '', new Text(64, 0), '', true)
+    ->inject('response')
+    ->action(function (string $databaseId, string $collectionId, Response $response) {
+        $response->send($databaseId . ';' . $collectionId);
+    });
+
 // Endpoints for early response
 // Meant to run twice, so init hook can know if action ran
 $earlyResponseAction = 'no';

@@ -28,7 +28,7 @@ class Route extends Hook
     /**
      * Path params.
      *
-     * @var array<string,string>
+     * @var array<string,array<string, string>>
      */
     protected array $pathParams = [];
 
@@ -141,9 +141,9 @@ class Route extends Hook
      * @param int $index
      * @return void
      */
-    public function setPathParam(string $key, int $index): void
+    public function setPathParam(string $path, string $key, int $index): void
     {
-        $this->pathParams[$key] = $index;
+        $this->pathParams[$path][$key] = $index;
     }
 
     /**
@@ -157,7 +157,7 @@ class Route extends Hook
         $pathValues = [];
         $parts = explode('/', ltrim($request->getURI(), '/'));
 
-        foreach ($this->pathParams as $key => $index) {
+        foreach (($this->pathParams[$this->getPath()] ?? []) as $key => $index) {
             if (array_key_exists($index, $parts)) {
                 $pathValues[$key] = $parts[$index];
             }
