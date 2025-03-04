@@ -46,6 +46,18 @@ App::get('/humans.txt')
         $response->noContent();
     });
 
+App::post('/functions/deployment')
+    ->alias('/functions/deployment/:deploymentId')
+    ->param('deploymentId', '', new Text(64, 0), '', true)
+    ->inject('response')
+    ->action(function (string $deploymentId, Response $response) {
+        if (empty($deploymentId)) {
+            $response->noContent();
+            return;
+        }
+
+        $response->send('ID:' . $deploymentId);
+    });
 
 // Endpoints for early response
 // Meant to run twice, so init hook can know if action ran

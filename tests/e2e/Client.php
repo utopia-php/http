@@ -54,17 +54,35 @@ class Client
     public function call(string $method, string $path = '', array $headers = [], array $params = [])
     {
         usleep(50000);
+        $url = $this->baseUrl.$path.(($method == self::METHOD_GET && !empty($params)) ? '?'.http_build_query($params) : '');
         $ch = curl_init($this->baseUrl.$path.(($method == self::METHOD_GET && !empty($params)) ? '?'.http_build_query($params) : ''));
         $responseHeaders = [];
         $responseStatus = -1;
         $responseType = '';
         $responseBody = '';
 
+        $query = match ($headers['content-type']) {
+            'application/json' => \json_encode($params),
+            'text/plain' => $params,
+            default => \http_build_query($params),
+        };
+
+        $formattedHeaders = [];
+        foreach ($headers as $key => $value) {
+            if (strtolower($key) === 'accept-encoding') {
+                curl_setopt($ch, CURLOPT_ENCODING, $value);
+                continue;
+            } else {
+                $formattedHeaders[] = $key . ': ' . $value;
+            }
+        }
+
+        curl_setopt($ch, CURLOPT_PATH_AS_IS, 1);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36');
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $formattedHeaders);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $header) use (&$responseHeaders) {
@@ -79,6 +97,10 @@ class Client
 
             return $len;
         });
+
+        if ($method !== self::METHOD_GET) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
+        }
 
         $responseBody = curl_exec($ch);
         $responseStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
