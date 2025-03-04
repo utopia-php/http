@@ -61,7 +61,7 @@ class Client
         $responseType = '';
         $responseBody = '';
 
-        $query = match ($headers['content-type']) {
+        $query = match ($headers['content-type'] ?? '') {
             'application/json' => \json_encode($params),
             'text/plain' => $params,
             default => \http_build_query($params),

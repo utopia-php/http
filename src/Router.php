@@ -101,10 +101,14 @@ class Router
      */
     public static function addRouteAlias(string $path, Route $route): void
     {
-        [$alias] = self::preparePath($path);
+        [$alias, $params] = self::preparePath($path);
 
         if (array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
+        }
+
+        foreach ($params as $key => $index) {
+            $route->setPathParam($key, $index);
         }
 
         self::$routes[$route->getMethod()][$alias] = $route;
