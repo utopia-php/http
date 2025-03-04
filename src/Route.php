@@ -46,6 +46,8 @@ class Route extends Hook
      */
     protected int $order;
 
+    protected string $getMatchedPath = '';
+
     public function __construct(string $method, string $path)
     {
         $this->path($path);
@@ -53,6 +55,17 @@ class Route extends Hook
         $this->order = ++self::$counter;
         $this->action = function (): void {
         };
+    }
+
+    public function setMatchedPath(string $path): self
+    {
+        $this->getMatchedPath = $path;
+        return $this;
+    }
+
+    public function getMatchedPath(): string
+    {
+        return $this->getMatchedPath;
     }
 
     /**
@@ -152,12 +165,12 @@ class Route extends Hook
      * @param \Utopia\Request $request
      * @return array
      */
-    public function getPathValues(Request $request): array
+    public function getPathValues(Request $request, string $path): array
     {
         $pathValues = [];
         $parts = explode('/', ltrim($request->getURI(), '/'));
 
-        foreach (($this->pathParams[$this->getPath()] ?? []) as $key => $index) {
+        foreach (($this->pathParams[$path] ?? []) as $key => $index) {
             if (array_key_exists($index, $parts)) {
                 $pathValues[$key] = $parts[$index];
             }

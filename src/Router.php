@@ -142,7 +142,9 @@ class Router
             );
 
             if (array_key_exists($match, self::$routes[$method])) {
-                return (self::$routes[$method][$match])->path($match);
+                $route = self::$routes[$method][$match];
+                $route->setMatchedPath($match);
+                return $route;
             }
         }
 
@@ -151,7 +153,9 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (array_key_exists($match, self::$routes[$method])) {
-            return (self::$routes[$method][$match])->path($match);
+            $route = self::$routes[$method][$match];
+            $route->setMatchedPath($match);
+            return $route;
         }
 
         /**
@@ -161,7 +165,9 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (array_key_exists($match, self::$routes[$method])) {
-                return (self::$routes[$method][$match])->path($match);
+                $route = self::$routes[$method][$match];
+                $route->setMatchedPath($match);
+                return $route;
             }
         }
 
@@ -196,7 +202,7 @@ class Router
      * @param string $path
      * @return array
      */
-    protected static function preparePath(string $path): array
+    public static function preparePath(string $path): array
     {
         $parts = array_values(array_filter(explode('/', $path)));
         $prepare = '';

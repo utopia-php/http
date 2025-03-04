@@ -579,7 +579,9 @@ class App
     {
         $arguments = [];
         $groups = $route->getGroups();
-        $pathValues = $route->getPathValues($request);
+
+        $preparedPath = Router::preparePath($route->getMatchedPath());
+        $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
             if ($route->getHook()) {
