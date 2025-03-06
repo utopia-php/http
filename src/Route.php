@@ -154,7 +154,7 @@ class Route extends Hook
      * @param int $index
      * @return void
      */
-    public function setPathParam(string $key, int $index, string $path = ''): void
+    public function setPathParam(string $path, string $key, int $index): void
     {
         $this->pathParams[$path][$key] = $index;
     }
@@ -165,18 +165,12 @@ class Route extends Hook
      * @param \Utopia\Request $request
      * @return array
      */
-    public function getPathValues(Request $request, string $path = ''): array
+    public function getPathValues(Request $request, string $path): array
     {
         $pathValues = [];
         $parts = explode('/', ltrim($request->getURI(), '/'));
 
-        if(empty($path)) {
-            $pathParams = $this->pathParams[$path] ?? $this->pathParams[0] ?? [];
-        } else {
-            $pathParams = $this->pathParams[$path] ?? [];
-        }
-
-        foreach ($pathParams as $key => $index) {
+        foreach (($this->pathParams[$path] ?? []) as $key => $index) {
             if (array_key_exists($index, $parts)) {
                 $pathValues[$key] = $parts[$index];
             }

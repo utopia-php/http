@@ -86,7 +86,7 @@ class Router
         }
 
         foreach ($params as $key => $index) {
-            $route->setPathParam($key, $index, $path);
+            $route->setPathParam($path, $key, $index);
         }
 
         self::$routes[$route->getMethod()][$path] = $route;
@@ -108,7 +108,7 @@ class Router
         }
 
         foreach ($params as $key => $index) {
-            $route->setPathParam($key, $index, $alias);
+            $route->setPathParam($alias, $key, $index);
         }
 
         self::$routes[$route->getMethod()][$alias] = $route;
