@@ -170,8 +170,8 @@ class Route extends Hook
         $pathValues = [];
         $parts = explode('/', ltrim($request->getURI(), '/'));
 
-        if(empty($path)) {
-            $pathParams = $this->pathParams[$path] ?? $this->pathParams[0] ?? [];
+        if (empty($path)) {
+            $pathParams = $this->pathParams[$path] ?? \array_values($this->pathParams)[0] ?? [];
         } else {
             $pathParams = $this->pathParams[$path] ?? [];
         }
