@@ -56,4 +56,30 @@ class ResponseTest extends TestCase
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals('Init response. Actioned before: no', $response['body']);
     }
+
+    public function testAliasWithParameter(): void
+    {
+        $response = $this->client->call(Client::METHOD_POST, '/functions/deployment', [
+            'content-type' => 'application/json'
+        ], [
+            'deploymentId' => 'deployment1'
+        ]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('ID:deployment1', $response['body']);
+
+        $response = $this->client->call(Client::METHOD_POST, '/functions/deployment');
+        $this->assertEquals(204, $response['headers']['status-code']);
+
+        $response = $this->client->call(Client::METHOD_POST, '/functions/deployment/deployment2');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('ID:deployment2', $response['body']);
+
+        $response = $this->client->call(Client::METHOD_POST, '/database/collections/col1');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(';col1', $response['body']);
+
+        $response = $this->client->call(Client::METHOD_POST, '/databases/db2/collections/col2');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('db2;col2', $response['body']);
+    }
 }
