@@ -46,7 +46,7 @@ class Route extends Hook
      */
     protected int $order;
 
-    protected string $getMatchedPath = '';
+    protected string $matchedPath = '';
 
     public function __construct(string $method, string $path)
     {
@@ -65,7 +65,7 @@ class Route extends Hook
 
     public function getMatchedPath(): string
     {
-        return $this->getMatchedPath;
+        return $this->matchedPath;
     }
 
     /**
