@@ -59,7 +59,7 @@ class Route extends Hook
 
     public function setMatchedPath(string $path): self
     {
-        $this->getMatchedPath = $path;
+        $this->matchedPath = $path;
         return $this;
     }
 
