@@ -77,6 +77,8 @@ class Response
 
     public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
 
+    public const STATUS_CODE_PERMANENT_REDIRECT = 308;
+
     public const STATUS_CODE_BAD_REQUEST = 400;
 
     public const STATUS_CODE_UNAUTHORIZED = 401;
