@@ -429,6 +429,8 @@ class Response
         if (!\array_key_exists($code, $this->statusCodes)) {
             var_dump("this is the code throwing the error");
             var_dump($code);
+            var_dump("array");
+            var_dump($this->statusCodes);
             throw new Exception('Unknown HTTP status code');
         }
 
