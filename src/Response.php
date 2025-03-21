@@ -426,6 +426,7 @@ class Response
      */
     public function setStatusCode(int $code = 200): static
     {
+        var_dump("hello");
         if (!\array_key_exists($code, $this->statusCodes)) {
             throw new Exception('Unknown HTTP status code');
         }
