@@ -154,6 +154,7 @@ class Response
         self::STATUS_CODE_USE_PROXY => 'Use Proxy',
         self::STATUS_CODE_UNUSED => '(Unused)',
         self::STATUS_CODE_TEMPORARY_REDIRECT => 'Temporary Redirect',
+        self::STATUS_CODE_PERMANENT_REDIRECT => 'Permanent Redirect',
         self::STATUS_CODE_BAD_REQUEST => 'Bad Request',
         self::STATUS_CODE_UNAUTHORIZED => 'Unauthorized',
         self::STATUS_CODE_PAYMENT_REQUIRED => 'Payment Required',
