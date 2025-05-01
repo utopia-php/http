@@ -20,6 +20,8 @@ class Http
     public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
 
     public const REQUEST_METHOD_HEAD = 'HEAD';
+    
+    public const REQUEST_METHOD_ANY = '*';
 
     /**
      * Mode Type
@@ -216,6 +218,22 @@ class Http
         self::$wildcardRoute = new Route('', '');
 
         return self::$wildcardRoute;
+    }
+    
+    /**
+     * Any
+     * 
+     * Add a route that will match any method but only for the specified path
+     * 
+     * @param string $path
+     * @return Route
+     */
+    public static function any(string $path): Route
+    {
+        $route = new Route(self::REQUEST_METHOD_ANY, $path);
+        Router::addRoute($route);
+        
+        return $route;
     }
 
     /**

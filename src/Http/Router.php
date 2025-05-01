@@ -23,6 +23,7 @@ class Router
         Http::REQUEST_METHOD_PUT => [],
         Http::REQUEST_METHOD_PATCH => [],
         Http::REQUEST_METHOD_DELETE => [],
+        Http::REQUEST_METHOD_ANY => [],
     ];
 
     /**
@@ -127,6 +128,7 @@ class Router
         $length = count($parts) - 1;
         $filteredParams = array_filter(self::$params, fn ($i) => $i <= $length);
 
+        // Try to match exact route for the specific method
         foreach (self::combinations($filteredParams) as $sample) {
             $sample = array_filter($sample, fn (int $i) => $i <= $length);
             $match = implode(
@@ -139,6 +141,24 @@ class Router
 
             if (array_key_exists($match, self::$routes[$method])) {
                 return self::$routes[$method][$match];
+            }
+        }
+
+        // Try to match exact route with any method
+        if (array_key_exists(Http::REQUEST_METHOD_ANY, self::$routes)) {
+            foreach (self::combinations($filteredParams) as $sample) {
+                $sample = array_filter($sample, fn (int $i) => $i <= $length);
+                $match = implode(
+                    '/',
+                    array_replace(
+                        $parts,
+                        array_fill_keys($sample, self::PLACEHOLDER_TOKEN)
+                    )
+                );
+    
+                if (array_key_exists($match, self::$routes[Http::REQUEST_METHOD_ANY])) {
+                    return self::$routes[Http::REQUEST_METHOD_ANY][$match];
+                }
             }
         }
 
@@ -231,6 +251,7 @@ class Router
             Http::REQUEST_METHOD_PUT => [],
             Http::REQUEST_METHOD_PATCH => [],
             Http::REQUEST_METHOD_DELETE => [],
+            Http::REQUEST_METHOD_ANY => [],
         ];
     }
 }
