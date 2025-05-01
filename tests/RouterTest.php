@@ -142,4 +142,52 @@ final class RouterTest extends TestCase
 
         $this->assertNull(Router::match(Http::REQUEST_METHOD_POST, '/404'));
     }
+
+    public function testCanMatchAnyMethod(): void
+    {
+        $route = new Route(Http::REQUEST_METHOD_ANY, '/any-route');
+
+        Router::addRoute($route);
+
+        // Should match any HTTP method for the specific path
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/any-route'));
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/any-route'));
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_PUT, '/any-route'));
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_PATCH, '/any-route'));
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_DELETE, '/any-route'));
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_OPTIONS, '/any-route'));
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_HEAD, '/any-route'));
+
+        // But should not match other paths
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_GET, '/different-path'));
+    }
+
+    public function testMethodSpecificHasPrecedenceOverAny(): void
+    {
+        $anyRoute = new Route(Http::REQUEST_METHOD_ANY, '/test-route');
+        $getRoute = new Route(Http::REQUEST_METHOD_GET, '/test-route');
+
+        Router::addRoute($anyRoute);
+        Router::addRoute($getRoute);
+
+        // GET request should match the GET-specific route
+        $this->assertEquals($getRoute, Router::match(Http::REQUEST_METHOD_GET, '/test-route'));
+
+        // Other methods should match the "any" route
+        $this->assertEquals($anyRoute, Router::match(Http::REQUEST_METHOD_POST, '/test-route'));
+        $this->assertEquals($anyRoute, Router::match(Http::REQUEST_METHOD_PUT, '/test-route'));
+    }
+
+    public function testHeadRequestMatchesGetRoute(): void
+    {
+        $getRoute = new Route(Http::REQUEST_METHOD_GET, '/test-path');
+
+        Router::addRoute($getRoute);
+
+        // HEAD request should match GET route
+        $this->assertEquals($getRoute, Router::match(Http::REQUEST_METHOD_HEAD, '/test-path'));
+
+        // Verify no HEAD-specific route exists
+        $this->assertEmpty(Router::getRoutes()[Http::REQUEST_METHOD_HEAD] ?? []);
+    }
 }

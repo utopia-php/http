@@ -673,4 +673,78 @@ class HttpTest extends TestCase
 
         $this->assertEquals('generated: generated-value', $result);
     }
+
+    public function testAnyRoute(): void
+    {
+        Http::reset();
+
+        $method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $uri = $_SERVER['REQUEST_URI'] ?? null;
+
+        $methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+        $responseTexts = [];
+
+        // Create a route that matches any method for a specific path
+        Http::any('/specific-path')
+            ->inject('response')
+            ->action(function($response) {
+                $response->send('ANY METHOD ROUTE');
+            });
+
+        // Create method-specific routes for a different path
+        Http::get('/method-specific')
+            ->inject('response')
+            ->action(function($response) {
+                $response->send('GET ROUTE');
+            });
+
+        Http::post('/method-specific')
+            ->inject('response')
+            ->action(function($response) {
+                $response->send('POST ROUTE');
+            });
+
+        // Test with different methods on the 'any' route
+        foreach ($methods as $httpMethod) {
+            $_SERVER['REQUEST_METHOD'] = $httpMethod;
+            $_SERVER['REQUEST_URI'] = '/specific-path';
+
+            \ob_start();
+            @$this->http->run(new Request(), new Response(), '1');
+            $result = \ob_get_contents();
+            \ob_end_clean();
+
+            $responseTexts[$httpMethod] = $result;
+        }
+
+        // Check that all HTTP methods match the 'any' route
+        foreach ($methods as $httpMethod) {
+            $this->assertEquals('ANY METHOD ROUTE', $responseTexts[$httpMethod], "Method $httpMethod failed to match the 'any' route");
+        }
+
+        // Test that method-specific routes work as expected
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/method-specific';
+
+        \ob_start();
+        @$this->http->run(new Request(), new Response(), '1');
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('GET ROUTE', $result, "Method-specific GET route did not match");
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/method-specific';
+
+        \ob_start();
+        @$this->http->run(new Request(), new Response(), '1');
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('POST ROUTE', $result, "Method-specific POST route did not match");
+
+        // Restore original server state
+        $_SERVER['REQUEST_METHOD'] = $method;
+        $_SERVER['REQUEST_URI'] = $uri;
+    }
 }
