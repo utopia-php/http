@@ -16,13 +16,13 @@ jobs:
         php-version: '8.1'
 
     - name: Setup Docker
-      run: docker-compose up -d --build
+      run: docker compose up -d --build
 
     - name: Wait for Server to be ready
       run: sleep 10
 
     - name: Run FPM Tests
       run: docker compose exec fpm vendor/bin/phpunit --configuration phpunit.xml
-    
+
     - name: Run Swoole Tests
       run: docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml
