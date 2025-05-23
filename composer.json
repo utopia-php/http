@@ -22,7 +22,7 @@
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
     "require": {
-        "php": ">=8.1",
+        "php": ">=8.3",
         "utopia-php/compression": "0.1.*",
         "utopia-php/telemetry": "0.1.*"
     },

@@ -134,8 +134,11 @@ class App
      *
      * @param  string  $timezone
      */
-    public function __construct(string $timezone)
+    public function __construct(private readonly string $context, string $timezone)
     {
+        if (isset(self::$resourcesCallbacks[$context])) {
+            unset(self::$resourcesCallbacks[$context]);
+        }
         \date_default_timezone_set($timezone);
         $this->setTelemetry(new NoTelemetry());
     }
@@ -412,20 +415,30 @@ class App
             return $this;
         }
 
-        if (!\array_key_exists($name, $this->resources) || $fresh || self::$resourcesCallbacks[$name]['reset']) {
-            if (!\array_key_exists($name, self::$resourcesCallbacks)) {
+        $makeResource = function ($resourcesCallbacks) use ($name) {
+            if (!isset($resourcesCallbacks[$name])) {
                 throw new Exception('Failed to find resource: "' . $name . '"');
             }
 
-            $this->resources[$name] = \call_user_func_array(
-                self::$resourcesCallbacks[$name]['callback'],
-                $this->getResources(self::$resourcesCallbacks[$name]['injections'])
+            return \call_user_func_array(
+                $resourcesCallbacks[$name]['callback'],
+                $this->getResources($resourcesCallbacks[$name]['injections'])
             );
+        };
+
+        self::$resourcesCallbacks[$this->context] ??= [];
+        $resourcesCallbacks = &self::$resourcesCallbacks[$this->context];
+        if (!isset($resourcesCallbacks[$name])) {
+            $resourcesCallbacks = &self::$resourcesCallbacks['utopia'];
         }
 
-        self::$resourcesCallbacks[$name]['reset'] = false;
+        $this->resources[$this->context] ??= [];
+        if (!isset($this->resources[$this->context][$name]) || $fresh || $resourcesCallbacks[$name]['reset'] ?? true) {
+            $this->resources[$this->context][$name] = $makeResource($resourcesCallbacks);
+        }
 
-        return $this->resources[$name];
+        $resourcesCallbacks[$name]['reset'] = false;
+        return $this->resources[$this->context][$name];
     }
 
     /**
@@ -445,22 +458,23 @@ class App
         return $resources;
     }
 
-    /**
-     * Set a new resource callback
-     *
-     * @param  string  $name
-     * @param  callable  $callback
-     * @param  array  $injections
-     * @return void
-     *
-     * @throws Exception
-     */
-    public static function setResource(string $name, callable $callback, array $injections = []): void
+    public function setResource(string $name, callable $callback, array $injections = []): void
     {
         if ($name === 'utopia') {
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
-        self::$resourcesCallbacks[$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
+        self::$resourcesCallbacks[$this->context] ??= [];
+        self::$resourcesCallbacks[$this->context][$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
+    }
+
+    public static function setResourceCallback(string $name, callable $callback, array $injections = []): void
+    {
+        if ($name === 'utopia') {
+            throw new Exception("'utopia' is a reserved keyword.", 500);
+        }
+
+        self::$resourcesCallbacks['utopia'] ??= [];
+        self::$resourcesCallbacks['utopia'][$name] = ['callback' => $callback, 'injections' => $injections, 'reset' => true];
     }
 
     /**
@@ -628,7 +642,7 @@ class App
                 }
             }
         } catch (\Throwable $e) {
-            self::setResource('error', fn () => $e);
+            $this->setResource('error', fn () => $e);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -702,7 +716,7 @@ class App
             $arguments[$param['order']] = $value;
         }
 
-        foreach ($hook->getInjections() as $key => $injection) {
+        foreach ($hook->getInjections() as $injection) {
             $arguments[$injection['order']] = $this->getResource($injection['name']);
         }
 
@@ -720,6 +734,7 @@ class App
         ]);
 
         $start = microtime(true);
+
         $result = $this->runInternal($request, $response);
 
         $requestDuration = microtime(true) - $start;
@@ -760,13 +775,8 @@ class App
         $this->resources['request'] = $request;
         $this->resources['response'] = $response;
 
-        self::setResource('request', function () use ($request) {
-            return $request;
-        });
-
-        self::setResource('response', function () use ($response) {
-            return $response;
-        });
+        $this->setResource('request', fn () => $request);
+        $this->setResource('response', fn () => $response);
 
         $method = $request->getMethod();
         $route = $this->match($request);
@@ -799,9 +809,7 @@ class App
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
-                        });
+                        $this->setResource('error', fn () => $e);
                         try {
                             $arguments = $this->getArguments($error, [], $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
@@ -842,9 +850,7 @@ class App
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
-                        });
+                        $this->setResource('error', fn () => $e);
                         try {
                             $arguments = $this->getArguments($error, [], $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
@@ -857,9 +863,7 @@ class App
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', function () {
-                        return new Exception('Not Found', 404);
-                    });
+                    $this->setResource('error', fn() => new Exception('Not Found', 404));
                     try {
                         $arguments = $this->getArguments($error, [], $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
