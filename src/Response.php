@@ -533,7 +533,7 @@ class Response
      * @param  bool  $httponly
      * @param  string  $sameSite
      */
-    public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
+    public function addCookie(string $name, ?string $value = null, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httponly = null, ?string $sameSite = null): static
     {
         $name = strtolower($name);
 
@@ -665,7 +665,7 @@ class Response
      * @param  string  $content
      * @return void
      */
-    protected function end(string $content = null): void
+    protected function end(?string $content = null): void
     {
         if (!is_null($content)) {
             echo $content;

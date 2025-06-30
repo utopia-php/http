@@ -344,7 +344,7 @@ class App
      * @param  string|null  $default
      * @return string|null
      */
-    public static function getEnv(string $key, string $default = null): ?string
+    public static function getEnv(string $key, ?string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
     }

@@ -467,7 +467,7 @@ class AppTest extends TestCase
     /**
      * @dataProvider providerRouteMatching
      */
-    public function testCanMatchRoute(string $method, string $path, string $url = null): void
+    public function testCanMatchRoute(string $method, string $path, ?string $url = null): void
     {
         $url ??= $path;
         $expected = null;
