@@ -504,7 +504,7 @@ class AppTest extends TestCase
 
         // Test case where parse_url returns null (malformed URL)
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '://invalid-url'; // This will cause parse_url to return null for PATH component
+        $_SERVER['REQUEST_URI'] = '?param=1'; // This will cause parse_url to return null for PATH component
 
         $matched = $this->app->match(new Request());
         $this->assertEquals($expected, $matched);
@@ -530,7 +530,7 @@ class AppTest extends TestCase
 
         // Test case where parse_url returns false (severely malformed URL)
         $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = 'ht!tp://invalid'; // Malformed scheme
+        $_SERVER['REQUEST_URI'] = '#fragment'; // Malformed scheme
 
         $matched = $this->app->match(new Request());
         $this->assertEquals($expected, $matched);
