@@ -16,6 +16,11 @@
             "Tests\\E2E\\": "tests/e2e"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Utopia\\Http\\Tests\\": "tests/"
+        }
+    },
     "scripts": {
         "lint": "vendor/bin/pint --test",
         "format": "vendor/bin/pint",

@@ -740,7 +740,7 @@ class Http
             $paramExists = $existsInRequest || $existsInValues;
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
-            if (\is_callable($arg)) {
+            if (\is_callable($arg) && !\is_string($arg)) {
                 $arg = \call_user_func_array($arg, $this->getResources($param['injections']));
             }
             $value = $existsInValues ? $values[$key] : $arg;
