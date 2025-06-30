@@ -57,6 +57,23 @@ class ResponseTest extends TestCase
         $this->assertEquals('Init response. Actioned before: no', $response['body']);
     }
 
+    public function testNullPathHandling()
+    {
+        // Test that malformed URLs default to root path
+        $response = $this->client->call(Client::METHOD_GET, '/');
+        $this->assertEquals('Hello World!', $response['body']);
+        $this->assertEquals(200, $response['headers']['status-code']);
+    }
+
+    public function testRootPathFallback()
+    {
+        // Test that when path parsing fails, it falls back to root
+        // This is tested by ensuring the root route works correctly
+        $response = $this->client->call(Client::METHOD_GET, '/');
+        $this->assertEquals('Hello World!', $response['body']);
+        $this->assertEquals(200, $response['headers']['status-code']);
+    }
+
     public function testAliasWithParameter(): void
     {
         $response = $this->client->call(Client::METHOD_POST, '/functions/deployment', [

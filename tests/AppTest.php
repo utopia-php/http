@@ -221,7 +221,7 @@ class AppTest extends TestCase
             ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
             ->param('y', 'y-def', new Text(1, min: 0), 'y param', false)
             ->action(function ($x, $y) {
-                echo $x . '-', $y;
+                echo $x . '-' . $y;
             });
 
         \ob_start();
@@ -495,6 +495,58 @@ class AppTest extends TestCase
 
         $this->assertEquals($expected, $this->app->match(new Request()));
         $this->assertEquals($expected, $this->app->getRoute());
+    }
+
+    public function testMatchWithNullPath(): void
+    {
+        // Create a route for root path
+        $expected = App::get('/');
+
+        // Test case where parse_url returns null (malformed URL)
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '://invalid-url'; // This will cause parse_url to return null for PATH component
+
+        $matched = $this->app->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
+    public function testMatchWithEmptyPath(): void
+    {
+        // Create a route for root path
+        $expected = App::get('/');
+
+        // Test case where URI has no path component
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = 'https://example.com'; // No path component
+
+        $matched = $this->app->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
+    public function testMatchWithMalformedURL(): void
+    {
+        // Create a route for root path
+        $expected = App::get('/');
+
+        // Test case where parse_url returns false (severely malformed URL)
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = 'ht!tp://invalid'; // Malformed scheme
+
+        $matched = $this->app->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
+    public function testMatchWithOnlyQueryString(): void
+    {
+        // Create a route for root path
+        $expected = App::get('/');
+
+        // Test case where URI has only query string (no path)
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '?param=value'; // Only query string, no path
+
+        $matched = $this->app->match(new Request());
+        $this->assertEquals($expected, $matched);
     }
 
     public function testNoMismatchRoute(): void
