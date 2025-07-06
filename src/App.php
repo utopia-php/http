@@ -344,7 +344,7 @@ class App
      * @param  string|null  $default
      * @return string|null
      */
-    public static function getEnv(string $key, string $default = null): ?string
+    public static function getEnv(string $key, ?string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
     }
@@ -561,6 +561,11 @@ class App
         }
 
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
+
+        if ($url === null || $url === false) {
+            $url = '/'; // Default to root path for malformed URLs
+        }
+
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
