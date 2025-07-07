@@ -608,6 +608,58 @@ class HttpTest extends TestCase
         $this->assertEquals($expected, $route);
     }
 
+    public function testMatchWithNullPath(): void
+    {
+        // Create a route for root path
+        $expected = Http::get('/');
+
+        // Test case where parse_url returns null (malformed URL)
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '?param=1'; // This will cause parse_url to return null for PATH component
+
+        $matched = $this->http->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
+    public function testMatchWithEmptyPath(): void
+    {
+        // Create a route for root path
+        $expected = Http::get('/');
+
+        // Test case where URI has no path component
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = 'https://example.com'; // No path component
+
+        $matched = $this->http->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
+    public function testMatchWithMalformedURL(): void
+    {
+        // Create a route for root path
+        $expected = Http::get('/');
+
+        // Test case where parse_url returns false (severely malformed URL)
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '#fragment'; // Malformed scheme
+
+        $matched = $this->http->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
+    public function testMatchWithOnlyQueryString(): void
+    {
+        // Create a route for root path
+        $expected = Http::get('/');
+
+        // Test case where URI has only query string (no path)
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '?param=value'; // Only query string, no path
+
+        $matched = $this->http->match(new Request());
+        $this->assertEquals($expected, $matched);
+    }
+
     public function testNoMismatchRoute(): void
     {
         $requests = [
