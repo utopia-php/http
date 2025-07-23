@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Utopia\Compression\Compression;
+
 abstract class Response
 {
     /**
@@ -246,6 +248,21 @@ abstract class Response
     protected int $size = 0;
 
     /**
+     * @var string
+     */
+    protected string $acceptEncoding = '';
+
+    /**
+     * @var int
+     */
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+
+    /**
+     * @var mixed
+     */
+    protected mixed $compressionSupported = [];
+
+    /**
      * Response constructor.
      *
      * @param  float  $time response start time
@@ -267,6 +284,41 @@ abstract class Response
     {
         $this->contentType = $type.((!empty($charset) ? '; charset='.$charset : ''));
 
+        return $this;
+    }
+
+    /**
+     * Set accept encoding
+     *
+     * Set HTTP accept encoding header.
+     *
+     * @param  string  $acceptEncoding
+     */
+    public function setAcceptEncoding(string $acceptEncoding): static
+    {
+        $this->acceptEncoding = $acceptEncoding;
+        return $this;
+    }
+
+    /**
+     * Set min compression size
+     *
+     * Set minimum size for compression to be applied in bytes.
+     *
+     * @param  int  $compressionMinSize
+     */
+    public function setCompressionMinSize(int $compressionMinSize): static
+    {
+        $this->compressionMinSize = $compressionMinSize;
+        return $this;
+    }
+
+    /**s
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported): static
+    {
+        $this->compressionSupported = $compressionSupported;
         return $this;
     }
 
@@ -473,39 +525,51 @@ abstract class Response
             return;
         }
 
-        $this->sent = true;
+        $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
+        $this->addHeader('Server', $serverHeader);
 
-        $this
-            ->addHeader('Server', array_key_exists('Server', $this->headers) ? $this->headers['Server'] : 'Utopia/Http')
-            ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
-        ;
+        $this->appendCookies();
 
-        $this
-            ->appendCookies()
-            ->appendHeaders();
+        // Compress body
+        if (
+            !empty($this->acceptEncoding) &&
+            isset($this->compressed[$this->contentType]) &&
+            strlen($body) > $this->compressionMinSize
+        ) {
+            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
 
-        if (!$this->disablePayload) {
-            $length = strlen($body);
-
-            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
-
-            if (array_key_exists(
-                $this->contentType,
-                $this->compressed
-            ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
-                $this->end($body);
-            } else {
-                for ($i = 0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
-                    $this->write(substr($body, ($i * self::CHUNK_SIZE), min(self::CHUNK_SIZE, $length - ($i * self::CHUNK_SIZE))));
-                }
-
-                $this->end();
+            if ($algorithm) {
+                $body = $algorithm->compress($body);
+                $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
+                $this->addHeader('X-Utopia-Compression', 'true');
+                $this->addHeader('Vary', 'Accept-Encoding');
             }
+        }
 
-            $this->disablePayload();
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+        $this->appendHeaders();
+
+        // Send response
+        if ($this->disablePayload) {
+            $this->end();
+            return;
+        }
+
+        $headerSize = strlen(implode("\n", $this->headers));
+        $bodyLength = strlen($body);
+        $this->size += $headerSize + $bodyLength;
+
+        if ($bodyLength <= self::CHUNK_SIZE) {
+            $this->end($body);
         } else {
+            $chunks = str_split($body, self::CHUNK_SIZE);
+            foreach ($chunks as $chunk) {
+                $this->write($chunk);
+            }
             $this->end();
         }
+
+        $this->disablePayload();
     }
 
     /**
