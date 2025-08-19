@@ -514,7 +514,7 @@ class Http
      *
      * @throws \Exception
     */
-    public function loadFiles(string $directory, string $root = null): void
+    public function loadFiles(string $directory, ?string $root = null): void
     {
         $this->files->load($directory, $root);
     }
