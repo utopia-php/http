@@ -366,7 +366,7 @@ class Http
         $this->resources[$context] ??= [];
 
         $resourcesCallback = &self::$resourcesCallbacks[$context] ?? [];
-        if(empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
+        if (empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
             $resourcesCallback = &self::$resourcesCallbacks['utopia'];
         }
 
@@ -576,7 +576,7 @@ class Http
             try {
                 $this->run($request, $response, $context);
             } finally {
-                if(isset(self::$resourcesCallbacks[$context])) {
+                if (isset(self::$resourcesCallbacks[$context])) {
                     unset(self::$resourcesCallbacks[$context]);
                 }
             }
@@ -593,7 +593,7 @@ class Http
                     $arguments = $this->getArguments($hook, 'utopia', [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 self::setResource('error', fn () => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
@@ -793,7 +793,7 @@ class Http
                 $arguments = $this->getArguments($hook, $context, [], []);
                 \call_user_func_array($hook->getAction(), $arguments);
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             self::setResource('error', fn () => $e, [], $context);
 
             foreach (self::$errors as $error) { // Global error hooks

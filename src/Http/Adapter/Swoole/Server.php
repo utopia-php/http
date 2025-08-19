@@ -42,7 +42,7 @@ class Server extends Adapter
 
     public function start()
     {
-        if(Coroutine::getCid() === -1) {
+        if (Coroutine::getCid() === -1) {
             run(fn () => $this->server->start());
         } else {
             $this->server->start();

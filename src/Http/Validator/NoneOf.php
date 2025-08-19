@@ -31,7 +31,7 @@ class NoneOf extends Validator
     {
         $description = '';
 
-        if(!(\is_null($this->failedRule))) {
+        if (!(\is_null($this->failedRule))) {
             $description = $this->failedRule->getDescription();
         } else {
             $description = $this->validators[0]->getDescription();
@@ -53,7 +53,7 @@ class NoneOf extends Validator
         foreach ($this->validators as $rule) {
             $valid = $rule->isValid($value);
 
-            if($valid) {
+            if ($valid) {
                 $this->failedRule = $rule;
                 return false;
             }

@@ -35,4 +35,27 @@ trait BaseTest
         $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
         $this->assertEquals(204, $response['headers']['status-code']);
     }
+
+    public function testDoubleSlash()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '//');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('Hello World!', $response['body']);
+
+        $response = $this->client->call(Client::METHOD_GET, '//path-404');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('Hello World!', $response['body']);
+
+        $response = $this->client->call(Client::METHOD_GET, '//value/123');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEmpty($response['body']);
+
+        $response = $this->client->call(Client::METHOD_GET, '/value//123');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEmpty($response['body']);
+
+        $response = $this->client->call(Client::METHOD_GET, '//value//123');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEmpty($response['body']);
+    }
 }
