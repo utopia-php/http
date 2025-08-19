@@ -27,6 +27,17 @@ class DomainTest extends TestCase
         $this->assertEquals(true, $this->domain->isValid('example.org'));
         $this->assertEquals(true, $this->domain->isValid('example.org'));
         $this->assertEquals(false, $this->domain->isValid(false));
+        $this->assertEquals(false, $this->domain->isValid('api.appwrite.io.'));
+        $this->assertEquals(false, $this->domain->isValid('.api.appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('.api.appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('api..appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('api-.appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('api.-appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('app write.io'));
+        $this->assertEquals(false, $this->domain->isValid(' appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('appwrite.io '));
+        $this->assertEquals(false, $this->domain->isValid('-appwrite.io'));
+        $this->assertEquals(false, $this->domain->isValid('appwrite.io-'));
         $this->assertEquals(false, $this->domain->isValid('.'));
         $this->assertEquals(false, $this->domain->isValid('..'));
         $this->assertEquals(false, $this->domain->isValid(''));
