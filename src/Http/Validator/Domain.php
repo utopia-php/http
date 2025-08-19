@@ -49,7 +49,7 @@ class Domain extends Validator
             return false;
         }
 
-        if(\str_ends_with($value, '.') || \str_ends_with($value, '-')) {
+        if (\str_ends_with($value, '.') || \str_ends_with($value, '-')) {
             return false;
         }
 
