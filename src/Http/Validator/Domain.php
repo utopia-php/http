@@ -45,7 +45,11 @@ class Domain extends Validator
             return false;
         }
 
-        if (\filter_var($value, FILTER_VALIDATE_DOMAIN) === false) {
+        if (\filter_var($value, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false) {
+            return false;
+        }
+
+        if (\str_ends_with($value, '.') || \str_ends_with($value, '-')) {
             return false;
         }
 

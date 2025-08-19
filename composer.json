@@ -35,9 +35,9 @@
     "require-dev": {
         "ext-xdebug": "*",
         "phpunit/phpunit": "^9.5.25",
-        "laravel/pint": "^1.2",
         "swoole/ide-helper": "4.8.3",
-        "phpstan/phpstan": "^1.10",
-        "phpbench/phpbench": "^1.2"
+        "phpbench/phpbench": "^1.2",
+        "laravel/pint": "1.*",
+        "phpstan/phpstan": "1.*"
     }
 }
