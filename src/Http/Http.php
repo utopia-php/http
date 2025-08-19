@@ -295,7 +295,7 @@ class Http
      * @param  string|null  $default
      * @return string|null
      */
-    public static function getEnv(string $key, string $default = null): ?string
+    public static function getEnv(string $key, ?string $default = null): ?string
     {
         return $_SERVER[$key] ?? $default;
     }
@@ -366,7 +366,7 @@ class Http
         $this->resources[$context] ??= [];
 
         $resourcesCallback = &self::$resourcesCallbacks[$context] ?? [];
-        if(empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
+        if (empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
             $resourcesCallback = &self::$resourcesCallbacks['utopia'];
         }
 
@@ -514,7 +514,7 @@ class Http
      *
      * @throws \Exception
     */
-    public function loadFiles(string $directory, string $root = null): void
+    public function loadFiles(string $directory, ?string $root = null): void
     {
         $this->files->load($directory, $root);
     }
@@ -576,7 +576,7 @@ class Http
             try {
                 $this->run($request, $response, $context);
             } finally {
-                if(isset(self::$resourcesCallbacks[$context])) {
+                if (isset(self::$resourcesCallbacks[$context])) {
                     unset(self::$resourcesCallbacks[$context]);
                 }
             }
@@ -593,7 +593,7 @@ class Http
                     $arguments = $this->getArguments($hook, 'utopia', [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
-            } catch(\Exception $e) {
+            } catch (\Exception $e) {
                 self::setResource('error', fn () => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
@@ -628,6 +628,11 @@ class Http
         }
 
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
+
+        if ($url === null || $url === false) {
+            $url = '/'; // Default to root path for malformed URLs
+        }
+
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
@@ -793,7 +798,7 @@ class Http
                 $arguments = $this->getArguments($hook, $context, [], []);
                 \call_user_func_array($hook->getAction(), $arguments);
             }
-        } catch(\Exception $e) {
+        } catch (\Exception $e) {
             self::setResource('error', fn () => $e, [], $context);
 
             foreach (self::$errors as $error) { // Global error hooks

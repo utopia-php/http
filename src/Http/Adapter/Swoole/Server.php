@@ -15,7 +15,7 @@ class Server extends Adapter
 {
     protected SwooleServer $server;
 
-    public function __construct(string $host, string $port = null, array $settings = [])
+    public function __construct(string $host, ?string $port = null, array $settings = [])
     {
         $this->server = new SwooleServer($host, $port);
         $this->server->set(\array_merge($settings, [
@@ -42,7 +42,7 @@ class Server extends Adapter
 
     public function start()
     {
-        if(Coroutine::getCid() === -1) {
+        if (Coroutine::getCid() === -1) {
             run(fn () => $this->server->start());
         } else {
             $this->server->start();
