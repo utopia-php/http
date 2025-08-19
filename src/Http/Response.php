@@ -522,7 +522,7 @@ abstract class Response
      * @param  string  $content
      * @return void
      */
-    abstract public function end(string $content = null): void;
+    abstract public function end(?string $content = null): void;
 
     /**
      * Output response
