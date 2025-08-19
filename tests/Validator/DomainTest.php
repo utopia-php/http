@@ -19,9 +19,9 @@ class DomainTest extends TestCase
         $this->assertEquals(true, $this->domain->isValid('example.com'));
         $this->assertEquals(true, $this->domain->isValid('subdomain.example.com'));
         $this->assertEquals(true, $this->domain->isValid('subdomain.example-app.com'));
-        $this->assertEquals(true, $this->domain->isValid('subdomain.example_app.com'));
+        $this->assertEquals(false, $this->domain->isValid('subdomain.example_app.com'));
         $this->assertEquals(true, $this->domain->isValid('subdomain-new.example.com'));
-        $this->assertEquals(true, $this->domain->isValid('subdomain_new.example.com'));
+        $this->assertEquals(false, $this->domain->isValid('subdomain_new.example.com'));
         $this->assertEquals(true, $this->domain->isValid('localhost'));
         $this->assertEquals(true, $this->domain->isValid('example.io'));
         $this->assertEquals(true, $this->domain->isValid('example.org'));
