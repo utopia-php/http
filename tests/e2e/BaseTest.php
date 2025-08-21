@@ -35,4 +35,14 @@ trait BaseTest
         $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
         $this->assertEquals(204, $response['headers']['status-code']);
     }
+
+    public function testCookie()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', [
+            'Cookie: cookie1=value1; cookie2=value2'
+        ]);
+
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('cookie1=value1; cookie2=value2', $response['body']);
+    }
 }

@@ -359,6 +359,21 @@ class Request extends UtopiaRequest
      */
     protected function generateHeaders(): array
     {
-        return $this->swoole->header;
+        $headers = $this->swoole->header;
+
+        if (empty($this->swoole->cookie)) {
+            return $headers;
+        }
+
+        $cookieHeaders = [];
+        foreach ($this->swoole->cookie as $key => $value) {
+            $cookieHeaders[] = "{$key}={$value}";
+        }
+
+        if (!empty($cookieHeaders)) {
+            $headers['cookie'] = \implode('; ', $cookieHeaders);
+        }
+
+        return $headers;
     }
 }
