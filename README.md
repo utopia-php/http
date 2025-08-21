@@ -1,5 +1,3 @@
-.
-
 <p>
     <img height="45" src="docs/logo.png" alt="Logo">
 </p>

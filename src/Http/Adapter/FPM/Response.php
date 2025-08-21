@@ -25,10 +25,10 @@ class Response extends UtopiaResponse
      *
      * Send optional content and end
      *
-     * @param  string  $content
+     * @param  string|null  $content
      * @return void
      */
-    public function end(string $content = null): void
+    public function end(?string $content = null): void
     {
         if (!is_null($content)) {
             echo $content;
