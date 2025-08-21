@@ -404,15 +404,15 @@ abstract class Response
      * Add an HTTP cookie to response header
      *
      * @param  string  $name
-     * @param  string  $value
-     * @param  int  $expire
-     * @param  string  $path
-     * @param  string  $domain
-     * @param  bool  $secure
-     * @param  bool  $httponly
-     * @param  string  $sameSite
+     * @param  string|null  $value
+     * @param  int|null  $expire
+     * @param  string|null  $path
+     * @param  string|null  $domain
+     * @param  bool|null  $secure
+     * @param  bool|null  $httponly
+     * @param  string|null  $sameSite
      */
-    public function addCookie(string $name, string $value = null, int $expire = null, string $path = null, string $domain = null, bool $secure = null, bool $httponly = null, string $sameSite = null): static
+    public function addCookie(string $name, ?string $value = null, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httponly = null, ?string $sameSite = null): static
     {
         $name = strtolower($name);
 
@@ -519,10 +519,10 @@ abstract class Response
      *
      * Send optional content and end
      *
-     * @param  string  $content
+     * @param  string|null  $content
      * @return void
      */
-    abstract public function end(string $content = null): void;
+    abstract public function end(?string $content = null): void;
 
     /**
      * Output response

@@ -3,6 +3,7 @@
 require_once __DIR__.'/../../vendor/autoload.php';
 
 use Utopia\Http\Http;
+use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Validator\Text;
 
@@ -23,6 +24,14 @@ Http::get('/value/:value')
     ->inject('response')
     ->action(function (string $value, Response $response) {
         $response->send($value);
+    });
+
+
+Http::get('/cookies')
+    ->inject('request')
+    ->inject('response')
+    ->action(function (Request $request, Response $response) {
+        $response->send($request->getHeaders()['cookie'] ?? '');
     });
 
 Http::get('/chunked')
