@@ -57,4 +57,30 @@ class DomainTest extends TestCase
         $this->assertEquals(false, $this->domain->isValid(1));
         $this->assertEquals(false, $this->domain->isValid(1.2));
     }
+
+    public function testRestrictions()
+    {
+        $validator = new Domain([
+            Domain::createRestriction('appwrite.network', 3, ['preview-', 'branch-']),
+            Domain::createRestriction('fra.appwrite.run', 4),
+        ]);
+
+        $this->assertEquals(true, $validator->isValid('google.com'));
+        $this->assertEquals(true, $validator->isValid('stage.google.com'));
+        $this->assertEquals(true, $validator->isValid('shard4.stage.google.com'));
+
+        $this->assertEquals(false, $validator->isValid('appwrite.network'));
+        $this->assertEquals(false, $validator->isValid('preview-a.appwrite.network'));
+        $this->assertEquals(false, $validator->isValid('branch-a.appwrite.network'));
+        $this->assertEquals(true, $validator->isValid('google.appwrite.network'));
+        $this->assertEquals(false, $validator->isValid('stage.google.appwrite.network'));
+        $this->assertEquals(false, $validator->isValid('shard4.stage.google.appwrite.network'));
+
+        $this->assertEquals(false, $validator->isValid('fra.appwrite.run'));
+        $this->assertEquals(true, $validator->isValid('appwrite.run'));
+        $this->assertEquals(true, $validator->isValid('google.fra.appwrite.run'));
+        $this->assertEquals(false, $validator->isValid('shard4.google.fra.appwrite.run'));
+        $this->assertEquals(true, $validator->isValid('branch-google.fra.appwrite.run'));
+        $this->assertEquals(true, $validator->isValid('preview-google.fra.appwrite.run'));
+    }
 }
