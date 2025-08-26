@@ -18,15 +18,15 @@ class Domain extends Validator
      * Such rules prevent validation from passing, so this behaves as deny-list.
      *
      * @param string $hostname A domain base, such as top-level domain or subdomain. Restriction is only applied if domain matches this hostname
-     * @param int $level Specify what level (top-level, subdomain, sub-subdomain, ..) domain must be. Example: "stage.appwrite.io" is level 3
+     * @param int $levels Specify what level (top-level, subdomain, sub-subdomain, ..) domain must be. Example: "stage.appwrite.io" is level 3
      * @param array<string> $prefixDenyList Disallowed beginning of domain, useful for reserved behaviours, such as prefixing "branch-" for preview domains
      *
      */
-    public static function createRestriction(string $hostname, ?int $level = null, ?array $prefixDenyList = [])
+    public static function createRestriction(string $hostname, ?int $levels = null, array $prefixDenyList = [])
     {
         return [
             'hostname' => $hostname,
-            'level' => $level,
+            'levels' => $levels,
             'prefixDenyList' => $prefixDenyList,
         ];
     }
@@ -80,7 +80,7 @@ class Domain extends Validator
 
         foreach ($this->restrictions as $restriction) {
             $hostname = $restriction['hostname'];
-            $level = $restriction['level'];
+            $levels = $restriction['levels'];
             $prefixDenyList = $restriction['prefixDenyList'];
 
             // Only apply restriction rules to relevant domains
@@ -89,8 +89,8 @@ class Domain extends Validator
             }
 
             // Domain-level restriction
-            if (!is_null($level)) {
-                $expectedPartsCount = $level;
+            if (!is_null($levels)) {
+                $expectedPartsCount = $levels;
                 $partsCount = \count(\explode('.', $value, $expectedPartsCount + 1));
                 if ($partsCount !== $expectedPartsCount) {
                     return false;
@@ -98,7 +98,7 @@ class Domain extends Validator
             }
 
             // Domain prefix (beginning) restriction
-            if (!is_null($prefixDenyList) && !empty($prefixDenyList)) {
+            if (!empty($prefixDenyList)) {
                 foreach ($prefixDenyList as $deniedPrefix) {
                     if (\str_starts_with($value, $deniedPrefix)) {
                         return false;
