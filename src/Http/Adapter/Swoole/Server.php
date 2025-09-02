@@ -19,7 +19,8 @@ class Server extends Adapter
     {
         $this->server = new SwooleServer($host, $port);
         $this->server->set(\array_merge($settings, [
-            'enable_coroutine' => true
+            'enable_coroutine' => true,
+            'http_parse_cookie' => false,
         ]));
     }
 

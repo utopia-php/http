@@ -38,11 +38,26 @@ trait BaseTest
 
     public function testCookie()
     {
+        $cookie = 'cookie1=value1';
         $response = $this->client->call(Client::METHOD_GET, '/cookies', [
-            'Cookie: cookie1=value1; cookie2=value2'
+            'Cookie: ' . $cookie
         ]);
-
         $this->assertEquals(200, $response['headers']['status-code']);
-        $this->assertEquals('cookie1=value1; cookie2=value2', $response['body']);
+        $this->assertEquals($cookie, $response['body']);
+
+        $cookie = 'cookie1=value1; cookie2=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', [
+            'Cookie: ' . $cookie
+        ]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+
+        $cookie = 'cookie1=value1;cookie2=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', [
+            'Cookie: ' . $cookie
+        ]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
     }
 }
