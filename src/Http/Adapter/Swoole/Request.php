@@ -260,9 +260,8 @@ class Request extends UtopiaRequest
             $cookie = \trim($cookie);
             [$cookieKey, $cookieValue] = \explode('=', $cookie, 2);
             $cookieKey = \trim($cookieKey);
-            $cookieKey = \strtolower($cookieKey);
             $cookieValue = \trim($cookieValue);
-            if ($cookieValue === $key) {
+            if ($cookieKey === $key) {
                 return $cookieValue;
             }
         }
