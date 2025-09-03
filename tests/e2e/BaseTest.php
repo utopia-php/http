@@ -68,4 +68,12 @@ trait BaseTest
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals($cookie, $response['body']);
     }
+
+    public function testSetCookie()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/set-cookie');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('value1', $response['cookies']['key1']);
+        $this->assertEquals('value2', $response['cookies']['key2']);
+    }
 }

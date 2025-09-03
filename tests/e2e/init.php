@@ -34,6 +34,15 @@ Http::get('/cookies')
         $response->send($request->getHeaders()['cookie'] ?? '');
     });
 
+Http::get('/set-cookie')
+    ->inject('request')
+    ->inject('response')
+    ->action(function (Request $request, Response $response) {
+        $response->addHeader('Set-Cookie', 'key1=value1');
+        $response->addHeader('Set-Cookie', 'key2=value2');
+        $response->send('OK');
+    });
+
 Http::get('/chunked')
     ->inject('response')
     ->action(function (Response $response) {

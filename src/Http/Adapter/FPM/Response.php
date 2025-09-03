@@ -53,12 +53,18 @@ class Response extends UtopiaResponse
      * Output Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    public function sendHeader(string $key, string $value): void
+    public function sendHeader(string $key, mixed $value): void
     {
-        \header($key.': '.$value);
+        if (\is_array($value)) {
+            foreach ($value as $v) {
+                \header($key.': '.$v, false);
+            }
+        } else {
+            \header($key.': '.$value);
+        }
     }
 
     /**

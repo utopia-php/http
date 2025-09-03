@@ -225,7 +225,7 @@ abstract class Response
     protected bool $sent = false;
 
     /**
-     * @var array
+     * @var array<string, string|array<string>>
      */
     protected array $headers = [];
 
@@ -365,7 +365,15 @@ abstract class Response
      */
     public function addHeader(string $key, string $value): static
     {
-        $this->headers[$key] = $value;
+        if (\array_key_exists($key, $this->headers)) {
+            if (\is_array($this->headers[$key])) {
+                $this->headers[$key][] = $value;
+            } else {
+                $this->headers[$key] = [$this->headers[$key], $value];
+            }
+        } else {
+            $this->headers[$key] = $value;
+        }
 
         return $this;
     }
@@ -391,7 +399,7 @@ abstract class Response
      *
      * Return array of all response headers
      *
-     * @return array
+     * @return array<string, array<string, string>>
      */
     public function getHeaders(): array
     {
@@ -483,7 +491,19 @@ abstract class Response
         if (!$this->disablePayload) {
             $length = strlen($body);
 
-            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
+            $headersSize = 0;
+            foreach ($this->headers as $name => $values) {
+                if (\is_array($values)) {
+                    foreach ($values as $value) {
+                        $headersSize += \strlen($name . ': ' . $value);
+                    }
+                    $headersSize += (\count($values) - 1) * 2; // linebreaks
+                } else {
+                    $headersSize += \strlen($name . ': ' . $values);
+                }
+            }
+            $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
+            $this->size = $this->size + $headersSize + $length;
 
             if (array_key_exists(
                 $this->contentType,
@@ -599,10 +619,10 @@ abstract class Response
      * Output Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    abstract public function sendHeader(string $key, string $value): void;
+    abstract public function sendHeader(string $key, mixed $value): void;
 
     /**
      * Send Cookie
