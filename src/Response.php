@@ -113,6 +113,8 @@ class Response
 
     public const STATUS_CODE_EXPECTATION_FAILED = 417;
 
+    public const STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
+
     public const STATUS_CODE_TOO_EARLY = 425;
 
     public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
