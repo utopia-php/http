@@ -65,10 +65,10 @@ class Response extends UtopiaResponse
      * Send Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    public function sendHeader(string $key, string $value): void
+    public function sendHeader(string $key, mixed $value): void
     {
         $this->swoole->header($key, $value);
     }
