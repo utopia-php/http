@@ -198,9 +198,10 @@ class Hook
      * @param  array  $injections
      * @param  bool  $skipValidation
      * @param  bool  $deprecated
+     * @param  string  $example
      * @return static
      */
-    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = [], bool $skipValidation = false, bool $deprecated = false): static
+    public function param(string $key, mixed $default, Validator|callable $validator, string $description = '', bool $optional = false, array $injections = [], bool $skipValidation = false, bool $deprecated = false, string $example = ''): static
     {
         $this->params[$key] = [
             'default' => $default,
@@ -210,6 +211,7 @@ class Hook
             'injections' => $injections,
             'skipValidation' => $skipValidation,
             'deprecated' => $deprecated,
+            'example' => $example,
             'value' => null,
             'order' => count($this->params) + count($this->injections),
         ];
