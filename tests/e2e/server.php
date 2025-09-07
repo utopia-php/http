@@ -42,12 +42,12 @@ App::get('/set-cookie')
         $response->send('OK');
     });
 
-App::get('/set-cookie-override')
+App::get('/set-cookie-no-override')
     ->inject('request')
     ->inject('response')
     ->action(function (Request $request, Response $response) {
-        $response->addHeader('Set-Cookie', 'key1=value1', override: true);
-        $response->addHeader('Set-Cookie', 'key2=value2', override: true);
+        $response->addHeader('Set-Cookie', 'key1=value1', override: false);
+        $response->addHeader('Set-Cookie', 'key2=value2', override: false);
         $response->send('OK');
     });
 
