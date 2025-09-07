@@ -669,9 +669,17 @@ class Response
 
         $this->appendCookies();
 
+        $hasContentEncoding = false;
+        foreach ($this->headers as $name => $values) {
+            if (\strtolower($name) === 'content-encoding') {
+                $hasContentEncoding = true;
+                break;
+            }
+        }
+
         // Compress body only if all conditions are met:
         if (
-            empty($this->headers['content-encoding']) &&
+            !$hasContentEncoding &&
             !empty($this->acceptEncoding) &&
             $this->isCompressible($this->contentType) &&
             strlen($body) > $this->compressionMinSize
