@@ -540,9 +540,15 @@ class Response
      *
      * @param  string  $key
      * @param  string  $value
+     * @param  bool  $override
      */
-    public function addHeader(string $key, string $value): static
+    public function addHeader(string $key, string $value, bool $override = false): static
     {
+        if ($override) {
+            $this->headers[$key] = $value;
+            return $this;
+        }
+
         if (\array_key_exists($key, $this->headers)) {
             if (\is_array($this->headers[$key])) {
                 $this->headers[$key][] = $value;
@@ -659,13 +665,21 @@ class Response
         }
 
         $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
-        $this->addHeader('Server', $serverHeader);
+        $this->addHeader('Server', $serverHeader, override: true);
 
         $this->appendCookies();
 
+        $hasContentEncoding = false;
+        foreach ($this->headers as $name => $values) {
+            if (\strtolower($name) === 'content-encoding') {
+                $hasContentEncoding = true;
+                break;
+            }
+        }
+
         // Compress body only if all conditions are met:
         if (
-            empty($this->headers['content-encoding']) &&
+            !$hasContentEncoding &&
             !empty($this->acceptEncoding) &&
             $this->isCompressible($this->contentType) &&
             strlen($body) > $this->compressionMinSize
@@ -674,14 +688,14 @@ class Response
 
             if ($algorithm) {
                 $body = $algorithm->compress($body);
-                $this->addHeader('Content-Length', (string) \strlen($body));
-                $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
-                $this->addHeader('X-Utopia-Compression', 'true');
-                $this->addHeader('Vary', 'Accept-Encoding');
+                $this->addHeader('Content-Length', (string) \strlen($body), override: true);
+                $this->addHeader('Content-Encoding', $algorithm->getContentEncoding(), override: true);
+                $this->addHeader('X-Utopia-Compression', 'true', override: true);
+                $this->addHeader('Vary', 'Accept-Encoding', override: true);
             }
         }
 
-        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
         $this->appendHeaders();
 
         // Send response
@@ -769,7 +783,7 @@ class Response
             $this->sent = true;
         }
 
-        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
 
         $this
             ->appendCookies()
@@ -799,7 +813,7 @@ class Response
 
         // Send content type header
         if (!empty($this->contentType)) {
-            $this->addHeader('Content-Type', $this->contentType);
+            $this->addHeader('Content-Type', $this->contentType, override: true);
         }
 
         // Set application headers
@@ -908,7 +922,7 @@ class Response
         }
 
         $this
-            ->addHeader('Location', $url)
+            ->addHeader('Location', $url, override: true)
             ->setStatusCode($statusCode)
             ->send('');
     }

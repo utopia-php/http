@@ -162,5 +162,10 @@ class ResponseTest extends TestCase
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals('value1', $response['cookies']['key1']);
         $this->assertEquals('value2', $response['cookies']['key2']);
+
+        $response = $this->client->call(Client::METHOD_GET, '/set-cookie-override');
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertArrayNotHasKey('key1', $response['cookies']);
+        $this->assertEquals('value2', $response['cookies']['key2']);
     }
 }
