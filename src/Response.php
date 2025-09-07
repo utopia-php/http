@@ -827,12 +827,18 @@ class Response
      * Output Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    protected function sendHeader(string $key, string $value): void
+    protected function sendHeader(string $key, mixed $value): void
     {
-        \header($key.': '.$value);
+        if (\is_array($value)) {
+            foreach ($value as $v) {
+                \header($key.': '.$v, false);
+            }
+        } else {
+            \header($key.': '.$value);
+        }
     }
 
     /**
