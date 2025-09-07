@@ -542,7 +542,7 @@ class Response
      * @param  string  $value
      * @param  bool  $override
      */
-    public function addHeader(string $key, string $value, bool $override = false): static
+    public function addHeader(string $key, string $value, bool $override = true): static
     {
         if ($override) {
             $this->headers[$key] = $value;
