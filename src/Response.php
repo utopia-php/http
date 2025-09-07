@@ -47,6 +47,10 @@ class Response
 
     public const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
 
+    public const STATUS_CODE_PROCESSING = 102;
+
+    public const STATUS_CODE_EARLY_HINTS = 103;
+
     public const STATUS_CODE_OK = 200;
 
     public const STATUS_CODE_CREATED = 201;
@@ -60,6 +64,12 @@ class Response
     public const STATUS_CODE_RESETCONTENT = 205;
 
     public const STATUS_CODE_PARTIALCONTENT = 206;
+
+    public const STATUS_CODE_MULTI_STATUS = 207;
+
+    public const STATUS_CODE_ALREADY_REPORTED = 208;
+
+    public const STATUS_CODE_IM_USED = 226;
 
     public const STATUS_CODE_MULTIPLE_CHOICES = 300;
 
@@ -76,6 +86,8 @@ class Response
     public const STATUS_CODE_UNUSED = 306;
 
     public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
+
+    public const STATUS_CODE_PERMANENT_REDIRECT = 308;
 
     public const STATUS_CODE_BAD_REQUEST = 400;
 
@@ -113,11 +125,25 @@ class Response
 
     public const STATUS_CODE_EXPECTATION_FAILED = 417;
 
+    public const STATUS_CODE_IM_A_TEAPOT = 418;
+
+    public const STATUS_CODE_MISDIRECTED_REQUEST = 421;
+
     public const STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
+
+    public const STATUS_CODE_LOCKED = 423;
+
+    public const STATUS_CODE_FAILED_DEPENDENCY = 424;
 
     public const STATUS_CODE_TOO_EARLY = 425;
 
+    public const STATUS_CODE_UPGRADE_REQUIRED = 426;
+
+    public const STATUS_CODE_PRECONDITION_REQUIRED = 428;
+
     public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
+
+    public const STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
 
     public const STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
 
@@ -133,12 +159,24 @@ class Response
 
     public const STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
 
+    public const STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
+
+    public const STATUS_CODE_INSUFFICIENT_STORAGE = 507;
+
+    public const STATUS_CODE_LOOP_DETECTED = 508;
+
+    public const STATUS_CODE_NOT_EXTENDED = 510;
+
+    public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
+
     /**
      * @var array
      */
     protected $statusCodes = [
         self::STATUS_CODE_CONTINUE => 'Continue',
         self::STATUS_CODE_SWITCHING_PROTOCOLS => 'Switching Protocols',
+        self::STATUS_CODE_PROCESSING => 'Processing',
+        self::STATUS_CODE_EARLY_HINTS => 'Early Hints',
         self::STATUS_CODE_OK => 'OK',
         self::STATUS_CODE_CREATED => 'Created',
         self::STATUS_CODE_ACCEPTED => 'Accepted',
@@ -146,6 +184,9 @@ class Response
         self::STATUS_CODE_NOCONTENT => 'No Content',
         self::STATUS_CODE_RESETCONTENT => 'Reset Content',
         self::STATUS_CODE_PARTIALCONTENT => 'Partial Content',
+        self::STATUS_CODE_MULTI_STATUS => 'Multi-Status',
+        self::STATUS_CODE_ALREADY_REPORTED => 'Already Reported',
+        self::STATUS_CODE_IM_USED => 'IM Used',
         self::STATUS_CODE_MULTIPLE_CHOICES => 'Multiple Choices',
         self::STATUS_CODE_MOVED_PERMANENTLY => 'Moved Permanently',
         self::STATUS_CODE_FOUND => 'Found',
@@ -154,6 +195,7 @@ class Response
         self::STATUS_CODE_USE_PROXY => 'Use Proxy',
         self::STATUS_CODE_UNUSED => '(Unused)',
         self::STATUS_CODE_TEMPORARY_REDIRECT => 'Temporary Redirect',
+        self::STATUS_CODE_PERMANENT_REDIRECT => 'Permanent Redirect',
         self::STATUS_CODE_BAD_REQUEST => 'Bad Request',
         self::STATUS_CODE_UNAUTHORIZED => 'Unauthorized',
         self::STATUS_CODE_PAYMENT_REQUIRED => 'Payment Required',
@@ -172,8 +214,16 @@ class Response
         self::STATUS_CODE_UNSUPPORTED_MEDIA_TYPE => 'Unsupported Media Type',
         self::STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE => 'Requested Range Not Satisfiable',
         self::STATUS_CODE_EXPECTATION_FAILED => 'Expectation Failed',
+        self::STATUS_CODE_IM_A_TEAPOT => 'I\'m a teapot',
+        self::STATUS_CODE_MISDIRECTED_REQUEST => 'Misdirected Request',
+        self::STATUS_CODE_UNPROCESSABLE_ENTITY => 'Unprocessable Entity',
+        self::STATUS_CODE_LOCKED => 'Locked',
+        self::STATUS_CODE_FAILED_DEPENDENCY => 'Failed Dependency',
         self::STATUS_CODE_TOO_EARLY => 'Too Early',
+        self::STATUS_CODE_UPGRADE_REQUIRED => 'Upgrade Required',
+        self::STATUS_CODE_PRECONDITION_REQUIRED => 'Precondition Required',
         self::STATUS_CODE_TOO_MANY_REQUESTS => 'Too Many Requests',
+        self::STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE => 'Request Header Fields Too Large',
         self::STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS => 'Unavailable For Legal Reasons',
         self::STATUS_CODE_INTERNAL_SERVER_ERROR => 'Internal Server Error',
         self::STATUS_CODE_NOT_IMPLEMENTED => 'Not Implemented',
@@ -181,10 +231,15 @@ class Response
         self::STATUS_CODE_SERVICE_UNAVAILABLE => 'Service Unavailable',
         self::STATUS_CODE_GATEWAY_TIMEOUT => 'Gateway Timeout',
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED => 'HTTP Version Not Supported',
+        self::STATUS_CODE_VARIANT_ALSO_NEGOTIATES => 'Variant Also Negotiates',
+        self::STATUS_CODE_INSUFFICIENT_STORAGE => 'Insufficient Storage',
+        self::STATUS_CODE_LOOP_DETECTED => 'Loop Detected',
+        self::STATUS_CODE_NOT_EXTENDED => 'Not Extended',
+        self::STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED => 'Network Authentication Required',
     ];
 
     /**
-     * Mime Types with compressible content
+     * Mime Types with compression support
      *
      * @var array
      */
@@ -284,7 +339,7 @@ class Response
     protected bool $sent = false;
 
     /**
-     * @var array
+     * @var array<string, string|array<string>>
      */
     protected array $headers = [];
 
@@ -488,7 +543,15 @@ class Response
      */
     public function addHeader(string $key, string $value): static
     {
-        $this->headers[$key] = $value;
+        if (\array_key_exists($key, $this->headers)) {
+            if (\is_array($this->headers[$key])) {
+                $this->headers[$key][] = $value;
+            } else {
+                $this->headers[$key] = [$this->headers[$key], $value];
+            }
+        } else {
+            $this->headers[$key] = $value;
+        }
 
         return $this;
     }
@@ -514,7 +577,7 @@ class Response
      *
      * Return array of all response headers
      *
-     * @return array
+     * @return array<string, array<string, string>>
      */
     public function getHeaders(): array
     {
@@ -527,13 +590,13 @@ class Response
      * Add an HTTP cookie to response header
      *
      * @param  string  $name
-     * @param  string  $value
-     * @param  int  $expire
-     * @param  string  $path
-     * @param  string  $domain
-     * @param  bool  $secure
-     * @param  bool  $httponly
-     * @param  string  $sameSite
+     * @param  string|null  $value
+     * @param  int|null  $expire
+     * @param  string|null  $path
+     * @param  string|null  $domain
+     * @param  bool|null  $secure
+     * @param  bool|null  $httponly
+     * @param  string|null  $sameSite
      */
     public function addCookie(string $name, ?string $value = null, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httponly = null, ?string $sameSite = null): static
     {
@@ -627,9 +690,21 @@ class Response
             return;
         }
 
-        $headerSize = strlen(implode("\n", $this->headers));
+        $headersSize = 0;
+        foreach ($this->headers as $name => $values) {
+            if (\is_array($values)) {
+                foreach ($values as $value) {
+                    $headersSize += \strlen($name . ': ' . $value);
+                }
+                $headersSize += (\count($values) - 1) * 2; // linebreaks
+            } else {
+                $headersSize += \strlen($name . ': ' . $values);
+            }
+        }
+        $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
+
         $bodyLength = strlen($body);
-        $this->size += $headerSize + $bodyLength;
+        $this->size += $headersSize + $bodyLength;
 
         if ($bodyLength <= self::CHUNK_SIZE) {
             $this->end($body);
@@ -752,12 +827,18 @@ class Response
      * Output Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    protected function sendHeader(string $key, string $value): void
+    protected function sendHeader(string $key, mixed $value): void
     {
-        \header($key.': '.$value);
+        if (\is_array($value)) {
+            foreach ($value as $v) {
+                \header($key.': '.$v, false);
+            }
+        } else {
+            \header($key.': '.$value);
+        }
     }
 
     /**

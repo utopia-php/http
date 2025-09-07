@@ -17,7 +17,7 @@
     "scripts": {
         "lint": "vendor/bin/pint --test",
         "format": "vendor/bin/pint",
-        "check": "vendor/bin/phpstan analyse -c phpstan.neon",
+        "check": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
         "test": "vendor/bin/phpunit --configuration phpunit.xml",
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
