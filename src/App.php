@@ -706,9 +706,6 @@ class App
                 if (!\is_a($model, Model::class, true)) {
                     throw new Exception('Model class is not an instance of Utopia\\Model', 500);
                 }
-                if (($value === null || $value === '') && $param['optional']) {
-                    $value = null;
-                }
                 if (\is_string($value) && $value !== '') {
                     try {
                         $value = \json_decode($value, true, flags: JSON_THROW_ON_ERROR);
@@ -725,6 +722,9 @@ class App
                     } catch (\Throwable $e) {
                         throw new Exception('Failed to create model instance for param "' . $key . '": ' . $e->getMessage(), 400);
                     }
+                }
+                if ($param['optional'] && $value === '') {
+                    $value = null;
                 }
             }
 
