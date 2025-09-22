@@ -728,7 +728,11 @@ class App
                 }
             }
 
-            if (!$param['skipValidation'] && $paramExists && $value !== null && $value !== '') {
+            if (
+                !$param['skipValidation'] &&
+                !($param['optional'] && $value === null) &&
+                $paramExists
+            ) {
                 $this->validate($key, $param, $value);
             }
 
