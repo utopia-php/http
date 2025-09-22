@@ -13,12 +13,11 @@ use Utopia\Validator\Text;
 // Test Model implementation
 class UserModel implements Model
 {
-    public function __construct(
+    final public function __construct(
         public string $name,
         public int $age,
         public ?string $email = null
-    )
-    {
+    ) {
     }
 
     public static function fromArray(array $value): static
@@ -26,7 +25,7 @@ class UserModel implements Model
         if (!isset($value['name']) || !isset($value['age'])) {
             throw new \InvalidArgumentException('Missing required fields: name and age');
         }
-        return new self(
+        return new static(
             $value['name'],
             $value['age'],
             $value['email'] ?? null
@@ -37,18 +36,17 @@ class UserModel implements Model
 // Another test model with nested data
 class AddressModel implements Model
 {
-    public function __construct(
+    final public function __construct(
         public string $street,
         public string $city,
         public string $zipCode,
         public ?string $country = 'USA'
-    )
-    {
+    ) {
     }
 
     public static function fromArray(array $value): static
     {
-        return new self(
+        return new static(
             $value['street'] ?? '',
             $value['city'] ?? '',
             $value['zipCode'] ?? '',

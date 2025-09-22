@@ -693,7 +693,7 @@ class App
 
             $value = $existsInValues ? $values[$key] : $arg;
 
-            if (!$param['skipValidation']&& !$paramExists && !$param['optional']) {
+            if (!$param['skipValidation'] && !$paramExists && !$param['optional']) {
                 throw new Exception('Param "' . $key . '" is not optional.', 400);
             }
 
