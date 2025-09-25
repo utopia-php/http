@@ -642,7 +642,7 @@ class App
                             $arguments = $this->getArguments($error, $pathValues, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
                         }
                     }
                 }
@@ -654,7 +654,7 @@ class App
                         $arguments = $this->getArguments($error, $pathValues, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
                     }
                 }
             }
@@ -811,7 +811,7 @@ class App
                             $arguments = $this->getArguments($error, [], $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
                         }
                     }
                 }
@@ -854,7 +854,7 @@ class App
                             $arguments = $this->getArguments($error, [], $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                            throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
                         }
                     }
                 }
@@ -869,7 +869,7 @@ class App
                         $arguments = $this->getArguments($error, [], $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
                     }
                 }
             }
