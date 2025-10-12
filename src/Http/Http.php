@@ -584,6 +584,7 @@ class Http extends Base
             'http.request.method' => $request->getMethod(),
             'url.scheme' => $request->getProtocol(),
         ]);
+        return $result;
     }
 
 
