@@ -10,6 +10,7 @@ use Utopia\Http\Tests\MockRequest as Request;
 use Utopia\Http\Tests\MockResponse as Response;
 use Utopia\Http\Validator\Text;
 use Utopia\Http\Adapter\FPM\Server;
+use Utopia\Http\Tests\UtopiaFPMRequestTest;
 
 class HttpTest extends TestCase
 {
@@ -804,8 +805,9 @@ class HttpTest extends TestCase
                 echo 'callback-value: ' . $callback;
             });
 
+        $context = clone $this->context;
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request(), $context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -821,9 +823,10 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
+        $context = clone $this->context;
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
-        $this->http->execute($route2, $request, '1');
+        $this->http->execute($route2, $request, $context);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -841,7 +844,8 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route3, new Request(), '1');
+        $context = clone $this->context;
+        $this->http->execute($route3, new Request(), $context);
         $result = \ob_get_contents();
         \ob_end_clean();
 

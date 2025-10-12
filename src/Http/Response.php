@@ -45,8 +45,6 @@ abstract class Response
      */
     public const STATUS_CODE_CONTINUE = 100;
     public const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
-    public const STATUS_CODE_PROCESSING = 102;
-    public const STATUS_CODE_EARLY_HINTS = 103;
 
     public const STATUS_CODE_PROCESSING = 102;
 
@@ -63,12 +61,6 @@ abstract class Response
     public const STATUS_CODE_ALREADY_REPORTED = 208;
     public const STATUS_CODE_IM_USED = 226;
 
-    public const STATUS_CODE_MULTI_STATUS = 207;
-
-    public const STATUS_CODE_ALREADY_REPORTED = 208;
-
-    public const STATUS_CODE_IM_USED = 226;
-
     public const STATUS_CODE_MULTIPLE_CHOICES = 300;
     public const STATUS_CODE_MOVED_PERMANENTLY = 301;
     public const STATUS_CODE_FOUND = 302;
@@ -77,8 +69,6 @@ abstract class Response
     public const STATUS_CODE_USE_PROXY = 305;
     public const STATUS_CODE_UNUSED = 306;
     public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
-    public const STATUS_CODE_PERMANENT_REDIRECT = 308;
-
     public const STATUS_CODE_PERMANENT_REDIRECT = 308;
 
     public const STATUS_CODE_BAD_REQUEST = 400;
@@ -121,16 +111,6 @@ abstract class Response
     public const STATUS_CODE_INSUFFICIENT_STORAGE = 507;
     public const STATUS_CODE_LOOP_DETECTED = 508;
     public const STATUS_CODE_NOT_EXTENDED = 510;
-    public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
-
-    public const STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
-
-    public const STATUS_CODE_INSUFFICIENT_STORAGE = 507;
-
-    public const STATUS_CODE_LOOP_DETECTED = 508;
-
-    public const STATUS_CODE_NOT_EXTENDED = 510;
-
     public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
     /**
@@ -330,7 +310,7 @@ abstract class Response
     /**
      * @var int
      */
-    protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
      * @var mixed
@@ -635,7 +615,9 @@ abstract class Response
             ->addHeader('Server', array_key_exists('Server', $this->headers) ? $this->headers['Server'] : 'Utopia/Http')
             ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
         ;
-        $this->appendCookies();
+        $this
+            ->appendCookies()
+            ->appendHeaders();
 
         if (!$this->disablePayload) {
             $length = strlen($body);
@@ -654,10 +636,7 @@ abstract class Response
             $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
             $this->size = $this->size + $headersSize + $length;
 
-            if (array_key_exists(
-                $this->contentType,
-                $this->compressed
-            ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+            if ($this->isCompressible($this->contentType) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
                 $this->end($body);
             } else {
                 for ($i = 0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
@@ -666,59 +645,6 @@ abstract class Response
 
                 $this->end();
             }
-        }
-
-        // Compress body only if all conditions are met:
-        if (
-            !$hasContentEncoding &&
-            !empty($this->acceptEncoding) &&
-            $this->isCompressible($this->contentType) &&
-            strlen($body) > $this->compressionMinSize
-        ) {
-            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
-
-            if ($algorithm) {
-                $body = $algorithm->compress($body);
-                $this->addHeader('Content-Length', (string) \strlen($body), override: true);
-                $this->addHeader('Content-Encoding', $algorithm->getContentEncoding(), override: true);
-                $this->addHeader('X-Utopia-Compression', 'true', override: true);
-                $this->addHeader('Vary', 'Accept-Encoding', override: true);
-            }
-        }
-
-        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
-        $this->appendHeaders();
-
-        // Send response
-        if ($this->disablePayload) {
-            $this->end();
-            return;
-        }
-
-        $headersSize = 0;
-        foreach ($this->headers as $name => $values) {
-            if (\is_array($values)) {
-                foreach ($values as $value) {
-                    $headersSize += \strlen($name . ': ' . $value);
-                }
-                $headersSize += (\count($values) - 1) * 2; // linebreaks
-            } else {
-                $headersSize += \strlen($name . ': ' . $values);
-            }
-        }
-        $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
-
-        $bodyLength = strlen($body);
-        $this->size += $headersSize + $bodyLength;
-
-        if ($bodyLength <= self::CHUNK_SIZE) {
-            $this->end($body);
-        } else {
-            $chunks = str_split($body, self::CHUNK_SIZE);
-            foreach ($chunks as $chunk) {
-                $this->write($chunk);
-            }
-            $this->end();
         }
 
         $this->sent = true;

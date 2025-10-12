@@ -253,31 +253,6 @@ class Http extends Base
     }
 
     /**
-     * Get Mode
-     *
-     * Get current mode
-     *
-     * @return string
-     */
-    public static function getMode(): string
-    {
-        return self::$mode;
-    }
-
-    /**
-     * Set Mode
-     *
-     * Set current mode
-     *
-     * @param string $value
-     * @return void
-     */
-    public static function setMode(string $value): void
-    {
-        self::$mode = $value;
-    }
-
-    /**
      * Get Routes
      *
      * Get all application routes
