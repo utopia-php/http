@@ -16,6 +16,8 @@ class Server extends Adapter
         $this->server->set(\array_merge($settings, [
             'open_http2_protocol' => true,
             'dispatch_mode' => 2,
+            'enable_coroutine' => true,
+            'http_parse_cookie' => false,
         ]));
     }
 
@@ -41,5 +43,10 @@ class Server extends Adapter
     {
         Runtime::enableCoroutine();
         return $this->server->start();
+        if (Coroutine::getCid() === -1) {
+            run(fn () => $this->server->start());
+        } else {
+            $this->server->start();
+        }
     }
 }

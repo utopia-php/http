@@ -40,7 +40,7 @@ class Response extends UtopiaResponse
      * @param  string  $content
      * @return void
      */
-    public function end(string $content = ''): void
+    public function end(?string $content = null): void
     {
         $this->swoole->end($content);
     }
@@ -61,10 +61,10 @@ class Response extends UtopiaResponse
      * Send Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    public function sendHeader(string $key, string $value): void
+    public function sendHeader(string $key, mixed $value): void
     {
         $this->swoole->header($key, $value);
     }

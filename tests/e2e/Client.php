@@ -85,6 +85,7 @@ class Client
         }
 
         curl_setopt($ch, CURLOPT_PATH_AS_IS, 1);
+
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
@@ -138,11 +139,11 @@ class Client
     }
 
     /**
-    * Parse Cookie String
-    *
-    * @param string $cookie
-    * @return array
-    */
+     * Parse Cookie String
+     *
+     * @param string $cookie
+     * @return array
+     */
     public function parseCookie(string $cookie): array
     {
         $cookies = [];

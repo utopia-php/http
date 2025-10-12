@@ -44,26 +44,24 @@ abstract class Response
      * HTTP response status codes
      */
     public const STATUS_CODE_CONTINUE = 100;
-
     public const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
+    public const STATUS_CODE_PROCESSING = 102;
+    public const STATUS_CODE_EARLY_HINTS = 103;
 
     public const STATUS_CODE_PROCESSING = 102;
 
     public const STATUS_CODE_EARLY_HINTS = 103;
 
     public const STATUS_CODE_OK = 200;
-
     public const STATUS_CODE_CREATED = 201;
-
     public const STATUS_CODE_ACCEPTED = 202;
-
     public const STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203;
-
     public const STATUS_CODE_NOCONTENT = 204;
-
     public const STATUS_CODE_RESETCONTENT = 205;
-
     public const STATUS_CODE_PARTIALCONTENT = 206;
+    public const STATUS_CODE_MULTI_STATUS = 207;
+    public const STATUS_CODE_ALREADY_REPORTED = 208;
+    public const STATUS_CODE_IM_USED = 226;
 
     public const STATUS_CODE_MULTI_STATUS = 207;
 
@@ -72,92 +70,58 @@ abstract class Response
     public const STATUS_CODE_IM_USED = 226;
 
     public const STATUS_CODE_MULTIPLE_CHOICES = 300;
-
     public const STATUS_CODE_MOVED_PERMANENTLY = 301;
-
     public const STATUS_CODE_FOUND = 302;
-
     public const STATUS_CODE_SEE_OTHER = 303;
-
     public const STATUS_CODE_NOT_MODIFIED = 304;
-
     public const STATUS_CODE_USE_PROXY = 305;
-
     public const STATUS_CODE_UNUSED = 306;
-
     public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
+    public const STATUS_CODE_PERMANENT_REDIRECT = 308;
 
     public const STATUS_CODE_PERMANENT_REDIRECT = 308;
 
     public const STATUS_CODE_BAD_REQUEST = 400;
-
     public const STATUS_CODE_UNAUTHORIZED = 401;
-
     public const STATUS_CODE_PAYMENT_REQUIRED = 402;
-
     public const STATUS_CODE_FORBIDDEN = 403;
-
     public const STATUS_CODE_NOT_FOUND = 404;
-
     public const STATUS_CODE_METHOD_NOT_ALLOWED = 405;
-
     public const STATUS_CODE_NOT_ACCEPTABLE = 406;
-
     public const STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407;
-
     public const STATUS_CODE_REQUEST_TIMEOUT = 408;
-
     public const STATUS_CODE_CONFLICT = 409;
-
     public const STATUS_CODE_GONE = 410;
-
     public const STATUS_CODE_LENGTH_REQUIRED = 411;
-
     public const STATUS_CODE_PRECONDITION_FAILED = 412;
-
     public const STATUS_CODE_REQUEST_ENTITY_TOO_LARGE = 413;
-
     public const STATUS_CODE_REQUEST_URI_TOO_LONG = 414;
-
     public const STATUS_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
-
     public const STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
-
     public const STATUS_CODE_EXPECTATION_FAILED = 417;
-
     public const STATUS_CODE_IM_A_TEAPOT = 418;
-
     public const STATUS_CODE_MISDIRECTED_REQUEST = 421;
-
     public const STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
-
     public const STATUS_CODE_LOCKED = 423;
-
     public const STATUS_CODE_FAILED_DEPENDENCY = 424;
-
     public const STATUS_CODE_TOO_EARLY = 425;
-
     public const STATUS_CODE_UPGRADE_REQUIRED = 426;
-
     public const STATUS_CODE_PRECONDITION_REQUIRED = 428;
-
     public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
-
     public const STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
-
     public const STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
 
     public const STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
-
     public const STATUS_CODE_NOT_IMPLEMENTED = 501;
-
     public const STATUS_CODE_BAD_GATEWAY = 502;
-
     public const STATUS_CODE_SERVICE_UNAVAILABLE = 503;
-
     public const STATUS_CODE_GATEWAY_TIMEOUT = 504;
-
     public const STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
+    public const STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
+    public const STATUS_CODE_INSUFFICIENT_STORAGE = 507;
+    public const STATUS_CODE_LOOP_DETECTED = 508;
+    public const STATUS_CODE_NOT_EXTENDED = 510;
+    public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
     public const STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
 
@@ -673,11 +637,34 @@ abstract class Response
         ;
         $this->appendCookies();
 
-        $hasContentEncoding = false;
-        foreach ($this->headers as $name => $values) {
-            if (\strtolower($name) === 'content-encoding') {
-                $hasContentEncoding = true;
-                break;
+        if (!$this->disablePayload) {
+            $length = strlen($body);
+
+            $headersSize = 0;
+            foreach ($this->headers as $name => $values) {
+                if (\is_array($values)) {
+                    foreach ($values as $value) {
+                        $headersSize += \strlen($name . ': ' . $value);
+                    }
+                    $headersSize += (\count($values) - 1) * 2; // linebreaks
+                } else {
+                    $headersSize += \strlen($name . ': ' . $values);
+                }
+            }
+            $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
+            $this->size = $this->size + $headersSize + $length;
+
+            if (array_key_exists(
+                $this->contentType,
+                $this->compressed
+            ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+                $this->end($body);
+            } else {
+                for ($i = 0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
+                    $this->write(substr($body, ($i * self::CHUNK_SIZE), min(self::CHUNK_SIZE, $length - ($i * self::CHUNK_SIZE))));
+                }
+
+                $this->end();
             }
         }
 
@@ -754,15 +741,10 @@ abstract class Response
      *
      * Send optional content and end
      *
-     * @param  string  $content
+     * @param  string|null  $content
      * @return void
      */
-    protected function end(?string $content = null): void
-    {
-        if (!is_null($content)) {
-            echo $content;
-        }
-    }
+    abstract public function end(?string $content = null): void;
 
     /**
      * Output response
@@ -843,16 +825,7 @@ abstract class Response
      * @param  string|array<string>  $value
      * @return void
      */
-    protected function sendHeader(string $key, mixed $value): void
-    {
-        if (\is_array($value)) {
-            foreach ($value as $v) {
-                \header($key.': '.$v, false);
-            }
-        } else {
-            \header($key.': '.$value);
-        }
-    }
+    abstract public function sendHeader(string $key, mixed $value): void;
 
     /**
      * Send Cookie

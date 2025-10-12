@@ -137,10 +137,7 @@ abstract class Request
      * @param  string|null  $default
      * @return string|null
      */
-    public function getServer(string $key, ?string $default = null): ?string
-    {
-        return $_SERVER[$key] ?? $default;
-    }
+    abstract public function getServer(string $key, ?string $default = null): ?string;
 
     /**
      * Set server
