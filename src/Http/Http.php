@@ -50,7 +50,7 @@ class Http extends Base
      * Compression
      */
     protected bool $compression = false;
-    protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected int $compressionMinSize = self::COMPRESSION_MIN_SIZE_DEFAULT;
     protected mixed $compressionSupported = [];
 
     private Histogram $requestDuration;
