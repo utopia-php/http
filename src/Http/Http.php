@@ -5,9 +5,14 @@ namespace Utopia\Http;
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\Servers\Base;
+use Utopia\Telemetry\Adapter as Telemetry;
+use Utopia\Telemetry\Adapter\None as NoTelemetry;
+use Utopia\Telemetry\Histogram;
+use Utopia\Telemetry\UpDownCounter;
 
 class Http extends Base
 {
+    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
     /**
      * Request method constants
      */
@@ -42,12 +47,32 @@ class Http extends Base
     protected static ?Route $wildcardRoute = null;
 
     /**
+     * Compression
+     */
+    protected bool $compression = false;
+    protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected mixed $compressionSupported = [];
+
+    private Histogram $requestDuration;
+    private UpDownCounter $activeRequests;
+    private Histogram $requestBodySize;
+    private Histogram $responseBodySize;
+
+    /**
      * @var Adapter
      */
     protected Adapter $server;
 
     protected string|null $requestClass = null;
     protected string|null $responseClass = null;
+
+    /**
+     * Matched Route
+     *
+     * During runtime $this->route might be overwritten with the wildcard route to keep custom functions working with
+     * paths not declared in the Router. Keep a copy of the original matched app route.
+     */
+    protected ?Route $matchedRoute = null;
 
     /**
      * Http
@@ -61,7 +86,57 @@ class Http extends Base
         $this->files = new Files();
         $this->server = $server;
         $this->container = $container;
+        $this->setTelemetry(new NoTelemetry());
     }
+
+    /**
+     * Set Compression
+     */
+    public function setCompression(bool $compression)
+    {
+        $this->compression = $compression;
+    }
+
+    /**
+     * Set minimum compression size
+     */
+    public function setCompressionMinSize(int $compressionMinSize)
+    {
+        $this->compressionMinSize = $compressionMinSize;
+    }
+
+    /**
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported)
+    {
+        $this->compressionSupported = $compressionSupported;
+    }
+
+    /**
+     * Set telemetry adapter.
+     *
+     * @param Telemetry $telemetry
+     * @return void
+     */
+    public function setTelemetry(Telemetry $telemetry): void
+    {
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestduration
+        $this->requestDuration = $telemetry->createHistogram(
+            'http.server.request.duration',
+            's',
+            null,
+            ['ExplicitBucketBoundaries' =>  [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]]
+        );
+
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserveractive_requests
+        $this->activeRequests = $telemetry->createUpDownCounter('http.server.active_requests', '{request}');
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestbodysize
+        $this->requestBodySize = $telemetry->createHistogram('http.server.request.body.size', 'By');
+        // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverresponsebodysize
+        $this->responseBodySize = $telemetry->createHistogram('http.server.response.body.size', 'By');
+    }
+
 
     /**
      * Set Request Class
@@ -481,6 +556,37 @@ class Http extends Base
         return $this;
     }
 
+    public function run(Container $context): static
+    {
+        $request = $context->get('request');
+        /** @var Request $request */
+        $response = $context->get('response');
+        /** @var Response $response */
+
+        $this->activeRequests->add(1, [
+            'http.request.method' => $request->getMethod(),
+            'url.scheme' => $request->getProtocol(),
+        ]);
+        $start = microtime(true);
+        $result = $this->runInternal($context);
+
+        $requestDuration = microtime(true) - $start;
+        $attributes = [
+            'url.scheme' => $request->getProtocol(),
+            'http.request.method' => $request->getMethod(),
+            'http.route' => $this->matchedRoute?->getPath(),
+            'http.response.status_code' => $response->getStatusCode(),
+        ];
+        $this->requestDuration->record($requestDuration, $attributes);
+        $this->requestBodySize->record($request->getSize(), $attributes);
+        $this->responseBodySize->record($response->getSize(), $attributes);
+        $this->activeRequests->add(-1, [
+            'http.request.method' => $request->getMethod(),
+            'url.scheme' => $request->getProtocol(),
+        ]);
+    }
+
+
     /**
      * Run
      *
@@ -489,12 +595,18 @@ class Http extends Base
      *
      * @param Container $context
      */
-    public function run(Container $context): static
+    protected function runInternal(Container $context): static
     {
         $request = $context->get('request');
         /** @var Request $request */
         $response = $context->get('response');
         /** @var Response $response */
+
+        if ($this->compression) {
+            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
+            $response->setCompressionMinSize($this->compressionMinSize);
+            $response->setCompressionSupported($this->compressionSupported);
+        }
 
         if ($this->isFileLoaded($request->getURI())) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
@@ -510,6 +622,7 @@ class Http extends Base
 
         $method = $request->getMethod();
         $route = $this->match($request);
+        $this->matchedRoute = $route;
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
         if (null === $route && null !== self::$wildcardRoute) {
