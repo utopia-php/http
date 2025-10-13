@@ -95,11 +95,16 @@ trait BaseTest
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals($cookie, $response['body']);
 
+        /**
+         * Cookie response always expecting space in multiple cookie
+         * as RFC 6265 (https://datatracker.ietf.org/doc/html/rfc6265#section-4.2.1) recommends it
+         */
+
         // Two cookies without optional space
         $cookie = 'cookie1=value1;cookie2=value2';
         $response = $this->client->call(Client::METHOD_GET, '/cookies', [ 'Cookie' => $cookie ]);
         $this->assertEquals(200, $response['headers']['status-code']);
-        $this->assertEquals($cookie, $response['body']);
+        $this->assertEquals('cookie1=value1; cookie2=value2', $response['body']);
 
         // Cookie with "=" in value
         $cookie = 'cookie1=value1=value2';
@@ -108,10 +113,10 @@ trait BaseTest
         $this->assertEquals($cookie, $response['body']);
 
         // Case sensitivity for cookie names
-        $cookie = 'cookie1=v1; Cookie1=v2';
+        $cookie = 'cookie1=v1;Cookie1=v2';
         $response = $this->client->call(Client::METHOD_GET, '/cookies', [ 'Cookie' => $cookie ]);
         $this->assertEquals(200, $response['headers']['status-code']);
-        $this->assertEquals($cookie, $response['body']);
+        $this->assertEquals('cookie1=v1; Cookie1=v2', $response['body']);
     }
 
     public function testSetCookie()
