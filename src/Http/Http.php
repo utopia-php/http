@@ -92,25 +92,28 @@ class Http extends Base
     /**
      * Set Compression
      */
-    public function setCompression(bool $compression)
+    public function setCompression(bool $compression): static
     {
         $this->compression = $compression;
+        return $this;
     }
 
     /**
      * Set minimum compression size
      */
-    public function setCompressionMinSize(int $compressionMinSize)
+    public function setCompressionMinSize(int $compressionMinSize): static
     {
         $this->compressionMinSize = $compressionMinSize;
+        return $this;
     }
 
     /**
      * Set supported compression algorithms
      */
-    public function setCompressionSupported(mixed $compressionSupported)
+    public function setCompressionSupported(mixed $compressionSupported): static
     {
         $this->compressionSupported = $compressionSupported;
+        return $this;
     }
 
     /**
