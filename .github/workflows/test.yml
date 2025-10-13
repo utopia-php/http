@@ -25,10 +25,10 @@ jobs:
       run: sleep 10
 
     - name: Run FPM Tests
-      run: docker compose exec fpm vendor/bin/phpunit --configuration phpunit.xml
+      run: docker compose exec fpm vendor/bin/phpunit --configuration phpunit.xml --group=fpm
 
     - name: Run Swoole Tests
-      run: docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml
+      run: docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml --group=swoole
 
     - name: Run Swoole Corotuine Tests
-      run: docker compose exec swoole-coroutine vendor/bin/phpunit --configuration phpunit.xml
+      run: docker compose exec swoole-coroutine vendor/bin/phpunit --configuration phpunit.xml --group=swoole-coroutine

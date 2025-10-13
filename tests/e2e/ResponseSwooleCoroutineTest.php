@@ -5,6 +5,10 @@ namespace Utopia\Http\Tests;
 use PHPUnit\Framework\TestCase;
 use Tests\E2E\Client;
 
+/**
+ * @group swoole-coroutine
+ * @group e2e
+ */
 class ResponseSwooleCoroutineTest extends TestCase
 {
     use BaseTest;
