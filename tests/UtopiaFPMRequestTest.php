@@ -19,7 +19,7 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
      */
     public function getParam(string $key, $default = null): mixed
     {
-        if ($this::_hasParams() && \in_array($key, $this::_getParams())) {
+        if ($this::_hasParams() && \array_key_exists($key, $this::_getParams())) {
             return $this::_getParams()[$key];
         }
 
