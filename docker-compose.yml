@@ -8,6 +8,7 @@ services:
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
+            - ./phpunit.xml:/usr/share/nginx/html/phpunit.xml
         networks:
             - testing
     swoole:
@@ -21,6 +22,7 @@ services:
             - ./src:/usr/src/code/src
             - ./tests:/usr/src/code/tests
             - ./tmp/xdebug:/tmp/xdebug
+            - ./phpunit.xml:/usr/share/nginx/html/phpunit.xml
         networks:
             - testing
     swoole-coroutine:
@@ -34,6 +36,7 @@ services:
             - ./src:/usr/src/code/src
             - ./tests:/usr/src/code/tests
             - ./tmp/xdebug:/tmp/xdebug
+            - ./phpunit.xml:/usr/share/nginx/html/phpunit.xml
         networks:
             - testing
 
