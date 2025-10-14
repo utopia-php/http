@@ -540,7 +540,7 @@ class Http extends Base
         /** @var Request $request */
         $response = $context->get('response');
         /** @var Response $response */
-        $route = $context->get('route');
+        $route = $this->match($request);
         /** @var ?Route $route */
 
         $this->activeRequests->add(1, [
