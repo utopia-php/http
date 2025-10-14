@@ -285,6 +285,9 @@ class Request extends UtopiaRequest
         $cookies = \explode(';', $this->getHeader('cookie', ''));
         foreach ($cookies as $cookie) {
             $cookie = \trim($cookie);
+            if ($cookie === '' || !\str_contains($cookie, '=')) {
+                continue;
+            }
             [$cookieKey, $cookieValue] = \explode('=', $cookie, 2);
             $cookieKey = \trim($cookieKey);
             $cookieValue = \trim($cookieValue);
@@ -292,7 +295,6 @@ class Request extends UtopiaRequest
                 return $cookieValue;
             }
         }
-
         return $default;
     }
 
