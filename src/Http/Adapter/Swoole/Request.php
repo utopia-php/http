@@ -280,22 +280,7 @@ class Request extends UtopiaRequest
      */
     public function getCookie(string $key, string $default = ''): string
     {
-        $key = \strtolower($key);
-
-        $cookies = \explode(';', $this->getHeader('cookie', ''));
-        foreach ($cookies as $cookie) {
-            $cookie = \trim($cookie);
-            if ($cookie === '' || !\str_contains($cookie, '=')) {
-                continue;
-            }
-            [$cookieKey, $cookieValue] = \explode('=', $cookie, 2);
-            $cookieKey = \trim($cookieKey);
-            $cookieValue = \trim($cookieValue);
-            if ($cookieKey === $key) {
-                return $cookieValue;
-            }
-        }
-        return $default;
+        return $this->swoole->cookie[$key] ?? $this->swoole->cookie[strtolower($key)] ?? $default;
     }
 
     /**
