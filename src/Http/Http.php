@@ -552,7 +552,7 @@ class Http extends Base
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->matchedRoute?->getPath(),
+            'http.route' => $this->match($request)?->getPath() ?? '',
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
