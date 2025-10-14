@@ -540,6 +540,8 @@ class Http extends Base
         /** @var Request $request */
         $response = $context->get('response');
         /** @var Response $response */
+        $route = $context->get('route');
+        /** @var ?Route $route */
 
         $this->activeRequests->add(1, [
             'http.request.method' => $request->getMethod(),
@@ -552,7 +554,7 @@ class Http extends Base
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->match($request)?->getPath() ?? '',
+            'http.route' => $route?->getPath() ?? '',
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
