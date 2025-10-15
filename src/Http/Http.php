@@ -542,13 +542,14 @@ class Http extends Base
         /** @var Response $response */
         $route = $this->match($request);
         /** @var ?Route $route */
+        $this->matchedRoute = $route;
 
         $this->activeRequests->add(1, [
             'http.request.method' => $request->getMethod(),
             'url.scheme' => $request->getProtocol(),
         ]);
         $start = microtime(true);
-        $result = $this->runInternal($context);
+        $result = $this->runInternal($context, $route);
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
@@ -576,7 +577,7 @@ class Http extends Base
      *
      * @param Container $context
      */
-    protected function runInternal(Container $context): static
+    protected function runInternal(Container $context, ?Route $route): static
     {
         $request = $context->get('request');
         /** @var Request $request */
@@ -602,8 +603,6 @@ class Http extends Base
         }
 
         $method = $request->getMethod();
-        $route = $this->match($request);
-        $this->matchedRoute = $route;
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
         if (null === $route && null !== self::$wildcardRoute) {
