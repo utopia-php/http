@@ -1,19 +1,33 @@
-<phpunit backupGlobals="false"
-         backupStaticAttributes="false"
-         bootstrap="vendor/autoload.php"
-         colors="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="false"
-        >
+<phpunit
+    backupGlobals="false"
+    backupStaticAttributes="false"
+    bootstrap="vendor/autoload.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    processIsolation="false"
+    stopOnFailure="false"
+>
     <testsuites>
-        <testsuite name="Application Test Suite">
-            <file>./tests/e2e/Client.php</file>
+        <testsuite name="unit">
             <file>./tests/MockRequest.php</file>
             <file>./tests/MockResponse.php</file>
-            <directory>./tests/</directory>
+            <file>./tests/HookTest.php</file>
+            <file>./tests/HttpTest.php</file>
+            <file>./tests/RequestTest.php</file>
+            <file>./tests/ResponseTest.php</file>
+            <file>./tests/RouterTest.php</file>
+            <file>./tests/RouteTest.php</file>
+            <file>./tests/UtopiaFPMRequestTest.php</file>
+            <directory>./tests/Validator/</directory>
+        </testsuite>
+        <testsuite name="e2e">
+            <file>./tests/e2e/Client.php</file>
+            <file>./tests/e2e/BaseTest.php</file>
+            <file>./tests/e2e/ResponseFPMTest.php</file>
+            <file>./tests/e2e/ResponseSwooleTest.php</file>
+            <file>./tests/e2e/ResponseSwooleCoroutineTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

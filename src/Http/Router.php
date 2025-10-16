@@ -86,7 +86,7 @@ class Router
         }
 
         foreach ($params as $key => $index) {
-            $route->setPathParam($key, $index);
+            $route->setPathParam($key, $index, $path);
         }
 
         self::$routes[$route->getMethod()][$path] = $route;
@@ -101,10 +101,14 @@ class Router
      */
     public static function addRouteAlias(string $path, Route $route): void
     {
-        [$alias] = self::preparePath($path);
+        [$alias, $params] = self::preparePath($path);
 
         if (array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
+        }
+
+        foreach ($params as $key => $index) {
+            $route->setPathParam($key, $index, $alias);
         }
 
         self::$routes[$route->getMethod()][$alias] = $route;
@@ -138,7 +142,9 @@ class Router
             );
 
             if (array_key_exists($match, self::$routes[$method])) {
-                return self::$routes[$method][$match];
+                $route = self::$routes[$method][$match];
+                $route->setMatchedPath($match);
+                return $route;
             }
         }
 
@@ -147,7 +153,9 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (array_key_exists($match, self::$routes[$method])) {
-            return self::$routes[$method][$match];
+            $route = self::$routes[$method][$match];
+            $route->setMatchedPath($match);
+            return $route;
         }
 
         /**
@@ -157,7 +165,9 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (array_key_exists($match, self::$routes[$method])) {
-                return self::$routes[$method][$match];
+                $route = self::$routes[$method][$match];
+                $route->setMatchedPath($match);
+                return $route;
             }
         }
 
@@ -192,7 +202,7 @@ class Router
      * @param string $path
      * @return array
      */
-    protected static function preparePath(string $path): array
+    public static function preparePath(string $path): array
     {
         $parts = array_values(array_filter(explode('/', $path)));
         $prepare = '';

@@ -4,7 +4,6 @@ namespace Utopia\Http\Adapter\Swoole;
 
 use Utopia\Http\Adapter;
 use Swoole\Http\Server as SwooleServer;
-use Swoole\Runtime;
 
 class Server extends Adapter
 {
@@ -39,7 +38,6 @@ class Server extends Adapter
 
     public function start()
     {
-        Runtime::enableCoroutine();
         return $this->server->start();
     }
 }

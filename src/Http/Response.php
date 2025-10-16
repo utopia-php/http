@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Utopia\Compression\Compression;
+
 abstract class Response
 {
     /**
@@ -42,92 +44,74 @@ abstract class Response
      * HTTP response status codes
      */
     public const STATUS_CODE_CONTINUE = 100;
-
     public const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
 
+    public const STATUS_CODE_PROCESSING = 102;
+
+    public const STATUS_CODE_EARLY_HINTS = 103;
+
     public const STATUS_CODE_OK = 200;
-
     public const STATUS_CODE_CREATED = 201;
-
     public const STATUS_CODE_ACCEPTED = 202;
-
     public const STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203;
-
     public const STATUS_CODE_NOCONTENT = 204;
-
     public const STATUS_CODE_RESETCONTENT = 205;
-
     public const STATUS_CODE_PARTIALCONTENT = 206;
+    public const STATUS_CODE_MULTI_STATUS = 207;
+    public const STATUS_CODE_ALREADY_REPORTED = 208;
+    public const STATUS_CODE_IM_USED = 226;
 
     public const STATUS_CODE_MULTIPLE_CHOICES = 300;
-
     public const STATUS_CODE_MOVED_PERMANENTLY = 301;
-
     public const STATUS_CODE_FOUND = 302;
-
     public const STATUS_CODE_SEE_OTHER = 303;
-
     public const STATUS_CODE_NOT_MODIFIED = 304;
-
     public const STATUS_CODE_USE_PROXY = 305;
-
     public const STATUS_CODE_UNUSED = 306;
-
     public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
+    public const STATUS_CODE_PERMANENT_REDIRECT = 308;
 
     public const STATUS_CODE_BAD_REQUEST = 400;
-
     public const STATUS_CODE_UNAUTHORIZED = 401;
-
     public const STATUS_CODE_PAYMENT_REQUIRED = 402;
-
     public const STATUS_CODE_FORBIDDEN = 403;
-
     public const STATUS_CODE_NOT_FOUND = 404;
-
     public const STATUS_CODE_METHOD_NOT_ALLOWED = 405;
-
     public const STATUS_CODE_NOT_ACCEPTABLE = 406;
-
     public const STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407;
-
     public const STATUS_CODE_REQUEST_TIMEOUT = 408;
-
     public const STATUS_CODE_CONFLICT = 409;
-
     public const STATUS_CODE_GONE = 410;
-
     public const STATUS_CODE_LENGTH_REQUIRED = 411;
-
     public const STATUS_CODE_PRECONDITION_FAILED = 412;
-
     public const STATUS_CODE_REQUEST_ENTITY_TOO_LARGE = 413;
-
     public const STATUS_CODE_REQUEST_URI_TOO_LONG = 414;
-
     public const STATUS_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
-
     public const STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
-
     public const STATUS_CODE_EXPECTATION_FAILED = 417;
-
+    public const STATUS_CODE_IM_A_TEAPOT = 418;
+    public const STATUS_CODE_MISDIRECTED_REQUEST = 421;
+    public const STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
+    public const STATUS_CODE_LOCKED = 423;
+    public const STATUS_CODE_FAILED_DEPENDENCY = 424;
     public const STATUS_CODE_TOO_EARLY = 425;
-
+    public const STATUS_CODE_UPGRADE_REQUIRED = 426;
+    public const STATUS_CODE_PRECONDITION_REQUIRED = 428;
     public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
-
+    public const STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
     public const STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
 
     public const STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
-
     public const STATUS_CODE_NOT_IMPLEMENTED = 501;
-
     public const STATUS_CODE_BAD_GATEWAY = 502;
-
     public const STATUS_CODE_SERVICE_UNAVAILABLE = 503;
-
     public const STATUS_CODE_GATEWAY_TIMEOUT = 504;
-
     public const STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
+    public const STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
+    public const STATUS_CODE_INSUFFICIENT_STORAGE = 507;
+    public const STATUS_CODE_LOOP_DETECTED = 508;
+    public const STATUS_CODE_NOT_EXTENDED = 510;
+    public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
     /**
      * @var array
@@ -135,6 +119,8 @@ abstract class Response
     protected $statusCodes = [
         self::STATUS_CODE_CONTINUE => 'Continue',
         self::STATUS_CODE_SWITCHING_PROTOCOLS => 'Switching Protocols',
+        self::STATUS_CODE_PROCESSING => 'Processing',
+        self::STATUS_CODE_EARLY_HINTS => 'Early Hints',
         self::STATUS_CODE_OK => 'OK',
         self::STATUS_CODE_CREATED => 'Created',
         self::STATUS_CODE_ACCEPTED => 'Accepted',
@@ -142,6 +128,9 @@ abstract class Response
         self::STATUS_CODE_NOCONTENT => 'No Content',
         self::STATUS_CODE_RESETCONTENT => 'Reset Content',
         self::STATUS_CODE_PARTIALCONTENT => 'Partial Content',
+        self::STATUS_CODE_MULTI_STATUS => 'Multi-Status',
+        self::STATUS_CODE_ALREADY_REPORTED => 'Already Reported',
+        self::STATUS_CODE_IM_USED => 'IM Used',
         self::STATUS_CODE_MULTIPLE_CHOICES => 'Multiple Choices',
         self::STATUS_CODE_MOVED_PERMANENTLY => 'Moved Permanently',
         self::STATUS_CODE_FOUND => 'Found',
@@ -150,6 +139,7 @@ abstract class Response
         self::STATUS_CODE_USE_PROXY => 'Use Proxy',
         self::STATUS_CODE_UNUSED => '(Unused)',
         self::STATUS_CODE_TEMPORARY_REDIRECT => 'Temporary Redirect',
+        self::STATUS_CODE_PERMANENT_REDIRECT => 'Permanent Redirect',
         self::STATUS_CODE_BAD_REQUEST => 'Bad Request',
         self::STATUS_CODE_UNAUTHORIZED => 'Unauthorized',
         self::STATUS_CODE_PAYMENT_REQUIRED => 'Payment Required',
@@ -168,8 +158,16 @@ abstract class Response
         self::STATUS_CODE_UNSUPPORTED_MEDIA_TYPE => 'Unsupported Media Type',
         self::STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE => 'Requested Range Not Satisfiable',
         self::STATUS_CODE_EXPECTATION_FAILED => 'Expectation Failed',
+        self::STATUS_CODE_IM_A_TEAPOT => 'I\'m a teapot',
+        self::STATUS_CODE_MISDIRECTED_REQUEST => 'Misdirected Request',
+        self::STATUS_CODE_UNPROCESSABLE_ENTITY => 'Unprocessable Entity',
+        self::STATUS_CODE_LOCKED => 'Locked',
+        self::STATUS_CODE_FAILED_DEPENDENCY => 'Failed Dependency',
         self::STATUS_CODE_TOO_EARLY => 'Too Early',
+        self::STATUS_CODE_UPGRADE_REQUIRED => 'Upgrade Required',
+        self::STATUS_CODE_PRECONDITION_REQUIRED => 'Precondition Required',
         self::STATUS_CODE_TOO_MANY_REQUESTS => 'Too Many Requests',
+        self::STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE => 'Request Header Fields Too Large',
         self::STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS => 'Unavailable For Legal Reasons',
         self::STATUS_CODE_INTERNAL_SERVER_ERROR => 'Internal Server Error',
         self::STATUS_CODE_NOT_IMPLEMENTED => 'Not Implemented',
@@ -177,6 +175,11 @@ abstract class Response
         self::STATUS_CODE_SERVICE_UNAVAILABLE => 'Service Unavailable',
         self::STATUS_CODE_GATEWAY_TIMEOUT => 'Gateway Timeout',
         self::STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED => 'HTTP Version Not Supported',
+        self::STATUS_CODE_VARIANT_ALSO_NEGOTIATES => 'Variant Also Negotiates',
+        self::STATUS_CODE_INSUFFICIENT_STORAGE => 'Insufficient Storage',
+        self::STATUS_CODE_LOOP_DETECTED => 'Loop Detected',
+        self::STATUS_CODE_NOT_EXTENDED => 'Not Extended',
+        self::STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED => 'Network Authentication Required',
     ];
 
     /**
@@ -184,17 +187,71 @@ abstract class Response
      *
      * @var array
      */
-    protected $compressed = [
+    private static $compressible = [
+        // Text
+        'text/html' => true,
+        'text/richtext' => true,
         'text/plain' => true,
         'text/css' => true,
-        'text/javascript' => true,
+        'text/x-script' => true,
+        'text/x-component' => true,
+        'text/x-java-source' => true,
+        'text/x-markdown' => true,
+
+        // JavaScript
         'application/javascript' => true,
-        'text/html' => true,
-        'text/html; charset=UTF-8' => true,
+        'application/x-javascript' => true,
+        'text/javascript' => true,
+        'text/js' => true,
+
+        // Icons
+        'image/x-icon' => true,
+        'image/vnd.microsoft.icon' => true,
+
+        // Scripts
+        'application/x-perl' => true,
+        'application/x-httpd-cgi' => true,
+
+        // XML and JSON
+        'text/xml' => true,
+        'application/xml' => true,
+        'application/rss+xml' => true,
+        'application/vnd.api+json' => true,
+        'application/x-protobuf' => true,
         'application/json' => true,
-        'application/json; charset=UTF-8' => true,
+        'application/manifest+json' => true,
+        'application/ld+json' => true,
+        'application/graphql+json' => true,
+        'application/geo+json' => true,
+
+        // Multipart
+        'multipart/bag' => true,
+        'multipart/mixed' => true,
+
+        // XHTML
+        'application/xhtml+xml' => true,
+
+        // Fonts
+        'font/ttf' => true,
+        'font/otf' => true,
+        'font/x-woff' => true,
         'image/svg+xml' => true,
-        'application/xml+rss' => true,
+        'application/vnd.ms-fontobject' => true,
+        'application/ttf' => true,
+        'application/x-ttf' => true,
+        'application/otf' => true,
+        'application/x-otf' => true,
+        'application/truetype' => true,
+        'application/opentype' => true,
+        'application/x-opentype' => true,
+        'application/font-woff' => true,
+        'application/eot' => true,
+        'application/font' => true,
+        'application/font-sfnt' => true,
+
+        // WebAssembly
+        'application/wasm' => true,
+        'application/javascript-binast' => true,
     ];
 
     public const COOKIE_SAMESITE_NONE = 'None';
@@ -226,7 +283,7 @@ abstract class Response
     protected bool $sent = false;
 
     /**
-     * @var array
+     * @var array<string, string|array<string>>
      */
     protected array $headers = [];
 
@@ -246,6 +303,21 @@ abstract class Response
     protected int $size = 0;
 
     /**
+     * @var string
+     */
+    protected string $acceptEncoding = '';
+
+    /**
+     * @var int
+     */
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+
+    /**
+     * @var mixed
+     */
+    protected mixed $compressionSupported = [];
+
+    /**
      * Response constructor.
      *
      * @param  float  $time response start time
@@ -253,6 +325,18 @@ abstract class Response
     public function __construct(float $time = 0)
     {
         $this->startTime = (!empty($time)) ? $time : \microtime(true);
+    }
+
+    private function isCompressible(?string $contentType): bool
+    {
+        if (!$contentType) {
+            return false;
+        }
+
+        // Strip any parameters (e.g. ;charset=utf-8)
+        $contentType = strtolower(trim(explode(';', $contentType)[0]));
+
+        return isset(self::$compressible[$contentType]);
     }
 
     /**
@@ -267,6 +351,43 @@ abstract class Response
     {
         $this->contentType = $type.((!empty($charset) ? '; charset='.$charset : ''));
 
+        return $this;
+    }
+
+    /**
+     * Set accept encoding
+     *
+     * Set HTTP accept encoding header.
+     *
+     * @param  string  $acceptEncoding
+     */
+    public function setAcceptEncoding(string $acceptEncoding): static
+    {
+        $this->acceptEncoding = $acceptEncoding;
+        return $this;
+    }
+
+    /**
+     * Set min compression size
+     *
+     * Set minimum size for compression to be applied in bytes.
+     *
+     * @param  int  $compressionMinSize
+     */
+    public function setCompressionMinSize(int $compressionMinSize): static
+    {
+        $this->compressionMinSize = $compressionMinSize;
+        return $this;
+    }
+
+    /**
+     * Set supported compression algorithms
+     *
+     * @param mixed  $compressionSupported
+     */
+    public function setCompressionSupported(mixed $compressionSupported): static
+    {
+        $this->compressionSupported = $compressionSupported;
         return $this;
     }
 
@@ -363,10 +484,24 @@ abstract class Response
      *
      * @param  string  $key
      * @param  string  $value
+     * @param  bool  $override
      */
-    public function addHeader(string $key, ?string $value): static
+    public function addHeader(string $key, string $value, bool $override = true): static
     {
-        $this->headers[$key] = $value;
+        if ($override) {
+            $this->headers[$key] = $value;
+            return $this;
+        }
+
+        if (\array_key_exists($key, $this->headers)) {
+            if (\is_array($this->headers[$key])) {
+                $this->headers[$key][] = $value;
+            } else {
+                $this->headers[$key] = [$this->headers[$key], $value];
+            }
+        } else {
+            $this->headers[$key] = $value;
+        }
 
         return $this;
     }
@@ -392,7 +527,7 @@ abstract class Response
      *
      * Return array of all response headers
      *
-     * @return array
+     * @return array<string, array<string, string>>
      */
     public function getHeaders(): array
     {
@@ -405,13 +540,13 @@ abstract class Response
      * Add an HTTP cookie to response header
      *
      * @param  string  $name
-     * @param  string  $value
-     * @param  int  $expire
-     * @param  string  $path
-     * @param  string  $domain
-     * @param  bool  $secure
-     * @param  bool  $httponly
-     * @param  string  $sameSite
+     * @param  string|null  $value
+     * @param  int|null  $expire
+     * @param  string|null  $path
+     * @param  string|null  $domain
+     * @param  bool|null  $secure
+     * @param  bool|null  $httponly
+     * @param  string|null  $sameSite
      */
     public function addCookie(string $name, ?string $value = null, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httponly = null, ?string $sameSite = null): static
     {
@@ -473,13 +608,13 @@ abstract class Response
             return;
         }
 
-        $this->sent = true;
+        $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
+        $this->addHeader('Server', $serverHeader, override: true);
 
         $this
             ->addHeader('Server', array_key_exists('Server', $this->headers) ? $this->headers['Server'] : 'Utopia/Http')
             ->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime))
         ;
-
         $this
             ->appendCookies()
             ->appendHeaders();
@@ -487,12 +622,21 @@ abstract class Response
         if (!$this->disablePayload) {
             $length = strlen($body);
 
-            $this->size = $this->size + strlen(implode("\n", $this->headers)) + $length;
+            $headersSize = 0;
+            foreach ($this->headers as $name => $values) {
+                if (\is_array($values)) {
+                    foreach ($values as $value) {
+                        $headersSize += \strlen($name . ': ' . $value);
+                    }
+                    $headersSize += (\count($values) - 1) * 2; // linebreaks
+                } else {
+                    $headersSize += \strlen($name . ': ' . $values);
+                }
+            }
+            $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
+            $this->size = $this->size + $headersSize + $length;
 
-            if (array_key_exists(
-                $this->contentType,
-                $this->compressed
-            ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
+            if ($this->isCompressible($this->contentType) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
                 $this->end($body);
             } else {
                 for ($i = 0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
@@ -501,11 +645,11 @@ abstract class Response
 
                 $this->end();
             }
-
-            $this->disablePayload();
-        } else {
-            $this->end();
         }
+
+        $this->sent = true;
+
+        $this->disablePayload();
     }
 
     /**
@@ -523,10 +667,10 @@ abstract class Response
      *
      * Send optional content and end
      *
-     * @param  string  $content
+     * @param  string|null  $content
      * @return void
      */
-    abstract public function end(string $content = ''): void;
+    abstract public function end(?string $content = null): void;
 
     /**
      * Output response
@@ -548,7 +692,7 @@ abstract class Response
             $this->sent = true;
         }
 
-        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
 
         $this
             ->appendCookies()
@@ -578,7 +722,7 @@ abstract class Response
 
         // Send content type header
         if (!empty($this->contentType)) {
-            $this->addHeader('Content-Type', $this->contentType);
+            $this->addHeader('Content-Type', $this->contentType, override: true);
         }
 
         // Set application headers
@@ -604,10 +748,10 @@ abstract class Response
      * Output Header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      * @return void
      */
-    abstract public function sendHeader(string $key, string $value): void;
+    abstract public function sendHeader(string $key, mixed $value): void;
 
     /**
      * Send Cookie
@@ -668,7 +812,7 @@ abstract class Response
         }
 
         $this
-            ->addHeader('Location', $url)
+            ->addHeader('Location', $url, override: true)
             ->setStatusCode($statusCode)
             ->send('');
     }

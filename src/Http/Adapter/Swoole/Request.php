@@ -280,9 +280,7 @@ class Request extends UtopiaRequest
      */
     public function getCookie(string $key, string $default = ''): string
     {
-        $key = strtolower($key);
-
-        return $this->swoole->cookie[$key] ?? $default;
+        return $this->swoole->cookie[$key] ?? $this->swoole->cookie[strtolower($key)] ?? $default;
     }
 
     /**
@@ -381,6 +379,24 @@ class Request extends UtopiaRequest
      */
     protected function generateHeaders(): array
     {
-        return $this->swoole->header;
+        $headers = $this->swoole->header ?? [];
+
+        // Check if cookies are available in a separate property
+        if (!empty($this->swoole->cookie)) {
+            // Convert cookies back to Cookie header format
+            $cookiePairs = [];
+            foreach ($this->swoole->cookie as $name => $value) {
+                $cookiePairs[] = $name . '=' . $value;
+            }
+            if (!empty($cookiePairs)) {
+                $headers['cookie'] = implode('; ', $cookiePairs);
+            }
+        }
+
+        foreach ($headers as $key => $value) {
+            $headers[strtolower($key)] = $value;
+        }
+
+        return $headers;
     }
 }

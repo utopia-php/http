@@ -1,4 +1,4 @@
-FROM composer:2.0 AS step0
+FROM composer:2.8 AS step0
 
 
 ARG TESTING=true
@@ -13,11 +13,11 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM php:8.0-cli-alpine as final
+FROM php:8.3-cli-alpine AS final
 LABEL maintainer="team@appwrite.io"
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PHP_VERSION=8
+    PHP_VERSION=82
 
 RUN \
   apk add --no-cache --virtual .deps \

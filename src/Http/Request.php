@@ -504,32 +504,7 @@ abstract class Request
      *
      * @return array
      */
-    protected function generateHeaders(): array
-    {
-        if (null === $this->headers) {
-            /**
-             * Fallback for older PHP versions
-             * that do not support generateHeaders
-             */
-            if (!\function_exists('getallheaders')) {
-                $headers = [];
-
-                foreach ($_SERVER as $name => $value) {
-                    if (\substr($name, 0, 5) == 'HTTP_') {
-                        $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
-                    }
-                }
-
-                $this->headers = $headers;
-
-                return $this->headers;
-            }
-
-            $this->headers = array_change_key_case(getallheaders());
-        }
-
-        return $this->headers;
-    }
+    abstract protected function generateHeaders(): array;
 
     /**
      * Generate input

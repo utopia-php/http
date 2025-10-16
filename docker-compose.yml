@@ -10,8 +10,6 @@ services:
             - ./tests:/usr/share/nginx/html/tests
         networks:
             - testing
-        depends_on:
-            - swoole
     swoole:
         build:
             context: .

@@ -10,6 +10,7 @@ use Utopia\Http\Tests\MockRequest as Request;
 use Utopia\Http\Tests\MockResponse as Response;
 use Utopia\Http\Validator\Text;
 use Utopia\Http\Adapter\FPM\Server;
+use Utopia\Http\Tests\UtopiaFPMRequestTest;
 
 class HttpTest extends TestCase
 {
@@ -789,5 +790,65 @@ class HttpTest extends TestCase
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
+    }
+
+    public function testCallableStringParametersNotExecuted(): void
+    {
+        // Test that callable strings (like function names) are not executed
+        $route = new Route('GET', '/test-callable-string');
+
+        $route
+            ->param('callback', 'phpinfo', new Text(200), 'callback param', true)
+            ->action(function ($callback) {
+                // If the string 'phpinfo' was executed as a function,
+                // it would output PHP info. Instead, it should just be the string.
+                echo 'callback-value: ' . $callback;
+            });
+
+        $context = clone $this->context;
+        \ob_start();
+        $this->http->execute($route, new Request(), $context);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('callback-value: phpinfo', $result);
+
+        // Test with request parameter that is a callable string
+        $route2 = new Route('GET', '/test-callable-string-param');
+
+        $route2
+            ->param('func', 'default', new Text(200), 'func param', false)
+            ->action(function ($func) {
+                echo 'func-value: ' . $func;
+            });
+
+        \ob_start();
+        $context = clone $this->context;
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['func' => 'system']);
+        $this->http->execute($route2, $request, $context);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('func-value: system', $result);
+
+        // Test callable closure still works
+        $route3 = new Route('GET', '/test-callable-closure');
+
+        $route3
+            ->param('generated', function () {
+                return 'generated-value';
+            }, new Text(200), 'generated param', true)
+            ->action(function ($generated) {
+                echo 'generated: ' . $generated;
+            });
+
+        \ob_start();
+        $context = clone $this->context;
+        $this->http->execute($route3, new Request(), $context);
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('generated: generated-value', $result);
     }
 }
