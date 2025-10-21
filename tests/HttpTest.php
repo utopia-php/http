@@ -8,7 +8,7 @@ use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\Http\Tests\MockRequest as Request;
 use Utopia\Http\Tests\MockResponse as Response;
-use Utopia\Http\Validator\Text;
+use Utopia\Validator\Text;
 use Utopia\Http\Adapter\FPM\Server;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
 

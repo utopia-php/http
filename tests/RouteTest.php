@@ -3,7 +3,7 @@
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Http\Validator\Text;
+use Utopia\Validator\Text;
 
 class RouteTest extends TestCase
 {
