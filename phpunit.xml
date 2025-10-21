@@ -20,7 +20,6 @@
             <file>./tests/RouterTest.php</file>
             <file>./tests/RouteTest.php</file>
             <file>./tests/UtopiaFPMRequestTest.php</file>
-            <directory>./tests/Validator/</directory>
         </testsuite>
         <testsuite name="e2e">
             <file>./tests/e2e/Client.php</file>

@@ -7,7 +7,7 @@ use Utopia\DI\Dependency;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
-use Utopia\Http\Validator\Text;
+use Utopia\Validator\Text;
 
 class User
 {

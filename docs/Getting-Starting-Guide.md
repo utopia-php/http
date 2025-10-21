@@ -144,7 +144,7 @@ use Utopia\Http\Swoole\Response;
 use Swoole\Http\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\Http\Validator\Wildcard;
+use Utopia\Validator\Wildcard;
 
 $http = new Server("0.0.0.0", 8080);
 
@@ -284,4 +284,3 @@ If you have PHP and Composer installed on your device, you can run Utopia apps l
 > Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
 
 Wonderful! 😄  You’re all set to create a basic demo app using the Utopia HTTP. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
-

@@ -42,9 +42,9 @@ $user
     ->setCallback(fn (Request $request) => $request->getHeader('x-user-id', 'John Doe'));
 
 $container->set($user);
-    
-// Defining Route    
-Http::get('/hello-world') 
+
+// Defining Route
+Http::get('/hello-world')
     ->inject('request')  // Auto-injected each request
     ->inject('response') // Auto-injected each request
     ->inject('user')
@@ -67,7 +67,7 @@ $http->start();
 Run HTTP server:
 
 ```bash
-php -S localhost:8000 src/server.php 
+php -S localhost:8000 src/server.php
 ```
 
 Send HTTP request:
@@ -130,7 +130,7 @@ $http->start();
 
 Parameters are used to receive input into endpoint action from the HTTP request. Parameters could be defined as URL parameters or in a body with a structure such as JSON.
 
-Every parameter must have a validator defined. Validators are simple classes that verify the input and ensure the security of inputs. You can define your own validators or use some of [built-in validators](/src/Http/Validator).
+Every parameter must have a validator defined. Validators are simple classes that verify the input and ensure the security of inputs. You can define your own validators or use some of [built-in validators](https://github.com/utopia-php/validators).
 
 Define an endpoint with params:
 

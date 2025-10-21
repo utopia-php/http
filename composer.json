@@ -30,7 +30,8 @@
     "require": {
         "php": ">=8.1",
         "ext-swoole": "*",
-        "utopia-php/servers": "0.1.*",
+        "utopia-php/servers": "0.2.*",
+        "utopia-php/validators": "0.0.*",
         "utopia-php/compression": "0.1.*",
         "utopia-php/telemetry": "0.1.*"
     },
