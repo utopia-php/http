@@ -892,10 +892,6 @@ class App
      */
     protected function validate(string $key, array $param, mixed $value): void
     {
-        if ($param['optional'] && \is_null($value)) {
-            return;
-        }
-
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
