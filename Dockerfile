@@ -9,7 +9,7 @@ COPY composer.* /usr/local/src/
 
 RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
-    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi` \
+    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
 FROM php:8.1-cli-alpine as final
 LABEL maintainer="team@appwrite.io"
