@@ -1,8 +1,6 @@
 FROM composer:2.0 AS step0
 
-
 ARG TESTING=true
-
 ENV TESTING=$TESTING
 
 WORKDIR /usr/local/src/
@@ -22,7 +20,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN \
   apk add --no-cache --virtual .deps \
   supervisor php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-mbstring nginx bash
-
 
 # Nginx Configuration (with self-signed ssl certificates)
 COPY ./tests/docker/nginx.conf /etc/nginx/nginx.conf
