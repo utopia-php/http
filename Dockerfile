@@ -1,8 +1,6 @@
 FROM composer:2.0 AS step0
 
-
 ARG TESTING=true
-
 ENV TESTING=$TESTING
 
 WORKDIR /usr/local/src/
@@ -11,7 +9,7 @@ COPY composer.* /usr/local/src/
 
 RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
-    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
+    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi` \
 
 FROM php:8.1-cli-alpine as final
 LABEL maintainer="team@appwrite.io"
@@ -22,7 +20,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN \
   apk add --no-cache --virtual .deps \
   supervisor php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-mbstring nginx bash
-
 
 # Nginx Configuration (with self-signed ssl certificates)
 COPY ./tests/docker/nginx.conf /etc/nginx/nginx.conf
