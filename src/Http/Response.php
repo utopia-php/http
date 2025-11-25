@@ -361,9 +361,9 @@ abstract class Response
      * Add an HTTP response header
      *
      * @param  string  $key
-     * @param  string  $value
+     * @param  string|array<string>  $value
      */
-    public function addHeader(string $key, string $value): static
+    public function addHeader(string $key, mixed $value): static
     {
         if (\array_key_exists($key, $this->headers)) {
             if (\is_array($this->headers[$key])) {
