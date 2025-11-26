@@ -53,7 +53,7 @@ class RequestTest extends TestCase
 
         $this->request->removeHeader('custom');
 
-        $this->assertSame(null, $this->request->getHeader('custom'));
+        $this->assertSame('', $this->request->getHeader('custom'));
         $this->assertSame('value2', $this->request->getHeader('custom-new'));
     }
 
