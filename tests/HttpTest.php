@@ -77,21 +77,21 @@ class HttpTest extends TestCase
 
         Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(Http::MODE_TYPE_PRODUCTION, Http::getMode());
+        $this->assertSame(Http::MODE_TYPE_PRODUCTION, Http::getMode());
         $this->assertTrue(Http::isProduction());
         $this->assertFalse(Http::isDevelopment());
         $this->assertFalse(Http::isStage());
 
         Http::setMode(Http::MODE_TYPE_DEVELOPMENT);
 
-        $this->assertEquals(Http::MODE_TYPE_DEVELOPMENT, Http::getMode());
+        $this->assertSame(Http::MODE_TYPE_DEVELOPMENT, Http::getMode());
         $this->assertFalse(Http::isProduction());
         $this->assertTrue(Http::isDevelopment());
         $this->assertFalse(Http::isStage());
 
         Http::setMode(Http::MODE_TYPE_STAGE);
 
-        $this->assertEquals(Http::MODE_TYPE_STAGE, Http::getMode());
+        $this->assertSame(Http::MODE_TYPE_STAGE, Http::getMode());
         $this->assertFalse(Http::isProduction());
         $this->assertFalse(Http::isDevelopment());
         $this->assertTrue(Http::isStage());
@@ -136,7 +136,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-def-y-def', $result);
+        $this->assertSame('x-def-y-def', $result);
     }
 
     public function testCanExecuteRouteWithParams(): void
@@ -191,7 +191,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
         $resource = $context->get('rand');
-        $this->assertEquals($resource . '-param-x-param-y', $result);
+        $this->assertSame($resource . '-param-x-param-y', $result);
     }
 
     public function testCanExecuteRouteWithParamsWithError(): void
@@ -240,7 +240,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
+        $this->assertSame('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
     }
 
     public function testCanExecuteRouteWithParamsWithHooks(): void
@@ -345,7 +345,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+        $this->assertSame('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         $context = clone $this->context;
 
@@ -376,7 +376,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+        $this->assertSame('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function testCanAddAndExecuteHooks()
@@ -420,7 +420,7 @@ class HttpTest extends TestCase
         $this->http->run($context);
         $result = \ob_get_contents();
         \ob_end_clean();
-        $this->assertEquals('(init)-x-def-(shutdown)', $result);
+        $this->assertSame('(init)-x-def-(shutdown)', $result);
 
         // Default Params
         $route = $this->http->addRoute('GET', '/path-4');
@@ -450,7 +450,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-def', $result);
+        $this->assertSame('x-def', $result);
     }
 
     public function testAllowRouteOverrides()
@@ -468,7 +468,7 @@ class HttpTest extends TestCase
             $this->fail('Failed to throw exception');
         } catch (\Exception $e) {
             // Threw exception as expected
-            $this->assertEquals('Route for (GET:) already registered.', $e->getMessage());
+            $this->assertSame('Route for (GET:) already registered.', $e->getMessage());
         }
 
         // Test success
@@ -533,7 +533,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error: Param "y" is not optional.', $result);
+        $this->assertSame('error: Param "y" is not optional.', $result);
 
         $context = clone $this->context;
 
@@ -555,7 +555,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
+        $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
     }
 
     public function providerRouteMatching(): array
@@ -606,7 +606,7 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $url;
 
         $route = $this->http->match(new Request());
-        $this->assertEquals($expected, $route);
+        $this->assertSame($expected, $route);
     }
 
     public function testMatchWithNullPath(): void
@@ -619,7 +619,7 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '?param=1'; // This will cause parse_url to return null for PATH component
 
         $matched = $this->http->match(new Request());
-        $this->assertEquals($expected, $matched);
+        $this->assertSame($expected, $matched);
     }
 
     public function testMatchWithEmptyPath(): void
@@ -632,7 +632,7 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = 'https://example.com'; // No path component
 
         $matched = $this->http->match(new Request());
-        $this->assertEquals($expected, $matched);
+        $this->assertSame($expected, $matched);
     }
 
     public function testMatchWithMalformedURL(): void
@@ -645,7 +645,7 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '#fragment'; // Malformed scheme
 
         $matched = $this->http->match(new Request());
-        $this->assertEquals($expected, $matched);
+        $this->assertSame($expected, $matched);
     }
 
     public function testMatchWithOnlyQueryString(): void
@@ -658,7 +658,7 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '?param=value'; // Only query string, no path
 
         $matched = $this->http->match(new Request());
-        $this->assertEquals($expected, $matched);
+        $this->assertSame($expected, $matched);
     }
 
     public function testNoMismatchRoute(): void
@@ -697,8 +697,8 @@ class HttpTest extends TestCase
 
             $this->http->run($context);
 
-            $this->assertEquals($_SERVER['REQUEST_METHOD'], $context->get('route')->getMethod());
-            $this->assertEquals($_SERVER['REQUEST_URI'], $context->get('route')->getPath());
+            $this->assertSame($_SERVER['REQUEST_METHOD'], $context->get('route')->getMethod());
+            $this->assertSame($_SERVER['REQUEST_URI'], $context->get('route')->getPath());
         }
     }
 
@@ -778,7 +778,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('HELLO', $result);
+        $this->assertSame('HELLO', $result);
 
         \ob_start();
         $context->get('request')->setMethod('OPTIONS');
@@ -786,7 +786,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('', $result);
+        $this->assertSame('', $result);
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
@@ -811,7 +811,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('callback-value: phpinfo', $result);
+        $this->assertSame('callback-value: phpinfo', $result);
 
         // Test with request parameter that is a callable string
         $route2 = new Route('GET', '/test-callable-string-param');
@@ -830,7 +830,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('func-value: system', $result);
+        $this->assertSame('func-value: system', $result);
 
         // Test callable closure still works
         $route3 = new Route('GET', '/test-callable-closure');
@@ -849,6 +849,6 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('generated: generated-value', $result);
+        $this->assertSame('generated: generated-value', $result);
     }
 }
