@@ -22,32 +22,32 @@ class HookTest extends TestCase
 
     public function testDescriptionCanBeSet()
     {
-        $this->assertEquals('', $this->hook->getDesc());
+        $this->assertSame('', $this->hook->getDesc());
 
         $this->hook->desc('new hook');
 
-        $this->assertEquals('new hook', $this->hook->getDesc());
+        $this->assertSame('new hook', $this->hook->getDesc());
     }
 
     public function testGroupsCanBeSet()
     {
-        $this->assertEquals([], $this->hook->getGroups());
+        $this->assertSame([], $this->hook->getGroups());
 
         $this->hook->groups(['api', 'homepage']);
 
-        $this->assertEquals(['api', 'homepage'], $this->hook->getGroups());
+        $this->assertSame(['api', 'homepage'], $this->hook->getGroups());
     }
 
     public function testActionCanBeSet()
     {
         $this->hook->action(fn () => 'hello world');
         $this->assertIsCallable($this->hook->getAction());
-        $this->assertEquals('hello world', $this->hook->getAction()());
+        $this->assertSame('hello world', $this->hook->getAction()());
     }
 
     public function testParamCanBeSet()
     {
-        $this->assertEquals([], $this->hook->getParams());
+        $this->assertSame([], $this->hook->getParams());
 
         $this->hook
             ->param('x', '', new Text(10))
@@ -89,12 +89,12 @@ class HookTest extends TestCase
 
         $result = $context->inject($main);
 
-        $this->assertEquals('user:00:00:00', $result);
+        $this->assertSame('user:00:00:00', $result);
     }
 
     public function testParamValuesCanBeSet()
     {
-        $this->assertEquals([], $this->hook->getParams());
+        $this->assertSame([], $this->hook->getParams());
 
         $values = [
             'x' => 'hello',
@@ -110,8 +110,8 @@ class HookTest extends TestCase
         }
 
         $this->assertCount(2, $this->hook->getParams());
-        $this->assertEquals('hello', $this->hook->getParams()['x']['value']);
-        $this->assertEquals('world', $this->hook->getParams()['y']['value']);
+        $this->assertSame('hello', $this->hook->getParams()['x']['value']);
+        $this->assertSame('world', $this->hook->getParams()['y']['value']);
     }
 
     public function tearDown(): void

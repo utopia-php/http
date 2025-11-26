@@ -52,19 +52,19 @@ class FPMResponseTest extends TestCase
 
         // Assertions
         $this->assertInstanceOf('Utopia\Http\Response', $status);
-        $this->assertEquals(Response::STATUS_CODE_OK, $this->response->getStatusCode());
+        $this->assertSame(Response::STATUS_CODE_OK, $this->response->getStatusCode());
     }
 
     public function testCanAddHeader()
     {
         $result = $this->response->addHeader('key', 'value');
-        $this->assertEquals($this->response, $result);
+        $this->assertSame($this->response, $result);
     }
 
     public function testCanAddCookie()
     {
         $result = $this->response->addCookie('name', 'value');
-        $this->assertEquals($this->response, $result);
+        $this->assertSame($this->response, $result);
 
         //test cookie case insensitive
         $result = $this->response->addCookie('cookieName', 'cookieValue');
@@ -84,7 +84,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('body', $html);
+        $this->assertSame('body', $html);
     }
 
     public function testCanSendRedirect()
@@ -96,7 +96,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('', $html);
+        $this->assertSame('', $html);
 
         ob_start(); //Start of build
 
@@ -105,7 +105,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('', $html);
+        $this->assertSame('', $html);
     }
 
     public function testCanSendText()
@@ -117,8 +117,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('HELLO WORLD', $html);
-        $this->assertEquals('text/plain; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('HELLO WORLD', $html);
+        $this->assertSame('text/plain; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendHtml()
@@ -130,8 +130,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('<html></html>', $html);
-        $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('<html></html>', $html);
+        $this->assertSame('text/html; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendJson()
@@ -143,8 +143,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('{"key":"value"}', $html);
-        $this->assertEquals('application/json; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('{"key":"value"}', $html);
+        $this->assertSame('application/json; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendJsonp()
@@ -156,8 +156,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('parent.test({"key":"value"});', $html);
-        $this->assertEquals('text/javascript; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('parent.test({"key":"value"});', $html);
+        $this->assertSame('text/javascript; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendIframe()
@@ -169,7 +169,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('<script type="text/javascript">window.parent.test({"key":"value"});</script>', $html);
-        $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('<script type="text/javascript">window.parent.test({"key":"value"});</script>', $html);
+        $this->assertSame('text/html; charset=UTF-8', $this->response->getContentType());
     }
 }

@@ -21,9 +21,9 @@ final class RouterTest extends TestCase
         Router::addRoute($routeAbout);
         Router::addRoute($routeAboutMe);
 
-        $this->assertEquals($routeIndex, Router::match(Http::REQUEST_METHOD_GET, '/'));
-        $this->assertEquals($routeAbout, Router::match(Http::REQUEST_METHOD_GET, '/about'));
-        $this->assertEquals($routeAboutMe, Router::match(Http::REQUEST_METHOD_GET, '/about/me'));
+        $this->assertSame($routeIndex, Router::match(Http::REQUEST_METHOD_GET, '/'));
+        $this->assertSame($routeAbout, Router::match(Http::REQUEST_METHOD_GET, '/about'));
+        $this->assertSame($routeAboutMe, Router::match(Http::REQUEST_METHOD_GET, '/about/me'));
     }
 
     public function testCanMatchUrlWithPlaceholder(): void
@@ -42,13 +42,13 @@ final class RouterTest extends TestCase
         Router::addRoute($routeBlogPostComments);
         Router::addRoute($routeBlogPostCommentsSingle);
 
-        $this->assertEquals($routeBlog, Router::match(Http::REQUEST_METHOD_GET, '/blog'));
-        $this->assertEquals($routeBlogAuthors, Router::match(Http::REQUEST_METHOD_GET, '/blog/authors'));
-        $this->assertEquals($routeBlogAuthorsComments, Router::match(Http::REQUEST_METHOD_GET, '/blog/authors/comments'));
-        $this->assertEquals($routeBlogPost, Router::match(Http::REQUEST_METHOD_GET, '/blog/test'));
-        $this->assertEquals($routeBlogPostComments, Router::match(Http::REQUEST_METHOD_GET, '/blog/test/comments'));
-        $this->assertEquals($routeBlogPostCommentsSingle, Router::match(Http::REQUEST_METHOD_GET, '/blog/test/comments/0'));
-        $this->assertEquals($routeBlogPostCommentsSingle, Router::match(Http::REQUEST_METHOD_GET, '/blog/test/comments/:comment'));
+        $this->assertSame($routeBlog, Router::match(Http::REQUEST_METHOD_GET, '/blog'));
+        $this->assertSame($routeBlogAuthors, Router::match(Http::REQUEST_METHOD_GET, '/blog/authors'));
+        $this->assertSame($routeBlogAuthorsComments, Router::match(Http::REQUEST_METHOD_GET, '/blog/authors/comments'));
+        $this->assertSame($routeBlogPost, Router::match(Http::REQUEST_METHOD_GET, '/blog/test'));
+        $this->assertSame($routeBlogPostComments, Router::match(Http::REQUEST_METHOD_GET, '/blog/test/comments'));
+        $this->assertSame($routeBlogPostCommentsSingle, Router::match(Http::REQUEST_METHOD_GET, '/blog/test/comments/0'));
+        $this->assertSame($routeBlogPostCommentsSingle, Router::match(Http::REQUEST_METHOD_GET, '/blog/test/comments/:comment'));
     }
 
     public function testCanMatchUrlWithWildcard(): void
@@ -61,11 +61,11 @@ final class RouterTest extends TestCase
         Router::addRoute($routeAbout);
         Router::addRoute($routeAboutWildcard);
 
-        $this->assertEquals($routeIndex, Router::match('GET', '/'));
-        $this->assertEquals($routeAbout, Router::match('GET', '/about'));
-        $this->assertEquals($routeAboutWildcard, Router::match('GET', '/about/me'));
-        $this->assertEquals($routeAboutWildcard, Router::match('GET', '/about/you'));
-        $this->assertEquals($routeAboutWildcard, Router::match('GET', '/about/me/myself/i'));
+        $this->assertSame($routeIndex, Router::match('GET', '/'));
+        $this->assertSame($routeAbout, Router::match('GET', '/about'));
+        $this->assertSame($routeAboutWildcard, Router::match('GET', '/about/me'));
+        $this->assertSame($routeAboutWildcard, Router::match('GET', '/about/you'));
+        $this->assertSame($routeAboutWildcard, Router::match('GET', '/about/me/myself/i'));
     }
 
     public function testCanMatchHttpMethod(): void
@@ -76,8 +76,8 @@ final class RouterTest extends TestCase
         Router::addRoute($routeGET);
         Router::addRoute($routePOST);
 
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/'));
-        $this->assertEquals($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/'));
+        $this->assertSame($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/'));
 
         $this->assertNotEquals($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/'));
         $this->assertNotEquals($routePOST, Router::match(Http::REQUEST_METHOD_GET, '/'));
@@ -92,9 +92,9 @@ final class RouterTest extends TestCase
 
         Router::addRoute($routeGET);
 
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/target'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias2'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/target'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias2'));
     }
 
     public function testCanMatchMix(): void
@@ -110,14 +110,14 @@ final class RouterTest extends TestCase
 
         Router::addRoute($routeGET);
 
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/invite'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/login'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/recover'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console/lorem/ipsum/dolor'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/auth/lorem/ipsum'));
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/register/lorem/ipsum'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/invite'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/login'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/recover'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console/lorem/ipsum/dolor'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/auth/lorem/ipsum'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/register/lorem/ipsum'));
     }
 
     public function testCanMatchFilename(): void
@@ -125,7 +125,7 @@ final class RouterTest extends TestCase
         $routeGET = new Route(Http::REQUEST_METHOD_GET, '/robots.txt');
 
         Router::addRoute($routeGET);
-        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/robots.txt'));
+        $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/robots.txt'));
     }
 
     public function testCannotFindUnknownRouteByPath(): void
@@ -139,7 +139,7 @@ final class RouterTest extends TestCase
 
         Router::addRoute($route);
 
-        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/404'));
+        $this->assertSame($route, Router::match(Http::REQUEST_METHOD_GET, '/404'));
 
         $this->assertNull(Router::match(Http::REQUEST_METHOD_POST, '/404'));
     }
