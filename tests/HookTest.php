@@ -105,7 +105,12 @@ class HookTest extends TestCase
             ->param('x', '', new Numeric())
             ->param('y', '', new Numeric());
 
-        foreach ($this->hook->getParams() as $key => $param) {
+        /**
+         * @var array $params
+         */
+        $params = $this->hook->getParams();
+
+        foreach ($params as $key => $param) {
             $this->hook->setParamValue($key, $values[$key]);
         }
 
