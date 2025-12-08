@@ -717,10 +717,24 @@ class App
                     throw new Exception('Model param "' . $key . '" must be a JSON string, or an array', 400);
                 }
                 if (\is_array($value)) {
-                    try {
-                        $value = $model::fromArray($value);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Failed to create model instance for param "' . $key . '": ' . $e->getMessage(), 400);
+                    $validator = $param['validator'];
+                    $isArrayList = $validator instanceof \Utopia\Validator\ArrayList;
+
+                    if ($isArrayList) {
+                        try {
+                            $value = \array_map(
+                                fn ($item) => \is_array($item) ? $model::fromArray($item) : $item,
+                                $value
+                            );
+                        } catch (\Throwable $e) {
+                            throw new Exception('Failed to create model instance for param "' . $key . '": ' . $e->getMessage(), 400);
+                        }
+                    } else {
+                        try {
+                            $value = $model::fromArray($value);
+                        } catch (\Throwable $e) {
+                            throw new Exception('Failed to create model instance for param "' . $key . '": ' . $e->getMessage(), 400);
+                        }
                     }
                 }
                 if ($param['optional'] && $value === '') {

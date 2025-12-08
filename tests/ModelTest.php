@@ -8,6 +8,7 @@ use Utopia\Model;
 use Utopia\Request;
 use Utopia\Response;
 use Utopia\Validator;
+use Utopia\Validator\ArrayList;
 use Utopia\Validator\Text;
 
 // Test Model implementation
@@ -428,5 +429,157 @@ class ModelTest extends TestCase
 
         $this->assertTrue($actionCalled);
         $this->assertNull($result);
+    }
+
+    public function testArrayListModelParamWithJsonString(): void
+    {
+        $result = null;
+
+        $this->app
+            ->post('/users-array')
+            ->param('users', [], new ArrayList(new UserValidator()), 'Array of users', false, [], false, false, '', UserModel::class)
+            ->action(function (array $users) use (&$result) {
+                $result = $users;
+            });
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/users-array';
+        $_POST = ['users' => '[{"name":"John Doe","age":30},{"name":"Jane Smith","age":25}]'];
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf(UserModel::class, $result[0]);
+        $this->assertInstanceOf(UserModel::class, $result[1]);
+        $this->assertEquals('John Doe', $result[0]->name);
+        $this->assertEquals(30, $result[0]->age);
+        $this->assertEquals('Jane Smith', $result[1]->name);
+        $this->assertEquals(25, $result[1]->age);
+    }
+
+    public function testArrayListModelParamWithArray(): void
+    {
+        $result = null;
+
+        $this->app
+            ->post('/users-array-native')
+            ->param('users', [], new ArrayList(new UserValidator()), 'Array of users', false, [], false, false, '', UserModel::class)
+            ->action(function (array $users) use (&$result) {
+                $result = $users;
+            });
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/users-array-native';
+        $_POST = ['users' => [
+            ['name' => 'Alice', 'age' => 28, 'email' => 'alice@example.com'],
+            ['name' => 'Bob', 'age' => 35]
+        ]];
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertInstanceOf(UserModel::class, $result[0]);
+        $this->assertInstanceOf(UserModel::class, $result[1]);
+        $this->assertEquals('Alice', $result[0]->name);
+        $this->assertEquals('alice@example.com', $result[0]->email);
+        $this->assertEquals('Bob', $result[1]->name);
+        $this->assertNull($result[1]->email);
+    }
+
+    public function testArrayListModelParamEmpty(): void
+    {
+        $result = null;
+
+        $this->app
+            ->post('/users-array-empty')
+            ->param('users', [], new ArrayList(new UserValidator()), 'Array of users', false, [], false, false, '', UserModel::class)
+            ->action(function (array $users) use (&$result) {
+                $result = $users;
+            });
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/users-array-empty';
+        $_POST = ['users' => '[]'];
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertIsArray($result);
+        $this->assertCount(0, $result);
+    }
+
+    public function testArrayListModelParamWithInvalidElement(): void
+    {
+        $errorCaught = false;
+        $errorMessage = '';
+
+        $this->app
+            ->post('/users-array-invalid')
+            ->param('users', [], new ArrayList(new UserValidator()), 'Array of users', false, [], false, false, '', UserModel::class)
+            ->action(function (array $users) {
+                // Should not reach here
+            });
+
+        $this->app->error()->inject('error')->action(function (\Throwable $error) use (&$errorCaught, &$errorMessage) {
+            $errorCaught = true;
+            $errorMessage = $error->getMessage();
+        });
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/users-array-invalid';
+        $_POST = ['users' => '[{"name":"John"}]']; // Missing 'age' field
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertTrue($errorCaught);
+        $this->assertStringContainsString('Failed to create model instance', $errorMessage);
+    }
+
+    public function testArrayListModelParamOptional(): void
+    {
+        $result = null;
+        $actionCalled = false;
+
+        $this->app
+            ->post('/users-array-optional')
+            ->param('users', null, new ArrayList(new UserValidator()), 'Array of users', true, [], false, false, '', UserModel::class)
+            ->action(function (?array $users = null) use (&$result, &$actionCalled) {
+                $actionCalled = true;
+                $result = $users;
+            });
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/users-array-optional';
+        $_POST = [];
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertTrue($actionCalled);
+        $this->assertNull($result);
+    }
+
+    public function testArrayListModelParamWithDefault(): void
+    {
+        $result = null;
+        $defaultUsers = [new UserModel('Default User', 0)];
+
+        $this->app
+            ->post('/users-array-default')
+            ->param('users', $defaultUsers, new ArrayList(new UserValidator()), 'Array of users', true, [], false, false, '', UserModel::class)
+            ->action(function (array $users) use (&$result) {
+                $result = $users;
+            });
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/users-array-default';
+        $_POST = [];
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertIsArray($result);
+        $this->assertCount(1, $result);
+        $this->assertInstanceOf(UserModel::class, $result[0]);
+        $this->assertEquals('Default User', $result[0]->name);
     }
 }
