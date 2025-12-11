@@ -166,7 +166,7 @@ class Request
 
     /**
      * Set trusted ip headers
-     * 
+     *
      * WARNING: Only set these headers if your application is behind a trusted proxy.
      * Trusting these headers when accepting direct client connections is a security risk.
      *
@@ -175,10 +175,10 @@ class Request
      */
     public function setTrustedIpHeaders(array $headers): static
     {
-        $this->trustedIpHeaders = array_filter(
-            array_map('trim',
-            array_map('strtolower', $headers))
-        );
+        $normalized = array_map('strtolower', $headers);
+        $trimmed = array_map('trim', $normalized);
+        $this->trustedIpHeaders = array_filter($trimmed);
+        
         return $this;
     }
 
