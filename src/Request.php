@@ -58,7 +58,7 @@ class Request
      *
      * @var array
      */
-    protected array $trustedIpHeaders = ['x-forwarded-for'];
+    protected array $trustedIpHeaders = [];
 
     /**
      * Get Param
@@ -165,6 +165,24 @@ class Request
     }
 
     /**
+     * Set trusted ip headers
+     * 
+     * WARNING: Only set these headers if your application is behind a trusted proxy.
+     * Trusting these headers when accepting direct client connections is a security risk.
+     *
+     * @param array $headers List of header names to trust (e.g., ['x-forwarded-for', 'x-real-ip'])
+     * @return static
+     */
+    public function setTrustedIpHeaders(array $headers): static
+    {
+        $this->trustedIpHeaders = array_filter(
+            array_map('trim',
+            array_map('strtolower', $headers))
+        );
+        return $this;
+    }
+
+    /**
      * Get IP
      *
      * Extracts the client's IP address from trusted headers or falls back to the remote address.
@@ -175,7 +193,7 @@ class Request
      */
     public function getIP(): string
     {
-        $remoteAddr = $this->getServer('remote_addr') ?? '0.0.0.0';
+        $remoteAddr = $this->getServer('REMOTE_ADDR') ?? '0.0.0.0';
 
         foreach ($this->trustedIpHeaders as $header) {
             $headerValue = $this->getHeader($header);
