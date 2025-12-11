@@ -178,7 +178,7 @@ class Request
         $normalized = array_map('strtolower', $headers);
         $trimmed = array_map('trim', $normalized);
         $this->trustedIpHeaders = array_filter($trimmed);
-        
+
         return $this;
     }
 
