@@ -313,4 +313,23 @@ class RequestTest extends TestCase
         $this->assertEquals(null, $this->request->getRangeStart());
         $this->assertEquals(null, $this->request->getRangeEnd());
     }
+
+    public function testCanGetSizeWithArrayHeaders()
+    {
+        $this->request->addHeader('content-type', 'application/json');
+
+        $reflection = new \ReflectionClass($this->request);
+        $headersProperty = $reflection->getProperty('headers');
+        $headersProperty->setAccessible(true);
+
+        $headers = $headersProperty->getValue($this->request) ?? [];
+        $headers['accept'] = ['application/json', 'text/html'];
+        $headers['x-custom'] = ['value1', 'value2', 'value3'];
+        $headersProperty->setValue($this->request, $headers);
+
+        $size = $this->request->getSize();
+
+        $this->assertIsInt($size);
+        $this->assertGreaterThan(0, $size);
+    }
 }
