@@ -332,7 +332,16 @@ abstract class Request
      */
     public function getSize(): int
     {
-        return \mb_strlen(\implode("\n", $this->generateHeaders()), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
+        $headers = $this->generateHeaders();
+        $headerStrings = [];
+        foreach ($headers as $key => $value) {
+            if (\is_array($value)) {
+                $headerStrings[] = $key . ': ' . \implode(', ', $value);
+            } else {
+                $headerStrings[] = $key . ': ' . $value;
+            }
+        }
+        return \mb_strlen(\implode("\n", $headerStrings), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
     }
 
     /**
