@@ -54,6 +54,13 @@ class Request
     protected $headers = null;
 
     /**
+     * List of trusted proxy header names to check for client IP address
+     * 
+     * @var array
+     */
+    protected array $trustedIpHeaders = ['x-forwarded-for'];
+
+    /**
      * Get Param
      *
      * Get param by current method name
@@ -160,17 +167,34 @@ class Request
     /**
      * Get IP
      *
-     * Returns users IP address.
-     * Support HTTP_X_FORWARDED_FOR header usually return
-     *  from different proxy servers or PHP default REMOTE_ADDR
+     * Extracts the client's IP address from trusted headers or falls back to the remote address.
+     * Prioritizes headers like X-Forwarded-For when behind proxies or load balancers,
+     * defaulting to REMOTE_ADDR when trusted headers are unavailable.
      *
-     * @return string
+     * @return string The validated client IP address or '0.0.0.0' if unavailable
      */
     public function getIP(): string
     {
-        $ips = explode(',', $this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR') ?? '0.0.0.0'));
+        $remoteAddr = $this->getServer('remote_addr') ?? '0.0.0.0';
 
-        return trim($ips[0] ?? '');
+        foreach ($this->trustedIpHeaders as $header) {
+            $headerValue = $this->getHeader($header);
+
+            if (empty($headerValue)) {
+                continue;
+            }
+
+            // Leftmost IP address is the address of the originating client
+            $ips = explode(',', $headerValue);
+            $ip = trim($ips[0]);
+
+            // Validate IP format (supports both IPv4 and IPv6)
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return $remoteAddr;
     }
 
     /**
