@@ -55,7 +55,7 @@ class Request
 
     /**
      * List of trusted proxy header names to check for client IP address
-     * 
+     *
      * @var array
      */
     protected array $trustedIpHeaders = ['x-forwarded-for'];
