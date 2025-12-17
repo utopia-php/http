@@ -24,7 +24,7 @@
     "require": {
         "php": ">=8.3",
         "utopia-php/compression": "0.1.*",
-        "utopia-php/telemetry": "0.1.*",
+        "utopia-php/telemetry": "0.2.*",
         "utopia-php/validators": "0.1.*"
     },
     "require-dev": {
