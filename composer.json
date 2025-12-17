@@ -33,7 +33,7 @@
         "utopia-php/servers": "0.2.*",
         "utopia-php/validators": "0.0.*",
         "utopia-php/compression": "0.1.*",
-        "utopia-php/telemetry": "0.1.*"
+        "utopia-php/telemetry": "0.2.*"
     },
     "require-dev": {
         "ext-xdebug": "*",
