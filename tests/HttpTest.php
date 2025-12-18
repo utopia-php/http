@@ -4,7 +4,7 @@ namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
-use Utopia\Http\Validator\Text;
+use Utopia\Validator\Text;
 use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;

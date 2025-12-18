@@ -144,7 +144,7 @@ use Utopia\Http\Swoole\Response;
 use Swoole\Http\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\Http\Validator\Wildcard;
+use Utopia\Validator\Wildcard;
 
 $http = new Server("0.0.0.0", 8080);
 
