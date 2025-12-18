@@ -30,7 +30,8 @@
     },
     "require": {
         "php": ">=8.0",
-        "ext-swoole": "*"
+        "ext-swoole": "*",
+        "utopia-php/validators": "0.1.*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.25",

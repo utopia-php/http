@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Utopia\Validator;
+
 class Hook
 {
     /**

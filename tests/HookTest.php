@@ -3,8 +3,8 @@
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Http\Validator\Numeric;
-use Utopia\Http\Validator\Text;
+use Utopia\Validator\Numeric;
+use Utopia\Validator\Text;
 
 class HookTest extends TestCase
 {
