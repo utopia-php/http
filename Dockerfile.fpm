@@ -17,7 +17,7 @@ FROM php:8.3-cli-alpine AS final
 LABEL maintainer="team@appwrite.io"
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PHP_VERSION=82
+    PHP_VERSION=83
 
 RUN \
   apk add --no-cache --virtual .deps \
