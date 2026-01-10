@@ -748,6 +748,14 @@ class App
                 $paramExists
             ) {
                 $this->validate($key, $param, $value);
+
+                // Type coercion for boolean parameters after validation
+                if ($param['validator'] instanceof \Utopia\Validator\Boolean && $value !== null) {
+                    $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                    if ($value === null) {
+                        throw new Exception('Invalid boolean value for param "' . $key . '"', 400);
+                    }
+                }
             }
 
             $hook->setParamValue($key, $value);
