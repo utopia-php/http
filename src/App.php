@@ -749,11 +749,27 @@ class App
             ) {
                 $this->validate($key, $param, $value);
 
-                // Type coercion for boolean parameters after validation
-                if ($param['validator'] instanceof \Utopia\Validator\Boolean && $value !== null) {
-                    $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-                    if ($value === null) {
-                        throw new Exception('Invalid boolean value for param "' . $key . '"', 400);
+                if ($existsInRequest && $value !== null) {
+                    $validator = $param['validator'];
+                    if (\is_callable($validator)) {
+                        $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
+                    }
+
+                    if ($validator instanceof \Utopia\Validator\Boolean) {
+                        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        if ($value === null) {
+                            throw new Exception('Invalid boolean value for param "' . $key . '"', 400);
+                        }
+                    } elseif ($validator instanceof \Utopia\Validator\Integer && \is_string($value)) {
+                        if (\is_numeric($value)) {
+                            $value = (int)$value;
+                        }
+                    } elseif ($validator instanceof \Utopia\Validator\FloatValidator && \is_string($value)) {
+                        if (\is_numeric($value)) {
+                            $value = (float)$value;
+                        }
+                    } elseif ($validator instanceof \Utopia\Validator\Text && !\is_string($value)) {
+                        $value = (string)$value;
                     }
                 }
             }
