@@ -706,13 +706,15 @@ class Response
 
         $headersSize = 0;
         foreach ($this->headers as $name => $values) {
+            $nameLength = \strlen($name) + 2; // ": "
+
             if (\is_array($values)) {
                 foreach ($values as $value) {
-                    $headersSize += \strlen($name . ': ' . $value);
+                    $headersSize += $nameLength + \strlen($value);
                 }
                 $headersSize += (\count($values) - 1) * 2; // linebreaks
             } else {
-                $headersSize += \strlen($name . ': ' . $values);
+                $headersSize += $nameLength + \strlen($values);
             }
         }
         $headersSize += (\count($this->headers) - 1) * 2; // linebreaks

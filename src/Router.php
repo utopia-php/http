@@ -24,6 +24,9 @@ class Router
     /** @var array<int> */
     protected static array $params = [];
 
+    /** @var array<int,bool> */
+    protected static array $paramsIndex = [];
+
     /** @var array<string,RouterTrie> */
     protected static array $tries = [];
 
@@ -197,32 +200,30 @@ class Router
     }
     public static function preparePath(string $path): array
     {
-        $parts = array_values(array_filter(explode('/', $path)));
-        $prepare = '';
         $params = [];
+        $prepared = [];
+        $parts = array_values(array_filter(explode('/', $path)));
 
         foreach ($parts as $key => $part) {
-            if ($key !== 0) {
-                $prepare .= '/';
-            }
-
             if (str_starts_with($part, ':')) {
-                $prepare .= self::PLACEHOLDER_TOKEN;
-                $params[ltrim($part, ':')] = $key;
-                if (!in_array($key, self::$params)) {
+                $prepared[] = self::PLACEHOLDER_TOKEN;
+                $params[substr($part, 1)] = $key;
+                if (!isset(self::$paramsIndex[$key])) {
                     self::$params[] = $key;
+                    self::$paramsIndex[$key] = true;
                 }
             } else {
-                $prepare .= $part;
+                $prepared[] = $part;
             }
         }
 
-        return [$prepare, $params];
+        return [implode('/', $prepared), $params];
     }
 
     public static function reset(): void
     {
         self::$params = [];
+        self::$paramsIndex = [];
         self::$routes = [
             App::REQUEST_METHOD_GET => [],
             App::REQUEST_METHOD_POST => [],
