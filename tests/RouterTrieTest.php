@@ -519,6 +519,7 @@ final class RouterTrieTest extends TestCase
         $trie = new RouterTrie();
         $route = new Route(App::REQUEST_METHOD_GET, '/test');
 
+        // @phpstan-ignore-next-line - Testing type error with null
         $trie->insert(['test'], $route, null);
     }
 }
