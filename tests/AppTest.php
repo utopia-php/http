@@ -151,6 +151,7 @@ class AppTest extends TestCase
                 echo $x;
             });
 
+        \ob_start();
         $request = new UtopiaRequestTest();
         $request::_setParams(['x' => 'count']);
         $this->app->execute($route, $request, new Response());
