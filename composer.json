@@ -19,10 +19,12 @@
         "format": "vendor/bin/pint",
         "check": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
         "test": "vendor/bin/phpunit --configuration phpunit.xml",
+        "test:unit": "vendor/bin/phpunit tests/ --exclude-group e2e",
+        "test:e2e": "php tests/e2e/runner.php",
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
     "require": {
-        "php": ">=8.3",
+        "php": ">=8.3.0",
         "utopia-php/compression": "0.1.*",
         "utopia-php/telemetry": "0.1.*",
         "utopia-php/validators": "0.1.*"
