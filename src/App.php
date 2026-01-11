@@ -747,14 +747,9 @@ class App
                 !($param['optional'] && $value === null) &&
                 $paramExists
             ) {
-                $this->validate($key, $param, $value);
+                $validator = $this->validate($key, $param, $value);
 
                 if ($existsInRequest && $value !== null) {
-                    $validator = $param['validator'];
-                    if (\is_callable($validator)) {
-                        $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
-                    }
-
                     if ($validator instanceof \Utopia\Validator\Boolean) {
                         $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
                         if ($value === null) {
@@ -957,11 +952,11 @@ class App
      * @param  string  $key
      * @param  array  $param
      * @param  mixed  $value
-     * @return void
+     * @return Validator
      *
      * @throws Exception
      */
-    protected function validate(string $key, array $param, mixed $value): void
+    protected function validate(string $key, array $param, mixed $value): Validator
     {
         $validator = $param['validator']; // checking whether the class exists
 
@@ -976,6 +971,8 @@ class App
         if (!$validator->isValid($value)) {
             throw new Exception('Invalid `' . $key . '` param: ' . $validator->getDescription(), 400);
         }
+
+        return $validator;
     }
 
     /**
