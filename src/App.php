@@ -6,6 +6,11 @@ use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
 use Utopia\Telemetry\Histogram;
 use Utopia\Telemetry\UpDownCounter;
+use Utopia\Validator\ArrayList;
+use Utopia\Validator\Boolean;
+use Utopia\Validator\FloatValidator;
+use Utopia\Validator\Integer;
+use Utopia\Validator\Text;
 
 class App
 {
@@ -718,7 +723,7 @@ class App
                 }
                 if (\is_array($value)) {
                     $validator = $param['validator'];
-                    $isArrayList = $validator instanceof \Utopia\Validator\ArrayList;
+                    $isArrayList = $validator instanceof ArrayList;
 
                     if ($isArrayList) {
                         try {
@@ -747,7 +752,26 @@ class App
                 !($param['optional'] && $value === null) &&
                 $paramExists
             ) {
-                $this->validate($key, $param, $value);
+                $validator = $this->validate($key, $param, $value);
+
+                if ($existsInRequest && $value !== null) {
+                    if ($validator instanceof Boolean) {
+                        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                        if ($value === null) {
+                            throw new Exception('Invalid boolean value for param "' . $key . '"', 400);
+                        }
+                    } elseif ($validator instanceof Integer && \is_string($value)) {
+                        if (\is_numeric($value)) {
+                            $value = (int)$value;
+                        }
+                    } elseif ($validator instanceof FloatValidator && \is_string($value)) {
+                        if (\is_numeric($value)) {
+                            $value = (float)$value;
+                        }
+                    } elseif ($validator instanceof Text && !\is_string($value)) {
+                        $value = (string)$value;
+                    }
+                }
             }
 
             $hook->setParamValue($key, $value);
@@ -933,11 +957,11 @@ class App
      * @param  string  $key
      * @param  array  $param
      * @param  mixed  $value
-     * @return void
+     * @return Validator
      *
      * @throws Exception
      */
-    protected function validate(string $key, array $param, mixed $value): void
+    protected function validate(string $key, array $param, mixed $value): Validator
     {
         $validator = $param['validator']; // checking whether the class exists
 
@@ -952,6 +976,8 @@ class App
         if (!$validator->isValid($value)) {
             throw new Exception('Invalid `' . $key . '` param: ' . $validator->getDescription(), 400);
         }
+
+        return $validator;
     }
 
     /**
