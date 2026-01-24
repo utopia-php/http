@@ -4,9 +4,8 @@ namespace Utopia;
 
 class RouterTrie
 {
-    protected array $children = [];
     protected ?Route $route = null;
-    protected string $segment = '';
+    protected ?array $children = null;
     protected ?string $matchedPattern = null;
 
     /**
@@ -20,9 +19,12 @@ class RouterTrie
         foreach ($segments as $segment) {
             $key = str_starts_with($segment, ':') ? ':' : $segment;
 
+            if ($node->children === null) {
+                $node->children = [];
+            }
+
             if (!isset($node->children[$key])) {
                 $node->children[$key] = new self();
-                $node->children[$key]->segment = $segment;
             }
 
             $node = $node->children[$key];
@@ -58,14 +60,14 @@ class RouterTrie
 
         $segment = $segments[$index];
 
-        if (isset($this->children[$segment])) {
+        if ($this->children !== null && isset($this->children[$segment])) {
             $result = $this->children[$segment]->matchRecursive($segments, $segmentsCount, $index + 1);
             if ($result['route'] !== null) {
                 return $result;
             }
         }
 
-        if (isset($this->children[':'])) {
+        if ($this->children !== null && isset($this->children[':'])) {
             $result = $this->children[':']->matchRecursive($segments, $segmentsCount, $index + 1);
             if ($result['route'] !== null) {
                 return $result;
@@ -107,8 +109,10 @@ class RouterTrie
             $routes++;
         }
 
-        foreach ($this->children as $child) {
-            $child->collectStats($nodes, $maxDepth, $routes, $currentDepth + 1);
+        if ($this->children !== null) {
+            foreach ($this->children as $child) {
+                $child->collectStats($nodes, $maxDepth, $routes, $currentDepth + 1);
+            }
         }
     }
 }
