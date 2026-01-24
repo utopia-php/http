@@ -125,7 +125,8 @@ class Router
         }
 
         $segments = array_values(array_filter(explode('/', $path)));
-        $normalizedPath = '/' . implode('/', $segments);
+        $patternKey = implode('/', $segments);
+        $normalizedPath = '/' . $patternKey;
         $cacheKey = $method . ':' . $normalizedPath;
         if (array_key_exists($cacheKey, self::$matchCache)) {
             $cached = self::$matchCache[$cacheKey];
@@ -142,6 +143,13 @@ class Router
         }
 
         $segmentsCount = count($segments);
+
+        if (isset(self::$routes[$method][$patternKey])) {
+            $route = self::$routes[$method][$patternKey];
+            $route->setMatchedPath($patternKey);
+            self::cacheResult($cacheKey, $route, $patternKey);
+            return $route;
+        }
 
         if (isset(self::$tries[$method])) {
             $result = self::$tries[$method]->match($segments);
