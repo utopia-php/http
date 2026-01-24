@@ -143,6 +143,13 @@ class Router
 
         $segmentsCount = count($segments);
 
+        if (isset(self::$routes[$method][$normalizedPath])) {
+            $route = self::$routes[$method][$normalizedPath];
+            $route->setMatchedPath($normalizedPath);
+            self::cacheResult($cacheKey, $route, $normalizedPath);
+            return $route;
+        }
+
         if (isset(self::$tries[$method])) {
             $result = self::$tries[$method]->match($segments);
 
