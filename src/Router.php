@@ -124,7 +124,9 @@ class Router
             return null;
         }
 
-        $cacheKey = $method . ':' . $path;
+        $segments = array_values(array_filter(explode('/', $path)));
+        $normalizedPath = '/' . implode('/', $segments);
+        $cacheKey = $method . ':' . $normalizedPath;
         if (array_key_exists($cacheKey, self::$matchCache)) {
             $cached = self::$matchCache[$cacheKey];
 
@@ -139,7 +141,7 @@ class Router
             return $cached['route'];
         }
 
-        $segments = array_values(array_filter(explode('/', $path)));
+        $segmentsCount = count($segments);
 
         if (isset(self::$tries[$method])) {
             $result = self::$tries[$method]->match($segments);
@@ -152,14 +154,22 @@ class Router
             }
         }
 
-        for ($i = count($segments); $i > 0; $i--) {
-            $current = implode('/', array_slice($segments, 0, $i)) . '/';
-            $match = $current . self::WILDCARD_TOKEN;
-            if (array_key_exists($match, self::$routes[$method])) {
-                $route = self::$routes[$method][$match];
-                $route->setMatchedPath($match);
-                self::cacheResult($cacheKey, $route, $match);
-                return $route;
+        if ($segmentsCount > 0) {
+            $prefixes = [];
+            $current = '';
+            foreach ($segments as $segment) {
+                $current = $current === '' ? $segment : $current . '/' . $segment;
+                $prefixes[] = $current;
+            }
+
+            for ($i = $segmentsCount - 1; $i >= 0; $i--) {
+                $match = $prefixes[$i] . '/' . self::WILDCARD_TOKEN;
+                if (array_key_exists($match, self::$routes[$method])) {
+                    $route = self::$routes[$method][$match];
+                    $route->setMatchedPath($match);
+                    self::cacheResult($cacheKey, $route, $match);
+                    return $route;
+                }
             }
         }
 

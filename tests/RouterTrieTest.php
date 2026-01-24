@@ -178,6 +178,19 @@ final class RouterTrieTest extends TestCase
         $this->assertEquals('api/*', $matched->getMatchedPath());
     }
 
+    public function testWildcardMostSpecificWins(): void
+    {
+        $wildcardApi = new Route(App::REQUEST_METHOD_GET, '/api/*');
+        $wildcardV1 = new Route(App::REQUEST_METHOD_GET, '/api/v1/*');
+
+        Router::addRoute($wildcardApi);
+        Router::addRoute($wildcardV1);
+
+        $matched = Router::match(App::REQUEST_METHOD_GET, '/api/v1/users');
+        $this->assertEquals($wildcardV1, $matched);
+        $this->assertEquals('api/v1/*', $matched->getMatchedPath());
+    }
+
     public function testEmptyAndRootPathHandling(): void
     {
         $rootRoute = new Route(App::REQUEST_METHOD_GET, '/');
@@ -266,6 +279,22 @@ final class RouterTrieTest extends TestCase
         $matched = Router::match(App::REQUEST_METHOD_GET, '/users/123/');
         $this->assertNotNull($matched);
         $this->assertEquals($route, $matched);
+    }
+
+    public function testCacheKeyNormalizationForTrailingSlash(): void
+    {
+        $route = new Route(App::REQUEST_METHOD_GET, '/users/:id');
+        Router::addRoute($route);
+
+        Router::match(App::REQUEST_METHOD_GET, '/users/123/');
+        Router::match(App::REQUEST_METHOD_GET, '/users/123');
+
+        $reflection = new ReflectionClass(Router::class);
+        $property = $reflection->getProperty('matchCache');
+        $cache = $property->getValue();
+
+        $this->assertCount(1, $cache);
+        $this->assertArrayHasKey('GET:/users/123', $cache);
     }
 
     public function testMultipleAliasesForSameRoute(): void

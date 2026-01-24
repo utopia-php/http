@@ -37,7 +37,7 @@ class RouterTrie
      */
     public function match(array $segments): array
     {
-        $result = $this->matchRecursive($segments, 0);
+        $result = $this->matchRecursive($segments, count($segments), 0);
         return [
             'route' => $result['route'],
             'pattern' => $result['pattern']
@@ -47,9 +47,9 @@ class RouterTrie
     /**
      * @return array{route:Route|null,pattern:string|null}
      */
-    private function matchRecursive(array $segments, int $index): array
+    private function matchRecursive(array $segments, int $segmentsCount, int $index): array
     {
-        if ($index >= count($segments)) {
+        if ($index >= $segmentsCount) {
             return [
                 'route' => $this->route,
                 'pattern' => $this->matchedPattern
@@ -59,14 +59,14 @@ class RouterTrie
         $segment = $segments[$index];
 
         if (isset($this->children[$segment])) {
-            $result = $this->children[$segment]->matchRecursive($segments, $index + 1);
+            $result = $this->children[$segment]->matchRecursive($segments, $segmentsCount, $index + 1);
             if ($result['route'] !== null) {
                 return $result;
             }
         }
 
         if (isset($this->children[':'])) {
-            $result = $this->children[':']->matchRecursive($segments, $index + 1);
+            $result = $this->children[':']->matchRecursive($segments, $segmentsCount, $index + 1);
             if ($result['route'] !== null) {
                 return $result;
             }

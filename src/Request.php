@@ -30,28 +30,30 @@ class Request
      *
      * @var string
      */
-    private $rawPayload = '';
+    private string $rawPayload = '';
+
+    protected bool $rawPayloadLoaded = false;
 
     /**
      * Container for php://input parsed stream as an associative array
      *
      * @var array|null
      */
-    protected $payload = null;
+    protected ?array $payload = null;
 
     /**
      * Container for parsed query string params
      *
      * @var array|null
      */
-    protected $queryString = null;
+    protected ?array $queryString = null;
 
     /**
      * Container for parsed headers
      *
      * @var array|null
      */
-    protected $headers = null;
+    protected ?array $headers = null;
 
     /**
      * List of trusted proxy header names to check for client IP address
@@ -456,7 +458,8 @@ class Request
      */
     public function getSize(): int
     {
-        return \mb_strlen(\implode("\n", $this->generateHeaders()), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
+        $this->loadRawPayload();
+        return \mb_strlen(\implode("\n", $this->generateHeaders()), '8bit') + \mb_strlen($this->rawPayload, '8bit');
     }
 
     /**
@@ -624,16 +627,12 @@ class Request
             $length = (empty($length)) ? \strlen($contentType) : $length;
             $contentType = \substr($contentType, 0, $length);
 
-            $this->rawPayload = \file_get_contents('php://input');
+            $this->loadRawPayload();
 
-            switch ($contentType) {
-                case 'application/json':
-                    $this->payload = \json_decode($this->rawPayload, true);
-                    break;
-                default:
-                    $this->payload = $_POST;
-                    break;
-            }
+            $this->payload = match ($contentType) {
+                'application/json' => \json_decode($this->rawPayload, true),
+                default => $_POST,
+            };
 
             if (empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
                 $this->payload = [];
@@ -647,6 +646,16 @@ class Request
             self::METHOD_DELETE => $this->payload,
             default => $this->queryString
         };
+    }
+
+    protected function loadRawPayload(): void
+    {
+        if ($this->rawPayloadLoaded) {
+            return;
+        }
+
+        $this->rawPayload = (string) \file_get_contents('php://input');
+        $this->rawPayloadLoaded = true;
     }
 
     /**
