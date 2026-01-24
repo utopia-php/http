@@ -5,6 +5,9 @@ namespace Utopia\Tests;
 use PHPUnit\Framework\TestCase;
 use Tests\E2E\Client;
 
+/**
+ * @group e2e
+ */
 class ResponseTest extends TestCase
 {
     protected Client $client;

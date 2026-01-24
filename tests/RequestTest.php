@@ -91,6 +91,41 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getRawPayload(), '');
     }
 
+    /** @noinspection PhpExpressionResultUnusedInspection */
+    public function testGetPayloadUsesCachedRawPayload(): void
+    {
+        $this->request->addHeader('content-type', 'application/json');
+
+        $reflection = new \ReflectionClass(Request::class);
+        $rawPayload = $reflection->getProperty('rawPayload');
+        $rawPayload->setAccessible(true);
+        $rawPayload->setValue($this->request, '{"key":"value"}');
+
+        $rawPayloadLoaded = $reflection->getProperty('rawPayloadLoaded');
+        $rawPayloadLoaded->setAccessible(true);
+        $rawPayloadLoaded->setValue($this->request, true);
+
+        $this->assertEquals('value', $this->request->getPayload('key'));
+    }
+
+    /** @noinspection PhpExpressionResultUnusedInspection */
+    public function testGetSizeUsesCachedRawPayload(): void
+    {
+        $reflection = new \ReflectionClass(Request::class);
+        $rawPayload = $reflection->getProperty('rawPayload');
+        $rawPayload->setAccessible(true);
+        $rawPayload->setValue($this->request, 'abcd');
+
+        $rawPayloadLoaded = $reflection->getProperty('rawPayloadLoaded');
+        $rawPayloadLoaded->setAccessible(true);
+        $rawPayloadLoaded->setValue($this->request, true);
+
+        $headers = $this->request->getHeaders();
+        $expected = \mb_strlen(\implode("\n", $headers), '8bit') + 4;
+
+        $this->assertEquals($expected, $this->request->getSize());
+    }
+
     public function testCanGetServer()
     {
         $_SERVER['key'] = 'value';

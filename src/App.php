@@ -14,7 +14,14 @@ use Utopia\Validator\Text;
 
 class App
 {
-    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+    /**
+     * Hook type constants
+     */
+    public const string HOOK_INIT = 'init';
+    public const string HOOK_SHUTDOWN = 'shutdown';
+    public const string HOOK_ERRORS = 'errors';
+
+    public const int COMPRESSION_MIN_SIZE_DEFAULT = 1024;
 
     /**
      * Request method constants
@@ -87,6 +94,13 @@ class App
      * @var Hook[]
      */
     protected static array $shutdown = [];
+
+    /**
+     * @var array<string,array<string,Hook[]>>
+     */
+    protected static array $indexedHooks = [];
+
+    protected static bool $hooksIndexed = false;
 
     /**
      * Options
@@ -283,8 +297,12 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+        $hook->onGroupsUpdated(function () {
+            self::$hooksIndexed = false;
+        });
 
         self::$init[] = $hook;
+        self::$hooksIndexed = false;
 
         return $hook;
     }
@@ -300,8 +318,12 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+        $hook->onGroupsUpdated(function () {
+            self::$hooksIndexed = false;
+        });
 
         self::$shutdown[] = $hook;
+        self::$hooksIndexed = false;
 
         return $hook;
     }
@@ -334,8 +356,12 @@ class App
     {
         $hook = new Hook();
         $hook->groups(['*']);
+        $hook->onGroupsUpdated(function () {
+            self::$hooksIndexed = false;
+        });
 
         self::$errors[] = $hook;
+        self::$hooksIndexed = false;
 
         return $hook;
     }
@@ -587,6 +613,11 @@ class App
      */
     public function execute(Route $route, Request $request, Response $response): static
     {
+        if (!self::$hooksIndexed) {
+            $this->buildHookIndexes();
+            self::$hooksIndexed = true;
+        }
+
         $arguments = [];
         $groups = $route->getGroups();
 
@@ -595,8 +626,8 @@ class App
 
         try {
             if ($route->getHook()) {
-                foreach (self::$init as $hook) { // Global init hooks
-                    if (in_array('*', $hook->getGroups())) {
+                if (isset(self::$indexedHooks[self::HOOK_INIT]['*'])) {
+                    foreach (self::$indexedHooks[self::HOOK_INIT]['*'] as $hook) {
                         $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -604,8 +635,8 @@ class App
             }
 
             foreach ($groups as $group) {
-                foreach (self::$init as $hook) { // Group init hooks
-                    if (in_array($group, $hook->getGroups())) {
+                if (isset(self::$indexedHooks[self::HOOK_INIT][$group])) {
+                    foreach (self::$indexedHooks[self::HOOK_INIT][$group] as $hook) {
                         $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -621,8 +652,8 @@ class App
 
 
             foreach ($groups as $group) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    if (in_array($group, $hook->getGroups())) {
+                if (isset(self::$indexedHooks[self::HOOK_SHUTDOWN][$group])) {
+                    foreach (self::$indexedHooks[self::HOOK_SHUTDOWN][$group] as $hook) {
                         $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -630,8 +661,8 @@ class App
             }
 
             if ($route->getHook()) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    if (in_array('*', $hook->getGroups())) {
+                if (isset(self::$indexedHooks[self::HOOK_SHUTDOWN]['*'])) {
+                    foreach (self::$indexedHooks[self::HOOK_SHUTDOWN]['*'] as $hook) {
                         $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -641,8 +672,8 @@ class App
             self::setResource('error', fn () => $e);
 
             foreach ($groups as $group) {
-                foreach (self::$errors as $error) { // Group error hooks
-                    if (in_array($group, $error->getGroups())) {
+                if (isset(self::$indexedHooks[self::HOOK_ERRORS][$group])) {
+                    foreach (self::$indexedHooks[self::HOOK_ERRORS][$group] as $error) {
                         try {
                             $arguments = $this->getArguments($error, $pathValues, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
@@ -653,8 +684,8 @@ class App
                 }
             }
 
-            foreach (self::$errors as $error) { // Global error hooks
-                if (in_array('*', $error->getGroups())) {
+            if (isset(self::$indexedHooks[self::HOOK_ERRORS]['*'])) {
+                foreach (self::$indexedHooks[self::HOOK_ERRORS]['*'] as $error) {
                     try {
                         $arguments = $this->getArguments($error, $pathValues, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
@@ -790,6 +821,11 @@ class App
      */
     public function run(Request $request, Response $response): static
     {
+        if (!self::$hooksIndexed) {
+            $this->buildHookIndexes();
+            self::$hooksIndexed = true;
+        }
+
         $this->activeRequests->add(1, [
             'http.request.method' => $request->getMethod(),
             'url.scheme' => $request->getProtocol(),
@@ -985,6 +1021,33 @@ class App
      *
      * @return void
      */
+    protected function buildHookIndexes(): void
+    {
+        self::$indexedHooks = [
+            self::HOOK_INIT => [],
+            self::HOOK_SHUTDOWN => [],
+            self::HOOK_ERRORS => []
+        ];
+
+        foreach (self::$init as $hook) {
+            foreach ($hook->getGroups() as $group) {
+                self::$indexedHooks[self::HOOK_INIT][$group][] = $hook;
+            }
+        }
+
+        foreach (self::$shutdown as $hook) {
+            foreach ($hook->getGroups() as $group) {
+                self::$indexedHooks[self::HOOK_SHUTDOWN][$group][] = $hook;
+            }
+        }
+
+        foreach (self::$errors as $error) {
+            foreach ($error->getGroups() as $group) {
+                self::$indexedHooks[self::HOOK_ERRORS][$group][] = $error;
+            }
+        }
+    }
+
     public static function reset(): void
     {
         Router::reset();
@@ -994,5 +1057,7 @@ class App
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
+        self::$indexedHooks = [];
+        self::$hooksIndexed = false;
     }
 }

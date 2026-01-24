@@ -82,6 +82,11 @@ class Hook
     }
 
     /**
+     * @var callable|null
+     */
+    protected $groupsUpdatedCallback = null;
+
+    /**
      * Add Group
      *
      * @param  array  $groups
@@ -90,6 +95,23 @@ class Hook
     public function groups(array $groups): static
     {
         $this->groups = $groups;
+
+        if ($this->groupsUpdatedCallback !== null) {
+            ($this->groupsUpdatedCallback)();
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set callback for when groups are updated
+     *
+     * @param  callable  $callback
+     * @return static
+     */
+    public function onGroupsUpdated(callable $callback): static
+    {
+        $this->groupsUpdatedCallback = $callback;
 
         return $this;
     }
