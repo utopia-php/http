@@ -3,7 +3,7 @@
 namespace Utopia\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Model;
 use Utopia\Request;
 use Utopia\Response;
@@ -113,14 +113,14 @@ class AddressValidator extends Validator
 
 class ModelTest extends TestCase
 {
-    protected ?App $app;
+    protected ?Http $app;
     protected ?string $method;
     protected ?string $uri;
 
     public function setUp(): void
     {
-        App::reset();
-        $this->app = new App('UTC');
+        Http::reset();
+        $this->app = new Http('UTC');
         $this->saveRequest();
     }
 

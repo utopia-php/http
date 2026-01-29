@@ -17,12 +17,12 @@ final class RouterBench
 
     public function setUpRouter(): void
     {
-        $routeBlog = new Route(App::REQUEST_METHOD_GET, '/blog');
-        $routeBlogAuthors = new Route(App::REQUEST_METHOD_GET, '/blog/authors');
-        $routeBlogPost = new Route(App::REQUEST_METHOD_GET, '/blog/:post');
-        $routeBlogPostComments = new Route(App::REQUEST_METHOD_GET, '/blog/:post/comments');
-        $routeBlogPostCommentsSingle = new Route(App::REQUEST_METHOD_GET, '/blog/:post/comments/:comment');
-        $routeBlogLongUrl = new Route(App::REQUEST_METHOD_GET, '/blog/lorem/ipsum/dolor/sit/amet/consectetur/adipiscing/elit/Quisque/dolor/nisi/gravida/non/malesuada/eget/tincidunt/vitae/eros/Donec/hendrerit/mollis/purus/non/efficitur/augue/efficitur/sed/Praesent/a/tempus/felis/et/elementum/lorem/Vestibulum/ante/ipsum/primis/in/faucibus/orci/luctus/et/ultrices/posuere/cubilia/curae/Ut/luctus/ultrices/ligula/vulputate/malesuada/magna/pellentesque/eget/Mauris/at/sodales/orci/Mauris/efficitur/volutpat/est/in/faucibus/Donec/non/eleifend/nibh/Nunc/cursus/ornare/sollicitudin/Nullam/pellentesque/placerat/justo/ac/eleifend/tortor/imperdiet/quis/Nullam/tincidunt/non/justo/ut/pulvinar/Suspendisse/laoreet/tempus/nulla/eu/aliquet/Proin/metus/erat/facilisis/in/euismod/sit/amet/mollis/ac/nisi/Nulla/facilisi');
+        $routeBlog = new Route(Http::REQUEST_METHOD_GET, '/blog');
+        $routeBlogAuthors = new Route(Http::REQUEST_METHOD_GET, '/blog/authors');
+        $routeBlogPost = new Route(Http::REQUEST_METHOD_GET, '/blog/:post');
+        $routeBlogPostComments = new Route(Http::REQUEST_METHOD_GET, '/blog/:post/comments');
+        $routeBlogPostCommentsSingle = new Route(Http::REQUEST_METHOD_GET, '/blog/:post/comments/:comment');
+        $routeBlogLongUrl = new Route(Http::REQUEST_METHOD_GET, '/blog/lorem/ipsum/dolor/sit/amet/consectetur/adipiscing/elit/Quisque/dolor/nisi/gravida/non/malesuada/eget/tincidunt/vitae/eros/Donec/hendrerit/mollis/purus/non/efficitur/augue/efficitur/sed/Praesent/a/tempus/felis/et/elementum/lorem/Vestibulum/ante/ipsum/primis/in/faucibus/orci/luctus/et/ultrices/posuere/cubilia/curae/Ut/luctus/ultrices/ligula/vulputate/malesuada/magna/pellentesque/eget/Mauris/at/sodales/orci/Mauris/efficitur/volutpat/est/in/faucibus/Donec/non/eleifend/nibh/Nunc/cursus/ornare/sollicitudin/Nullam/pellentesque/placerat/justo/ac/eleifend/tortor/imperdiet/quis/Nullam/tincidunt/non/justo/ut/pulvinar/Suspendisse/laoreet/tempus/nulla/eu/aliquet/Proin/metus/erat/facilisis/in/euismod/sit/amet/mollis/ac/nisi/Nulla/facilisi');
 
         Router::addRoute($routeBlog);
         Router::addRoute($routeBlogAuthors);
@@ -53,6 +53,6 @@ final class RouterBench
     #[ParamProviders('provideRoutesToMatch')]
     public function benchRouter(array $data): void
     {
-        Router::match(App::REQUEST_METHOD_GET, $data['route']);
+        Router::match(Http::REQUEST_METHOD_GET, $data['route']);
     }
 }

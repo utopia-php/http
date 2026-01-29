@@ -9,7 +9,7 @@ If you’re new to Utopia, let’s get started by looking at an example of a bas
 ## Basic GET Route
 
 ```php
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Swoole\Request;
 use Utopia\Swoole\Response;
 use Swoole\Http\Server;
@@ -18,7 +18,7 @@ use Swoole\Http\Response as SwooleResponse;
 
 $http = new Server("0.0.0.0", 8080);
  
-App::get('/')
+Http::get('/')
    ->inject('request')
    ->inject('response')
    ->action(
@@ -33,7 +33,7 @@ App::get('/')
 $http->on('request', function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
    $request = new Request($swooleRequest);
    $response = new Response($swooleResponse);
-   $app = new App('America/Toronto');
+   $app = new Http('America/Toronto');
    $app->run($request, $response);
 });
 
@@ -59,7 +59,7 @@ You can perform basic CRUD operations like GET, POST, PUT and DELETE using Utopi
 You can create a PUT request to update a todo by passing it’s reference `id` along with the values to be updated as follows:
 
 ```php
-App::put('/todos/:id')
+Http::put('/todos/:id')
    ->param('id', "", new Wildcard(), 'id of the todo')
    ->param('task', "", new Wildcard(), 'name of the todo')
    ->param('is_complete', true, new Wildcard(), 'task complete or not')
@@ -138,7 +138,7 @@ You can find the details of other status codes by visiting our [GitHub repositor
 Let's make the above example slightly advanced by adding more properties.
 
 ```php
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Swoole\Request;
 use Utopia\Swoole\Response;
 use Swoole\Http\Server;
@@ -148,28 +148,28 @@ use Utopia\Validator\Wildcard;
 
 $http = new Server("0.0.0.0", 8080);
 
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Example of global init method. Do stuff that is common to all your endpoints in all groups. 
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response']);
 
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Example of init method for group1. Do stuff that is common to all your endpoints in group1.
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], 'group1');
 
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Example of init method for group2. Do stuff that is common to all your endpoints in group2. 
       This can include things like authentication and authorisation checks, implementing rate limits and so on..
    */
 }, ['response'], 'group2');
 
-App::shutdown(function($request) {
+Http::shutdown(function($request) {
    /* 
      Example of global shutdown method. Do stuff that needs to be performed at the end of each request for all groups.
      '*' (Wildcard validator) is optional.
@@ -178,7 +178,7 @@ App::shutdown(function($request) {
 
 }, ['request'], '*');
 
-App::shutdown(function($request) {
+Http::shutdown(function($request) {
    /* 
      Example of shutdown method of group1. Do stuff that needs to be performed at the end of each request for all groups.
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..
@@ -186,7 +186,7 @@ App::shutdown(function($request) {
 
 }, ['request'], 'group1');
 
-App::put('/todos/:id')
+Http::put('/todos/:id')
    ->desc('Update todo')
    ->groups(['group1', 'group2'])
    ->label('scope', 'public')
@@ -255,7 +255,7 @@ The init and shutdown methods take three params:
 
 init method is executed in the beginning when the program execution begins. Here’s an example of the init method, where the init method is executed for all groups indicated by the wildcard symbol `'*'`.
 ```php
-App::init(function($response) {
+Http::init(function($response) {
    /* 
       Do stuff that is common to all your endpoints. 
       This can include things like authentication and authorisation checks, implementing rate limits and so on.. 
@@ -268,7 +268,7 @@ App::init(function($response) {
 Utopia's shutdown callback is used to perform cleanup tasks after a request. This could include closing any open database connections, resetting certain flags, triggering analytics events (if any) and similar tasks.
 
 ```php
-App::shutdown(function($request) {
+Http::shutdown(function($request) {
    /* 
      Do stuff that needs to be performed at the end of each request. 
      This can include cleanups, logging information, recording usage stats, closing database connections and so on..

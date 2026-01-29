@@ -7,9 +7,9 @@ use Utopia\Tests\UtopiaRequestTest;
 use Utopia\Validator\Text;
 use Exception;
 
-class AppTest extends TestCase
+class HttpTest extends TestCase
 {
-    protected ?App $app;
+    protected ?Http $app;
 
     protected ?string $method;
 
@@ -17,8 +17,8 @@ class AppTest extends TestCase
 
     public function setUp(): void
     {
-        App::reset();
-        $this->app = new App('Asia/Tel_Aviv');
+        Http::reset();
+        $this->app = new Http('Asia/Tel_Aviv');
         $this->saveRequest();
     }
 
@@ -42,31 +42,31 @@ class AppTest extends TestCase
 
     public function testCanGetDifferentModes(): void
     {
-        $this->assertEmpty(App::getMode());
-        $this->assertFalse(App::isProduction());
-        $this->assertFalse(App::isDevelopment());
-        $this->assertFalse(App::isStage());
+        $this->assertEmpty(Http::getMode());
+        $this->assertFalse(Http::isProduction());
+        $this->assertFalse(Http::isDevelopment());
+        $this->assertFalse(Http::isStage());
 
-        App::setMode(App::MODE_TYPE_PRODUCTION);
+        Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(App::MODE_TYPE_PRODUCTION, App::getMode());
-        $this->assertTrue(App::isProduction());
-        $this->assertFalse(App::isDevelopment());
-        $this->assertFalse(App::isStage());
+        $this->assertEquals(Http::MODE_TYPE_PRODUCTION, Http::getMode());
+        $this->assertTrue(Http::isProduction());
+        $this->assertFalse(Http::isDevelopment());
+        $this->assertFalse(Http::isStage());
 
-        App::setMode(App::MODE_TYPE_DEVELOPMENT);
+        Http::setMode(Http::MODE_TYPE_DEVELOPMENT);
 
-        $this->assertEquals(App::MODE_TYPE_DEVELOPMENT, App::getMode());
-        $this->assertFalse(App::isProduction());
-        $this->assertTrue(App::isDevelopment());
-        $this->assertFalse(App::isStage());
+        $this->assertEquals(Http::MODE_TYPE_DEVELOPMENT, Http::getMode());
+        $this->assertFalse(Http::isProduction());
+        $this->assertTrue(Http::isDevelopment());
+        $this->assertFalse(Http::isStage());
 
-        App::setMode(App::MODE_TYPE_STAGE);
+        Http::setMode(Http::MODE_TYPE_STAGE);
 
-        $this->assertEquals(App::MODE_TYPE_STAGE, App::getMode());
-        $this->assertFalse(App::isProduction());
-        $this->assertFalse(App::isDevelopment());
-        $this->assertTrue(App::isStage());
+        $this->assertEquals(Http::MODE_TYPE_STAGE, Http::getMode());
+        $this->assertFalse(Http::isProduction());
+        $this->assertFalse(Http::isDevelopment());
+        $this->assertTrue(Http::isStage());
     }
 
     public function testCanGetEnvironmentVariable(): void
@@ -74,15 +74,15 @@ class AppTest extends TestCase
         // Mock
         $_SERVER['key'] = 'value';
 
-        $this->assertEquals(App::getEnv('key'), 'value');
-        $this->assertEquals(App::getEnv('unknown', 'test'), 'test');
+        $this->assertEquals(Http::getEnv('key'), 'value');
+        $this->assertEquals(Http::getEnv('unknown', 'test'), 'test');
     }
 
     public function testCanGetResources(): void
     {
-        App::setResource('rand', fn () => rand());
-        App::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        App::setResource('second', fn () => 'second');
+        Http::setResource('rand', fn () => rand());
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
 
         $second = $this->app->getResource('second');
         $first = $this->app->getResource('first');
@@ -117,8 +117,8 @@ class AppTest extends TestCase
 
     public function testCanGetDefaultValueWithFunction(): void
     {
-        App::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        App::setResource('second', fn () => 'second');
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
 
         $second = $this->app->getResource('second');
         $first = $this->app->getResource('first');
@@ -163,7 +163,7 @@ class AppTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        App::setResource('rand', fn () => rand());
+        Http::setResource('rand', fn () => rand());
         $resource = $this->app->getResource('rand');
 
         $this->app
@@ -364,14 +364,14 @@ class AppTest extends TestCase
 
     public function testAllowRouteOverrides()
     {
-        App::setAllowOverride(false);
-        $this->assertFalse(App::getAllowOverride());
-        App::get('/')->action(function () {
+        Http::setAllowOverride(false);
+        $this->assertFalse(Http::getAllowOverride());
+        Http::get('/')->action(function () {
             echo 'Hello first';
         });
 
         try {
-            App::get('/')->action(function () {
+            Http::get('/')->action(function () {
                 echo 'Hello second';
             });
             $this->fail('Failed to throw exception');
@@ -381,13 +381,13 @@ class AppTest extends TestCase
         }
 
         // Test success
-        App::setAllowOverride(true);
-        $this->assertTrue(App::getAllowOverride());
-        App::get('/')->action(function () {
+        Http::setAllowOverride(true);
+        $this->assertTrue(Http::getAllowOverride());
+        Http::get('/')->action(function () {
             echo 'Hello first';
         });
 
-        App::get('/')->action(function () {
+        Http::get('/')->action(function () {
             echo 'Hello second';
         });
     }
@@ -450,18 +450,18 @@ class AppTest extends TestCase
     public function providerRouteMatching(): array
     {
         return [
-            'GET request' => [App::REQUEST_METHOD_GET, '/path1'],
-            'GET request on different route' => [App::REQUEST_METHOD_GET, '/path2'],
-            'GET request with trailing slash #1' => [App::REQUEST_METHOD_GET, '/path3', '/path3/'],
-            'GET request with trailing slash #2' => [App::REQUEST_METHOD_GET, '/path3/', '/path3/'],
-            'GET request with trailing slash #3' => [App::REQUEST_METHOD_GET, '/path3/', '/path3'],
-            'POST request' => [App::REQUEST_METHOD_POST, '/path1'],
-            'PUT request' => [App::REQUEST_METHOD_PUT, '/path1'],
-            'PATCH request' => [App::REQUEST_METHOD_PATCH, '/path1'],
-            'DELETE request' => [App::REQUEST_METHOD_DELETE, '/path1'],
-            '1 separators' => [App::REQUEST_METHOD_GET, '/a/'],
-            '2 separators' => [App::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [App::REQUEST_METHOD_GET, '/a/b/c']
+            'GET request' => [Http::REQUEST_METHOD_GET, '/path1'],
+            'GET request on different route' => [Http::REQUEST_METHOD_GET, '/path2'],
+            'GET request with trailing slash #1' => [Http::REQUEST_METHOD_GET, '/path3', '/path3/'],
+            'GET request with trailing slash #2' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3/'],
+            'GET request with trailing slash #3' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3'],
+            'POST request' => [Http::REQUEST_METHOD_POST, '/path1'],
+            'PUT request' => [Http::REQUEST_METHOD_PUT, '/path1'],
+            'PATCH request' => [Http::REQUEST_METHOD_PATCH, '/path1'],
+            'DELETE request' => [Http::REQUEST_METHOD_DELETE, '/path1'],
+            '1 separators' => [Http::REQUEST_METHOD_GET, '/a/'],
+            '2 separators' => [Http::REQUEST_METHOD_GET, '/a/b'],
+            '3 separators' => [Http::REQUEST_METHOD_GET, '/a/b/c']
         ];
     }
 
@@ -474,20 +474,20 @@ class AppTest extends TestCase
         $expected = null;
 
         switch ($method) {
-            case App::REQUEST_METHOD_GET:
-                $expected = App::get($path);
+            case Http::REQUEST_METHOD_GET:
+                $expected = Http::get($path);
                 break;
-            case App::REQUEST_METHOD_POST:
-                $expected = App::post($path);
+            case Http::REQUEST_METHOD_POST:
+                $expected = Http::post($path);
                 break;
-            case App::REQUEST_METHOD_PUT:
-                $expected = App::put($path);
+            case Http::REQUEST_METHOD_PUT:
+                $expected = Http::put($path);
                 break;
-            case App::REQUEST_METHOD_PATCH:
-                $expected = App::patch($path);
+            case Http::REQUEST_METHOD_PATCH:
+                $expected = Http::patch($path);
                 break;
-            case App::REQUEST_METHOD_DELETE:
-                $expected = App::delete($path);
+            case Http::REQUEST_METHOD_DELETE:
+                $expected = Http::delete($path);
                 break;
         }
 
@@ -501,7 +501,7 @@ class AppTest extends TestCase
     public function testMatchWithNullPath(): void
     {
         // Create a route for root path
-        $expected = App::get('/');
+        $expected = Http::get('/');
 
         // Test case where parse_url returns null (malformed URL)
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -514,7 +514,7 @@ class AppTest extends TestCase
     public function testMatchWithEmptyPath(): void
     {
         // Create a route for root path
-        $expected = App::get('/');
+        $expected = Http::get('/');
 
         // Test case where URI has no path component
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -527,7 +527,7 @@ class AppTest extends TestCase
     public function testMatchWithMalformedURL(): void
     {
         // Create a route for root path
-        $expected = App::get('/');
+        $expected = Http::get('/');
 
         // Test case where parse_url returns false (severely malformed URL)
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -540,7 +540,7 @@ class AppTest extends TestCase
     public function testMatchWithOnlyQueryString(): void
     {
         // Create a route for root path
-        $expected = App::get('/');
+        $expected = Http::get('/');
 
         // Test case where URI has only query string (no path)
         $_SERVER['REQUEST_METHOD'] = 'GET';
@@ -568,9 +568,9 @@ class AppTest extends TestCase
         ];
 
         foreach ($requests as $request) {
-            App::get($request['path']);
+            Http::get($request['path']);
 
-            $_SERVER['REQUEST_METHOD'] = App::REQUEST_METHOD_GET;
+            $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
             $_SERVER['REQUEST_URI'] = $request['url'];
 
             $route = $this->app->match(new Request(), fresh: true);
@@ -582,8 +582,8 @@ class AppTest extends TestCase
 
     public function testCanMatchFreshRoute(): void
     {
-        $route1 = App::get('/path1');
-        $route2 = App::get('/path2');
+        $route1 = Http::get('/path1');
+        $route2 = Http::get('/path2');
 
         try {
             // Match first request
@@ -620,7 +620,7 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'HEAD';
         $_SERVER['REQUEST_URI'] = '/path';
 
-        App::get('/path')
+        Http::get('/path')
             ->inject('response')
             ->action(function ($response) {
                 $response->send('HELLO');
@@ -645,19 +645,19 @@ class AppTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
-        App::init()
+        Http::init()
             ->inject('request')
             ->inject('response')
             ->action(function (Request $request, Response $response) {
                 $route = $this->app->getRoute();
-                App::setResource('myRoute', fn () => $route);
+                Http::setResource('myRoute', fn () => $route);
 
                 if ($request->getURI() === '/init_response') {
                     $response->send('THIS IS RESPONSE FROM INIT!');
                 }
             });
 
-        App::options()
+        Http::options()
             ->inject('request')
             ->inject('response')
             ->action(function (Request $request, Response $response) {
@@ -672,7 +672,7 @@ class AppTest extends TestCase
                     ->noContent();
             });
 
-        App::wildcard()
+        Http::wildcard()
             ->inject('myRoute')
             ->inject('response')
             ->action(function (mixed $myRoute, $response) {
@@ -750,7 +750,7 @@ class AppTest extends TestCase
             });
 
         // Set up an options handler that throws
-        App::options()
+        Http::options()
             ->action(function () {
                 throw new Exception('Options handler failed');
             });

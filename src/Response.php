@@ -366,7 +366,7 @@ class Response
     /**
      * @var int
      */
-    protected int $compressionMinSize = App::COMPRESSION_MIN_SIZE_DEFAULT;
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
     /**
      * @var mixed
