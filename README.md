@@ -21,11 +21,11 @@ Init your first application:
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Request;
 use Utopia\Response;
 
-App::get('/hello-world') // Define Route
+Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
@@ -38,9 +38,9 @@ App::get('/hello-world') // Define Route
         }
     );
 
-App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+Http::setMode(Http::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App('America/New_York');
+$app        = new Http('America/New_York');
 $request    = new Request();
 $response   = new Response();
 
@@ -54,17 +54,17 @@ There are three types of hooks, init hooks, shutdown hooks and error hooks. Init
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\App;
+use Utopia\Http;
 use Utopia\Request;
 use Utopia\Response;
 
-App::init()
+Http::init()
     ->inject('response')
     ->action(function($response) {
         $response->addHeader('content-type', 'application/json');
     });
 
-App::error()
+Http::error()
     ->inject('error')
     ->inject('response')
     ->action(function($error, $response) {
@@ -73,7 +73,7 @@ App::error()
             ->send('Error occurred ' . $error);
     });
 
-App::get('/hello-world') // Define Route
+Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
@@ -86,9 +86,9 @@ App::get('/hello-world') // Define Route
         }
     );
 
-App::setMode(App::MODE_TYPE_PRODUCTION); // Define Mode
+Http::setMode(Http::MODE_TYPE_PRODUCTION); // Define Mode
 
-$app        = new App('America/New_York');
+$app        = new Http('America/New_York');
 $request    = new Request();
 $response   = new Response();
 
