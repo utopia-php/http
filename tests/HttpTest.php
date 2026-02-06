@@ -80,9 +80,9 @@ class HttpTest extends TestCase
 
     public function testCanGetResources(): void
     {
-        Http::setResource('rand', fn() => rand());
-        Http::setResource('first', fn($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn() => 'second');
+        Http::setResource('rand', fn () => rand());
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
 
         $second = $this->app->getResource('second');
         $first = $this->app->getResource('first');
@@ -117,8 +117,8 @@ class HttpTest extends TestCase
 
     public function testCanGetDefaultValueWithFunction(): void
     {
-        Http::setResource('first', fn($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn() => 'second');
+        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn () => 'second');
 
         $second = $this->app->getResource('second');
         $first = $this->app->getResource('first');
@@ -163,7 +163,7 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        Http::setResource('rand', fn() => rand());
+        Http::setResource('rand', fn () => rand());
         $resource = $this->app->getResource('rand');
 
         $this->app
@@ -754,7 +754,7 @@ class HttpTest extends TestCase
             ->inject('response')
             ->action(function (Request $request, Response $response) {
                 $route = $this->app->getRoute();
-                Http::setResource('myRoute', fn() => $route);
+                Http::setResource('myRoute', fn () => $route);
 
                 if ($request->getURI() === '/init_response') {
                     $response->send('THIS IS RESPONSE FROM INIT!');
