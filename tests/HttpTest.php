@@ -80,9 +80,9 @@ class HttpTest extends TestCase
 
     public function testCanGetResources(): void
     {
-        Http::setResource('rand', fn () => rand());
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
+        Http::setResource('rand', fn() => rand());
+        Http::setResource('first', fn($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn() => 'second');
 
         $second = $this->app->getResource('second');
         $first = $this->app->getResource('first');
@@ -117,8 +117,8 @@ class HttpTest extends TestCase
 
     public function testCanGetDefaultValueWithFunction(): void
     {
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
+        Http::setResource('first', fn($second) => "first-{$second}", ['second']);
+        Http::setResource('second', fn() => 'second');
 
         $second = $this->app->getResource('second');
         $first = $this->app->getResource('first');
@@ -163,7 +163,7 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        Http::setResource('rand', fn () => rand());
+        Http::setResource('rand', fn() => rand());
         $resource = $this->app->getResource('rand');
 
         $this->app
@@ -447,6 +447,110 @@ class HttpTest extends TestCase
         $this->assertEquals($this->app->getRoute(), $route);
     }
 
+    public function testRouteInjectionAvailableInLifecycle(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/route-inject';
+
+        $initRoutePath = null;
+        $initRouteMethod = null;
+        $actionRoutePath = null;
+        $actionRouteMethod = null;
+
+        Http::init()
+            ->inject('route')
+            ->action(function (Route $route) use (&$initRoutePath, &$initRouteMethod) {
+                $initRoutePath = $route->getPath();
+                $initRouteMethod = $route->getMethod();
+            });
+
+        Http::get('/route-inject')
+            ->inject('route')
+            ->action(function (Route $route) use (&$actionRoutePath, &$actionRouteMethod) {
+                $actionRoutePath = $route->getPath();
+                $actionRouteMethod = $route->getMethod();
+            });
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertSame('/route-inject', $initRoutePath);
+        $this->assertSame('GET', $initRouteMethod);
+        $this->assertSame('/route-inject', $actionRoutePath);
+        $this->assertSame('GET', $actionRouteMethod);
+    }
+
+    public function testRouteInjectionAvailableForOptions(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'OPTIONS';
+        $_SERVER['REQUEST_URI'] = '/options-route';
+
+        $optionsRoutePath = null;
+        $optionsRouteMethod = null;
+
+        Http::options()
+            ->inject('route')
+            ->action(function (Route $route) use (&$optionsRoutePath, &$optionsRouteMethod) {
+                $optionsRoutePath = $route->getPath();
+                $optionsRouteMethod = $route->getMethod();
+            });
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertSame('/options-route', $optionsRoutePath);
+        $this->assertSame('OPTIONS', $optionsRouteMethod);
+    }
+
+    public function testRouteInjectionAvailableInShutdown(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/route-inject-shutdown';
+
+        $shutdownRoutePath = null;
+        $shutdownRouteMethod = null;
+
+        Http::shutdown()
+            ->inject('route')
+            ->action(function (Route $route) use (&$shutdownRoutePath, &$shutdownRouteMethod) {
+                $shutdownRoutePath = $route->getPath();
+                $shutdownRouteMethod = $route->getMethod();
+            });
+
+        Http::get('/route-inject-shutdown')
+            ->action(function () {
+            });
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertSame('/route-inject-shutdown', $shutdownRoutePath);
+        $this->assertSame('GET', $shutdownRouteMethod);
+    }
+
+    public function testRouteInjectionAvailableInError(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/route-inject-error';
+
+        $errorRoutePath = null;
+        $errorRouteMethod = null;
+
+        Http::error()
+            ->inject('route')
+            ->action(function (Route $route) use (&$errorRoutePath, &$errorRouteMethod) {
+                $errorRoutePath = $route->getPath();
+                $errorRouteMethod = $route->getMethod();
+            });
+
+        Http::get('/route-inject-error')
+            ->action(function () {
+                throw new Exception('Error');
+            });
+
+        $this->app->run(new Request(), new Response());
+
+        $this->assertSame('/route-inject-error', $errorRoutePath);
+        $this->assertSame('GET', $errorRouteMethod);
+    }
+
     public function providerRouteMatching(): array
     {
         return [
@@ -650,7 +754,7 @@ class HttpTest extends TestCase
             ->inject('response')
             ->action(function (Request $request, Response $response) {
                 $route = $this->app->getRoute();
-                Http::setResource('myRoute', fn () => $route);
+                Http::setResource('myRoute', fn() => $route);
 
                 if ($request->getURI() === '/init_response') {
                     $response->send('THIS IS RESPONSE FROM INIT!');

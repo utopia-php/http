@@ -849,6 +849,17 @@ class Http
         $this->matchedRoute = $route;
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
+        if (null === $route && null !== self::$wildcardRoute) {
+            $route = self::$wildcardRoute;
+            $this->route = $route;
+            $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $route->path($path);
+        }
+
+        self::setResource('route', function () use ($route, $request) {
+            return $route ?? new Route($request->getMethod(), $request->getURI());
+        });
+
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
@@ -889,13 +900,6 @@ class Http
             }
 
             return $this;
-        }
-
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $route->path($path);
         }
 
         if (null !== $route) {
