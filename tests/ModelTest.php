@@ -405,7 +405,7 @@ class ModelTest extends TestCase
         $this->app->run(new Request(), new Response());
 
         $this->assertTrue($errorCaught);
-        $this->assertStringContainsString('not an instance of Utopia\\Model', $errorMessage);
+        $this->assertStringContainsString('not an instance of Utopia\\Http\\Model', $errorMessage);
     }
 
     public function testModelWithEmptyString(): void
