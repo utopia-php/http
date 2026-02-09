@@ -686,7 +686,7 @@ class Http
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
 
-            if ($existsInRequest) {
+            if ($existsInRequest && !($param['optional'] && $requestParams[$key] === null)) {
                 $arg = $requestParams[$key];
             } else {
                 if (!is_string($param['default']) && \is_callable($param['default'])) {
