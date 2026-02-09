@@ -65,6 +65,20 @@ class Request extends UtopiaRequest
     }
 
     /**
+     * Get IP
+     *
+     * Returns users IP address.
+     * Support HTTP_X_FORWARDED_FOR header usually return
+     *  from different proxy servers or PHP default REMOTE_ADDR
+     */
+    public function getIP(): string
+    {
+        $ips = explode(',', $this->getHeader('x-forwarded-for', $this->getServer('remote_addr') ?? '0.0.0.0'));
+
+        return trim($ips[0] ?? '');
+    }
+
+    /**
      * Get Protocol
      *
      * Returns request protocol.
@@ -139,6 +153,18 @@ class Request extends UtopiaRequest
     }
 
     /**
+     * Get URI
+     *
+     * Return HTTP request URI
+     *
+     * @return string
+     */
+    public function getURI(): string
+    {
+        return $this->getServer('request_uri') ?? '';
+    }
+
+    /**
      * Set URI
      *
      * Set HTTP request URI
@@ -209,7 +235,7 @@ class Request extends UtopiaRequest
      * @param  string  $key
      * @return array<string, mixed>
      */
-    public function getFiles(string $key): array
+    public function getFiles($key): array
     {
         $key = strtolower($key);
 

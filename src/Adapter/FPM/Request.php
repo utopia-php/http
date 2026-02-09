@@ -58,6 +58,22 @@ class Request extends UtopiaRequest
     }
 
     /**
+     * Get IP
+     *
+     * Returns users IP address.
+     * Support HTTP_X_FORWARDED_FOR header usually return
+     *  from different proxy servers or PHP default REMOTE_ADDR
+     *
+     * @return string
+     */
+    public function getIP(): string
+    {
+        $ips = explode(',', $this->getHeader('HTTP_X_FORWARDED_FOR', $this->getServer('REMOTE_ADDR') ?? '0.0.0.0'));
+
+        return trim($ips[0] ?? '');
+    }
+
+    /**
      * Get Protocol
      *
      * Returns request protocol.
@@ -120,6 +136,18 @@ class Request extends UtopiaRequest
         $this->setServer('REQUEST_METHOD', $method);
 
         return $this;
+    }
+
+    /**
+     * Get URI
+     *
+     * Return HTTP request URI
+     *
+     * @return string
+     */
+    public function getURI(): string
+    {
+        return $this->getServer('REQUEST_URI') ?? '';
     }
 
     /**
@@ -308,5 +336,39 @@ class Request extends UtopiaRequest
             self::METHOD_DELETE => $this->payload,
             default => $this->queryString
         };
+    }
+
+    /**
+     * Generate headers
+     *
+     * Parse request headers as an array for easy querying using the getHeader method
+     *
+     * @return array
+     */
+    protected function generateHeaders(): array
+    {
+        if (null === $this->headers) {
+            /**
+             * Fallback for older PHP versions
+             * that do not support generateHeaders
+             */
+            if (!\function_exists('getallheaders')) {
+                $headers = [];
+
+                foreach ($_SERVER as $name => $value) {
+                    if (\substr($name, 0, 5) == 'HTTP_') {
+                        $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
+                    }
+                }
+
+                $this->headers = $headers;
+
+                return $this->headers;
+            }
+
+            $this->headers = array_change_key_case(getallheaders());
+        }
+
+        return $this->headers;
     }
 }
