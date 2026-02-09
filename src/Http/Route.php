@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 class Route extends Hook
 {
@@ -162,7 +162,7 @@ class Route extends Hook
     /**
      * Get path params.
      *
-     * @param \Utopia\Request $request
+     * @param \Utopia\Http\Request $request
      * @return array
      */
     public function getPathValues(Request $request, string $path = ''): array

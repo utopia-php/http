@@ -1,9 +1,9 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Request;
 
 class RequestTest extends TestCase
 {

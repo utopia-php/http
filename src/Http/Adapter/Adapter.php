@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia\Adapter;
+namespace Utopia\Http\Adapter;
 
 abstract class Adapter
 {

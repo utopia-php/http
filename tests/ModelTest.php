@@ -1,12 +1,12 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Http;
-use Utopia\Model;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Model;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Validator;
 use Utopia\Validator\ArrayList;
 use Utopia\Validator\Text;

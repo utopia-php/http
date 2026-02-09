@@ -1,11 +1,11 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
-use Utopia\Tests\UtopiaRequestTest;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
+use Utopia\Http\Tests\UtopiaRequestTest;
 use Utopia\Validator\Text;
 use Exception;
 

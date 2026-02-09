@@ -21,9 +21,9 @@ Init your first application:
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
 
 Http::get('/hello-world') // Define Route
     ->inject('request')
@@ -54,9 +54,9 @@ There are three types of hooks, init hooks, shutdown hooks and error hooks. Init
 ```php
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
 
 Http::init()
     ->inject('response')

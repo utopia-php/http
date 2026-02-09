@@ -1,7 +1,8 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
+use Utopia\Validator;
 use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
 use Utopia\Telemetry\Histogram;
@@ -766,7 +767,7 @@ class Http
                     throw new Exception('Model class does not exist: ' . $model, 500);
                 }
                 if (!\is_a($model, Model::class, true)) {
-                    throw new Exception('Model class is not an instance of Utopia\\Model', 500);
+                    throw new Exception('Model class is not an instance of Utopia\\Http\\Model', 500);
                 }
                 if (\is_string($value) && $value !== '') {
                     try {

@@ -1,9 +1,9 @@
 <?php
 
-namespace Utopia\Adapter\FPM;
+namespace Utopia\Http\Adapter\FPM;
 
-use Utopia\Adapter\Adapter;
-use Utopia\Http;
+use Utopia\Http\Adapter\Adapter;
+use Utopia\Http\Http;
 
 class Server extends Adapter
 {

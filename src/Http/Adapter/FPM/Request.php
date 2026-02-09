@@ -1,8 +1,8 @@
 <?php
 
-namespace Utopia\Adapter\FPM;
+namespace Utopia\Http\Adapter\FPM;
 
-use Utopia\Request as UtopiaRequest;
+use Utopia\Http\Request as UtopiaRequest;
 
 class Request extends UtopiaRequest
 {

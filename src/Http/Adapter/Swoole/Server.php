@@ -1,12 +1,12 @@
 <?php
 
-namespace Utopia\Adapter\Swoole;
+namespace Utopia\Http\Adapter\Swoole;
 
-use Utopia\Adapter\Adapter;
+use Utopia\Http\Adapter\Adapter;
 use Swoole\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\Http;
+use Utopia\Http\Http;
 
 class Server extends Adapter
 {

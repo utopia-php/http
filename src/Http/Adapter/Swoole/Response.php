@@ -1,9 +1,9 @@
 <?php
 
-namespace Utopia\Adapter\Swoole;
+namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\Response as UtopiaResponse;
+use Utopia\Http\Response as UtopiaResponse;
 
 class Response extends UtopiaResponse
 {

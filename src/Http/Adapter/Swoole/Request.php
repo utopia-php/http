@@ -1,9 +1,9 @@
 <?php
 
-namespace Utopia\Adapter\Swoole;
+namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Http\Request as SwooleRequest;
-use Utopia\Request as UtopiaRequest;
+use Utopia\Http\Request as UtopiaRequest;
 
 class Request extends UtopiaRequest
 {

@@ -2,9 +2,9 @@
 
 require_once __DIR__.'/../../vendor/autoload.php';
 
-use Utopia\Http;
-use Utopia\Adapter\FPM\Request;
-use Utopia\Adapter\FPM\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Validator\Text;
 
 ini_set('memory_limit', '1024M');
