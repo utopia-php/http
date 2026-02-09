@@ -858,4 +858,67 @@ class HttpTest extends TestCase
             $this->assertEquals('First error handler failed', $e->getPrevious()->getMessage());
         }
     }
+
+    public function testOptionalParamsWithNullUseDefault(): void
+    {
+        // Test when optional param receives null, it should use default value
+        // But empty string should be preserved as-is
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-default', new Text(200), 'x param', true)
+            ->param('y', 'y-default', new Text(200), 'y param', true)
+            ->action(function ($x, $y) {
+                echo $x . '-' . $y;
+            });
+
+        // Test with null value - should use default
+        \ob_start();
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => null, 'y' => 'y-value']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('x-default-y-value', $result);
+
+        // Test with empty string value - should keep empty string
+        \ob_start();
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => '', 'y' => 'y-value']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('-y-value', $result);
+
+        // Test with null in one param and empty string in another
+        \ob_start();
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => null, 'y' => '']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('x-default-', $result);
+
+        // Test that valid values are still used
+        \ob_start();
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => 'x-value', 'y' => 'y-value']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('x-value-y-value', $result);
+
+        // Test that numeric zero is still treated as a valid value (not null)
+        \ob_start();
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['x' => '0', 'y' => 'y-value']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('0-y-value', $result);
+    }
 }
