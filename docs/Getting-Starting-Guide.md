@@ -10,8 +10,8 @@ If you’re new to Utopia, let’s get started by looking at an example of a bas
 
 ```php
 use Utopia\Http;
-use Utopia\Swoole\Request;
-use Utopia\Swoole\Response;
+use Utopia\Adapter\Swoole\Request;
+use Utopia\Adapter\Swoole\Response;
 use Swoole\Http\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
@@ -139,8 +139,8 @@ Let's make the above example slightly advanced by adding more properties.
 
 ```php
 use Utopia\Http;
-use Utopia\Swoole\Request;
-use Utopia\Swoole\Response;
+use Utopia\Adapter\Swoole\Request;
+use Utopia\Adapter\Swoole\Response;
 use Swoole\Http\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;

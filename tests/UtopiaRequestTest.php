@@ -2,7 +2,7 @@
 
 namespace Utopia\Tests;
 
-use Utopia\Request as UtopiaRequest;
+use Utopia\Adapter\FPM\Request as UtopiaRequest;
 
 class UtopiaRequestTest extends UtopiaRequest
 {

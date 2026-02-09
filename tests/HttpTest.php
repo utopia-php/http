@@ -3,6 +3,8 @@
 namespace Utopia;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Adapter\FPM\Request;
+use Utopia\Adapter\FPM\Response;
 use Utopia\Tests\UtopiaRequestTest;
 use Utopia\Validator\Text;
 use Exception;

@@ -4,7 +4,7 @@ namespace Utopia;
 
 use Utopia\Compression\Compression;
 
-class Response
+abstract class Response
 {
     /**
      * HTTP content types
@@ -741,27 +741,19 @@ class Response
      * Send output
      *
      * @param  string  $content
-     * @return void
+     * @return bool False if write cannot complete, such as request ended by client
      */
-    protected function write(string $content): void
-    {
-        echo $content;
-    }
+    abstract public function write(string $content): bool;
 
     /**
      * End
      *
      * Send optional content and end
      *
-     * @param  string  $content
+     * @param  string|null  $content
      * @return void
      */
-    protected function end(?string $content = null): void
-    {
-        if (!is_null($content)) {
-            echo $content;
-        }
-    }
+    abstract public function end(?string $content = null): void;
 
     /**
      * Output response
@@ -830,10 +822,7 @@ class Response
      * @param  int  $statusCode
      * @return void
      */
-    protected function sendStatus(int $statusCode): void
-    {
-        http_response_code($statusCode);
-    }
+    abstract protected function sendStatus(int $statusCode): void;
 
     /**
      * Send Header
@@ -844,16 +833,7 @@ class Response
      * @param  string|array<string>  $value
      * @return void
      */
-    protected function sendHeader(string $key, mixed $value): void
-    {
-        if (\is_array($value)) {
-            foreach ($value as $v) {
-                \header($key.': '.$v, false);
-            }
-        } else {
-            \header($key.': '.$value);
-        }
-    }
+    abstract public function sendHeader(string $key, mixed $value): void;
 
     /**
      * Send Cookie
@@ -865,15 +845,7 @@ class Response
      * @param  array  $options
      * @return void
      */
-    protected function sendCookie(string $name, string $value, array $options): void
-    {
-        // Use proper PHP keyword name
-        $options['expires'] = $options['expire'];
-        unset($options['expire']);
-
-        // Set the cookie
-        \setcookie($name, $value, $options);
-    }
+    abstract protected function sendCookie(string $name, string $value, array $options): void;
 
     /**
      * Append cookies
