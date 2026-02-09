@@ -2,14 +2,11 @@
 
 namespace Utopia\Adapter\Swoole;
 
-use Swoole\Coroutine;
 use Utopia\Adapter\Adapter;
-use Swoole\Coroutine\Http\Server as SwooleServer;
+use Swoole\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use Utopia\Http;
-
-use function Swoole\Coroutine\run;
 
 class Server extends Adapter
 {
@@ -18,15 +15,14 @@ class Server extends Adapter
     public function __construct(string $host, ?string $port = null, array $settings = [])
     {
         $this->server = new SwooleServer($host, $port);
-        $this->server->set(\array_merge($settings, [
-            'enable_coroutine' => true,
-            'http_parse_cookie' => false,
-        ]));
+        if (!empty($settings)) {
+            $this->server->set($settings);
+        }
     }
 
     public function onRequest(callable $callback)
     {
-        $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
+        $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             Http::setResource('swooleRequest', fn () => $request);
             Http::setResource('swooleResponse', fn () => $response);
 
@@ -41,10 +37,6 @@ class Server extends Adapter
 
     public function start()
     {
-        if (Coroutine::getCid() === -1) {
-            run(fn () => $this->server->start());
-        } else {
-            $this->server->start();
-        }
+        $this->server->start();
     }
 }

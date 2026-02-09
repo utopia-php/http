@@ -26,6 +26,7 @@ Http::get('/')
            // Return raw HTML
            $response->send("<div> Hello World! </div>");
        }
+   );
 /*
    Configure your HTTP server to respond with the Utopia app.   
 */
