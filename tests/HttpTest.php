@@ -862,63 +862,76 @@ class HttpTest extends TestCase
     public function testOptionalParamsWithNullUseDefault(): void
     {
         // Test when optional param receives null, it should use default value
-        // But empty string should be preserved as-is
-        $route = new Route('GET', '/path');
+        // Empty strings are treated as valid values and preserved as-is
+        // Note: Using Text validator with min=0 to allow empty strings
+        $route = new Route('GET', '/test-null');
         $route
-            ->param('x', 'x-default', new Text(200), 'x param', true)
-            ->param('y', 'y-default', new Text(200), 'y param', true)
-            ->action(function ($x, $y) {
-                echo $x . '-' . $y;
+            ->param('param1', 'default1', new Text(200, min: 0), 'param1 desc', true)
+            ->param('param2', 'default2', new Text(200, min: 0), 'param2 desc', true)
+            ->action(function ($param1, $param2) {
+                echo $param1 . '|' . $param2;
             });
 
         // Test with null value - should use default
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => null, 'y' => 'y-value']);
+        $request::_setParams(['param1' => null, 'param2' => 'value2']);
         $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-default-y-value', $result);
+        $this->assertEquals('default1|value2', $result);
 
-        // Test with empty string value - should keep empty string
+        // Test with both params having valid values
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => '', 'y' => 'y-value']);
+        $request::_setParams(['param1' => 'value1', 'param2' => 'value2']);
         $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('-y-value', $result);
+        $this->assertEquals('value1|value2', $result);
 
-        // Test with null in one param and empty string in another
+        // Test with both params as null - both should use defaults
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => null, 'y' => '']);
+        $request::_setParams(['param1' => null, 'param2' => null]);
         $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-default-', $result);
+        $this->assertEquals('default1|default2', $result);
 
-        // Test that valid values are still used
+        // Test with empty string - should be preserved as valid value
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => 'x-value', 'y' => 'y-value']);
+        $request::_setParams(['param1' => '', 'param2' => 'value2']);
         $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-value-y-value', $result);
+        // Empty string is a valid value, not replaced with default
+        $this->assertEquals('|value2', $result);
 
-        // Test that numeric zero is still treated as a valid value (not null)
+        // Test with both empty string and null
         \ob_start();
         $request = new UtopiaRequestTest();
-        $request::_setParams(['x' => '0', 'y' => 'y-value']);
+        $request::_setParams(['param1' => null, 'param2' => '']);
         $this->app->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('0-y-value', $result);
+        // null uses default, empty string is preserved
+        $this->assertEquals('default1|', $result);
+
+        // Test with numeric zero - should be treated as valid value (not null)
+        \ob_start();
+        $request = new UtopiaRequestTest();
+        $request::_setParams(['param1' => '0', 'param2' => 'value2']);
+        $this->app->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertEquals('0|value2', $result);
     }
 }
