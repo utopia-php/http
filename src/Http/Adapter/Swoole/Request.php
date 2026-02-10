@@ -272,12 +272,21 @@ class Request extends UtopiaRequest
     {
         $key = \strtolower($key);
 
-        $cookies = \explode(';', $this->getHeader('cookie', ''));
+        $cookieHeader = $this->getHeader('cookie', '');
+        if ($cookieHeader === '') {
+            return $default;
+        }
+
+        $cookies = \explode(';', $cookieHeader);
         foreach ($cookies as $cookie) {
             $cookie = \trim($cookie);
-            [$cookieKey, $cookieValue] = \explode('=', $cookie, 2);
-            $cookieKey = \trim($cookieKey);
-            $cookieValue = \trim($cookieValue);
+            if ($cookie === '') {
+                continue;
+            }
+
+            $parts = \explode('=', $cookie, 2);
+            $cookieKey = \trim($parts[0] ?? '');
+            $cookieValue = \trim($parts[1] ?? '');
             if ($cookieKey === $key) {
                 return $cookieValue;
             }
