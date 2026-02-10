@@ -67,13 +67,15 @@ class Request extends UtopiaRequest
     /**
      * Get IP
      *
-     * Returns users IP address.
-     * Support HTTP_X_FORWARDED_FOR header usually return
-     *  from different proxy servers or PHP default REMOTE_ADDR
+     * Extracts the client's IP address from trusted headers or falls back to the remote address.
+     * Prioritizes headers like X-Forwarded-For when behind proxies or load balancers,
+     * defaulting to REMOTE_ADDR when trusted headers are unavailable.
+     *
+     * @return string The validated client IP address or '0.0.0.0' if unavailable
      */
     public function getIP(): string
     {
-        $remoteAddr = $this->getServer('remote_addr') ?? '0.0.0.0';
+        $remoteAddr = $this->getServer('REMOTE_ADDR') ?? '0.0.0.0';
 
         foreach ($this->trustedIpHeaders as $header) {
             $headerValue = $this->getHeader($header);
@@ -83,11 +85,11 @@ class Request extends UtopiaRequest
             }
 
             // Leftmost IP address is the address of the originating client
-            $ips = \explode(',', $headerValue);
-            $ip = \trim($ips[0]);
+            $ips = explode(',', $headerValue);
+            $ip = trim($ips[0]);
 
             // Validate IP format (supports both IPv4 and IPv6)
-            if (\filter_var($ip, FILTER_VALIDATE_IP)) {
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
                 return $ip;
             }
         }
@@ -270,29 +272,9 @@ class Request extends UtopiaRequest
      */
     public function getCookie(string $key, string $default = ''): string
     {
-        $key = \strtolower($key);
+        $key = strtolower($key);
 
-        $cookieHeader = $this->getHeader('cookie', '');
-        if ($cookieHeader === '') {
-            return $default;
-        }
-
-        $cookies = \explode(';', $cookieHeader);
-        foreach ($cookies as $cookie) {
-            $cookie = \trim($cookie);
-            if ($cookie === '') {
-                continue;
-            }
-
-            $parts = \explode('=', $cookie, 2);
-            $cookieKey = \trim($parts[0] ?? '');
-            $cookieValue = \trim($parts[1] ?? '');
-            if ($cookieKey === $key) {
-                return $cookieValue;
-            }
-        }
-
-        return $default;
+        return $this->swoole->cookie[$key] ?? $default;
     }
 
     /**
@@ -336,11 +318,6 @@ class Request extends UtopiaRequest
         }
 
         return $this;
-    }
-
-    public function getSwooleRequest(): SwooleRequest
-    {
-        return $this->swoole;
     }
 
     /**
@@ -396,12 +373,6 @@ class Request extends UtopiaRequest
      */
     protected function generateHeaders(): array
     {
-        $headers = $this->swoole->header;
-
-        foreach ($headers as $key => $value) {
-            $headers[strtolower($key)] = $value;
-        }
-
-        return $headers;
+        return $this->swoole->header;
     }
 }

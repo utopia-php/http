@@ -12,7 +12,7 @@ class Response extends UtopiaResponse
      *
      * @var SwooleResponse
      */
-    protected $swoole;
+    protected SwooleResponse $swoole;
 
     /**
      * Response constructor.
@@ -21,11 +21,6 @@ class Response extends UtopiaResponse
     {
         $this->swoole = $response;
         parent::__construct(\microtime(true));
-    }
-
-    public function getSwooleResponse(): SwooleResponse
-    {
-        return $this->swoole;
     }
 
     /**
@@ -51,6 +46,25 @@ class Response extends UtopiaResponse
     }
 
     /**
+     * Get status code reason
+     *
+     * Get HTTP response status code reason from available options. If status code is unknown an exception will be thrown.
+     *
+     * @param  int  $code
+     * @return string
+     *
+     * @throws \Exception
+     */
+    protected function getStatusCodeReason(int $code): string
+    {
+        if (!\array_key_exists($code, $this->statusCodes)) {
+            throw new \Exception('Unknown HTTP status code');
+        }
+
+        return $this->statusCodes[$code];
+    }
+
+    /**
      * Send Status Code
      *
      * @param  int  $statusCode
@@ -58,7 +72,7 @@ class Response extends UtopiaResponse
      */
     protected function sendStatus(int $statusCode): void
     {
-        $this->swoole->status($statusCode);
+        $this->swoole->status((string) $statusCode, $this->getStatusCodeReason($statusCode));
     }
 
     /**
@@ -87,13 +101,13 @@ class Response extends UtopiaResponse
     {
         $this->swoole->cookie(
             $name,
-            $value,
-            $options['expire'] ?? 0,
-            $options['path'] ?? '',
-            $options['domain'] ?? '',
-            $options['secure'] ?? false,
-            $options['httponly'] ?? false,
-            $options['samesite'] ?? ''
+            value: $value,
+            expires: $options['expire'] ?? 0,
+            path: $options['path'] ?? '',
+            domain: $options['domain'] ?? '',
+            secure: $options['secure'] ?? false,
+            httponly: $options['httponly'] ?? false,
+            samesite: $options['samesite'] ?? false,
         );
     }
 }
