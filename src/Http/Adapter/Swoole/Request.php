@@ -73,9 +73,26 @@ class Request extends UtopiaRequest
      */
     public function getIP(): string
     {
-        $ips = explode(',', $this->getHeader('x-forwarded-for', $this->getServer('remote_addr') ?? '0.0.0.0'));
+        $remoteAddr = $this->getServer('remote_addr') ?? '0.0.0.0';
 
-        return trim($ips[0] ?? '');
+        foreach ($this->trustedIpHeaders as $header) {
+            $headerValue = $this->getHeader($header);
+
+            if (empty($headerValue)) {
+                continue;
+            }
+
+            // Leftmost IP address is the address of the originating client
+            $ips = \explode(',', $headerValue);
+            $ip = \trim($ips[0]);
+
+            // Validate IP format (supports both IPv4 and IPv6)
+            if (\filter_var($ip, FILTER_VALIDATE_IP)) {
+                return $ip;
+            }
+        }
+
+        return $remoteAddr;
     }
 
     /**

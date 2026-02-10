@@ -47,6 +47,13 @@ abstract class Request
     protected $headers = null;
 
     /**
+     * List of trusted proxy header names to check for client IP address
+     *
+     * @var array
+     */
+    protected array $trustedIpHeaders = [];
+
+    /**
      * Get Param
      *
      * Get param by current method name
@@ -136,6 +143,24 @@ abstract class Request
      * @return static
      */
     abstract public function setServer(string $key, string $value): static;
+
+    /**
+     * Set trusted ip headers
+     *
+     * WARNING: Only set these headers if your application is behind a trusted proxy.
+     * Trusting these headers when accepting direct client connections is a security risk.
+     *
+     * @param array $headers List of header names to trust (e.g., ['x-forwarded-for', 'x-real-ip'])
+     * @return static
+     */
+    public function setTrustedIpHeaders(array $headers): static
+    {
+        $normalized = \array_map('strtolower', $headers);
+        $trimmed = \array_map('trim', $normalized);
+        $this->trustedIpHeaders = \array_filter($trimmed);
+
+        return $this;
+    }
 
     /**
      * Get IP
