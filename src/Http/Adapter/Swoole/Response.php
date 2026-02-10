@@ -58,7 +58,7 @@ class Response extends UtopiaResponse
      */
     protected function sendStatus(int $statusCode): void
     {
-        $this->swoole->status((string) $statusCode);
+        $this->swoole->status($statusCode);
     }
 
     /**
