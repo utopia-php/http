@@ -1,7 +1,8 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
+use Utopia\Validator;
 use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
 use Utopia\Telemetry\Histogram;
@@ -48,6 +49,11 @@ class Http
     protected array $resources = [
         'error' => null,
     ];
+
+    /**
+     * @var Files
+     */
+    protected Files $files;
 
     /**
      * @var array
@@ -142,6 +148,7 @@ class Http
     public function __construct(string $timezone)
     {
         \date_default_timezone_set($timezone);
+        $this->files = new Files();
         $this->setTelemetry(new NoTelemetry());
     }
 
@@ -551,6 +558,57 @@ class Http
     }
 
     /**
+     * Load directory.
+     *
+     * @param  string  $directory
+     * @param  string|null  $root
+     * @return void
+     *
+     * @throws \Exception
+    */
+    public function loadFiles(string $directory, ?string $root = null): void
+    {
+        $this->files->load($directory, $root);
+    }
+
+    /**
+     * Is file loaded.
+     *
+     * @param  string  $uri
+     * @return bool
+     */
+    protected function isFileLoaded(string $uri): bool
+    {
+        return $this->files->isFileLoaded($uri);
+    }
+
+    /**
+     * Get file contents.
+     *
+     * @param  string  $uri
+     * @return string
+     *
+     * @throws \Exception
+     */
+    protected function getFileContents(string $uri): mixed
+    {
+        return $this->files->getFileContents($uri);
+    }
+
+    /**
+     * Get file MIME type.
+     *
+     * @param  string  $uri
+     * @return string
+     *
+     * @throws \Exception
+     */
+    protected function getFileMimeType(string $uri): mixed
+    {
+        return $this->files->getFileMimeType($uri);
+    }
+
+    /**
      * Match
      *
      * Find matching route given current user request
@@ -709,7 +767,7 @@ class Http
                     throw new Exception('Model class does not exist: ' . $model, 500);
                 }
                 if (!\is_a($model, Model::class, true)) {
-                    throw new Exception('Model class is not an instance of Utopia\\Model', 500);
+                    throw new Exception('Model class is not an instance of Utopia\\Http\\Model', 500);
                 }
                 if (\is_string($value) && $value !== '') {
                     try {
@@ -843,6 +901,18 @@ class Http
         self::setResource('response', function () use ($response) {
             return $response;
         });
+
+        if ($this->isFileLoaded($request->getURI())) {
+            $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
+
+            $response
+                ->setContentType($this->getFileMimeType($request->getURI()))
+                ->addHeader('Cache-Control', 'public, max-age=' . $time)
+                ->addHeader('Expires', \date('D, d M Y H:i:s', \time() + $time) . ' GMT') // 45 days cache
+                ->send($this->getFileContents($request->getURI()));
+
+            return $this;
+        }
 
         $method = $request->getMethod();
         $route = $this->match($request);

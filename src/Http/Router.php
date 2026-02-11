@@ -1,6 +1,6 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
 use Exception;
 
@@ -69,7 +69,7 @@ class Router
     /**
      * Add route to router.
      *
-     * @param \Utopia\Route $route
+     * @param \Utopia\Http\Route $route
      * @return void
      * @throws \Exception
      */
@@ -95,7 +95,7 @@ class Router
     /**
      * Add route to router.
      *
-     * @param \Utopia\Route $route
+     * @param \Utopia\Http\Route $route
      * @return void
      * @throws \Exception
      */
@@ -119,7 +119,7 @@ class Router
      *
      * @param string $method
      * @param string $path
-     * @return \Utopia\Route|null
+     * @return \Utopia\Http\Route|null
      */
     public static function match(string $method, string $path): Route|null
     {

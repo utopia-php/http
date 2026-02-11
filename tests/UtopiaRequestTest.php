@@ -1,8 +1,8 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Http\Tests;
 
-use Utopia\Request as UtopiaRequest;
+use Utopia\Http\Adapter\FPM\Request as UtopiaRequest;
 
 class UtopiaRequestTest extends UtopiaRequest
 {
