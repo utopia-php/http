@@ -447,97 +447,119 @@ class HttpTest extends TestCase
         $this->assertEquals($this->app->getRoute(), $route);
     }
 
-    public function testRouteInjectionAvailableInLifecycle(): void
+    public function testRouteInjectionAvailableInInit(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/route-inject';
-
-        $initRoutePath = null;
-        $initRouteMethod = null;
-        $actionRoutePath = null;
-        $actionRouteMethod = null;
+        $request = (new Request())
+            ->setMethod('GET')
+            ->setURI('/route-inject-init');
 
         Http::init()
             ->inject('route')
-            ->action(function (Route $route) use (&$initRoutePath, &$initRouteMethod) {
-                $initRoutePath = $route->getPath();
-                $initRouteMethod = $route->getMethod();
+            ->inject('response')
+            ->action(function (Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Init-Route', $route->getPath())
+                    ->addHeader('X-Init-Method', $route->getMethod());
             });
 
-        Http::get('/route-inject')
+        Http::get('/route-inject-init')
+            ->action(function () {
+            });
+
+        $response = new Response();
+        $this->app->run($request, $response);
+        $headers = $response->getHeaders();
+
+        $this->assertSame('/route-inject-init', $headers['X-Init-Route'] ?? null);
+        $this->assertSame('GET', $headers['X-Init-Method'] ?? null);
+    }
+
+    public function testRouteInjectionAvailableInRouteAction(): void
+    {
+        $request = (new Request())
+            ->setMethod('GET')
+            ->setURI('/route-inject-action');
+
+        Http::get('/route-inject-action')
             ->inject('route')
-            ->action(function (Route $route) use (&$actionRoutePath, &$actionRouteMethod) {
-                $actionRoutePath = $route->getPath();
-                $actionRouteMethod = $route->getMethod();
+            ->inject('response')
+            ->action(function (Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Action-Route', $route->getPath())
+                    ->addHeader('X-Action-Method', $route->getMethod());
             });
 
-        $this->app->run(new Request(), new Response());
+        $response = new Response();
+        $this->app->run($request, $response);
+        $headers = $response->getHeaders();
 
-        $this->assertSame('/route-inject', $initRoutePath);
-        $this->assertSame('GET', $initRouteMethod);
-        $this->assertSame('/route-inject', $actionRoutePath);
-        $this->assertSame('GET', $actionRouteMethod);
+        $this->assertSame('/route-inject-action', $headers['X-Action-Route'] ?? null);
+        $this->assertSame('GET', $headers['X-Action-Method'] ?? null);
     }
 
     public function testRouteInjectionAvailableForOptions(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'OPTIONS';
-        $_SERVER['REQUEST_URI'] = '/options-route';
-
-        $optionsRoutePath = null;
-        $optionsRouteMethod = null;
+        $request = (new Request())
+            ->setMethod('OPTIONS')
+            ->setURI('/options-route');
 
         Http::options()
             ->inject('route')
-            ->action(function (Route $route) use (&$optionsRoutePath, &$optionsRouteMethod) {
-                $optionsRoutePath = $route->getPath();
-                $optionsRouteMethod = $route->getMethod();
+            ->inject('response')
+            ->action(function (Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Options-Route', $route->getPath())
+                    ->addHeader('X-Options-Method', $route->getMethod());
             });
 
-        $this->app->run(new Request(), new Response());
+        $response = new Response();
+        $this->app->run($request, $response);
+        $headers = $response->getHeaders();
 
-        $this->assertSame('/options-route', $optionsRoutePath);
-        $this->assertSame('OPTIONS', $optionsRouteMethod);
+        $this->assertSame('/options-route', $headers['X-Options-Route'] ?? null);
+        $this->assertSame('OPTIONS', $headers['X-Options-Method'] ?? null);
     }
 
     public function testRouteInjectionAvailableInShutdown(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/route-inject-shutdown';
-
-        $shutdownRoutePath = null;
-        $shutdownRouteMethod = null;
+        $request = (new Request())
+            ->setMethod('GET')
+            ->setURI('/route-inject-shutdown');
 
         Http::shutdown()
             ->inject('route')
-            ->action(function (Route $route) use (&$shutdownRoutePath, &$shutdownRouteMethod) {
-                $shutdownRoutePath = $route->getPath();
-                $shutdownRouteMethod = $route->getMethod();
+            ->inject('response')
+            ->action(function (Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Shutdown-Route', $route->getPath())
+                    ->addHeader('X-Shutdown-Method', $route->getMethod());
             });
 
         Http::get('/route-inject-shutdown')
             ->action(function () {
             });
 
-        $this->app->run(new Request(), new Response());
+        $response = new Response();
+        $this->app->run($request, $response);
+        $headers = $response->getHeaders();
 
-        $this->assertSame('/route-inject-shutdown', $shutdownRoutePath);
-        $this->assertSame('GET', $shutdownRouteMethod);
+        $this->assertSame('/route-inject-shutdown', $headers['X-Shutdown-Route'] ?? null);
+        $this->assertSame('GET', $headers['X-Shutdown-Method'] ?? null);
     }
 
     public function testRouteInjectionAvailableInError(): void
     {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/route-inject-error';
-
-        $errorRoutePath = null;
-        $errorRouteMethod = null;
+        $request = (new Request())
+            ->setMethod('GET')
+            ->setURI('/route-inject-error');
 
         Http::error()
             ->inject('route')
-            ->action(function (Route $route) use (&$errorRoutePath, &$errorRouteMethod) {
-                $errorRoutePath = $route->getPath();
-                $errorRouteMethod = $route->getMethod();
+            ->inject('response')
+            ->action(function (Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Error-Route', $route->getPath())
+                    ->addHeader('X-Error-Method', $route->getMethod());
             });
 
         Http::get('/route-inject-error')
@@ -545,10 +567,12 @@ class HttpTest extends TestCase
                 throw new Exception('Error');
             });
 
-        $this->app->run(new Request(), new Response());
+        $response = new Response();
+        $this->app->run($request, $response);
+        $headers = $response->getHeaders();
 
-        $this->assertSame('/route-inject-error', $errorRoutePath);
-        $this->assertSame('GET', $errorRouteMethod);
+        $this->assertSame('/route-inject-error', $headers['X-Error-Route'] ?? null);
+        $this->assertSame('GET', $headers['X-Error-Method'] ?? null);
     }
 
     public function providerRouteMatching(): array
