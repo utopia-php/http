@@ -1,12 +1,12 @@
 <?php
 
-namespace Utopia\Tests;
+namespace Utopia\Http\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Utopia\Http;
-use Utopia\Model;
-use Utopia\Request;
-use Utopia\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Model;
+use Utopia\Http\Adapter\FPM\Request;
+use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Validator;
 use Utopia\Validator\ArrayList;
 use Utopia\Validator\Text;
@@ -405,7 +405,7 @@ class ModelTest extends TestCase
         $this->app->run(new Request(), new Response());
 
         $this->assertTrue($errorCaught);
-        $this->assertStringContainsString('not an instance of Utopia\\Model', $errorMessage);
+        $this->assertStringContainsString('not an instance of Utopia\\Http\\Model', $errorMessage);
     }
 
     public function testModelWithEmptyString(): void

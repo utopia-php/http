@@ -9,9 +9,9 @@ If you’re new to Utopia, let’s get started by looking at an example of a bas
 ## Basic GET Route
 
 ```php
-use Utopia\Http;
-use Utopia\Swoole\Request;
-use Utopia\Swoole\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\Swoole\Request;
+use Utopia\Http\Adapter\Swoole\Response;
 use Swoole\Http\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
@@ -26,6 +26,7 @@ Http::get('/')
            // Return raw HTML
            $response->send("<div> Hello World! </div>");
        }
+   );
 /*
    Configure your HTTP server to respond with the Utopia app.   
 */
@@ -138,9 +139,9 @@ You can find the details of other status codes by visiting our [GitHub repositor
 Let's make the above example slightly advanced by adding more properties.
 
 ```php
-use Utopia\Http;
-use Utopia\Swoole\Request;
-use Utopia\Swoole\Response;
+use Utopia\Http\Http;
+use Utopia\Http\Adapter\Swoole\Request;
+use Utopia\Http\Adapter\Swoole\Response;
 use Swoole\Http\Server;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;

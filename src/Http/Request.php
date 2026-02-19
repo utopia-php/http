@@ -1,8 +1,8 @@
 <?php
 
-namespace Utopia;
+namespace Utopia\Http;
 
-class Request
+abstract class Request
 {
     /**
      * HTTP methods
@@ -24,13 +24,6 @@ class Request
     public const METHOD_TRACE = 'TRACE';
 
     public const METHOD_CONNECT = 'CONNECT';
-
-    /**
-     * Container for raw php://input parsed stream
-     *
-     * @var string
-     */
-    private $rawPayload = '';
 
     /**
      * Container for php://input parsed stream as an associative array
@@ -127,12 +120,7 @@ class Request
      *
      * @return string
      */
-    public function getRawPayload(): string
-    {
-        $this->generateInput();
-
-        return $this->rawPayload;
-    }
+    abstract public function getRawPayload(): string;
 
     /**
      * Get server
@@ -143,10 +131,7 @@ class Request
      * @param  string|null  $default
      * @return string|null
      */
-    public function getServer(string $key, ?string $default = null): ?string
-    {
-        return $_SERVER[$key] ?? $default;
-    }
+    abstract public function getServer(string $key, ?string $default = null): ?string;
 
     /**
      * Set server
@@ -157,12 +142,7 @@ class Request
      * @param  string  $value
      * @return static
      */
-    public function setServer(string $key, string $value): static
-    {
-        $_SERVER[$key] = $value;
-
-        return $this;
-    }
+    abstract public function setServer(string $key, string $value): static;
 
     /**
      * Set trusted ip headers
@@ -175,9 +155,9 @@ class Request
      */
     public function setTrustedIpHeaders(array $headers): static
     {
-        $normalized = array_map('strtolower', $headers);
-        $trimmed = array_map('trim', $normalized);
-        $this->trustedIpHeaders = array_filter($trimmed);
+        $normalized = \array_map('strtolower', $headers);
+        $trimmed = \array_map('trim', $normalized);
+        $this->trustedIpHeaders = \array_filter($trimmed);
 
         return $this;
     }
@@ -185,35 +165,13 @@ class Request
     /**
      * Get IP
      *
-     * Extracts the client's IP address from trusted headers or falls back to the remote address.
-     * Prioritizes headers like X-Forwarded-For when behind proxies or load balancers,
-     * defaulting to REMOTE_ADDR when trusted headers are unavailable.
+     * Returns users IP address.
+     * Support HTTP_X_FORWARDED_FOR header usually return
+     *  from different proxy servers or PHP default REMOTE_ADDR
      *
-     * @return string The validated client IP address or '0.0.0.0' if unavailable
+     * @return string
      */
-    public function getIP(): string
-    {
-        $remoteAddr = $this->getServer('REMOTE_ADDR') ?? '0.0.0.0';
-
-        foreach ($this->trustedIpHeaders as $header) {
-            $headerValue = $this->getHeader($header);
-
-            if (empty($headerValue)) {
-                continue;
-            }
-
-            // Leftmost IP address is the address of the originating client
-            $ips = explode(',', $headerValue);
-            $ip = trim($ips[0]);
-
-            // Validate IP format (supports both IPv4 and IPv6)
-            if (filter_var($ip, FILTER_VALIDATE_IP)) {
-                return $ip;
-            }
-        }
-
-        return $remoteAddr;
-    }
+    abstract public function getIP(): string;
 
     /**
      * Get Protocol
@@ -224,10 +182,7 @@ class Request
      *
      * @return string
      */
-    public function getProtocol(): string
-    {
-        return $this->getServer('HTTP_X_FORWARDED_PROTO', $this->getServer('REQUEST_SCHEME')) ?? 'https';
-    }
+    abstract public function getProtocol(): string;
 
     /**
      * Get Port
@@ -236,10 +191,7 @@ class Request
      *
      * @return string
      */
-    public function getPort(): string
-    {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
-    }
+    abstract public function getPort(): string;
 
     /**
      * Get Hostname
@@ -248,10 +200,7 @@ class Request
      *
      * @return string
      */
-    public function getHostname(): string
-    {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
-    }
+    abstract public function getHostname(): string;
 
     /**
      * Get Method
@@ -260,10 +209,7 @@ class Request
      *
      * @return string
      */
-    public function getMethod(): string
-    {
-        return $this->getServer('REQUEST_METHOD') ?? 'UNKNOWN';
-    }
+    abstract public function getMethod(): string;
 
     /**
      * Set Method
@@ -273,12 +219,7 @@ class Request
      * @param  string  $method
      * @return static
      */
-    public function setMethod(string $method): static
-    {
-        $this->setServer('REQUEST_METHOD', $method);
-
-        return $this;
-    }
+    abstract public function setMethod(string $method): static;
 
     /**
      * Get URI
@@ -300,12 +241,7 @@ class Request
      * @param  string  $uri
      * @return static
      */
-    public function setURI(string $uri): static
-    {
-        $this->setServer('REQUEST_URI', $uri);
-
-        return $this;
-    }
+    abstract public function setURI(string $uri): static;
 
     /**
      * Get files
@@ -315,10 +251,7 @@ class Request
      * @param  string  $key
      * @return array
      */
-    public function getFiles(string $key): array
-    {
-        return (isset($_FILES[$key])) ? $_FILES[$key] : [];
-    }
+    abstract public function getFiles(string $key): array;
 
     /**
      * Get Referer
@@ -328,10 +261,7 @@ class Request
      * @param  string  $default
      * @return string
      */
-    public function getReferer(string $default = ''): string
-    {
-        return (string) $this->getServer('HTTP_REFERER', $default);
-    }
+    abstract public function getReferer(string $default = ''): string;
 
     /**
      * Get Origin
@@ -341,10 +271,7 @@ class Request
      * @param  string  $default
      * @return string
      */
-    public function getOrigin(string $default = ''): string
-    {
-        return (string) $this->getServer('HTTP_ORIGIN', $default);
-    }
+    abstract public function getOrigin(string $default = ''): string;
 
     /**
      * Get User Agent
@@ -354,10 +281,7 @@ class Request
      * @param  string  $default
      * @return string
      */
-    public function getUserAgent(string $default = ''): string
-    {
-        return (string) $this->getServer('HTTP_USER_AGENT', $default);
-    }
+    abstract public function getUserAgent(string $default = ''): string;
 
     /**
      * Get Accept
@@ -367,10 +291,7 @@ class Request
      * @param  string  $default
      * @return string
      */
-    public function getAccept(string $default = ''): string
-    {
-        return (string) $this->getServer('HTTP_ACCEPT', $default);
-    }
+    abstract public function getAccept(string $default = ''): string;
 
     /**
      * Get cookie
@@ -381,10 +302,7 @@ class Request
      * @param  string  $default
      * @return string
      */
-    public function getCookie(string $key, string $default = ''): string
-    {
-        return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
-    }
+    abstract public function getCookie(string $key, string $default = ''): string;
 
     /**
      * Get header
@@ -395,12 +313,7 @@ class Request
      * @param  string  $default
      * @return string
      */
-    public function getHeader(string $key, string $default = ''): string
-    {
-        $headers = $this->generateHeaders();
-
-        return (isset($headers[$key])) ? $headers[$key] : $default;
-    }
+    abstract public function getHeader(string $key, string $default = ''): string;
 
     /**
      * Get headers
@@ -423,12 +336,7 @@ class Request
      * @param  string  $value
      * @return static
      */
-    public function addHeader(string $key, string $value): static
-    {
-        $this->headers[$key] = $value;
-
-        return $this;
-    }
+    abstract public function addHeader(string $key, string $value): static;
 
     /**
      * Remvoe header
@@ -438,14 +346,7 @@ class Request
      * @param  string  $key
      * @return static
      */
-    public function removeHeader(string $key): static
-    {
-        if (isset($this->headers[$key])) {
-            unset($this->headers[$key]);
-        }
-
-        return $this;
-    }
+    abstract public function removeHeader(string $key): static;
 
     /**
      * Get Request Size
@@ -456,7 +357,16 @@ class Request
      */
     public function getSize(): int
     {
-        return \mb_strlen(\implode("\n", $this->generateHeaders()), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
+        $headers = $this->generateHeaders();
+        $headerStrings = [];
+        foreach ($headers as $key => $value) {
+            if (\is_array($value)) {
+                $headerStrings[] = $key . ': ' . \implode(', ', $value);
+            } else {
+                $headerStrings[] = $key . ': ' . $value;
+            }
+        }
+        return \mb_strlen(\implode("\n", $headerStrings), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
     }
 
     /**
@@ -605,51 +515,6 @@ class Request
     }
 
     /**
-     * Generate input
-     *
-     * Generate PHP input stream and parse it as an array in order to handle different content type of requests
-     *
-     * @return array
-     */
-    protected function generateInput(): array
-    {
-        if (null === $this->queryString) {
-            $this->queryString = $_GET;
-        }
-        if (null === $this->payload) {
-            $contentType = $this->getHeader('content-type');
-
-            // Get content-type without the charset
-            $length = \strpos($contentType, ';');
-            $length = (empty($length)) ? \strlen($contentType) : $length;
-            $contentType = \substr($contentType, 0, $length);
-
-            $this->rawPayload = \file_get_contents('php://input');
-
-            switch ($contentType) {
-                case 'application/json':
-                    $this->payload = \json_decode($this->rawPayload, true);
-                    break;
-                default:
-                    $this->payload = $_POST;
-                    break;
-            }
-
-            if (empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
-                $this->payload = [];
-            }
-        }
-
-        return match ($this->getServer('REQUEST_METHOD', '')) {
-            self::METHOD_POST,
-            self::METHOD_PUT,
-            self::METHOD_PATCH,
-            self::METHOD_DELETE => $this->payload,
-            default => $this->queryString
-        };
-    }
-
-    /**
      * Generate headers
      *
      * Parse request headers as an array for easy querying using the getHeader method
@@ -682,6 +547,15 @@ class Request
 
         return $this->headers;
     }
+
+    /**
+     * Generate input
+     *
+     * Generate PHP input stream and parse it as an array in order to handle different content type of requests
+     *
+     * @return array
+     */
+    abstract protected function generateInput(): array;
 
     /**
      * Content Range Parser
