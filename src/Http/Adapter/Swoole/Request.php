@@ -122,7 +122,8 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        return strval(\parse_url($this->getProtocol().'://'.$this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST));
+        $hostname = \parse_url($this->getProtocol().'://'.$this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
+        return strtolower(strval($hostname));
     }
 
     /**
