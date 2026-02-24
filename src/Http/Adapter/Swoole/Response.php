@@ -3,6 +3,7 @@
 namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Http\Response as SwooleResponse;
+use Swoole\Http\Server as SwooleServer;
 use Utopia\Http\Response as UtopiaResponse;
 
 class Response extends UtopiaResponse
@@ -15,12 +16,28 @@ class Response extends UtopiaResponse
     protected SwooleResponse $swoole;
 
     /**
+     * Swoole HTTP Server for raw TCP sends after detach().
+     */
+    protected ?SwooleServer $server = null;
+
+    /**
      * Response constructor.
      */
     public function __construct(SwooleResponse $response)
     {
         $this->swoole = $response;
         parent::__construct(\microtime(true));
+    }
+
+    /**
+     * Set the Swoole HTTP Server instance.
+     *
+     * Required for stream() to use detach() + server->send() for
+     * sending responses with Content-Length and streaming body.
+     */
+    public function setSwooleServer(SwooleServer $server): void
+    {
+        $this->server = $server;
     }
 
     /**
@@ -43,6 +60,123 @@ class Response extends UtopiaResponse
     public function end(?string $content = null): void
     {
         $this->swoole->end($content);
+    }
+
+    /**
+     * Stream a large response body with Content-Length.
+     *
+     * Overrides the base implementation to use Swoole's detach() +
+     * $server->send() pattern. This bypasses Swoole's forced chunked
+     * Transfer-Encoding, allowing Content-Length to be sent with a
+     * streaming body so browsers can show download progress.
+     *
+     * @param callable(int, int): string $reader fn($offset, $length) returns chunk data
+     * @param int $totalSize Total response body size in bytes
+     */
+    public function stream(callable $reader, int $totalSize): void
+    {
+        if ($this->sent) {
+            return;
+        }
+        $this->sent = true;
+
+        // Fallback to base implementation if server not available
+        if ($this->server === null) {
+            parent::stream($reader, $totalSize);
+            return;
+        }
+
+        if ($this->disablePayload) {
+            $this->appendCookies()->appendHeaders();
+            $this->end();
+            return;
+        }
+
+        // Build raw HTTP response with Content-Length
+        $this->addHeader('Content-Length', (string) $totalSize, override: true);
+        $this->addHeader('Connection', 'close', override: true);
+        $this->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime), override: true);
+
+        $serverHeader = $this->headers['Server'] ?? 'Utopia/Http';
+        $this->addHeader('Server', $serverHeader, override: true);
+
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType, override: true);
+        }
+
+        $statusCode = $this->getStatusCode();
+        $reason = $this->statusCodes[$statusCode] ?? 'Unknown';
+        $raw = "HTTP/1.1 {$statusCode} {$reason}\r\n";
+
+        foreach ($this->headers as $key => $value) {
+            if (\is_array($value)) {
+                foreach ($value as $v) {
+                    $raw .= "{$key}: {$v}\r\n";
+                }
+            } else {
+                $raw .= "{$key}: {$value}\r\n";
+            }
+        }
+
+        foreach ($this->cookies as $cookie) {
+            $raw .= 'Set-Cookie: ' . $this->buildSetCookieHeader($cookie) . "\r\n";
+        }
+
+        $raw .= "\r\n";
+
+        // Detach from Swoole's HTTP layer and send raw TCP
+        $fd = $this->swoole->fd;
+        $this->swoole->detach();
+
+        if ($this->server->send($fd, $raw) === false) {
+            $this->server->close($fd);
+            $this->disablePayload();
+            return;
+        }
+
+        // Stream body in 2MB chunks
+        $chunkSize = 2 * 1024 * 1024;
+        for ($offset = 0; $offset < $totalSize; $offset += $chunkSize) {
+            $length = \min($chunkSize, $totalSize - $offset);
+            $data = $reader($offset, $length);
+            if ($this->server->send($fd, $data) === false) {
+                break;
+            }
+            unset($data);
+        }
+
+        $this->server->close($fd);
+        $this->disablePayload();
+    }
+
+    /**
+     * Build a Set-Cookie header string from a cookie array.
+     */
+    private function buildSetCookieHeader(array $cookie): string
+    {
+        $parts = [\urlencode($cookie['name']) . '=' . \urlencode($cookie['value'] ?? '')];
+
+        if (!empty($cookie['expire'])) {
+            $parts[] = 'Expires=' . \gmdate('D, d M Y H:i:s T', $cookie['expire']);
+            $parts[] = 'Max-Age=' . \max(0, $cookie['expire'] - \time());
+        }
+        if (!empty($cookie['path'])) {
+            $parts[] = 'Path=' . $cookie['path'];
+        }
+        if (!empty($cookie['domain'])) {
+            $parts[] = 'Domain=' . $cookie['domain'];
+        }
+        if (!empty($cookie['secure'])) {
+            $parts[] = 'Secure';
+        }
+        if (!empty($cookie['httponly'])) {
+            $parts[] = 'HttpOnly';
+        }
+        if (!empty($cookie['samesite'])) {
+            $parts[] = 'SameSite=' . $cookie['samesite'];
+        }
+
+        return \implode('; ', $parts);
     }
 
     /**

@@ -339,6 +339,11 @@ abstract class Response
     protected bool $sent = false;
 
     /**
+     * Whether headers have been flushed for a chunked response.
+     */
+    protected bool $chunking = false;
+
+    /**
      * @var array<string, string|array<string>>
      */
     protected array $headers = [];
@@ -777,9 +782,12 @@ abstract class Response
 
         $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
 
-        $this
-            ->appendCookies()
-            ->appendHeaders();
+        if (!$this->chunking) {
+            $this->chunking = true;
+            $this
+                ->appendCookies()
+                ->appendHeaders();
+        }
 
         if (!$this->disablePayload) {
             $this->write($body);
@@ -790,6 +798,46 @@ abstract class Response
         } else {
             $this->end();
         }
+    }
+
+    /**
+     * Stream a large response body with Content-Length.
+     *
+     * Sends headers (including Content-Length) then streams the body
+     * by reading chunks from the provided callback. Adapters may
+     * override this to use transport-specific optimizations.
+     *
+     * @param callable(int, int): string $reader fn($offset, $length) returns chunk data
+     * @param int $totalSize Total response body size in bytes
+     */
+    public function stream(callable $reader, int $totalSize): void
+    {
+        if ($this->sent) {
+            return;
+        }
+        $this->sent = true;
+
+        $this->addHeader('Content-Length', (string) $totalSize, override: true);
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
+        $this->appendCookies()->appendHeaders();
+
+        if ($this->disablePayload) {
+            $this->end();
+            return;
+        }
+
+        $chunkSize = self::CHUNK_SIZE;
+        for ($offset = 0; $offset < $totalSize; $offset += $chunkSize) {
+            $length = \min($chunkSize, $totalSize - $offset);
+            $data = $reader($offset, $length);
+            if (!$this->write($data)) {
+                break;
+            }
+            unset($data);
+        }
+
+        $this->end();
+        $this->disablePayload();
     }
 
     /**
