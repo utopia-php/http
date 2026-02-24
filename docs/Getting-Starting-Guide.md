@@ -148,43 +148,57 @@ use Utopia\Validator\Wildcard;
 
 $http = new Server("0.0.0.0", 8080);
 
-Http::init(function($response) {
-   /*
-      Example of global init method. Do stuff that is common to all your endpoints in all groups.
-      This can include things like authentication and authorisation checks, implementing rate limits and so on..
-   */
-}, ['response']);
+Http::init()
+   ->inject('response')
+   ->action(function($response) {
+      /*
+         Example of global init method.
+         Do stuff that is common to all your endpoints in all groups.
+         This can include things like authentication and authorisation checks, implementing rate limits and so on..
+      */
+   });
 
-Http::init(function($response) {
-   /*
-      Example of init method for group1. Do stuff that is common to all your endpoints in group1.
-      This can include things like authentication and authorisation checks, implementing rate limits and so on..
-   */
-}, ['response'], 'group1');
+Http::init()
+   ->groups(['group1'])
+   ->inject('response')
+   ->action(function($response) {
+      /*
+         Example of init method for group1.
+         Do stuff that is common to all your endpoints in group1.
+         This can include things like authentication and authorisation checks, implementing rate limits and so on..
+      */
+   });
 
-Http::init(function($response) {
-   /*
-      Example of init method for group2. Do stuff that is common to all your endpoints in group2.
-      This can include things like authentication and authorisation checks, implementing rate limits and so on..
-   */
-}, ['response'], 'group2');
+Http::init()
+   ->groups(['group2'])
+   ->inject('response')
+   ->action(function($response) {
+      /*
+         Example of init method for group2.
+         Do stuff that is common to all your endpoints in group2.
+         This can include things like authentication and authorisation checks, implementing rate limits and so on..
+      */
+   });
 
-Http::shutdown(function($request) {
-   /*
-     Example of global shutdown method. Do stuff that needs to be performed at the end of each request for all groups.
-     '*' (Wildcard validator) is optional.
-     This can include cleanups, logging information, recording usage stats, closing database connections and so on..
-   */
+Http::shutdown()
+   ->inject('request')
+   ->action(function($request) {
+      /*
+        Example of global shutdown method.
+        Do stuff that needs to be performed at the end of each request for all groups.
+        This can include cleanups, logging information, recording usage stats, closing database connections and so on..
+      */
+   });
 
-}, ['request'], '*');
-
-Http::shutdown(function($request) {
-   /*
-     Example of shutdown method of group1. Do stuff that needs to be performed at the end of each request for all groups.
-     This can include cleanups, logging information, recording usage stats, closing database connections and so on..
-   */
-
-}, ['request'], 'group1');
+Http::shutdown()
+   ->groups(['group1'])
+   ->inject('request')
+   ->action(function($request) {
+      /*
+        Example of shutdown method for group1. Do stuff that needs to be performed at the end of each request for group1.
+        This can include cleanups, logging information, recording usage stats, closing database connections and so on..
+      */
+   });
 
 Http::put('/todos/:id')
    ->desc('Update todo')
@@ -245,22 +259,37 @@ The Utopia http goes through the following lifecycle whenever it receives any re
 
 In case an error occurs anywhere during the execution, the workflow executes the error callbacks of the concerned groups before calling the global error handler.
 
-The init and shutdown methods take three params:
+The init and shutdown methods use a fluent interface. You can chain methods to configure the hook:
 
-    1. Callback function
-    2. Array of resources required by the callback
-    3. The endpoint group for which the callback is intended to run
+    - `->inject('resource')` - Inject dependencies required by the callback
+    - `->groups(['group1', 'group2'])` - Specify which groups this hook applies to (optional, defaults to all groups with `['*']`)
+    - `->action(function(...) { ... })` - Define the callback function
 
 * ### Init
 
-init method is executed in the beginning when the program execution begins. Here’s an example of the init method, where the init method is executed for all groups indicated by the wildcard symbol `'*'`.
+init method is executed in the beginning when the program execution begins. Here's an example of the init method, where the init method is executed for all groups (default behavior):
 ```php
-Http::init(function($response) {
-   /*
-      Do stuff that is common to all your endpoints.
-      This can include things like authentication and authorisation checks, implementing rate limits and so on..
-   */
-}, ['response'], '*');
+Http::init()
+   ->inject('response')
+   ->action(function($response) {
+      /*
+         Do stuff that is common to all your endpoints.
+         This can include things like authentication and authorisation checks, implementing rate limits and so on..
+      */
+   });
+```
+
+To apply an init hook to specific groups only:
+```php
+Http::init()
+   ->groups(['api'])
+   ->inject('request')
+   ->inject('response')
+   ->action(function($request, $response) {
+      /*
+         Do stuff that is common to all your endpoints in the 'api' group.
+      */
+   });
 ```
 
 * ### Shutdown
@@ -268,13 +297,33 @@ Http::init(function($response) {
 Utopia's shutdown callback is used to perform cleanup tasks after a request. This could include closing any open database connections, resetting certain flags, triggering analytics events (if any) and similar tasks.
 
 ```php
-Http::shutdown(function($request) {
-   /*
-     Do stuff that needs to be performed at the end of each request.
-     This can include cleanups, logging information, recording usage stats, closing database connections and so on..
-   */
+Http::shutdown()
+   ->inject('request')
+   ->action(function($request) {
+      /*
+        Do stuff that needs to be performed
+        at the end of each request.
+        This can include cleanups, logging information, recording usage stats, closing database connections and so on..
+      */
+   });
+```
 
-}, ['request'], '*');
+* ### Error
+
+Error hooks are executed whenever there's an error in the application lifecycle. You can define error handlers for specific groups or for all groups:
+
+```php
+Http::error()
+   ->inject('error')
+   ->inject('response')
+   ->action(function($error, $response) {
+      /*
+        Handle errors that occur during request processing.
+      */
+      $response
+         ->setStatusCode(500)
+         ->send('Error occurred: ' . $error->getMessage());
+   });
 ```
 
 
