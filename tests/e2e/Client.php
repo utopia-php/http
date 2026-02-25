@@ -34,8 +34,9 @@ class Client
     /**
      * SDK constructor.
      */
-    public function __construct()
+    public function __construct(string $baseUrl = 'http://web')
     {
+        $this->baseUrl = $baseUrl;
     }
 
     /**

@@ -6,3 +6,12 @@ services:
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
+    swoole:
+        build:
+            context: .
+            dockerfile: Dockerfile.swoole
+        ports:
+            - "9021:8080"
+        volumes:
+            - ./src:/usr/share/nginx/html/src
+            - ./tests:/usr/share/nginx/html/tests

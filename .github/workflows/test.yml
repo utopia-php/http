@@ -21,5 +21,8 @@ jobs:
     - name: Wait for Server to be ready
       run: sleep 10
 
-    - name: Run Tests
-      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml
+    - name: Run FPM Tests
+      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml --testsuite default
+
+    - name: Run Swoole Tests
+      run: docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml --testsuite swoole
