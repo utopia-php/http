@@ -123,6 +123,40 @@ class ResponseTest extends TestCase
         $this->assertEmpty($response['body']);
     }
 
+    public function testStreamResponse()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/stream');
+
+        $expectedBody = 'This is a streamed response with known size.';
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($expectedBody, $response['body']);
+        $this->assertEquals((string) strlen($expectedBody), $response['headers']['content-length']);
+        $this->assertStringContainsString('text/plain', $response['headers']['content-type']);
+    }
+
+    public function testStreamLargeResponse()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/stream-large');
+
+        $totalSize = 2 * 1024 * 1024 + 512 * 1024; // 2.5MB
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals((string) $totalSize, $response['headers']['content-length']);
+        $this->assertEquals($totalSize, strlen($response['body']));
+        $this->assertSame('XXXXXXXX', substr($response['body'], 0, 8));
+        $this->assertSame('XXXXXXXX', substr($response['body'], -8));
+    }
+
+    public function testStreamBinaryResponse()
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/stream-binary');
+
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('1024', $response['headers']['content-length']);
+        $this->assertEquals(1024, strlen($response['body']));
+        $this->assertStringContainsString('application/octet-stream', $response['headers']['content-type']);
+        $this->assertStringContainsString('attachment', $response['headers']['content-disposition']);
+    }
+
     public function testCookie()
     {
         // One cookie

@@ -78,13 +78,14 @@ class Response extends UtopiaResponse
         if ($this->sent) {
             return;
         }
-        $this->sent = true;
 
         // Fallback to base implementation if server not available
         if ($this->server === null) {
             parent::stream($reader, $totalSize);
             return;
         }
+
+        $this->sent = true;
 
         if ($this->disablePayload) {
             $this->appendCookies()->appendHeaders();

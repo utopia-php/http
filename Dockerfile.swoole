@@ -1,0 +1,25 @@
+FROM composer:2.0 AS step0
+
+ARG TESTING=true
+ENV TESTING=$TESTING
+
+WORKDIR /usr/local/src/
+
+COPY composer.* /usr/local/src/
+
+RUN composer install --ignore-platform-reqs --optimize-autoloader \
+    --no-plugins --no-scripts --prefer-dist \
+    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
+
+FROM appwrite/utopia-base:php-8.4-1.0.0 AS final
+
+WORKDIR /usr/share/nginx/html
+
+COPY ./src /usr/share/nginx/html/src
+COPY ./tests /usr/share/nginx/html/tests
+COPY ./phpunit.xml /usr/share/nginx/html/phpunit.xml
+COPY --from=step0 /usr/local/src/vendor /usr/share/nginx/html/vendor
+
+EXPOSE 8080
+
+CMD ["php", "tests/e2e/server-swoole.php"]
