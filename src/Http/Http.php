@@ -5,6 +5,7 @@ namespace Utopia\Http;
 use Utopia\DI\Container;
 use Utopia\DI\Dependency;
 use Utopia\Servers\Base;
+use Utopia\Servers\Hook as ServerHook;
 use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
 use Utopia\Telemetry\Histogram;
@@ -458,10 +459,10 @@ class Http extends Base
      * Following Queue's pattern - doesn't use Container::inject()
      *
      * @param Container $container
-     * @param Hook $hook
+     * @param ServerHook $hook
      * @return mixed
      */
-    protected function executeHook(Container $container, Hook $hook): mixed
+    protected function executeHook(Container $container, ServerHook $hook): mixed
     {
         $arguments = [];
 
