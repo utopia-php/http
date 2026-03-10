@@ -12,21 +12,21 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "3310616570444198cbc2a2a9567cb68e64510e38"
+                "reference": "a477152b0c428f55c9dc4b07a8e4478f756432b2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/3310616570444198cbc2a2a9567cb68e64510e38",
-                "reference": "3310616570444198cbc2a2a9567cb68e64510e38",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/a477152b0c428f55c9dc4b07a8e4478f756432b2",
+                "reference": "a477152b0c428f55c9dc4b07a8e4478f756432b2",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.2"
             },
             "require-dev": {
-                "laravel/pint": "^1.2",
+                "laravel/pint": "^1.27",
                 "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan": "^1.10",
+                "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^9.5.25",
                 "swoole/ide-helper": "4.8.3"
             },
@@ -38,13 +38,13 @@
                 }
             },
             "scripts": {
-                "lint": [
-                    "vendor/bin/pint --test"
-                ],
                 "format": [
                     "vendor/bin/pint"
                 ],
-                "check": [
+                "format:check": [
+                    "vendor/bin/pint --test"
+                ],
+                "analyze": [
                     "vendor/bin/phpstan analyse -c phpstan.neon"
                 ],
                 "test": [
@@ -59,13 +59,13 @@
                 "framework",
                 "http",
                 "php",
-                "upf"
+                "utopia"
             ],
             "support": {
                 "source": "https://github.com/utopia-php/di/tree/chore/extract-http-di-resources",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2026-03-10T05:33:55+00:00"
+            "time": "2026-03-10T06:15:58+00:00"
         },
         {
             "name": "utopia-php/validators",
