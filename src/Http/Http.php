@@ -2,6 +2,7 @@
 
 namespace Utopia\Http;
 
+use Utopia\DI\Container as DIContainer;
 use Utopia\Validator;
 
 class Http
@@ -33,21 +34,19 @@ class Http
     public const MODE_TYPE_PRODUCTION = 'production';
 
     /**
-     * @var array
-     */
-    protected array $resources = [
-        'error' => null,
-    ];
-
-    /**
      * @var Files
      */
     protected Files $files;
 
     /**
-     * @var array
+     * @var DIContainer|null
      */
-    protected static array $resourcesCallbacks = [];
+    protected static ?DIContainer $resourceContainer = null;
+
+    /**
+     * @var array<string, array<string, bool>>
+     */
+    protected static array $resourceNames = [];
 
     /**
      * Current running mode
@@ -139,6 +138,7 @@ class Http
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
+        self::$resourceContainer ??= new DIContainer();
     }
 
     /**
@@ -365,26 +365,17 @@ class Http
             return $this;
         }
 
-        $this->resources[$context] ??= [];
+        try {
+            return self::getResourceContainer()->getResource($name, $context, $fresh);
+        } catch (\Throwable $e) {
+            $message = \str_replace('dependency', 'resource', $e->getMessage());
 
-        $resourcesCallback = &self::$resourcesCallbacks[$context] ?? [];
-        if (empty($resourcesCallback) || !\array_key_exists($name, $resourcesCallback)) {
-            $resourcesCallback = &self::$resourcesCallbacks['utopia'];
-        }
-
-        if (!\array_key_exists($name, $this->resources[$context]) || $fresh || ($resourcesCallback[$name]['reset'][$context] ?? true)) {
-            if (!\array_key_exists($name, $resourcesCallback)) {
-                throw new Exception('Failed to find resource: "' . $name . '"');
+            if ($message === $e->getMessage() && !\str_contains($message, 'resource')) {
+                $message = 'Failed to find resource: "' . $name . '"';
             }
 
-            $this->resources[$context][$name] = \call_user_func_array(
-                $resourcesCallback[$name]['callback'],
-                $this->getResources($resourcesCallback[$name]['injections'], $context)
-            );
+            throw new Exception($message, 500, $e);
         }
-
-        $resourcesCallback[$name]['reset'][$context] = false;
-        return $this->resources[$context][$name];
     }
 
     /**
@@ -420,9 +411,8 @@ class Http
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
 
-        self::$resourcesCallbacks[$context] ??= [];
-
-        self::$resourcesCallbacks[$context][$name] = ['callback' => $callback, 'injections' => $injections, 'resets' => []];
+        self::getResourceContainer()->setResource($name, $callback, $injections, $context);
+        self::$resourceNames[$context][$name] = true;
     }
 
     /**
@@ -578,14 +568,10 @@ class Http
             try {
                 $this->run($request, $response, $context);
             } finally {
-                if (isset(self::$resourcesCallbacks[$context])) {
-                    unset(self::$resourcesCallbacks[$context]);
-                }
+                self::purgeResources($context);
             }
         });
         $this->server->onStart(function ($server) {
-            $this->resources['utopia'] ??= [];
-            $this->resources['utopia']['server'] = $server;
             self::setResource('server', function () use ($server) {
                 return $server;
             });
@@ -718,7 +704,7 @@ class Http
         }
 
         // Reset resources for the context
-        $this->resources[$context] = [];
+        self::refreshResources($context);
 
         return $this;
     }
@@ -779,10 +765,6 @@ class Http
      */
     public function run(Request $request, Response $response, string $context): static
     {
-        $this->resources[$context] = [];
-        $this->resources[$context]['request'] = $request;
-        $this->resources[$context]['response'] = $response;
-
         self::setResource('context', fn () => $context, [], $context);
 
         self::setResource('request', fn () => $request, [], $context);
@@ -955,12 +937,38 @@ class Http
     public static function reset(): void
     {
         Router::reset();
-        self::$resourcesCallbacks = [];
+        self::$resourceContainer = new DIContainer();
+        self::$resourceNames = [];
         self::$mode = '';
         self::$errors = [];
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
         self::$startHooks = [];
+    }
+
+    protected static function getResourceContainer(): DIContainer
+    {
+        self::$resourceContainer ??= new DIContainer();
+
+        return self::$resourceContainer;
+    }
+
+    protected static function refreshResources(string $context): void
+    {
+        $resources = \array_unique(\array_merge(
+            \array_keys(self::$resourceNames['utopia'] ?? []),
+            \array_keys(self::$resourceNames[$context] ?? [])
+        ));
+
+        foreach ($resources as $resource) {
+            self::getResourceContainer()->refresh($resource, $context);
+        }
+    }
+
+    protected static function purgeResources(string $context): void
+    {
+        self::getResourceContainer()->purge($context);
+        unset(self::$resourceNames[$context]);
     }
 }

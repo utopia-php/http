@@ -10,6 +10,12 @@
     ],
     "license": "MIT",
     "minimum-stability": "stable",
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/utopia-php/di"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Utopia\\": "src/",
@@ -29,8 +35,9 @@
         "bench": "vendor/bin/phpbench run --report=benchmark"
     },
     "require": {
-        "php": ">=8.0",
+        "php": ">=8.2",
         "ext-swoole": "*",
+        "utopia-php/di": "dev-chore/extract-http-di-resources",
         "utopia-php/validators": "0.2.*"
     },
     "require-dev": {
