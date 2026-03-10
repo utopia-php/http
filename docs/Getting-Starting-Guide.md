@@ -10,33 +10,21 @@ If you’re new to Utopia, let’s get started by looking at an example of a bas
 
 ```php
 use Utopia\Http\Http;
-use Utopia\Http\Swoole\Request;
-use Utopia\Http\Swoole\Response;
-use Swoole\Http\Server;
-use Swoole\Http\Request as SwooleRequest;
-use Swoole\Http\Response as SwooleResponse;
-
-$http = new Server("0.0.0.0", 8080);
+use Utopia\Http\Request;
+use Utopia\Http\Response;
+use Utopia\Http\Adapter\Swoole\Server;
 
 Http::get('/')
    ->inject('request')
    ->inject('response')
    ->action(
-       function($request, $response) {
+       function(Request $request, Response $response) {
            // Return raw HTML
            $response->send("<div> Hello World! </div>");
        }
-/*
-   Configure your HTTP server to respond with the Utopia http.
-*/
+   );
 
-$http->on('request', function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
-   $request = new Request($swooleRequest);
-   $response = new Response($swooleResponse);
-   $http = new Http($server, 'America/Toronto');
-   $http->run($request, $response);
-});
-
+$http = new Http(new Server("0.0.0.0", "8080"), 'America/Toronto');
 $http->start();
 ```
 
