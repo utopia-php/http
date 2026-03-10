@@ -38,15 +38,12 @@ class Http
      */
     protected Files $files;
 
-    /**
-     * @var DIContainer|null
-     */
-    protected static ?DIContainer $resourceContainer = null;
+    protected DIContainer $resourceContainer;
 
     /**
      * @var array<string, array<string, bool>>
      */
-    protected static array $resourceNames = [];
+    protected array $resourceNames = [];
 
     /**
      * Current running mode
@@ -132,13 +129,14 @@ class Http
      *
      * @param Adapter $server
      * @param  string  $timezone
+     * @param  DIContainer|null  $resourceContainer
      */
-    public function __construct(Adapter $server, string $timezone)
+    public function __construct(Adapter $server, string $timezone, ?DIContainer $resourceContainer = null)
     {
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
-        self::$resourceContainer ??= new DIContainer();
+        $this->resourceContainer = $resourceContainer ?? new DIContainer();
     }
 
     /**
@@ -351,71 +349,6 @@ class Http
     }
 
     /**
-     * If a resource has been created return it, otherwise create it and then return it
-     *
-     * @param  string  $name
-     * @param  bool  $fresh
-     * @return mixed
-     *
-     * @throws Exception
-     */
-    public function getResource(string $name, string $context = 'utopia', bool $fresh = false): mixed
-    {
-        if ($name === 'utopia') {
-            return $this;
-        }
-
-        try {
-            return self::getResourceContainer()->getResource($name, $context, $fresh);
-        } catch (\Throwable $e) {
-            $message = \str_replace('dependency', 'resource', $e->getMessage());
-
-            if ($message === $e->getMessage() && !\str_contains($message, 'resource')) {
-                $message = 'Failed to find resource: "' . $name . '"';
-            }
-
-            throw new Exception($message, 500, $e);
-        }
-    }
-
-    /**
-     * Get Resources By List
-     *
-     * @param  array  $list
-     * @return array
-     */
-    public function getResources(array $list, string $context = 'utopia'): array
-    {
-        $resources = [];
-
-        foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name, $context);
-        }
-
-        return $resources;
-    }
-
-    /**
-     * Set a new resource callback
-     *
-     * @param  string  $name
-     * @param  callable  $callback
-     * @param  array  $injections
-     * @return void
-     *
-     * @throws Exception
-     */
-    public static function setResource(string $name, callable $callback, array $injections = [], string $context = 'utopia'): void
-    {
-        if ($name === 'utopia') {
-            throw new Exception("'utopia' is a reserved keyword.", 500);
-        }
-
-        self::getResourceContainer()->setResource($name, $callback, $injections, $context);
-        self::$resourceNames[$context][$name] = true;
-    }
-
-    /**
      * Is http in production mode?
      *
      * @return bool
@@ -564,15 +497,16 @@ class Http
 
     public function start()
     {
-        $this->server->onRequest(function ($request, $response, $context) {
+        $this->server->onRequest(function ($request, $response, $context, array $resources = []) {
             try {
+                $this->registerRequestResources($request, $response, $context, $resources);
                 $this->run($request, $response, $context);
             } finally {
-                self::purgeResources($context);
+                $this->purgeResources($context);
             }
         });
         $this->server->onStart(function ($server) {
-            self::setResource('server', function () use ($server) {
+            $this->registerResource('server', function () use ($server) {
                 return $server;
             });
             try {
@@ -582,7 +516,7 @@ class Http
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch (\Exception $e) {
-                self::setResource('error', fn () => $e);
+                $this->registerResource('error', fn () => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
@@ -676,7 +610,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            self::setResource('error', fn () => $e, [], $context);
+            $this->registerResource('error', fn () => $e, [], $context);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -704,7 +638,7 @@ class Http
         }
 
         // Reset resources for the context
-        self::refreshResources($context);
+        $this->refreshResources($context);
 
         return $this;
     }
@@ -729,7 +663,7 @@ class Http
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
-                $arg = \call_user_func_array($arg, $this->getResources($param['injections']));
+                $arg = \call_user_func_array($arg, $this->resolveResources($param['injections'], $context));
             }
             $value = $existsInValues ? $values[$key] : $arg;
 
@@ -748,7 +682,7 @@ class Http
         }
 
         foreach ($hook->getInjections() as $key => $injection) {
-            $arguments[$injection['order']] = $this->getResource($injection['name'], $context);
+            $arguments[$injection['order']] = $this->resolveResource($injection['name'], $context);
         }
 
         return $arguments;
@@ -765,11 +699,9 @@ class Http
      */
     public function run(Request $request, Response $response, string $context): static
     {
-        self::setResource('context', fn () => $context, [], $context);
-
-        self::setResource('request', fn () => $request, [], $context);
-
-        self::setResource('response', fn () => $response, [], $context);
+        $this->registerResource('context', fn () => $context, [], $context);
+        $this->registerResource('request', fn () => $request, [], $context);
+        $this->registerResource('response', fn () => $response, [], $context);
 
         try {
 
@@ -778,7 +710,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            self::setResource('error', fn () => $e, [], $context);
+            $this->registerResource('error', fn () => $e, [], $context);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
@@ -807,7 +739,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        self::setResource('route', fn () => $route, [], $context);
+        $this->registerResource('route', fn () => $route, [], $context);
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -835,7 +767,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
+                        $this->registerResource('error', function () use ($e) {
                             return $e;
                         }, [], $context);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
@@ -852,7 +784,7 @@ class Http
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
 
-            self::setResource('route', fn () => $route, [], $context);
+            $this->registerResource('route', fn () => $route, [], $context);
         }
 
         if (null !== $route) {
@@ -875,7 +807,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
+                        $this->registerResource('error', function () use ($e) {
                             return $e;
                         }, [], $context);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
@@ -885,7 +817,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', function () {
+                    $this->registerResource('error', function () {
                         return new Exception('Not Found', 404);
                     }, [], $context);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
@@ -917,7 +849,7 @@ class Http
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->getResources($param['injections'], $context));
+            $validator = \call_user_func_array($validator, $this->resolveResources($param['injections'], $context));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
@@ -937,38 +869,83 @@ class Http
     public static function reset(): void
     {
         Router::reset();
-        self::$resourceContainer = new DIContainer();
-        self::$resourceNames = [];
         self::$mode = '';
         self::$errors = [];
         self::$init = [];
         self::$shutdown = [];
         self::$options = [];
         self::$startHooks = [];
+        self::$requestHooks = [];
+        self::$wildcardRoute = null;
     }
 
-    protected static function getResourceContainer(): DIContainer
+    public function getResourceContainer(): DIContainer
     {
-        self::$resourceContainer ??= new DIContainer();
-
-        return self::$resourceContainer;
+        return $this->resourceContainer;
     }
 
-    protected static function refreshResources(string $context): void
+    protected function resolveResource(string $name, string $context = 'utopia', bool $fresh = false): mixed
     {
-        $resources = \array_unique(\array_merge(
-            \array_keys(self::$resourceNames['utopia'] ?? []),
-            \array_keys(self::$resourceNames[$context] ?? [])
-        ));
+        if ($name === 'utopia') {
+            return $this;
+        }
 
-        foreach ($resources as $resource) {
-            self::getResourceContainer()->refresh($resource, $context);
+        try {
+            return $this->resourceContainer->getResource($name, $context, $fresh);
+        } catch (\Throwable $e) {
+            $message = \str_replace('dependency', 'resource', $e->getMessage());
+
+            if ($message === $e->getMessage() && !\str_contains($message, 'resource')) {
+                $message = 'Failed to find resource: "' . $name . '"';
+            }
+
+            throw new Exception($message, 500, $e);
         }
     }
 
-    protected static function purgeResources(string $context): void
+    protected function resolveResources(array $list, string $context = 'utopia'): array
     {
-        self::getResourceContainer()->purge($context);
-        unset(self::$resourceNames[$context]);
+        $resources = [];
+
+        foreach ($list as $name) {
+            $resources[$name] = $this->resolveResource($name, $context);
+        }
+
+        return $resources;
+    }
+
+    protected function registerResource(string $name, callable $callback, array $injections = [], string $context = 'utopia'): void
+    {
+        if ($name === 'utopia') {
+            throw new Exception("'utopia' is a reserved keyword.", 500);
+        }
+
+        $this->resourceContainer->setResource($name, $callback, $injections, $context);
+        $this->resourceNames[$context][$name] = true;
+    }
+
+    protected function registerRequestResources(Request $request, Response $response, string $context, array $resources = []): void
+    {
+        foreach ($resources as $name => $resource) {
+            $this->registerResource($name, fn () => $resource, [], $context);
+        }
+    }
+
+    protected function refreshResources(string $context): void
+    {
+        $resources = \array_unique(\array_merge(
+            \array_keys($this->resourceNames['utopia'] ?? []),
+            \array_keys($this->resourceNames[$context] ?? [])
+        ));
+
+        foreach ($resources as $resource) {
+            $this->resourceContainer->refresh($resource, $context);
+        }
+    }
+
+    protected function purgeResources(string $context): void
+    {
+        $this->resourceContainer->purge($context);
+        unset($this->resourceNames[$context]);
     }
 }

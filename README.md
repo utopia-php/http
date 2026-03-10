@@ -8,7 +8,7 @@
 
 Utopia HTTP is a PHP MVC based framework with minimal must-have features for professional, simple, advanced and secure web development. This library is maintained by the [Appwrite team](https://appwrite.io).
 
-Utopia HTTP is dependency-free. Any extra features, such as authentication or caching are available as standalone models in order to keep the framework core clean, light, and easy to learn.
+Utopia HTTP keeps routing and request lifecycle concerns separate from resource wiring by relying on the standalone Utopia DI package for dependency injection.
 
 ## Getting Started
 
@@ -23,10 +23,13 @@ Init your first application in `src/server.php`:
 ```php
 require_once __DIR__.'/../vendor/autoload.php';
 
+use Utopia\DI\Container;
 use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
+
+$container = new Container();
 
 Http::get('/hello-world') // Define Route
     ->inject('request')
@@ -43,7 +46,7 @@ Http::get('/hello-world') // Define Route
 
 Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-$http = new Http(new Server(), 'America/New_York');
+$http = new Http(new Server(), 'America/New_York', $container);
 $http->start();
 ```
 
@@ -66,9 +69,12 @@ The library supports server adapters to be able to run on any PHP setup. You cou
 #### Use PHP FPM server
 
 ```php
+use Utopia\DI\Container;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
+
+$container = new Container();
 
 Http::get('/')
     ->inject('response')
@@ -78,7 +84,7 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server(), 'America/New_York');
+$http = new Http(new Server(), 'America/New_York', $container);
 $http->start();
 ```
 
@@ -87,10 +93,13 @@ $http->start();
 #### Using Swoole server
 
 ```php
+use Utopia\DI\Container;
 use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
+
+$container = new Container();
 
 Http::get('/')
     ->inject('request')
@@ -101,7 +110,7 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server('0.0.0.0', '80'), 'America/New_York');
+$http = new Http(new Server('0.0.0.0', '80'), 'America/New_York', $container);
 $http->start();
 ```
 
@@ -210,10 +219,10 @@ Groups are designed to be actions that run during the lifecycle of requests to e
 
 Resources allow you to prepare dependencies for requests such as database connection or the user who sent the request. A new instance of a resource is created for every request.
 
-Define a resource:
+Define a resource on the DI container:
 
 ```php
-Http::setResource('timing', function() {
+$container->setResource('timing', function() {
     return \microtime(true);
 });
 ```
@@ -221,6 +230,8 @@ Http::setResource('timing', function() {
 Inject resource into endpoint action:
 
 ```php
+$http = new Http(new Server(), 'America/New_York', $container);
+
 Http::get('/')
     ->inject('timing')
     ->inject('response')
@@ -248,7 +259,7 @@ To learn more about architecture and features for this library, check out more i
 
 ## System Requirements
 
-Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
+Utopia HTTP requires PHP 8.2 or later. We recommend using the latest PHP version whenever possible.
 
 ## More from Utopia
 

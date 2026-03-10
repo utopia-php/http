@@ -33,7 +33,7 @@ Http::get('/')
 $http->on('request', function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
    $request = new Request($swooleRequest);
    $response = new Response($swooleResponse);
-   $http = new Http('America/Toronto');
+   $http = new Http($server, 'America/Toronto');
    $http->run($request, $response);
 });
 
@@ -281,7 +281,6 @@ Http::shutdown(function($request) {
 # Running Locally
 If you have PHP and Composer installed on your device, you can run Utopia apps locally by downloading the `utopia-php/http` dependency using `composer require utopia-php/http` command.
 
-> Utopia HTTP requires PHP 8.1 or later. We recommend using the latest PHP version whenever possible.
+> Utopia HTTP requires PHP 8.2 or later. We recommend using the latest PHP version whenever possible.
 
 Wonderful! 😄  You’re all set to create a basic demo app using the Utopia HTTP. If you have any issues or questions feel free to reach out to us on our [Discord Server](https://appwrite.io/discord).
-

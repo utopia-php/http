@@ -3,7 +3,6 @@
 namespace Utopia\Http\Adapter\FPM;
 
 use Utopia\Http\Adapter;
-use Utopia\Http\Http;
 
 class Server extends Adapter
 {
@@ -16,10 +15,10 @@ class Server extends Adapter
         $request = new Request();
         $response = new Response();
 
-        Http::setResource('fpmRequest', fn () => $request);
-        Http::setResource('fpmResponse', fn () => $response);
-
-        call_user_func($callback, $request, $response, 'fpm');
+        call_user_func($callback, $request, $response, 'fpm', [
+            'fpmRequest' => $request,
+            'fpmResponse' => $response,
+        ]);
     }
 
     public function onStart(callable $callback)

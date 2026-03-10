@@ -7,7 +7,6 @@ use Utopia\Http\Adapter;
 use Swoole\Coroutine\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
-use Utopia\Http\Http;
 
 use function Swoole\Coroutine\run;
 
@@ -29,10 +28,10 @@ class Server extends Adapter
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $context = \strval(Coroutine::getCid());
 
-            Http::setResource('swooleRequest', fn () => $request, [], $context);
-            Http::setResource('swooleResponse', fn () => $response, [], $context);
-
-            call_user_func($callback, new Request($request), new Response($response), $context);
+            call_user_func($callback, new Request($request), new Response($response), $context, [
+                'swooleRequest' => $request,
+                'swooleResponse' => $response,
+            ]);
         });
     }
 
