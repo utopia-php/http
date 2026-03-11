@@ -3,6 +3,7 @@
 namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Http\Response as SwooleResponse;
+use Swoole\Http\Server as SwooleServer;
 use Utopia\Http\Response as UtopiaResponse;
 
 class Response extends UtopiaResponse
@@ -15,12 +16,32 @@ class Response extends UtopiaResponse
     protected SwooleResponse $swoole;
 
     /**
+     * Swoole Server Object (needed for raw TCP streaming with Content-Length)
+     *
+     * @var SwooleServer|null
+     */
+    protected ?SwooleServer $server = null;
+
+    /**
      * Response constructor.
      */
     public function __construct(SwooleResponse $response)
     {
         $this->swoole = $response;
         parent::__construct(\microtime(true));
+    }
+
+    /**
+     * Set the Swoole server instance for raw TCP streaming.
+     *
+     * @param  SwooleServer  $server
+     * @return static
+     */
+    public function setServer(SwooleServer $server): static
+    {
+        $this->server = $server;
+
+        return $this;
     }
 
     /**
@@ -43,6 +64,125 @@ class Response extends UtopiaResponse
     public function end(?string $content = null): void
     {
         $this->swoole->end($content);
+    }
+
+    /**
+     * Stream response
+     *
+     * Uses detach() + $server->send() for raw TCP streaming that preserves
+     * Content-Length (so browsers show download progress). Falls back to
+     * the base class implementation if no server instance is available.
+     *
+     * @param  callable|\Generator  $source  Either a callable($offset, $length) or a Generator yielding string chunks
+     * @param  int  $totalSize  Total size of the content in bytes
+     * @return void
+     */
+    public function stream(callable|\Generator $source, int $totalSize): void
+    {
+        if ($this->sent) {
+            return;
+        }
+
+        $this->sent = true;
+
+        if ($this->server === null) {
+            $this->sent = false;
+            parent::stream($source, $totalSize);
+
+            return;
+        }
+
+        if ($this->disablePayload) {
+            $this->appendCookies();
+            $this->appendHeaders();
+            $this->swoole->end();
+            $this->disablePayload();
+
+            return;
+        }
+
+        // Build raw HTTP response headers for direct TCP send
+        $this->addHeader('Content-Length', (string) $totalSize, override: true);
+        $this->addHeader('Connection', 'close', override: true);
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
+
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType, override: true);
+        }
+
+        $statusReason = $this->getStatusCodeReason($this->statusCode);
+        $rawHeaders = "HTTP/1.1 {$this->statusCode} {$statusReason}\r\n";
+
+        foreach ($this->headers as $key => $value) {
+            if (\is_array($value)) {
+                foreach ($value as $v) {
+                    $rawHeaders .= "{$key}: {$v}\r\n";
+                }
+            } else {
+                $rawHeaders .= "{$key}: {$value}\r\n";
+            }
+        }
+
+        foreach ($this->cookies as $cookie) {
+            $cookieStr = \urlencode($cookie['name']) . '=' . \urlencode($cookie['value'] ?? '');
+            if (!empty($cookie['expire'])) {
+                $cookieStr .= '; Expires=' . \gmdate('D, d M Y H:i:s T', $cookie['expire']);
+            }
+            if (!empty($cookie['path'])) {
+                $cookieStr .= '; Path=' . $cookie['path'];
+            }
+            if (!empty($cookie['domain'])) {
+                $cookieStr .= '; Domain=' . $cookie['domain'];
+            }
+            if (!empty($cookie['secure'])) {
+                $cookieStr .= '; Secure';
+            }
+            if (!empty($cookie['httponly'])) {
+                $cookieStr .= '; HttpOnly';
+            }
+            if (!empty($cookie['samesite'])) {
+                $cookieStr .= '; SameSite=' . $cookie['samesite'];
+            }
+            $rawHeaders .= "Set-Cookie: {$cookieStr}\r\n";
+        }
+
+        $rawHeaders .= "\r\n";
+
+        // Detach from Swoole HTTP layer and send raw TCP
+        $fd = $this->swoole->fd;
+        $this->swoole->detach();
+
+        if ($this->server->send($fd, $rawHeaders) === false) {
+            $this->disablePayload();
+
+            return;
+        }
+
+        // Stream body chunks
+        if ($source instanceof \Generator) {
+            foreach ($source as $chunk) {
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->server->send($fd, $chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            $length = self::CHUNK_SIZE;
+            for ($offset = 0; $offset < $totalSize; $offset += $length) {
+                $chunk = $source($offset, min($length, $totalSize - $offset));
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->server->send($fd, $chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        $this->server->close($fd);
+        $this->disablePayload();
     }
 
     /**

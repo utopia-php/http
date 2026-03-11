@@ -171,4 +171,168 @@ class ResponseTest extends TestCase
         $this->assertEquals('<script type="text/javascript">window.parent.test({"key":"value"});</script>', $html);
         $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
     }
+
+    public function testStreamWithCallable()
+    {
+        $data = str_repeat('A', 100);
+
+        ob_start();
+
+        @$this->response->stream(function (int $offset, int $length) use ($data) {
+            return substr($data, $offset, $length);
+        }, strlen($data));
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals($data, $output);
+        $this->assertTrue($this->response->isSent());
+        $this->assertEquals(strlen($data), $this->response->getSize());
+    }
+
+    public function testStreamWithGenerator()
+    {
+        $chunks = ['Hello ', 'World', '!'];
+        $expected = implode('', $chunks);
+
+        $generator = (function () use ($chunks) {
+            foreach ($chunks as $chunk) {
+                yield $chunk;
+            }
+        })();
+
+        ob_start();
+
+        @$this->response->stream($generator, strlen($expected));
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals($expected, $output);
+        $this->assertTrue($this->response->isSent());
+        $this->assertEquals(strlen($expected), $this->response->getSize());
+    }
+
+    public function testStreamWithGeneratorLargeData()
+    {
+        $chunkSize = 1000000; // 1MB chunks
+        $numChunks = 3;
+        $totalSize = $chunkSize * $numChunks;
+
+        $generator = (function () use ($chunkSize, $numChunks) {
+            for ($i = 0; $i < $numChunks; $i++) {
+                yield str_repeat(chr(65 + $i), $chunkSize);
+            }
+        })();
+
+        ob_start();
+
+        @$this->response->stream($generator, $totalSize);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals($totalSize, strlen($output));
+        $this->assertEquals(str_repeat('A', $chunkSize), substr($output, 0, $chunkSize));
+        $this->assertEquals(str_repeat('B', $chunkSize), substr($output, $chunkSize, $chunkSize));
+        $this->assertEquals(str_repeat('C', $chunkSize), substr($output, $chunkSize * 2, $chunkSize));
+        $this->assertEquals($totalSize, $this->response->getSize());
+    }
+
+    public function testStreamWithCallableMultipleChunks()
+    {
+        // Data larger than CHUNK_SIZE to test offset/length loop
+        $data = str_repeat('X', Response::CHUNK_SIZE + 500);
+
+        ob_start();
+
+        @$this->response->stream(function (int $offset, int $length) use ($data) {
+            return substr($data, $offset, $length);
+        }, strlen($data));
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals($data, $output);
+        $this->assertEquals(strlen($data), $this->response->getSize());
+    }
+
+    public function testStreamDoesNotSendTwice()
+    {
+        $generator = (function () {
+            yield 'first';
+        })();
+
+        ob_start();
+
+        @$this->response->stream($generator, 5);
+
+        // Try streaming again — should be a no-op
+        $secondGenerator = (function () {
+            yield 'second';
+        })();
+
+        @$this->response->stream($secondGenerator, 6);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('first', $output);
+    }
+
+    public function testStreamWithDisabledPayload()
+    {
+        $this->response->disablePayload();
+
+        $generator = (function () {
+            yield 'should not appear';
+        })();
+
+        ob_start();
+
+        @$this->response->stream($generator, 20);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('', $output);
+        $this->assertTrue($this->response->isSent());
+    }
+
+    public function testStreamWithEmptyGenerator()
+    {
+        $generator = (function () {
+            return;
+            yield; // make it a generator
+        })();
+
+        ob_start();
+
+        @$this->response->stream($generator, 0);
+
+        $output = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertEquals('', $output);
+        $this->assertTrue($this->response->isSent());
+        $this->assertEquals(0, $this->response->getSize());
+    }
+
+    public function testStreamSetsContentLengthHeader()
+    {
+        $data = 'test content';
+
+        $generator = (function () use ($data) {
+            yield $data;
+        })();
+
+        ob_start();
+
+        @$this->response->stream($generator, strlen($data));
+
+        ob_end_clean();
+
+        $headers = $this->response->getHeaders();
+        $this->assertEquals((string) strlen($data), $headers['Content-Length']);
+    }
 }
