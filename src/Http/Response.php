@@ -224,6 +224,8 @@ abstract class Response
      */
     protected bool $sent = false;
 
+    protected bool $headersSent = false;
+
     /**
      * @var array<string, string|array<string>>
      */
@@ -488,6 +490,8 @@ abstract class Response
             ->appendCookies()
             ->appendHeaders();
 
+        $this->headersSent = true;
+
         if (!$this->disablePayload) {
             $length = strlen($body);
 
@@ -566,9 +570,13 @@ abstract class Response
 
         $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
 
-        $this
-            ->appendCookies()
-            ->appendHeaders();
+        if (!$this->headersSent) {
+            $this
+                ->appendCookies()
+                ->appendHeaders();
+
+            $this->headersSent = true;
+        }
 
         if (!$this->disablePayload) {
             $this->write($body);

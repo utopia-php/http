@@ -13,15 +13,15 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM php:8.2-cli-alpine as final
+FROM php:8.2-fpm-alpine as final
 LABEL maintainer="team@appwrite.io"
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PHP_VERSION=82
+    PHP_FPM_POOL_CONF=/usr/local/etc/php-fpm.d/www.conf
 
 RUN \
   apk add --no-cache --virtual .deps \
-  supervisor php$PHP_VERSION php$PHP_VERSION-fpm php$PHP_VERSION-mbstring nginx bash
+  supervisor nginx bash
 
 
 # Nginx Configuration (with self-signed ssl certificates)
@@ -29,7 +29,7 @@ COPY ./tests/docker/nginx.conf /etc/nginx/nginx.conf
 
 # PHP Configuration
 RUN mkdir -p /var/run/php
-COPY ./tests/docker/www.conf /etc/php/$PHP_VERSION/fpm/pool.d/www.conf
+COPY ./tests/docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 # Script
 COPY ./tests/docker/start /usr/local/bin/start
