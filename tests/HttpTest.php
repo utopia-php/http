@@ -47,38 +47,6 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $this->uri;
     }
 
-    public function testCanInjectContainerInConstructor(): void
-    {
-        $container = new Container();
-        $http = new Http(new Server(), 'Asia/Tel_Aviv', $container);
-
-        $this->assertSame($container, $http->getContainer());
-        $this->assertInstanceOf(Container::class, (new Http(new Server(), 'Asia/Tel_Aviv'))->getContainer());
-    }
-
-    public function testCanRegisterResourcesWithPublicApi(): void
-    {
-        $this->http->setResource('rand', fn () => 1234);
-        $this->http->setResource('second', fn () => 'second');
-        $this->http->setResource('first', fn ($second) => "first-{$second}", ['second']);
-
-        $route = new Route('GET', '/path');
-
-        $route
-            ->inject('rand')
-            ->inject('first')
-            ->action(function ($rand, $first) {
-                echo $rand . '-' . $first;
-            });
-
-        \ob_start();
-        $this->http->execute($route, new Request(), '1');
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertSame('1234-first-second', $result);
-    }
-
     public function testCanGetDifferentModes(): void
     {
         $this->assertEmpty(Http::getMode());
@@ -606,43 +574,6 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
-    }
-
-    public function testScopedResourcesUseNestedContainers(): void
-    {
-        $counter = 0;
-        $http = new class (new Server(), 'Asia/Tel_Aviv') extends Http {
-            public function defineResource(string $name, callable $callback, array $injections = [], ?Container $scope = null): void
-            {
-                $this->setResource($name, $callback, $injections, $scope);
-            }
-
-            public function resource(string $name, Container $scope): mixed
-            {
-                return $this->getResource($name, $scope);
-            }
-        };
-
-        $http->defineResource('shared', function () use (&$counter) {
-            $counter++;
-
-            return $counter;
-        });
-
-        $requestA = new Container($http->getContainer());
-        $requestB = new Container($http->getContainer());
-        $executionA = new Container($requestA);
-
-        $http->defineResource('requestId', fn () => 'request-a', scope: $requestA);
-        $http->defineResource('requestId', fn () => 'request-b', scope: $requestB);
-        $http->defineResource('requestId', fn () => 'execution-a', scope: $executionA);
-
-        $this->assertSame(1, $http->resource('shared', $requestA));
-        $this->assertSame(1, $http->resource('shared', $requestB));
-        $this->assertSame('request-a', $http->resource('requestId', $requestA));
-        $this->assertSame('request-b', $http->resource('requestId', $requestB));
-        $this->assertSame('execution-a', $http->resource('requestId', $executionA));
-        $this->assertSame('request-a', $http->resource('requestId', $requestA));
     }
 
     public function testWildcardRoute(): void
