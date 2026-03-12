@@ -18,8 +18,17 @@ jobs:
     - name: Setup Docker
       run: docker compose up -d --build
 
-    - name: Wait for Server to be ready
-      run: sleep 10
+    - name: Wait for FPM server to be ready
+      run: |
+        echo "Waiting for FPM server..."
+        timeout 30 bash -c 'until curl -sf http://localhost:9020/ > /dev/null 2>&1; do sleep 1; done'
+        echo "FPM server ready"
+
+    - name: Wait for Swoole server to be ready
+      run: |
+        echo "Waiting for Swoole server..."
+        timeout 30 bash -c 'until curl -sf http://localhost:9021/ > /dev/null 2>&1; do sleep 1; done'
+        echo "Swoole server ready"
 
     - name: Run Tests
       run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml
