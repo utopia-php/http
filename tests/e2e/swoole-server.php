@@ -1,16 +1,16 @@
 <?php
 
-require_once __DIR__.'/../../vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Utopia\Http\Http;
-use Utopia\Http\Adapter\FPM\Request;
-use Utopia\Http\Adapter\FPM\Response;
+use Utopia\Http\Adapter\Swoole\Request;
+use Utopia\Http\Adapter\Swoole\Response;
+use Utopia\Http\Adapter\Swoole\Server;
 use Utopia\Validator\Text;
 
 ini_set('memory_limit', '1024M');
 ini_set('display_errors', '1');
 ini_set('display_startup_errors', '1');
-ini_set('display_socket_timeout', '-1');
 error_reporting(E_ALL);
 
 Http::get('/')
@@ -94,7 +94,6 @@ Http::post('/databases/:databaseId/collections/:collectionId')
     });
 
 // Endpoints for early response
-// Meant to run twice, so init hook can know if action ran
 $earlyResponseAction = 'no';
 Http::init()
     ->groups(['early-response'])
@@ -154,9 +153,42 @@ Http::get('/stream/generator-large')
         $response->stream($generator, $totalSize);
     });
 
-$request = new Request();
-$response = new Response();
+Http::get('/stream/non-detach/generator')
+    ->inject('response')
+    ->action(function (Response $response) {
+        $response->setDetach(false);
 
+        $chunks = ['nd-chunk1-', 'nd-chunk2-', 'nd-chunk3'];
+        $totalSize = array_sum(array_map('strlen', $chunks));
+
+        $generator = (function () use ($chunks) {
+            foreach ($chunks as $chunk) {
+                yield $chunk;
+            }
+        })();
+
+        $response->stream($generator, $totalSize);
+    });
+
+Http::get('/stream/non-detach/callable')
+    ->inject('response')
+    ->action(function (Response $response) {
+        $response->setDetach(false);
+
+        $data = str_repeat('B', 1000);
+
+        $response->stream(function (int $offset, int $length) use ($data) {
+            return substr($data, $offset, $length);
+        }, strlen($data));
+    });
+
+$server = new Server('0.0.0.0', '80');
 $app = new Http('UTC');
 $app->setCompression(true);
-$app->run($request, $response);
+$server->onStart(function () {
+    echo 'Swoole server started on port 80' . PHP_EOL;
+});
+$server->onRequest(function (Request $request, Response $response) use ($app) {
+    $app->run($request, $response);
+});
+$server->start();

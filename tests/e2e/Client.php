@@ -34,8 +34,11 @@ class Client
     /**
      * SDK constructor.
      */
-    public function __construct()
+    public function __construct(?string $baseUrl = null)
     {
+        if ($baseUrl !== null) {
+            $this->baseUrl = $baseUrl;
+        }
     }
 
     /**
