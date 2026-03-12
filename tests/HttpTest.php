@@ -25,7 +25,7 @@ class HttpTest extends TestCase
     {
         Http::reset();
         $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
-        $this->container = $this->http->getContainer();
+        $this->container = $this->getHttpContainer($this->http);
         $this->saveRequest();
     }
 
@@ -46,6 +46,11 @@ class HttpTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = $this->method;
         $_SERVER['REQUEST_URI'] = $this->uri;
+    }
+
+    protected function getHttpContainer(Http $http): Container
+    {
+        return \Closure::bind(fn (): Container => $this->container, $http, Http::class)();
     }
 
     public function testCanGetDifferentModes(): void
@@ -583,12 +588,12 @@ class HttpTest extends TestCase
         $http = new class (new Server(), 'Asia/Tel_Aviv') extends Http {
             public function createScope(?Container $scope = null): Container
             {
-                return ($scope ?? $this->getContainer())->scope();
+                return ($scope ?? $this->container)->scope();
             }
 
-            public function shareValue(string $name, mixed $value, Container $scope): void
+            public function defineResource(string $name, callable $callback, array $injections = [], ?Container $scope = null): void
             {
-                $this->setResource($name, fn () => $value, [], $scope);
+                $this->setResource($name, $callback, $injections, $scope);
             }
 
             public function resource(string $name, Container $scope): mixed
@@ -597,19 +602,19 @@ class HttpTest extends TestCase
             }
         };
 
-        $http->getContainer()->set('shared', new Dependency([], function () use (&$counter) {
+        $http->defineResource('shared', function () use (&$counter) {
             $counter++;
 
             return $counter;
-        }));
+        });
 
         $requestA = $http->createScope();
         $requestB = $http->createScope();
         $executionA = $http->createScope($requestA);
 
-        $http->shareValue('requestId', 'request-a', $requestA);
-        $http->shareValue('requestId', 'request-b', $requestB);
-        $http->shareValue('requestId', 'execution-a', $executionA);
+        $http->defineResource('requestId', fn () => 'request-a', scope: $requestA);
+        $http->defineResource('requestId', fn () => 'request-b', scope: $requestB);
+        $http->defineResource('requestId', fn () => 'execution-a', scope: $executionA);
 
         $this->assertSame(1, $http->resource('shared', $requestA));
         $this->assertSame(1, $http->resource('shared', $requestB));

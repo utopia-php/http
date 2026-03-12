@@ -344,15 +344,7 @@ class Http
     }
 
     /**
-     * Get the root application container.
-     */
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
-
-    /**
-     * Resolve a single resource from the given scope.
+     * Get a single resource from the given scope.
      *
      * @throws Exception
      */
@@ -373,7 +365,7 @@ class Http
     }
 
     /**
-     * Resolve multiple resources from the given scope.
+     * Get multiple resources from the given scope.
      *
      * @param string[] $list
      * @return array<string, mixed>
@@ -392,7 +384,7 @@ class Http
     }
 
     /**
-     * Register a resource factory on the given scope.
+     * Set a resource on the given scope.
      *
      * @param string[] $injections
      */
