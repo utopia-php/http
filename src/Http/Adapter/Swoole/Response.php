@@ -23,6 +23,15 @@ class Response extends UtopiaResponse
     protected ?SwooleServer $server = null;
 
     /**
+     * Whether to use detach() + raw TCP send for streaming.
+     * When true (and server is set): preserves Content-Length header so browsers show download progress.
+     * When false: uses Swoole's write() which forces chunked Transfer-Encoding.
+     *
+     * @var bool
+     */
+    protected bool $detach = true;
+
+    /**
      * Response constructor.
      */
     public function __construct(SwooleResponse $response)
@@ -40,6 +49,24 @@ class Response extends UtopiaResponse
     public function setServer(SwooleServer $server): static
     {
         $this->server = $server;
+
+        return $this;
+    }
+
+    /**
+     * Set whether to detach from Swoole's HTTP layer for streaming.
+     *
+     * When enabled (default): uses detach() + $server->send() to preserve
+     * Content-Length so browsers show download progress bars.
+     *
+     * When disabled: uses Swoole's write() which applies chunked Transfer-Encoding.
+     *
+     * @param  bool  $detach
+     * @return static
+     */
+    public function setDetach(bool $detach): static
+    {
+        $this->detach = $detach;
 
         return $this;
     }
@@ -85,13 +112,6 @@ class Response extends UtopiaResponse
 
         $this->sent = true;
 
-        if ($this->server === null) {
-            $this->sent = false;
-            parent::stream($source, $totalSize);
-
-            return;
-        }
-
         if ($this->disablePayload) {
             $this->appendCookies();
             $this->appendHeaders();
@@ -101,7 +121,60 @@ class Response extends UtopiaResponse
             return;
         }
 
-        // Build raw HTTP response headers for direct TCP send
+        // When detach is enabled and server is available, use raw TCP streaming
+        // to preserve Content-Length (browsers show download progress).
+        if ($this->detach && $this->server !== null) {
+            $this->streamDetached($source, $totalSize);
+
+            return;
+        }
+
+        // Non-detach path: use Swoole's write() (chunked Transfer-Encoding)
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
+
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType, override: true);
+        }
+
+        $this->appendCookies();
+        $this->appendHeaders();
+        $this->sendStatus($this->statusCode);
+
+        if ($source instanceof \Generator) {
+            foreach ($source as $chunk) {
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->swoole->write($chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            $length = self::CHUNK_SIZE;
+            for ($offset = 0; $offset < $totalSize; $offset += $length) {
+                $chunk = $source($offset, min($length, $totalSize - $offset));
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->swoole->write($chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        $this->swoole->end();
+        $this->disablePayload();
+    }
+
+    /**
+     * Stream using detach() + raw TCP send to preserve Content-Length.
+     *
+     * @param  callable|\Generator  $source
+     * @param  int  $totalSize
+     * @return void
+     */
+    protected function streamDetached(callable|\Generator $source, int $totalSize): void
+    {
         $this->addHeader('Content-Length', (string) $totalSize, override: true);
         $this->addHeader('Connection', 'close', override: true);
         $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
@@ -148,7 +221,6 @@ class Response extends UtopiaResponse
 
         $rawHeaders .= "\r\n";
 
-        // Detach from Swoole HTTP layer and send raw TCP
         $fd = $this->swoole->fd;
         $this->swoole->detach();
 
@@ -158,7 +230,6 @@ class Response extends UtopiaResponse
             return;
         }
 
-        // Stream body chunks
         if ($source instanceof \Generator) {
             foreach ($source as $chunk) {
                 if (!empty($chunk)) {
