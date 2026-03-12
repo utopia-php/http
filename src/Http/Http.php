@@ -880,10 +880,6 @@ class Http
 
     protected function resolveResource(string $name, Container $container): mixed
     {
-        if ($name === 'utopia') {
-            return $this;
-        }
-
         try {
             return $container->get($name);
         } catch (\Throwable $e) {
@@ -910,10 +906,6 @@ class Http
 
     protected function registerResource(string $name, callable $callback, array $injections = [], ?Container $container = null): void
     {
-        if ($name === 'utopia') {
-            throw new Exception("'utopia' is a reserved keyword.", 500);
-        }
-
         ($container ?? $this->resourceContainer)->set($name, new Dependency($injections, $callback));
     }
 
