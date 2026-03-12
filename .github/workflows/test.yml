@@ -16,19 +16,13 @@ jobs:
         php-version: '8.1'
 
     - name: Setup Docker
-      run: docker compose up -d --build
+      run: docker compose up -d --build --wait
 
-    - name: Wait for FPM server to be ready
-      run: |
-        echo "Waiting for FPM server..."
-        timeout 30 bash -c 'until curl -sf http://localhost:9020/ > /dev/null 2>&1; do sleep 1; done'
-        echo "FPM server ready"
+    - name: Run Unit Tests
+      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml --testsuite unit
 
-    - name: Wait for Swoole server to be ready
-      run: |
-        echo "Waiting for Swoole server..."
-        timeout 30 bash -c 'until curl -sf http://localhost:9021/ > /dev/null 2>&1; do sleep 1; done'
-        echo "Swoole server ready"
+    - name: Run FPM E2E Tests
+      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml --testsuite fpm
 
-    - name: Run Tests
-      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml
+    - name: Run Swoole E2E Tests
+      run: docker compose exec web vendor/bin/phpunit --configuration phpunit.xml --testsuite swoole
