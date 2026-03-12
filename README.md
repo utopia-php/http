@@ -217,14 +217,16 @@ Groups are designed to be actions that run during the lifecycle of requests to e
 
 ### Resources
 
-Resources allow you to prepare dependencies for requests such as database connection or the user who sent the request. A new instance of a resource is created for every request.
+Resources allow you to prepare dependencies for requests such as database connections or shared services. Register application dependencies on the DI container with `set()`. Runtime values such as `request`, `response`, `route`, `error`, and `context` are scoped by `Http` for each request.
 
-Define a resource on the DI container:
+Define a dependency on the DI container:
 
 ```php
-$container->setResource('timing', function() {
+use Utopia\DI\Dependency;
+
+$container->set('bootTime', new Dependency([], function () {
     return \microtime(true);
-});
+}));
 ```
 
 Inject resource into endpoint action:
@@ -233,10 +235,10 @@ Inject resource into endpoint action:
 $http = new Http(new Server(), 'America/New_York', $container);
 
 Http::get('/')
-    ->inject('timing')
+    ->inject('bootTime')
     ->inject('response')
-    ->action(function(float $timing, Response $response) {
-        $response->send('Request Unix timestamp: ' . \strval($timing));
+    ->action(function(float $bootTime, Response $response) {
+        $response->send('Process started at: ' . \strval($bootTime));
     });
 ```
 
@@ -244,10 +246,10 @@ Inject resource into a hook:
 
 ```php
 Http::shutdown()
-    ->inject('timing')
-    ->action(function(float $timing) {
-        $difference = \microtime(true) - $timing;
-        \var_dump("Request took: " . $difference . " seconds");
+    ->inject('bootTime')
+    ->action(function(float $bootTime) {
+        $uptime = \microtime(true) - $bootTime;
+        \var_dump("Process uptime: " . $uptime . " seconds");
     });
 ```
 

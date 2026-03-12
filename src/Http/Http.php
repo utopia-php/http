@@ -2,7 +2,8 @@
 
 namespace Utopia\Http;
 
-use Utopia\DI\Container as DIContainer;
+use Utopia\DI\Container;
+use Utopia\DI\Dependency;
 use Utopia\Validator;
 
 class Http
@@ -38,12 +39,12 @@ class Http
      */
     protected Files $files;
 
-    protected DIContainer $resourceContainer;
+    protected Container $resourceContainer;
 
     /**
-     * @var array<string, array<string, bool>>
+     * @var array<string, Container>
      */
-    protected array $resourceNames = [];
+    protected array $scopedContainers = [];
 
     /**
      * Current running mode
@@ -129,14 +130,14 @@ class Http
      *
      * @param Adapter $server
      * @param  string  $timezone
-     * @param  DIContainer|null  $resourceContainer
+     * @param  Container|null  $resourceContainer
      */
-    public function __construct(Adapter $server, string $timezone, ?DIContainer $resourceContainer = null)
+    public function __construct(Adapter $server, string $timezone, ?Container $resourceContainer = null)
     {
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
-        $this->resourceContainer = $resourceContainer ?? new DIContainer();
+        $this->resourceContainer = $resourceContainer ?? new Container();
     }
 
     /**
@@ -879,7 +880,7 @@ class Http
         self::$wildcardRoute = null;
     }
 
-    public function getResourceContainer(): DIContainer
+    public function getResourceContainer(): Container
     {
         return $this->resourceContainer;
     }
@@ -891,7 +892,11 @@ class Http
         }
 
         try {
-            return $this->resourceContainer->getResource($name, $context, $fresh);
+            if ($fresh && $context !== 'utopia') {
+                unset($this->scopedContainers[$context]);
+            }
+
+            return $this->getContextContainer($context)->get($name);
         } catch (\Throwable $e) {
             $message = \str_replace('dependency', 'resource', $e->getMessage());
 
@@ -920,8 +925,7 @@ class Http
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
 
-        $this->resourceContainer->setResource($name, $callback, $injections, $context);
-        $this->resourceNames[$context][$name] = true;
+        $this->getContextContainer($context)->set($name, new Dependency($injections, $callback));
     }
 
     protected function registerRequestResources(Request $request, Response $response, string $context, array $resources = []): void
@@ -933,19 +937,28 @@ class Http
 
     protected function refreshResources(string $context): void
     {
-        $resources = \array_unique(\array_merge(
-            \array_keys($this->resourceNames['utopia'] ?? []),
-            \array_keys($this->resourceNames[$context] ?? [])
-        ));
-
-        foreach ($resources as $resource) {
-            $this->resourceContainer->refresh($resource, $context);
+        if ($context === 'utopia') {
+            return;
         }
+
+        unset($this->scopedContainers[$context]);
     }
 
     protected function purgeResources(string $context): void
     {
-        $this->resourceContainer->purge($context);
-        unset($this->resourceNames[$context]);
+        unset($this->scopedContainers[$context]);
+    }
+
+    protected function getContextContainer(string $context = 'utopia'): Container
+    {
+        if ($context === 'utopia') {
+            return $this->resourceContainer;
+        }
+
+        if (!isset($this->scopedContainers[$context])) {
+            $this->scopedContainers[$context] = $this->resourceContainer->scope();
+        }
+
+        return $this->scopedContainers[$context];
     }
 }
