@@ -4,7 +4,6 @@ namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
 use Utopia\Validator\Text;
 use Utopia\Http\Adapter\FPM\Request;
@@ -120,9 +119,9 @@ class HttpTest extends TestCase
 
     public function testCanGetResources(): void
     {
-        $this->container->set('rand', new Dependency([], fn () => rand()));
-        $this->container->set('first', new Dependency(['second'], fn ($second) => "first-{$second}"));
-        $this->container->set('second', new Dependency([], fn () => 'second'));
+        $this->container->set('rand', fn () => rand(), []);
+        $this->container->set('first', fn ($second) => "first-{$second}", ['second']);
+        $this->container->set('second', fn () => 'second', []);
 
         $second = $this->container->get('second');
         $first = $this->container->get('first');
@@ -157,8 +156,8 @@ class HttpTest extends TestCase
 
     public function testCanGetDefaultValueWithFunction(): void
     {
-        $this->container->set('first', new Dependency(['second'], fn ($second) => "first-{$second}"));
-        $this->container->set('second', new Dependency([], fn () => 'second'));
+        $this->container->set('first', fn ($second) => "first-{$second}", ['second']);
+        $this->container->set('second', fn () => 'second', []);
 
         $second = $this->container->get('second');
         $first = $this->container->get('first');
@@ -186,7 +185,7 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        $this->container->set('rand', new Dependency([], fn () => rand()));
+        $this->container->set('rand', fn () => rand(), []);
         $resource = $this->container->get('rand');
 
         $this->http
@@ -613,11 +612,6 @@ class HttpTest extends TestCase
     {
         $counter = 0;
         $http = new class (new Server(), 'Asia/Tel_Aviv') extends Http {
-            public function createScope(?Container $scope = null): Container
-            {
-                return ($scope ?? $this->container)->scope();
-            }
-
             public function defineResource(string $name, callable $callback, array $injections = [], ?Container $scope = null): void
             {
                 $this->setResource($name, $callback, $injections, $scope);
@@ -635,9 +629,9 @@ class HttpTest extends TestCase
             return $counter;
         });
 
-        $requestA = $http->createScope();
-        $requestB = $http->createScope();
-        $executionA = $http->createScope($requestA);
+        $requestA = new Container($http->getContainer());
+        $requestB = new Container($http->getContainer());
+        $executionA = new Container($requestA);
 
         $http->defineResource('requestId', fn () => 'request-a', scope: $requestA);
         $http->defineResource('requestId', fn () => 'request-b', scope: $requestB);
@@ -662,7 +656,7 @@ class HttpTest extends TestCase
         Http::init()
             ->action(function () {
                 $route = $this->http->getRoute();
-                $this->container->set('myRoute', new Dependency([], fn () => $route));
+                $this->container->set('myRoute', fn () => $route, []);
             });
 
 

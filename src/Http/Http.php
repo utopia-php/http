@@ -3,7 +3,6 @@
 namespace Utopia\Http;
 
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Validator;
 
 class Http
@@ -400,7 +399,7 @@ class Http
      */
     public function setResource(string $name, callable $callback, array $injections = [], ?Container $scope = null): void
     {
-        ($scope ?? $this->container)->set($name, new Dependency($injections, $callback));
+        ($scope ?? $this->container)->set($name, $callback, $injections);
     }
 
     /**
@@ -619,8 +618,8 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
-        $requestScope ??= $this->container->scope();
-        $executionScope = $requestScope->scope();
+        $requestScope ??= new Container($this->container);
+        $executionScope = new Container($requestScope);
 
         try {
             if ($route->getHook()) {
@@ -748,7 +747,7 @@ class Http
      */
     public function run(Request $request, Response $response, string $context, array $resources = []): static
     {
-        $requestScope = $this->container->scope();
+        $requestScope = new Container($this->container);
         foreach ($resources as $name => $resource) {
             $this->setResource($name, fn () => $resource, [], $requestScope);
         }

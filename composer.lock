@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b7bee41baa98a69509660346704ff023",
+    "content-hash": "6bf6c5703f842ea4d1cdee8068e967b4",
     "packages": [
         {
             "name": "psr/container",
@@ -61,16 +61,16 @@
         },
         {
             "name": "utopia-php/di",
-            "version": "0.2.0",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "6a9135908dddef66fd07733705b9625f42d302a4"
+                "reference": "72e1a3e67c58f8f03cf3faa5d79ee814136d3fe2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/6a9135908dddef66fd07733705b9625f42d302a4",
-                "reference": "6a9135908dddef66fd07733705b9625f42d302a4",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/72e1a3e67c58f8f03cf3faa5d79ee814136d3fe2",
+                "reference": "72e1a3e67c58f8f03cf3faa5d79ee814136d3fe2",
                 "shasum": ""
             },
             "require": {
@@ -129,10 +129,10 @@
                 "utopia"
             ],
             "support": {
-                "source": "https://github.com/utopia-php/di/tree/0.2.0",
+                "source": "https://github.com/utopia-php/di/tree/0.3.0",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2026-03-12T07:54:46+00:00"
+            "time": "2026-03-12T10:40:23+00:00"
         },
         {
             "name": "utopia-php/validators",

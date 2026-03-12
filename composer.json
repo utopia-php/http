@@ -36,7 +36,7 @@
     },
     "require": {
         "php": ">=8.2",
-        "utopia-php/di": "0.2.*",
+        "utopia-php/di": "0.3.*",
         "utopia-php/validators": "0.2.*",
         "ext-swoole": "*"
     },

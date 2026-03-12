@@ -222,11 +222,9 @@ Resources allow you to prepare dependencies for requests such as database connec
 Define a dependency on the DI container:
 
 ```php
-use Utopia\DI\Dependency;
-
-$container->set('bootTime', new Dependency([], function () {
+$container->set('bootTime', function () {
     return \microtime(true);
-}));
+}, []);
 ```
 
 Inject resource into endpoint action:
