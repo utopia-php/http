@@ -690,9 +690,8 @@ class Http
      * @param Request $request
      * @param Response $response;
      */
-    public function run(Request $request, Response $response, string $context, ?Container $container = null): static
+    public function run(Request $request, Response $response, string $context, Container $container): static
     {
-        $container ??= $this->resourceContainer->scope();
         $this->registerResource('context', fn () => $context, [], $container);
         $this->registerResource('request', fn () => $request, [], $container);
         $this->registerResource('response', fn () => $response, [], $container);
@@ -883,6 +882,7 @@ class Http
         try {
             return $container->get($name);
         } catch (\Throwable $e) {
+            // Normalize DI container errors to the Http layer's "resource" terminology.
             $message = \str_replace('dependency', 'resource', $e->getMessage());
 
             if ($message === $e->getMessage() && !\str_contains($message, 'resource')) {
