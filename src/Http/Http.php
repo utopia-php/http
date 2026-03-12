@@ -42,11 +42,6 @@ class Http
     protected Container $resourceContainer;
 
     /**
-     * @var array<string, Container>
-     */
-    protected array $scopedContainers = [];
-
-    /**
      * Current running mode
      *
      * @var string
@@ -499,12 +494,10 @@ class Http
     public function start()
     {
         $this->server->onRequest(function ($request, $response, $context, array $resources = []) {
-            try {
-                $this->registerRequestResources($request, $response, $context, $resources);
-                $this->run($request, $response, $context);
-            } finally {
-                $this->purgeResources($context);
-            }
+            $container = $this->resourceContainer->scope();
+
+            $this->registerRequestResources($resources, $container);
+            $this->run($request, $response, $context, $container);
         });
         $this->server->onStart(function ($server) {
             $this->registerResource('server', function () use ($server) {
@@ -513,7 +506,7 @@ class Http
             try {
 
                 foreach (self::$startHooks as $hook) {
-                    $arguments = $this->getArguments($hook, 'utopia', [], []);
+                    $arguments = $this->getArguments($hook, $this->resourceContainer, [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch (\Exception $e) {
@@ -522,7 +515,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, 'utopia', [], []);
+                            $arguments = $this->getArguments($error, $this->resourceContainer, [], []);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -565,17 +558,19 @@ class Http
      * @param  Route  $route
      * @param  Request  $request
      */
-    public function execute(Route $route, Request $request, string $context): static
+    public function execute(Route $route, Request $request, string $context, ?Container $container = null): static
     {
         $arguments = [];
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
+        $container ??= $this->resourceContainer->scope();
+        $scope = $container->scope();
 
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $scope, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -584,19 +579,19 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $scope, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-            $arguments = $this->getArguments($route, $context, $pathValues, $request->getParams());
+            $arguments = $this->getArguments($route, $scope, $pathValues, $request->getParams());
             \call_user_func_array($route->getAction(), $arguments);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $scope, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -605,19 +600,19 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $context, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $scope, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
         } catch (\Throwable $e) {
-            $this->registerResource('error', fn () => $e, [], $context);
+            $this->registerResource('error', fn () => $e, [], $scope);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $context, $pathValues, $request->getParams());
+                            $arguments = $this->getArguments($error, $scope, $pathValues, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -629,7 +624,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $context, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($error, $scope, $pathValues, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -637,9 +632,6 @@ class Http
                 }
             }
         }
-
-        // Reset resources for the context
-        $this->refreshResources($context);
 
         return $this;
     }
@@ -654,7 +646,7 @@ class Http
      *
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, string $context, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, Container $container, array $values, array $requestParams): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
@@ -664,7 +656,7 @@ class Http
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
-                $arg = \call_user_func_array($arg, $this->resolveResources($param['injections'], $context));
+                $arg = \call_user_func_array($arg, $this->resolveResources($param['injections'], $container));
             }
             $value = $existsInValues ? $values[$key] : $arg;
 
@@ -674,7 +666,7 @@ class Http
                 }
 
                 if ($paramExists) {
-                    $this->validate($key, $param, $value, $context);
+                    $this->validate($key, $param, $value, $container);
                 }
             }
 
@@ -683,7 +675,7 @@ class Http
         }
 
         foreach ($hook->getInjections() as $key => $injection) {
-            $arguments[$injection['order']] = $this->resolveResource($injection['name'], $context);
+            $arguments[$injection['order']] = $this->resolveResource($injection['name'], $container);
         }
 
         return $arguments;
@@ -698,25 +690,26 @@ class Http
      * @param Request $request
      * @param Response $response;
      */
-    public function run(Request $request, Response $response, string $context): static
+    public function run(Request $request, Response $response, string $context, ?Container $container = null): static
     {
-        $this->registerResource('context', fn () => $context, [], $context);
-        $this->registerResource('request', fn () => $request, [], $context);
-        $this->registerResource('response', fn () => $response, [], $context);
+        $container ??= $this->resourceContainer->scope();
+        $this->registerResource('context', fn () => $context, [], $container);
+        $this->registerResource('request', fn () => $request, [], $container);
+        $this->registerResource('response', fn () => $response, [], $container);
 
         try {
 
             foreach (self::$requestHooks as $hook) {
-                $arguments = $this->getArguments($hook, $context, [], []);
+                $arguments = $this->getArguments($hook, $container, [], []);
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->registerResource('error', fn () => $e, [], $context);
+            $this->registerResource('error', fn () => $e, [], $container);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $context, [], []);
+                        $arguments = $this->getArguments($error, $container, [], []);
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -740,7 +733,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->registerResource('route', fn () => $route, [], $context);
+        $this->registerResource('route', fn () => $route, [], $container);
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -753,7 +746,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, $container, [], $request->getParams()));
                         }
                     }
                 }
@@ -761,7 +754,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, $container, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
@@ -770,8 +763,8 @@ class Http
                     if (in_array('*', $error->getGroups())) {
                         $this->registerResource('error', function () use ($e) {
                             return $e;
-                        }, [], $context);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
+                        }, [], $container);
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, $container, [], $request->getParams()));
                     }
                 }
             }
@@ -785,24 +778,24 @@ class Http
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
 
-            $this->registerResource('route', fn () => $route, [], $context);
+            $this->registerResource('route', fn () => $route, [], $container);
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request, $context);
+            return $this->execute($route, $request, $context, $container);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, $container, [], $request->getParams()));
                         }
                     }
                 }
 
                 foreach (self::$options as $option) { // Global options hooks
                     if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, $context, [], $request->getParams()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, $container, [], $request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
@@ -810,8 +803,8 @@ class Http
                     if (in_array('*', $error->getGroups())) {
                         $this->registerResource('error', function () use ($e) {
                             return $e;
-                        }, [], $context);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
+                        }, [], $container);
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, $container, [], $request->getParams()));
                     }
                 }
             }
@@ -820,8 +813,8 @@ class Http
                 if (in_array('*', $error->getGroups())) {
                     $this->registerResource('error', function () {
                         return new Exception('Not Found', 404);
-                    }, [], $context);
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, $context, [], $request->getParams()));
+                    }, [], $container);
+                    \call_user_func_array($error->getAction(), $this->getArguments($error, $container, [], $request->getParams()));
                 }
             }
         }
@@ -841,7 +834,7 @@ class Http
      *
      * @throws Exception
      */
-    protected function validate(string $key, array $param, mixed $value, $context): void
+    protected function validate(string $key, array $param, mixed $value, Container $container): void
     {
         if ($param['optional'] && \is_null($value)) {
             return;
@@ -850,7 +843,7 @@ class Http
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->resolveResources($param['injections'], $context));
+            $validator = \call_user_func_array($validator, $this->resolveResources($param['injections'], $container));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
@@ -885,18 +878,14 @@ class Http
         return $this->resourceContainer;
     }
 
-    protected function resolveResource(string $name, string $context = 'utopia', bool $fresh = false): mixed
+    protected function resolveResource(string $name, Container $container): mixed
     {
         if ($name === 'utopia') {
             return $this;
         }
 
         try {
-            if ($fresh && $context !== 'utopia') {
-                unset($this->scopedContainers[$context]);
-            }
-
-            return $this->getContextContainer($context)->get($name);
+            return $container->get($name);
         } catch (\Throwable $e) {
             $message = \str_replace('dependency', 'resource', $e->getMessage());
 
@@ -908,57 +897,30 @@ class Http
         }
     }
 
-    protected function resolveResources(array $list, string $context = 'utopia'): array
+    protected function resolveResources(array $list, Container $container): array
     {
         $resources = [];
 
         foreach ($list as $name) {
-            $resources[$name] = $this->resolveResource($name, $context);
+            $resources[$name] = $this->resolveResource($name, $container);
         }
 
         return $resources;
     }
 
-    protected function registerResource(string $name, callable $callback, array $injections = [], string $context = 'utopia'): void
+    protected function registerResource(string $name, callable $callback, array $injections = [], ?Container $container = null): void
     {
         if ($name === 'utopia') {
             throw new Exception("'utopia' is a reserved keyword.", 500);
         }
 
-        $this->getContextContainer($context)->set($name, new Dependency($injections, $callback));
+        ($container ?? $this->resourceContainer)->set($name, new Dependency($injections, $callback));
     }
 
-    protected function registerRequestResources(Request $request, Response $response, string $context, array $resources = []): void
+    protected function registerRequestResources(array $resources = [], ?Container $container = null): void
     {
         foreach ($resources as $name => $resource) {
-            $this->registerResource($name, fn () => $resource, [], $context);
+            $this->registerResource($name, fn () => $resource, [], $container);
         }
-    }
-
-    protected function refreshResources(string $context): void
-    {
-        if ($context === 'utopia') {
-            return;
-        }
-
-        unset($this->scopedContainers[$context]);
-    }
-
-    protected function purgeResources(string $context): void
-    {
-        unset($this->scopedContainers[$context]);
-    }
-
-    protected function getContextContainer(string $context = 'utopia'): Container
-    {
-        if ($context === 'utopia') {
-            return $this->resourceContainer;
-        }
-
-        if (!isset($this->scopedContainers[$context])) {
-            $this->scopedContainers[$context] = $this->resourceContainer->scope();
-        }
-
-        return $this->scopedContainers[$context];
     }
 }

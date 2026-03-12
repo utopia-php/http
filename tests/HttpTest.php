@@ -577,6 +577,48 @@ class HttpTest extends TestCase
         $this->assertStringNotContainsString('HELLO', $result);
     }
 
+    public function testScopedResourcesUseNestedContainers(): void
+    {
+        $counter = 0;
+        $this->container->set('shared', new Dependency([], function () use (&$counter) {
+            $counter++;
+
+            return $counter;
+        }));
+
+        $http = new class (new Server(), 'Asia/Tel_Aviv', $this->container) extends Http {
+            public function createScope(?Container $container = null): Container
+            {
+                return ($container ?? $this->getResourceContainer())->scope();
+            }
+
+            public function shareValue(string $name, mixed $value, Container $container): void
+            {
+                $this->registerResource($name, fn () => $value, [], $container);
+            }
+
+            public function resource(string $name, Container $container): mixed
+            {
+                return $this->resolveResource($name, $container);
+            }
+        };
+
+        $requestA = $http->createScope();
+        $requestB = $http->createScope();
+        $executionA = $http->createScope($requestA);
+
+        $http->shareValue('requestId', 'request-a', $requestA);
+        $http->shareValue('requestId', 'request-b', $requestB);
+        $http->shareValue('requestId', 'execution-a', $executionA);
+
+        $this->assertSame(1, $http->resource('shared', $requestA));
+        $this->assertSame(1, $http->resource('shared', $requestB));
+        $this->assertSame('request-a', $http->resource('requestId', $requestA));
+        $this->assertSame('request-b', $http->resource('requestId', $requestB));
+        $this->assertSame('execution-a', $http->resource('requestId', $executionA));
+        $this->assertSame('request-a', $http->resource('requestId', $requestA));
+    }
+
     public function testWildcardRoute(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? null;

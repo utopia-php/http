@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "190b1ab566fa3fb6fec7778fe45dcad8",
+    "content-hash": "b7bee41baa98a69509660346704ff023",
     "packages": [
         {
             "name": "psr/container",
@@ -61,16 +61,16 @@
         },
         {
             "name": "utopia-php/di",
-            "version": "dev-chore/extract-http-di-resources",
+            "version": "0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "f4bbf60d05edb2342ea09d44e90573180c212ec7"
+                "reference": "6a9135908dddef66fd07733705b9625f42d302a4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/f4bbf60d05edb2342ea09d44e90573180c212ec7",
-                "reference": "f4bbf60d05edb2342ea09d44e90573180c212ec7",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/6a9135908dddef66fd07733705b9625f42d302a4",
+                "reference": "6a9135908dddef66fd07733705b9625f42d302a4",
                 "shasum": ""
             },
             "require": {
@@ -129,10 +129,10 @@
                 "utopia"
             ],
             "support": {
-                "source": "https://github.com/utopia-php/di/tree/chore/extract-http-di-resources",
+                "source": "https://github.com/utopia-php/di/tree/0.2.0",
                 "issues": "https://github.com/utopia-php/di/issues"
             },
-            "time": "2026-03-12T05:13:45+00:00"
+            "time": "2026-03-12T07:54:46+00:00"
         },
         {
             "name": "utopia-php/validators",
@@ -3603,9 +3603,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "utopia-php/di": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
