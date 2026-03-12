@@ -24,8 +24,8 @@ class HttpTest extends TestCase
     public function setUp(): void
     {
         Http::reset();
-        $this->container = new Container();
-        $this->http = new Http(new Server(), 'Asia/Tel_Aviv', $this->container);
+        $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
+        $this->container = $this->http->getContainer();
         $this->saveRequest();
     }
 
@@ -580,28 +580,28 @@ class HttpTest extends TestCase
     public function testScopedResourcesUseNestedContainers(): void
     {
         $counter = 0;
-        $this->container->set('shared', new Dependency([], function () use (&$counter) {
+        $http = new class (new Server(), 'Asia/Tel_Aviv') extends Http {
+            public function createScope(?Container $scope = null): Container
+            {
+                return ($scope ?? $this->getContainer())->scope();
+            }
+
+            public function shareValue(string $name, mixed $value, Container $scope): void
+            {
+                $this->setResource($name, fn () => $value, [], $scope);
+            }
+
+            public function resource(string $name, Container $scope): mixed
+            {
+                return $this->getResource($name, $scope);
+            }
+        };
+
+        $http->getContainer()->set('shared', new Dependency([], function () use (&$counter) {
             $counter++;
 
             return $counter;
         }));
-
-        $http = new class (new Server(), 'Asia/Tel_Aviv', $this->container) extends Http {
-            public function createScope(?Container $container = null): Container
-            {
-                return ($container ?? $this->getResourceContainer())->scope();
-            }
-
-            public function shareValue(string $name, mixed $value, Container $container): void
-            {
-                $this->registerResource($name, fn () => $value, [], $container);
-            }
-
-            public function resource(string $name, Container $container): mixed
-            {
-                return $this->resolveResource($name, $container);
-            }
-        };
 
         $requestA = $http->createScope();
         $requestB = $http->createScope();
