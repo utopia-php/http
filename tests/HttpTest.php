@@ -577,6 +577,70 @@ class HttpTest extends TestCase
         $this->assertSame('GET', $headers['X-Error-Method'] ?? null);
     }
 
+    public function testNestedInternalDispatchRestoresRouteContext(): void
+    {
+        $request = (new Request())
+            ->setMethod('GET')
+            ->setURI('/outer-route');
+
+        Http::error()
+            ->inject('utopia')
+            ->inject('route')
+            ->inject('response')
+            ->action(function (Http $app, Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Inner-Error-Route', $route->getPath())
+                    ->addHeader('X-Inner-Error-Current-Route', $app->getRoute()?->getPath());
+            });
+
+        Http::get('/inner-route')
+            ->inject('utopia')
+            ->inject('route')
+            ->inject('response')
+            ->action(function (Http $app, Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Inner-Route', $route->getPath())
+                    ->addHeader('X-Inner-Current-Route', $app->getRoute()?->getPath());
+
+                throw new Exception('Inner route failure');
+            });
+
+        Http::get('/outer-route')
+            ->inject('utopia')
+            ->inject('route')
+            ->inject('response')
+            ->action(function (Http $app, Route $route, Response $response) {
+                $response
+                    ->addHeader('X-Outer-Before-Route', $route->getPath())
+                    ->addHeader('X-Outer-Before-Current-Route', $app->getRoute()?->getPath())
+                    ->addHeader('X-Outer-Before-Resource-Route', $app->getResource('route')->getPath());
+
+                $innerRequest = (new Request())
+                    ->setMethod('GET')
+                    ->setURI('/inner-route');
+
+                $app->run($innerRequest, $response);
+
+                $response
+                    ->addHeader('X-Outer-After-Current-Route', $app->getRoute()?->getPath())
+                    ->addHeader('X-Outer-After-Resource-Route', $app->getResource('route')->getPath());
+            });
+
+        $response = new Response();
+        $this->app->run($request, $response);
+        $headers = $response->getHeaders();
+
+        $this->assertSame('/outer-route', $headers['X-Outer-Before-Route'] ?? null);
+        $this->assertSame('/outer-route', $headers['X-Outer-Before-Current-Route'] ?? null);
+        $this->assertSame('/outer-route', $headers['X-Outer-Before-Resource-Route'] ?? null);
+        $this->assertSame('/inner-route', $headers['X-Inner-Route'] ?? null);
+        $this->assertSame('/inner-route', $headers['X-Inner-Current-Route'] ?? null);
+        $this->assertSame('/inner-route', $headers['X-Inner-Error-Route'] ?? null);
+        $this->assertSame('/inner-route', $headers['X-Inner-Error-Current-Route'] ?? null);
+        $this->assertSame('/outer-route', $headers['X-Outer-After-Current-Route'] ?? null);
+        $this->assertSame('/outer-route', $headers['X-Outer-After-Resource-Route'] ?? null);
+    }
+
     public function providerRouteMatching(): array
     {
         return [

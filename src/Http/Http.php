@@ -638,6 +638,53 @@ class Http
     }
 
     /**
+     * Capture the current route context so nested dispatches can restore it.
+     *
+     * @return array<string, mixed>
+     */
+    private function captureRouteContext(): array
+    {
+        return [
+            'route' => $this->route,
+            'hasRouteResource' => \array_key_exists('route', $this->resources),
+            'routeResource' => $this->resources['route'] ?? null,
+            'hasRouteResourceCallback' => \array_key_exists('route', self::$resourcesCallbacks),
+            'routeResourceCallback' => self::$resourcesCallbacks['route'] ?? null,
+        ];
+    }
+
+    private function applyRouteContext(?Route $route, Request $request): void
+    {
+        $this->route = $route;
+
+        self::setResource('route', function () use ($route, $request) {
+            return $route ?? new Route($request->getMethod(), $request->getURI());
+        });
+    }
+
+    /**
+     * Restore the previous route context after nested dispatch completes.
+     *
+     * @param  array<string, mixed>  $context
+     */
+    private function restoreRouteContext(array $context): void
+    {
+        $this->route = $context['route'];
+
+        if ($context['hasRouteResource']) {
+            $this->resources['route'] = $context['routeResource'];
+        } else {
+            unset($this->resources['route']);
+        }
+
+        if ($context['hasRouteResourceCallback']) {
+            self::$resourcesCallbacks['route'] = $context['routeResourceCallback'];
+        } else {
+            unset(self::$resourcesCallbacks['route']);
+        }
+    }
+
+    /**
      * Execute a given route with middlewares and error handling
      *
      * @param  Route  $route
@@ -914,50 +961,102 @@ class Http
             return $this;
         }
 
-        $method = $request->getMethod();
-        $route = $this->match($request);
-        $this->matchedRoute = $route;
-        $groups = ($route instanceof Route) ? $route->getGroups() : [];
+        $routeContext = $this->captureRouteContext();
+        $matchedRoute = $this->matchedRoute;
 
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $route->path($path);
-        }
+        try {
+            $method = $request->getMethod();
+            $route = $this->match($request, fresh: true);
+            $this->matchedRoute = $route;
+            $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        self::setResource('route', function () use ($route, $request) {
-            return $route ?? new Route($request->getMethod(), $request->getURI());
-        });
+            if (null === $route && null !== self::$wildcardRoute) {
+                $route = self::$wildcardRoute;
+                $path = \parse_url($request->getURI(), PHP_URL_PATH);
+                $route->path($path);
+            }
 
-        if (self::REQUEST_METHOD_HEAD == $method) {
-            $method = self::REQUEST_METHOD_GET;
-            $response->disablePayload();
-        }
+            $this->applyRouteContext($route, $request);
 
-        if (self::REQUEST_METHOD_OPTIONS == $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
+            if (self::REQUEST_METHOD_HEAD == $method) {
+                $method = self::REQUEST_METHOD_GET;
+                $response->disablePayload();
+            }
+
+            if (self::REQUEST_METHOD_OPTIONS == $method) {
+                try {
+                    foreach ($groups as $group) {
+                        foreach (self::$options as $option) { // Group options hooks
+                            /** @var Hook $option */
+                            if (in_array($group, $option->getGroups())) {
+                                \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                            }
+                        }
+                    }
+
+                    foreach (self::$options as $option) { // Global options hooks
                         /** @var Hook $option */
-                        if (in_array($group, $option->getGroups())) {
+                        if (in_array('*', $option->getGroups())) {
                             \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    foreach (self::$errors as $error) { // Global error hooks
+                        /** @var Hook $error */
+                        if (in_array('*', $error->getGroups())) {
+                            self::setResource('error', function () use ($e) {
+                                return $e;
+                            });
+                            try {
+                                $arguments = $this->getArguments($error, [], $request->getParams());
+                                \call_user_func_array($error->getAction(), $arguments);
+                            } catch (\Throwable $e) {
+                                throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
+                            }
                         }
                     }
                 }
 
-                foreach (self::$options as $option) { // Global options hooks
-                    /** @var Hook $option */
-                    if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                return $this;
+            }
+
+            if (null !== $route) {
+                return $this->execute($route, $request, $response);
+            } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
+                try {
+                    foreach ($groups as $group) {
+                        foreach (self::$options as $option) { // Group options hooks
+                            if (in_array($group, $option->getGroups())) {
+                                \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                            }
+                        }
+                    }
+
+                    foreach (self::$options as $option) { // Global options hooks
+                        if (in_array('*', $option->getGroups())) {
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    foreach (self::$errors as $error) { // Global error hooks
+                        if (in_array('*', $error->getGroups())) {
+                            self::setResource('error', function () use ($e) {
+                                return $e;
+                            });
+                            try {
+                                $arguments = $this->getArguments($error, [], $request->getParams());
+                                \call_user_func_array($error->getAction(), $arguments);
+                            } catch (\Throwable $e) {
+                                throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
+                            }
+                        }
                     }
                 }
-            } catch (\Throwable $e) {
+            } else {
                 foreach (self::$errors as $error) { // Global error hooks
-                    /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
+                        self::setResource('error', function () {
+                            return new Exception('Not Found', 404);
                         });
                         try {
                             $arguments = $this->getArguments($error, [], $request->getParams());
@@ -970,57 +1069,10 @@ class Http
             }
 
             return $this;
+        } finally {
+            $this->restoreRouteContext($routeContext);
+            $this->matchedRoute = $matchedRoute;
         }
-
-        if (null !== $route) {
-            return $this->execute($route, $request, $response);
-        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        if (in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    if (in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (in_array('*', $error->getGroups())) {
-                        self::setResource('error', function () use ($e) {
-                            return $e;
-                        });
-                        try {
-                            $arguments = $this->getArguments($error, [], $request->getParams());
-                            \call_user_func_array($error->getAction(), $arguments);
-                        } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
-                        }
-                    }
-                }
-            }
-        } else {
-            foreach (self::$errors as $error) { // Global error hooks
-                if (in_array('*', $error->getGroups())) {
-                    self::setResource('error', function () {
-                        return new Exception('Not Found', 404);
-                    });
-                    try {
-                        $arguments = $this->getArguments($error, [], $request->getParams());
-                        \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString(), 500, $e);
-                    }
-                }
-            }
-        }
-
-        return $this;
     }
 
     /**
