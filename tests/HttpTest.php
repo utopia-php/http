@@ -566,10 +566,8 @@ class HttpTest extends TestCase
                 $response->send('HELLO');
             });
 
-        $scope = $this->http->getResourceContainer()->scope();
-
         \ob_start();
-        $this->http->run(new Request(), new Response(), '1', $scope);
+        $this->http->run(new Request(), new Response(), '1');
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -647,10 +645,8 @@ class HttpTest extends TestCase
                 }
             });
 
-        $scope = $this->http->getResourceContainer()->scope();
-
         \ob_start();
-        @$this->http->run(new Request(), new Response(), '1', $scope);
+        @$this->http->run(new Request(), new Response(), '1');
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -659,7 +655,7 @@ class HttpTest extends TestCase
         \ob_start();
         $req = new Request();
         $req = $req->setMethod('OPTIONS');
-        @$this->http->run($req, new Response(), '1', $this->http->getResourceContainer()->scope());
+        @$this->http->run($req, new Response(), '1');
         $result = \ob_get_contents();
         \ob_end_clean();
 

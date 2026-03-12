@@ -494,10 +494,7 @@ class Http
     public function start()
     {
         $this->server->onRequest(function ($request, $response, $context, array $resources = []) {
-            $container = $this->resourceContainer->scope();
-
-            $this->registerRequestResources($resources, $container);
-            $this->run($request, $response, $context, $container);
+            $this->runWithResources($request, $response, $context, $resources);
         });
         $this->server->onStart(function ($server) {
             $this->registerResource('server', function () use ($server) {
@@ -690,8 +687,15 @@ class Http
      * @param Request $request
      * @param Response $response;
      */
-    public function run(Request $request, Response $response, string $context, Container $container): static
+    public function run(Request $request, Response $response, string $context): static
     {
+        return $this->runWithResources($request, $response, $context);
+    }
+
+    protected function runWithResources(Request $request, Response $response, string $context, array $resources = []): static
+    {
+        $container = $this->resourceContainer->scope();
+        $this->registerRequestResources($resources, $container);
         $this->registerResource('context', fn () => $context, [], $container);
         $this->registerResource('request', fn () => $request, [], $container);
         $this->registerResource('response', fn () => $response, [], $container);
