@@ -25,7 +25,7 @@ class HttpTest extends TestCase
     {
         Http::reset();
         $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
-        $this->container = $this->getHttpContainer($this->http);
+        $this->container = $this->http->getContainer();
         $this->saveRequest();
     }
 
@@ -48,9 +48,13 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $this->uri;
     }
 
-    protected function getHttpContainer(Http $http): Container
+    public function testCanInjectContainerInConstructor(): void
     {
-        return \Closure::bind(fn (): Container => $this->container, $http, Http::class)();
+        $container = new Container();
+        $http = new Http(new Server(), 'Asia/Tel_Aviv', $container);
+
+        $this->assertSame($container, $http->getContainer());
+        $this->assertInstanceOf(Container::class, (new Http(new Server(), 'Asia/Tel_Aviv'))->getContainer());
     }
 
     public function testCanGetDifferentModes(): void

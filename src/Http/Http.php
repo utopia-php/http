@@ -126,12 +126,22 @@ class Http
      * @param Adapter $server
      * @param  string  $timezone
      */
-    public function __construct(Adapter $server, string $timezone)
+    public function __construct(Adapter $server, string $timezone, ?Container $container = null)
     {
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
-        $this->container = new Container();
+        $this->container = $container ?? new Container();
+    }
+
+    /**
+     * Get dependency injection container
+     *
+     * @return Container
+     */
+    public function getContainer(): Container
+    {
+        return $this->container;
     }
 
     /**
