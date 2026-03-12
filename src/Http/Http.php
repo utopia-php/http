@@ -357,7 +357,7 @@ class Http
      *
      * @throws Exception
      */
-    protected function getResource(string $name, Container $scope): mixed
+    public function getResource(string $name, Container $scope): mixed
     {
         try {
             return $scope->get($name);
@@ -381,7 +381,7 @@ class Http
      *
      * @throws Exception
      */
-    protected function getResources(array $list, Container $scope): array
+    public function getResources(array $list, Container $scope): array
     {
         $resources = [];
 

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6bf6c5703f842ea4d1cdee8068e967b4",
+    "content-hash": "5afd948989df91d546b1694354e2f9d2",
     "packages": [
         {
             "name": "psr/container",
@@ -91,46 +91,22 @@
                     "Tests\\E2E\\": "tests/e2e"
                 }
             },
-            "scripts": {
-                "format": [
-                    "vendor/bin/pint"
-                ],
-                "format:check": [
-                    "vendor/bin/pint --test"
-                ],
-                "analyze": [
-                    "vendor/bin/phpstan analyse --memory-limit=512M"
-                ],
-                "refactor": [
-                    "tools/rector/vendor/bin/rector process --config=rector.php"
-                ],
-                "refactor:check": [
-                    "tools/rector/vendor/bin/rector process --dry-run --config=rector.php"
-                ],
-                "fix": [
-                    "@refactor",
-                    "@analyze",
-                    "@format"
-                ],
-                "test": [
-                    "vendor/bin/phpunit --configuration phpunit.xml"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
             "description": "A simple and lite library for managing dependency injections",
             "keywords": [
+                "PSR-11",
                 "container",
                 "dependency-injection",
                 "di",
                 "php",
-                "psr-11",
                 "utopia"
             ],
             "support": {
-                "source": "https://github.com/utopia-php/di/tree/0.3.0",
-                "issues": "https://github.com/utopia-php/di/issues"
+                "issues": "https://github.com/utopia-php/di/issues",
+                "source": "https://github.com/utopia-php/di/tree/0.3.0"
             },
             "time": "2026-03-12T10:40:23+00:00"
         },

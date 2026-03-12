@@ -10,12 +10,6 @@
     ],
     "license": "MIT",
     "minimum-stability": "stable",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/utopia-php/di"
-        }
-    ],
     "autoload": {
         "psr-4": {
             "Utopia\\": "src/",
