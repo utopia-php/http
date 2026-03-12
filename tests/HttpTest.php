@@ -57,6 +57,29 @@ class HttpTest extends TestCase
         $this->assertInstanceOf(Container::class, (new Http(new Server(), 'Asia/Tel_Aviv'))->getContainer());
     }
 
+    public function testCanRegisterResourcesWithPublicApi(): void
+    {
+        $this->http->setResource('rand', fn () => 1234);
+        $this->http->setResource('second', fn () => 'second');
+        $this->http->setResource('first', fn ($second) => "first-{$second}", ['second']);
+
+        $route = new Route('GET', '/path');
+
+        $route
+            ->inject('rand')
+            ->inject('first')
+            ->action(function ($rand, $first) {
+                echo $rand . '-' . $first;
+            });
+
+        \ob_start();
+        $this->http->execute($route, new Request(), '1');
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $this->assertSame('1234-first-second', $result);
+    }
+
     public function testCanGetDifferentModes(): void
     {
         $this->assertEmpty(Http::getMode());

@@ -398,7 +398,7 @@ class Http
      *
      * @param string[] $injections
      */
-    protected function setResource(string $name, callable $callback, array $injections = [], ?Container $scope = null): void
+    public function setResource(string $name, callable $callback, array $injections = [], ?Container $scope = null): void
     {
         ($scope ?? $this->container)->set($name, new Dependency($injections, $callback));
     }
