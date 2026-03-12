@@ -111,15 +111,15 @@ class ResponseTest extends TestCase
         $this->assertEquals('Hello World!', $response['body']);
 
         $response = $this->client->call(Client::METHOD_GET, '//value/123');
-        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(404, $response['headers']['status-code']);
         $this->assertEmpty($response['body']);
 
         $response = $this->client->call(Client::METHOD_GET, '/value//123');
-        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(400, $response['headers']['status-code']);
         $this->assertEmpty($response['body']);
 
         $response = $this->client->call(Client::METHOD_GET, '//value//123');
-        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(404, $response['headers']['status-code']);
         $this->assertEmpty($response['body']);
     }
 
@@ -167,5 +167,33 @@ class ResponseTest extends TestCase
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals('value1', $response['cookies']['key1']);
         $this->assertEquals('value2', $response['cookies']['key2']);
+    }
+
+    // ── Streaming tests (FPM adapter) ──
+
+    public function testStreamWithGenerator(): void
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/stream/generator');
+
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('chunk1-chunk2-chunk3', $response['body']);
+    }
+
+    public function testStreamWithCallable(): void
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/stream/callable');
+
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(str_repeat('A', 1000), $response['body']);
+    }
+
+    public function testStreamWithGeneratorLargeData(): void
+    {
+        $response = $this->client->call(Client::METHOD_GET, '/stream/generator-large');
+
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(500000, strlen($response['body']));
+        $this->assertEquals(str_repeat('A', 100000), substr($response['body'], 0, 100000));
+        $this->assertEquals(str_repeat('E', 100000), substr($response['body'], 400000, 100000));
     }
 }

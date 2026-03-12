@@ -6,3 +6,23 @@ services:
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
+            - ./phpunit.xml:/usr/share/nginx/html/phpunit.xml
+        healthcheck:
+            test: ["CMD-SHELL", "curl -sf http://127.0.0.1/ || exit 1"]
+            interval: 2s
+            timeout: 5s
+            retries: 15
+    swoole-web:
+        build:
+            context: .
+            dockerfile: Dockerfile.swoole
+        ports:
+            - "9021:80"
+        volumes:
+            - ./src:/usr/src/code/src
+            - ./tests:/usr/src/code/tests
+        healthcheck:
+            test: ["CMD-SHELL", "curl -sf http://127.0.0.1/ || exit 1"]
+            interval: 2s
+            timeout: 5s
+            retries: 15

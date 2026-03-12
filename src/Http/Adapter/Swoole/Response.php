@@ -3,6 +3,7 @@
 namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Http\Response as SwooleResponse;
+use Swoole\Http\Server as SwooleServer;
 use Utopia\Http\Response as UtopiaResponse;
 
 class Response extends UtopiaResponse
@@ -15,12 +16,59 @@ class Response extends UtopiaResponse
     protected SwooleResponse $swoole;
 
     /**
+     * Swoole Server Object (needed for raw TCP streaming with Content-Length)
+     *
+     * @var SwooleServer|null
+     */
+    protected ?SwooleServer $server = null;
+
+    /**
+     * Whether to use detach() + raw TCP send for streaming.
+     * When true (and server is set): preserves Content-Length header so browsers show download progress.
+     * When false: uses Swoole's write() which forces chunked Transfer-Encoding.
+     *
+     * @var bool
+     */
+    protected bool $detach = true;
+
+    /**
      * Response constructor.
      */
     public function __construct(SwooleResponse $response)
     {
         $this->swoole = $response;
         parent::__construct(\microtime(true));
+    }
+
+    /**
+     * Set the Swoole server instance for raw TCP streaming.
+     *
+     * @param  SwooleServer  $server
+     * @return static
+     */
+    public function setServer(SwooleServer $server): static
+    {
+        $this->server = $server;
+
+        return $this;
+    }
+
+    /**
+     * Set whether to detach from Swoole's HTTP layer for streaming.
+     *
+     * When enabled (default): uses detach() + $server->send() to preserve
+     * Content-Length so browsers show download progress bars.
+     *
+     * When disabled: uses Swoole's write() which applies chunked Transfer-Encoding.
+     *
+     * @param  bool  $detach
+     * @return static
+     */
+    public function setDetach(bool $detach): static
+    {
+        $this->detach = $detach;
+
+        return $this;
     }
 
     /**
@@ -43,6 +91,169 @@ class Response extends UtopiaResponse
     public function end(?string $content = null): void
     {
         $this->swoole->end($content);
+    }
+
+    /**
+     * Stream response
+     *
+     * Uses detach() + $server->send() for raw TCP streaming that preserves
+     * Content-Length (so browsers show download progress). Falls back to
+     * the base class implementation if no server instance is available.
+     *
+     * @param  callable|\Generator  $source  Either a callable($offset, $length) or a Generator yielding string chunks
+     * @param  int  $totalSize  Total size of the content in bytes
+     * @return void
+     */
+    public function stream(callable|\Generator $source, int $totalSize): void
+    {
+        if ($this->sent) {
+            return;
+        }
+
+        $this->sent = true;
+
+        if ($this->disablePayload) {
+            $this->appendCookies();
+            $this->appendHeaders();
+            $this->swoole->end();
+            $this->disablePayload();
+
+            return;
+        }
+
+        // When detach is enabled and server is available, use raw TCP streaming
+        // to preserve Content-Length (browsers show download progress).
+        if ($this->detach && $this->server !== null) {
+            $this->streamDetached($source, $totalSize);
+
+            return;
+        }
+
+        // Non-detach path: use Swoole's write() (chunked Transfer-Encoding)
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
+
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType, override: true);
+        }
+
+        $this->appendCookies();
+        $this->appendHeaders();
+        $this->sendStatus($this->statusCode);
+
+        if ($source instanceof \Generator) {
+            foreach ($source as $chunk) {
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->swoole->write($chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            $length = self::CHUNK_SIZE;
+            for ($offset = 0; $offset < $totalSize; $offset += $length) {
+                $chunk = $source($offset, min($length, $totalSize - $offset));
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->swoole->write($chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        $this->swoole->end();
+        $this->disablePayload();
+    }
+
+    /**
+     * Stream using detach() + raw TCP send to preserve Content-Length.
+     *
+     * @param  callable|\Generator  $source
+     * @param  int  $totalSize
+     * @return void
+     */
+    protected function streamDetached(callable|\Generator $source, int $totalSize): void
+    {
+        $this->addHeader('Content-Length', (string) $totalSize, override: true);
+        $this->addHeader('Connection', 'close', override: true);
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
+
+        if (!empty($this->contentType)) {
+            $this->addHeader('Content-Type', $this->contentType, override: true);
+        }
+
+        $statusReason = $this->getStatusCodeReason($this->statusCode);
+        $rawHeaders = "HTTP/1.1 {$this->statusCode} {$statusReason}\r\n";
+
+        foreach ($this->headers as $key => $value) {
+            if (\is_array($value)) {
+                foreach ($value as $v) {
+                    $rawHeaders .= "{$key}: {$v}\r\n";
+                }
+            } else {
+                $rawHeaders .= "{$key}: {$value}\r\n";
+            }
+        }
+
+        foreach ($this->cookies as $cookie) {
+            $cookieStr = \urlencode($cookie['name']) . '=' . \urlencode($cookie['value'] ?? '');
+            if (!empty($cookie['expire'])) {
+                $cookieStr .= '; Expires=' . \gmdate('D, d M Y H:i:s T', $cookie['expire']);
+            }
+            if (!empty($cookie['path'])) {
+                $cookieStr .= '; Path=' . $cookie['path'];
+            }
+            if (!empty($cookie['domain'])) {
+                $cookieStr .= '; Domain=' . $cookie['domain'];
+            }
+            if (!empty($cookie['secure'])) {
+                $cookieStr .= '; Secure';
+            }
+            if (!empty($cookie['httponly'])) {
+                $cookieStr .= '; HttpOnly';
+            }
+            if (!empty($cookie['samesite'])) {
+                $cookieStr .= '; SameSite=' . $cookie['samesite'];
+            }
+            $rawHeaders .= "Set-Cookie: {$cookieStr}\r\n";
+        }
+
+        $rawHeaders .= "\r\n";
+
+        $fd = $this->swoole->fd;
+        $this->swoole->detach();
+
+        if ($this->server->send($fd, $rawHeaders) === false) {
+            $this->disablePayload();
+
+            return;
+        }
+
+        if ($source instanceof \Generator) {
+            foreach ($source as $chunk) {
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->server->send($fd, $chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        } else {
+            $length = self::CHUNK_SIZE;
+            for ($offset = 0; $offset < $totalSize; $offset += $length) {
+                $chunk = $source($offset, min($length, $totalSize - $offset));
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    if ($this->server->send($fd, $chunk) === false) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        $this->server->close($fd);
+        $this->disablePayload();
     }
 
     /**

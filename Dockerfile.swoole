@@ -1,0 +1,20 @@
+FROM phpswoole/swoole:php8.3-alpine
+
+ARG TESTING=true
+ENV TESTING=$TESTING
+
+WORKDIR /usr/src/code
+
+COPY composer.* /usr/src/code/
+
+RUN composer install --ignore-platform-reqs --optimize-autoloader \
+    --no-plugins --no-scripts --prefer-dist \
+    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
+
+COPY ./src /usr/src/code/src
+COPY ./tests /usr/src/code/tests
+COPY ./phpunit.xml /usr/src/code/phpunit.xml
+
+EXPOSE 80
+
+CMD ["php", "/usr/src/code/tests/e2e/swoole-server.php"]

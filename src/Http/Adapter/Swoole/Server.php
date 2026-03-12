@@ -26,7 +26,9 @@ class Server extends Adapter
             Http::setResource('swooleRequest', fn () => $request);
             Http::setResource('swooleResponse', fn () => $response);
 
-            call_user_func($callback, new Request($request), new Response($response));
+            $utopiaResponse = new Response($response);
+            $utopiaResponse->setServer($this->server);
+            call_user_func($callback, new Request($request), $utopiaResponse);
         });
     }
 

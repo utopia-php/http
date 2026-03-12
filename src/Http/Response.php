@@ -992,6 +992,57 @@ abstract class Response
     }
 
     /**
+     * Stream response
+     *
+     * Stream file content to the client using either a callable (pull-based, offset/length)
+     * or a Generator/iterable (push-based, yielding chunks from a streaming source).
+     *
+     * @param  callable|\Generator  $source  Either a callable($offset, $length) or a Generator yielding string chunks
+     * @param  int  $totalSize  Total size of the content in bytes
+     * @return void
+     */
+    public function stream(callable|\Generator $source, int $totalSize): void
+    {
+        if ($this->sent) {
+            return;
+        }
+
+        $this->addHeader('Content-Length', (string) $totalSize, override: true);
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime), override: true);
+
+        $this->appendCookies();
+        $this->appendHeaders();
+
+        if ($this->disablePayload) {
+            $this->end();
+            $this->sent = true;
+            return;
+        }
+
+        if ($source instanceof \Generator) {
+            foreach ($source as $chunk) {
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    $this->write($chunk);
+                }
+            }
+        } else {
+            $length = self::CHUNK_SIZE;
+            for ($offset = 0; $offset < $totalSize; $offset += $length) {
+                $chunk = $source($offset, $length);
+                if (!empty($chunk)) {
+                    $this->size += strlen($chunk);
+                    $this->write($chunk);
+                }
+            }
+        }
+
+        $this->end();
+        $this->sent = true;
+        $this->disablePayload();
+    }
+
+    /**
      * No Content
      *
      * This helper is for sending no content HTTP response.

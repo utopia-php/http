@@ -885,6 +885,8 @@ class Http
      */
     private function runInternal(Request $request, Response $response): static
     {
+        $this->route = null;
+
         if ($this->compression) {
             $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
             $response->setCompressionMinSize($this->compressionMinSize);

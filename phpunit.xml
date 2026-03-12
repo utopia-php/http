@@ -9,9 +9,19 @@
          stopOnFailure="false"
         >
     <testsuites>
-        <testsuite name="Application Test Suite">
+        <testsuite name="unit">
+            <directory suffix="Test.php">./tests/</directory>
+            <exclude>./tests/e2e</exclude>
+        </testsuite>
+        <testsuite name="fpm">
             <file>./tests/e2e/Client.php</file>
-            <directory>./tests/</directory>
+            <directory suffix="Test.php">./tests/e2e/</directory>
+            <exclude>./tests/e2e/SwooleResponseTest.php</exclude>
+        </testsuite>
+        <testsuite name="swoole">
+            <file>./tests/e2e/Client.php</file>
+            <file>./tests/e2e/ResponseTest.php</file>
+            <file>./tests/e2e/SwooleResponseTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>
