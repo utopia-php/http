@@ -301,9 +301,9 @@ class ResponseTest extends TestCase
 
     public function testStreamWithEmptyGenerator()
     {
-        $generator = (function () {
-            return;
-            yield; // make it a generator
+        /** @var \Generator<int, string, mixed, void> $generator */
+        $generator = (function (): \Generator {
+            yield from [];
         })();
 
         ob_start();
