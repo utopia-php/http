@@ -36,15 +36,16 @@
     },
     "require": {
         "php": ">=8.2",
-        "ext-swoole": "*",
         "utopia-php/di": "dev-chore/extract-http-di-resources",
-        "utopia-php/validators": "0.2.*"
+        "utopia-php/validators": "0.2.*",
+        "ext-swoole": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5.25",
+        "doctrine/instantiator": "^1.5",
         "laravel/pint": "1.*",
-        "swoole/ide-helper": "4.8.3",
+        "phpbench/phpbench": "^1.2",
         "phpstan/phpstan": "1.*",
-        "phpbench/phpbench": "^1.2"
+        "phpunit/phpunit": "^9.5.25",
+        "swoole/ide-helper": "4.8.3"
     }
 }
