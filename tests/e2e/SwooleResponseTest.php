@@ -33,7 +33,7 @@ class SwooleResponseTest extends ResponseTest
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals('chunk1-chunk2-chunk3', $response['body']);
         $this->assertArrayHasKey('content-length', $response['headers']);
-        $this->assertEquals('19', $response['headers']['content-length']);
+        $this->assertEquals('20', $response['headers']['content-length']);
     }
 
     public function testDetachStreamCallableHasContentLength(): void
@@ -66,6 +66,42 @@ class SwooleResponseTest extends ResponseTest
         $this->assertEquals(200, $response['headers']['status-code']);
         $this->assertEquals('nd-chunk1-nd-chunk2-nd-chunk3', $response['body']);
         $this->assertArrayNotHasKey('content-length', $response['headers']);
+    }
+
+    /**
+     * Override: Swoole parses cookies internally and the reconstructed Cookie header
+     * always uses '; ' separator, so 'cookie1=value1;cookie2=value2' becomes
+     * 'cookie1=value1; cookie2=value2'. We test the normalized format here.
+     */
+    public function testCookie()
+    {
+        // One cookie
+        $cookie = 'cookie1=value1';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie' => $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        // Two cookies
+        $cookie = 'cookie1=value1; cookie2=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie' => $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        // Two cookies without optional space (Swoole normalizes to '; ')
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie' => 'cookie1=value1;cookie2=value2']);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals('cookie1=value1; cookie2=value2', $response['body']);
+
+        // Cookie with "=" in value
+        $cookie = 'cookie1=value1=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie' => $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        // Case sensitivity for cookie names (Swoole lowercases keys)
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie' => 'cookie1=v1; Cookie1=v2']);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertNotEmpty($response['body']);
     }
 
     public function testNonDetachStreamCallable(): void

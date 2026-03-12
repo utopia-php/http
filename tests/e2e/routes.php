@@ -108,6 +108,17 @@ Http::get('/early-response')
         $response->send('Action response');
     });
 
+// ── Error handler (required for Swoole to close the connection on 404) ──
+
+Http::error()
+    ->inject('error')
+    ->inject('response')
+    ->action(function (\Throwable $error, Response $response) {
+        $response
+            ->setStatusCode($error->getCode() ?: 500)
+            ->send('');
+    });
+
 // ── Streaming endpoints ──
 
 Http::get('/stream/generator')

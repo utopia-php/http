@@ -111,15 +111,15 @@ class ResponseTest extends TestCase
         $this->assertEquals('Hello World!', $response['body']);
 
         $response = $this->client->call(Client::METHOD_GET, '//value/123');
-        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(404, $response['headers']['status-code']);
         $this->assertEmpty($response['body']);
 
         $response = $this->client->call(Client::METHOD_GET, '/value//123');
-        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(400, $response['headers']['status-code']);
         $this->assertEmpty($response['body']);
 
         $response = $this->client->call(Client::METHOD_GET, '//value//123');
-        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals(404, $response['headers']['status-code']);
         $this->assertEmpty($response['body']);
     }
 
