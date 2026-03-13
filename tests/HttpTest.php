@@ -23,8 +23,8 @@ class HttpTest extends TestCase
     public function setUp(): void
     {
         Http::reset();
-        $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
-        $this->container = $this->http->getContainer();
+        $this->container = new Container();
+        $this->http = new Http(new Server($this->container), 'Asia/Tel_Aviv');
         $this->saveRequest();
     }
 
@@ -108,7 +108,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -132,7 +132,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request, '1');
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -152,7 +152,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, '1');
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -224,7 +224,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, '1');
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -234,7 +234,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request, '1');
+        $this->http->execute($homepage, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -264,7 +264,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -280,7 +280,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -348,7 +348,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -356,93 +356,11 @@ class HttpTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
-    }
-
-    public function testExecuteStoresErrorOnProvidedRequestScope(): void
-    {
-        $requestScope = new Container($this->container);
-        $previousError = new \Exception('previous error');
-
-        $this->http->setResource('error', fn () => $previousError, [], $requestScope);
-
-        $this->http
-            ->error()
-            ->inject('error')
-            ->action(function ($error) {
-                echo 'error-' . $error->getMessage();
-            });
-
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
-            ->action(function ($x) {
-                echo $x;
-            });
-
-        \ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x']);
-        $this->http->execute($route, $request, '1', $requestScope);
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $error = $requestScope->get('error');
-
-        $this->assertEquals('error-Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
-        $this->assertNotSame($previousError, $error);
-        $this->assertEquals('Invalid `x` param: Value must be a valid string and no longer than 1 chars', $error->getMessage());
-    }
-
-    public function testCanGetRequestContainerDuringExecute(): void
-    {
-        $this->assertNull($this->http->getRequestContainer());
-
-        $requestScope = new Container($this->container);
-        $capturedRequestContainer = null;
-
-        $route = new Route('GET', '/path');
-        $route->action(function () use (&$capturedRequestContainer, $requestScope) {
-            $capturedRequestContainer = $this->http->getRequestContainer();
-            $this->assertSame($requestScope, $capturedRequestContainer);
-        });
-
-        $this->http->execute($route, new Request(), '1', $requestScope);
-
-        $this->assertSame($requestScope, $capturedRequestContainer);
-        $this->assertNull($this->http->getRequestContainer());
-    }
-
-    public function testCanGetRequestContainerFromCoroutineContext(): void
-    {
-        if (!\extension_loaded('swoole')) {
-            $this->markTestSkipped('The swoole extension is required.');
-        }
-
-        $this->assertNull($this->http->getRequestContainer());
-
-        $requestScope = new Container($this->container);
-        $capturedRequestContainer = null;
-        $requestContainerAfterExecute = null;
-
-        \Swoole\Coroutine\run(function () use ($requestScope, &$capturedRequestContainer, &$requestContainerAfterExecute) {
-            $route = new Route('GET', '/path');
-            $route->action(function () use (&$capturedRequestContainer, $requestScope) {
-                $capturedRequestContainer = $this->http->getRequestContainer();
-                $this->assertSame($requestScope, $capturedRequestContainer);
-            });
-
-            $this->http->execute($route, new Request(), '1', $requestScope);
-            $requestContainerAfterExecute = $this->http->getRequestContainer();
-        });
-
-        $this->assertSame($requestScope, $capturedRequestContainer);
-        $this->assertNull($requestContainerAfterExecute);
-        $this->assertNull($this->http->getRequestContainer());
     }
 
     public function testCanSetRoute()
@@ -582,7 +500,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->run(new Request(), new Response(), '1');
+        $this->http->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -590,64 +508,6 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $uri;
 
         $this->assertStringNotContainsString('HELLO', $result);
-    }
-
-    public function testCanGetRequestContainerDuringRun(): void
-    {
-        $this->assertNull($this->http->getRequestContainer());
-
-        $capturedContainers = [];
-
-        $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
-        $_SERVER['REQUEST_URI'] = '/request-container';
-
-        Http::onRequest()
-            ->action(function () use (&$capturedContainers) {
-                $capturedContainers[] = $this->http->getRequestContainer();
-            });
-
-        Http::get('/request-container')
-            ->inject('response')
-            ->action(function ($response) use (&$capturedContainers) {
-                $capturedContainers[] = $this->http->getRequestContainer();
-                $response->send('OK');
-            });
-
-        \ob_start();
-        $this->http->run(new Request(), new Response(), '1');
-        \ob_end_clean();
-
-        $this->assertCount(2, $capturedContainers);
-        $this->assertInstanceOf(Container::class, $capturedContainers[0]);
-        $this->assertSame($capturedContainers[0], $capturedContainers[1]);
-        $this->assertNull($this->http->getRequestContainer());
-    }
-
-    public function testCanGetFpmResourcesFromRequestContainerDuringStart(): void
-    {
-        $capturedResources = [];
-
-        Http::get('/fpm-request-container')
-            ->inject('response')
-            ->action(function ($response) use (&$capturedResources) {
-                $requestContainer = $this->http->getRequestContainer();
-
-                $capturedResources['fpmRequest'] = $requestContainer?->get('fpmRequest');
-                $capturedResources['fpmResponse'] = $requestContainer?->get('fpmResponse');
-
-                $response->send('OK');
-            });
-
-        $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
-        $_SERVER['REQUEST_URI'] = '/fpm-request-container';
-
-        \ob_start();
-        $this->http->start();
-        \ob_end_clean();
-
-        $this->assertInstanceOf(Request::class, $capturedResources['fpmRequest']);
-        $this->assertInstanceOf(Response::class, $capturedResources['fpmResponse']);
-        $this->assertNull($this->http->getRequestContainer());
     }
 
     public function testWildcardRoute(): void
@@ -677,7 +537,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        @$this->http->run(new Request(), new Response(), '1');
+        @$this->http->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -686,7 +546,7 @@ class HttpTest extends TestCase
         \ob_start();
         $req = new Request();
         $req = $req->setMethod('OPTIONS');
-        @$this->http->run($req, new Response(), '1');
+        @$this->http->run($req, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -710,7 +570,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -728,7 +588,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
-        $this->http->execute($route2, $request, '1');
+        $this->http->execute($route2, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -746,7 +606,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route3, new Request(), '1');
+        $this->http->execute($route3, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 

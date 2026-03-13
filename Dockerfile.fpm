@@ -13,7 +13,7 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM php:8.2-fpm-alpine as final
+FROM php:8.2-fpm-alpine AS final
 LABEL maintainer="team@appwrite.io"
 
 ENV DEBIAN_FRONTEND=noninteractive \

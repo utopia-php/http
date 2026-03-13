@@ -34,6 +34,12 @@
         "utopia-php/validators": "0.2.*",
         "ext-swoole": "*"
     },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "tbachert/spi": true
+        }
+    },
     "require-dev": {
         "doctrine/instantiator": "^1.5",
         "laravel/pint": "1.*",

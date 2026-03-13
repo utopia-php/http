@@ -15,12 +15,11 @@ class Server extends Adapter
     {
         $request = new Request();
         $response = new Response();
-        $resources = [
-            'fpmRequest' => $request,
-            'fpmResponse' => $response,
-        ];
 
-        \call_user_func($callback, $request, $response, 'fpm', $resources);
+        $this->container->set('fpmRequest', fn () => $request);
+        $this->container->set('fpmResponse', fn () => $response);
+
+        \call_user_func($callback, $request, $response);
     }
 
     public function onStart(callable $callback)

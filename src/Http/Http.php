@@ -2,7 +2,6 @@
 
 namespace Utopia\Http;
 
-use Swoole\Coroutine;
 use Utopia\DI\Container;
 use Utopia\Validator;
 
@@ -739,6 +738,9 @@ class Http
      */
     public function run(Request $request, Response $response): static
     {
+        $this->setResource('request', fn () => $request);
+        $this->setResource('response', fn () => $response);
+
         try {
             foreach (self::$requestHooks as $hook) {
                 $arguments = $this->getArguments($hook, [], []);
