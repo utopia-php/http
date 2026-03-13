@@ -3,6 +3,7 @@
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\DI\Container;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
 use Utopia\Validator\Text;
 use Utopia\Http\Adapter\FPM\Request;
@@ -13,6 +14,8 @@ class HttpTest extends TestCase
 {
     protected ?Http $http;
 
+    protected ?Container $container;
+
     protected ?string $method;
 
     protected ?string $uri;
@@ -20,13 +23,15 @@ class HttpTest extends TestCase
     public function setUp(): void
     {
         Http::reset();
-        $this->http = new Http(new Server(), 'Asia/Tel_Aviv');
+        $this->container = new Container();
+        $this->http = new Http(new Server($this->container), 'Asia/Tel_Aviv');
         $this->saveRequest();
     }
 
     public function tearDown(): void
     {
         $this->http = null;
+        $this->container = null;
         $this->restoreRequest();
     }
 
@@ -80,76 +85,10 @@ class HttpTest extends TestCase
         $this->assertEquals(Http::getEnv('unknown', 'test'), 'test');
     }
 
-    public function testCanGetResources(): void
-    {
-        Http::setResource('rand', fn () => rand());
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
-
-        $second = $this->http->getResource('second', '1');
-        $first = $this->http->getResource('first', '1');
-        $this->assertEquals('second', $second);
-        $this->assertEquals('first-second', $first);
-
-        $resource = $this->http->getResource('rand', '1');
-
-        $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, $this->http->getResource('rand', '1'));
-        $this->assertEquals($resource, $this->http->getResource('rand', '1'));
-        $this->assertEquals($resource, $this->http->getResource('rand', '1'));
-
-        // Default Params
-        $route = new Route('GET', '/path');
-
-        $route
-            ->inject('rand')
-            ->param('x', 'x-def', new Text(200), 'x param', true)
-            ->param('y', 'y-def', new Text(200), 'y param', true)
-            ->action(function ($x, $y, $rand) {
-                echo $x . '-' . $y . '-' . $rand;
-            });
-
-        \ob_start();
-        $this->http->execute($route, new Request(), '1');
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('x-def-y-def-' . $resource, $result);
-    }
-
-    public function testCanGetDefaultValueWithFunction(): void
-    {
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
-
-        $second = $this->http->getResource('second');
-        $first = $this->http->getResource('first');
-        $this->assertEquals('second', $second);
-        $this->assertEquals('first-second', $first);
-
-        // Default Value using function
-        $route = new Route('GET', '/path');
-
-        $route
-            ->param('x', function ($first, $second) {
-                return $first . '-' . $second;
-            }, new Text(200), 'x param', true, ['first', 'second'])
-            ->action(function ($x) {
-                echo $x;
-            });
-
-        \ob_start();
-        $this->http->execute($route, new Request(), '1');
-        $result = \ob_get_contents();
-        \ob_end_clean();
-
-        $this->assertEquals('first-second-second', $result);
-    }
-
     public function testCanExecuteRoute(): void
     {
-        Http::setResource('rand', fn () => rand());
-        $resource = $this->http->getResource('rand', '1');
+        $this->container->set('rand', fn () => rand());
+        $resource = $this->container->get('rand');
 
         $this->http
             ->error()
@@ -169,12 +108,12 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
         // With Params
-        $resource = $this->http->getResource('rand', '1');
+        $resource = $this->container->get('rand');
         $route = new Route('GET', '/path');
 
         $route
@@ -193,14 +132,14 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request, '1');
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals($resource . '-param-x-param-y', $result);
 
         // With Error
-        $resource = $this->http->getResource('rand', '1');
+        $resource = $this->container->get('rand');
         $route = new Route('GET', '/path');
 
         $route
@@ -213,14 +152,14 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, '1');
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
 
         // With Hooks
-        $resource = $this->http->getResource('rand', '1');
+        $resource = $this->container->get('rand');
         $this->http
             ->init()
             ->inject('rand')
@@ -285,17 +224,17 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, '1');
+        $this->http->execute($route, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
         $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
-        $resource = $this->http->getResource('rand', '1');
+        $resource = $this->container->get('rand');
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request, '1');
+        $this->http->execute($homepage, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -325,7 +264,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -341,7 +280,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -409,7 +348,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -417,7 +356,7 @@ class HttpTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -561,7 +500,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->run(new Request(), new Response(), '1');
+        $this->http->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -582,7 +521,7 @@ class HttpTest extends TestCase
         Http::init()
             ->action(function () {
                 $route = $this->http->getRoute();
-                Http::setResource('myRoute', fn () => $route);
+                $this->container->set('myRoute', fn () => $route);
             });
 
 
@@ -598,7 +537,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        @$this->http->run(new Request(), new Response(), '1');
+        @$this->http->run(new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -607,7 +546,7 @@ class HttpTest extends TestCase
         \ob_start();
         $req = new Request();
         $req = $req->setMethod('OPTIONS');
-        @$this->http->run($req, new Response(), '1');
+        @$this->http->run($req, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -631,7 +570,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request(), '1');
+        $this->http->execute($route, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -649,7 +588,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
-        $this->http->execute($route2, $request, '1');
+        $this->http->execute($route2, $request);
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -667,7 +606,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route3, new Request(), '1');
+        $this->http->execute($route3, new Request());
         $result = \ob_get_contents();
         \ob_end_clean();
 

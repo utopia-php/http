@@ -2,12 +2,12 @@
 
 namespace Utopia\Http\Adapter\FPM;
 
+use Utopia\DI\Container;
 use Utopia\Http\Adapter;
-use Utopia\Http\Http;
 
 class Server extends Adapter
 {
-    public function __construct()
+    public function __construct(private Container $container)
     {
     }
 
@@ -16,15 +16,20 @@ class Server extends Adapter
         $request = new Request();
         $response = new Response();
 
-        Http::setResource('fpmRequest', fn () => $request);
-        Http::setResource('fpmResponse', fn () => $response);
+        $this->container->set('fpmRequest', fn () => $request);
+        $this->container->set('fpmResponse', fn () => $response);
 
-        call_user_func($callback, $request, $response, 'fpm');
+        \call_user_func($callback, $request, $response);
     }
 
     public function onStart(callable $callback)
     {
-        call_user_func($callback, $this);
+        \call_user_func($callback, $this);
+    }
+
+    public function getContainer(): Container
+    {
+        return $this->container;
     }
 
     public function start()
