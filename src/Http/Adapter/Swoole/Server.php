@@ -4,6 +4,7 @@ namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Coroutine;
 use Utopia\Http\Adapter;
+use Utopia\DI\Container;
 use Swoole\Coroutine\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
@@ -27,11 +28,19 @@ class Server extends Adapter
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $context = \strval(Coroutine::getCid());
-
-            call_user_func($callback, new Request($request), new Response($response), $context, [
+            $requestAdapter = new Request($request);
+            $responseAdapter = new Response($response);
+            $resources = [
                 'swooleRequest' => $request,
                 'swooleResponse' => $response,
-            ]);
+            ];
+            $configureRequestScope = function (Container $requestContainer) use ($request, $response) {
+                $requestContainer
+                    ->set('swooleRequest', fn () => $request, [])
+                    ->set('swooleResponse', fn () => $response, []);
+            };
+
+            call_user_func($callback, $requestAdapter, $responseAdapter, $context, $resources, $configureRequestScope);
         });
     }
 
