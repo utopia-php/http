@@ -7,7 +7,7 @@ use Utopia\Http\Adapter;
 
 class Server extends Adapter
 {
-    public function __construct()
+    public function __construct(private Container $container)
     {
     }
 
@@ -19,18 +19,18 @@ class Server extends Adapter
             'fpmRequest' => $request,
             'fpmResponse' => $response,
         ];
-        $configureRequestScope = function (Container $requestContainer) use ($request, $response) {
-            $requestContainer
-                ->set('fpmRequest', fn () => $request)
-                ->set('fpmResponse', fn () => $response);
-        };
 
-        call_user_func($callback, $request, $response, 'fpm', $resources, $configureRequestScope);
+        \call_user_func($callback, $request, $response, 'fpm', $resources);
     }
 
     public function onStart(callable $callback)
     {
-        call_user_func($callback, $this);
+        \call_user_func($callback, $this);
+    }
+
+    public function getContainer(): Container
+    {
+        return $this->container;
     }
 
     public function start()

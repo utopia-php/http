@@ -14,39 +14,40 @@ use function Swoole\Coroutine\run;
 class Server extends Adapter
 {
     protected SwooleServer $server;
+    protected const string REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
+    protected Container $container;
 
-    public function __construct(string $host, ?string $port = null, array $settings = [])
+    public function __construct(string $host, ?string $port = null, array $settings = [], Container $container)
     {
         $this->server = new SwooleServer($host, $port);
         $this->server->set(\array_merge($settings, [
             'enable_coroutine' => true,
             'http_parse_cookie' => false,
         ]));
+        $this->container = $container;
     }
 
     public function onRequest(callable $callback)
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            $context = \strval(Coroutine::getCid());
-            $requestAdapter = new Request($request);
-            $responseAdapter = new Response($response);
-            $resources = [
-                'swooleRequest' => $request,
-                'swooleResponse' => $response,
-            ];
-            $configureRequestScope = function (Container $requestContainer) use ($request, $response) {
-                $requestContainer
-                    ->set('swooleRequest', fn () => $request)
-                    ->set('swooleResponse', fn () => $response);
-            };
+            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = new Container($this->container);
 
-            call_user_func($callback, $requestAdapter, $responseAdapter, $context, $resources, $configureRequestScope);
+            $utopiaRequest = new Request($request);
+            $utopiaResponse = new Response($response);
+
+            \call_user_func($callback, $utopiaRequest, $utopiaResponse);
         });
+    }
+
+    public function getContainer(): Container
+    {
+        return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
     }
 
     public function onStart(callable $callback)
     {
-        call_user_func($callback, $this);
+
+        \call_user_func($callback, $this);
     }
 
     public function start()
