@@ -2,7 +2,6 @@
 
 namespace Utopia\Http;
 
-use Swoole\Coroutine;
 use Utopia\DI\Container;
 use Utopia\Validator;
 
