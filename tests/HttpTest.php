@@ -3,6 +3,7 @@
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\DI\Container;
 use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Tests\UtopiaRequestTest;
@@ -13,6 +14,8 @@ class HttpTest extends TestCase
 {
     protected ?Http $app;
 
+    protected ?Container $container;
+
     protected ?string $method;
 
     protected ?string $uri;
@@ -21,12 +24,14 @@ class HttpTest extends TestCase
     {
         Http::reset();
         $this->app = new Http('Asia/Tel_Aviv');
+        $this->container = $this->app->getContainer();
         $this->saveRequest();
     }
 
     public function tearDown(): void
     {
         $this->app = null;
+        $this->container = null;
         $this->restoreRequest();
     }
 
@@ -82,21 +87,21 @@ class HttpTest extends TestCase
 
     public function testCanGetResources(): void
     {
-        Http::setResource('rand', fn () => rand());
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
+        $this->container->set('rand', fn () => rand());
+        $this->container->set('first', fn ($second) => "first-{$second}", ['second']);
+        $this->container->set('second', fn () => 'second');
 
-        $second = $this->app->getResource('second');
-        $first = $this->app->getResource('first');
+        $second = $this->container->get('second');
+        $first = $this->container->get('first');
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
-        $resource = $this->app->getResource('rand');
+        $resource = $this->container->get('rand');
 
         $this->assertNotEmpty($resource);
-        $this->assertEquals($resource, $this->app->getResource('rand'));
-        $this->assertEquals($resource, $this->app->getResource('rand'));
-        $this->assertEquals($resource, $this->app->getResource('rand'));
+        $this->assertEquals($resource, $this->container->get('rand'));
+        $this->assertEquals($resource, $this->container->get('rand'));
+        $this->assertEquals($resource, $this->container->get('rand'));
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -119,11 +124,11 @@ class HttpTest extends TestCase
 
     public function testCanGetDefaultValueWithFunction(): void
     {
-        Http::setResource('first', fn ($second) => "first-{$second}", ['second']);
-        Http::setResource('second', fn () => 'second');
+        $this->container->set('first', fn ($second) => "first-{$second}", ['second']);
+        $this->container->set('second', fn () => 'second');
 
-        $second = $this->app->getResource('second');
-        $first = $this->app->getResource('first');
+        $second = $this->container->get('second');
+        $first = $this->container->get('first');
         $this->assertEquals('second', $second);
         $this->assertEquals('first-second', $first);
 
@@ -165,8 +170,8 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        Http::setResource('rand', fn () => rand());
-        $resource = $this->app->getResource('rand');
+        $this->container->set('rand', fn () => rand());
+        $resource = $this->container->get('rand');
 
         $this->app
             ->error()
@@ -780,7 +785,8 @@ class HttpTest extends TestCase
             ->inject('response')
             ->action(function (Request $request, Response $response) {
                 $route = $this->app->getRoute();
-                Http::setResource('myRoute', fn () => $route);
+                $requestContainer = $this->app->getRequestContainer();
+                $requestContainer?->set('myRoute', fn () => $route);
 
                 if ($request->getURI() === '/init_response') {
                     $response->send('THIS IS RESPONSE FROM INIT!');
