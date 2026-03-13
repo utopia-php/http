@@ -21,8 +21,8 @@ class Server extends Adapter
         ];
         $configureRequestScope = function (Container $requestContainer) use ($request, $response) {
             $requestContainer
-                ->set('fpmRequest', fn () => $request, [])
-                ->set('fpmResponse', fn () => $response, []);
+                ->set('fpmRequest', fn () => $request)
+                ->set('fpmResponse', fn () => $response);
         };
 
         call_user_func($callback, $request, $response, 'fpm', $resources, $configureRequestScope);

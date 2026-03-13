@@ -36,8 +36,8 @@ class Server extends Adapter
             ];
             $configureRequestScope = function (Container $requestContainer) use ($request, $response) {
                 $requestContainer
-                    ->set('swooleRequest', fn () => $request, [])
-                    ->set('swooleResponse', fn () => $response, []);
+                    ->set('swooleRequest', fn () => $request)
+                    ->set('swooleResponse', fn () => $response);
             };
 
             call_user_func($callback, $requestAdapter, $responseAdapter, $context, $resources, $configureRequestScope);

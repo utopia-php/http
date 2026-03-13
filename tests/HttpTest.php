@@ -87,7 +87,7 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        $this->container->set('rand', fn () => rand(), []);
+        $this->container->set('rand', fn () => rand());
         $resource = $this->container->get('rand');
 
         $this->http
@@ -661,7 +661,7 @@ class HttpTest extends TestCase
         Http::init()
             ->action(function () {
                 $route = $this->http->getRoute();
-                $this->container->set('myRoute', fn () => $route, []);
+                $this->container->set('myRoute', fn () => $route);
             });
 
 

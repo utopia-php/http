@@ -224,7 +224,7 @@ Define a dependency on the DI container:
 ```php
 $container->set('bootTime', function () {
     return \microtime(true);
-}, []);
+});
 ```
 
 Inject resource into endpoint action:
