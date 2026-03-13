@@ -16,14 +16,15 @@ class Server extends Adapter
     protected SwooleServer $server;
     protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
     protected Container $container;
+    protected ?Container $requestContainer = null;
 
     public function __construct(string $host, ?string $port = null, array $settings = [], ?Container $container = null)
     {
         $this->server = new SwooleServer($host, $port);
-        $this->server->set(\array_merge($settings, [
+        $this->server->set(\array_merge([
             'enable_coroutine' => true,
             'http_parse_cookie' => false,
-        ]));
+        ], $settings));
         $this->container = $container ?? new Container();
     }
 
@@ -34,7 +35,11 @@ class Server extends Adapter
             $requestContainer->set('swooleRequest', fn () => $request);
             $requestContainer->set('swooleResponse', fn () => $response);
 
-            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+            if (Coroutine::getCid() !== -1) {
+                Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+            } else {
+                $this->requestContainer = $requestContainer;
+            }
 
             $utopiaRequest = new Request($request);
             $utopiaResponse = new Response($response);
@@ -45,7 +50,11 @@ class Server extends Adapter
 
     public function getContainer(): Container
     {
-        return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
+        if (Coroutine::getCid() !== -1) {
+            return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
+        }
+
+        return $this->requestContainer ?? $this->container;
     }
 
     public function onStart(callable $callback)
