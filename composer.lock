@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bd7ec2412b379458ea94c65b838a2a3c",
+    "content-hash": "e97a26f1a9c9ad59c79eedef0b4cb1ea",
     "packages": [
         {
             "name": "brick/math",
@@ -1915,25 +1915,26 @@
         },
         {
             "name": "utopia-php/di",
-            "version": "0.1.0",
+            "version": "0.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/di.git",
-                "reference": "22490c95f7ac3898ed1c33f1b1b5dd577305ee31"
+                "reference": "68873b7267842315d01d82a83b988bae525eab31"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/di/zipball/22490c95f7ac3898ed1c33f1b1b5dd577305ee31",
-                "reference": "22490c95f7ac3898ed1c33f1b1b5dd577305ee31",
+                "url": "https://api.github.com/repos/utopia-php/di/zipball/68873b7267842315d01d82a83b988bae525eab31",
+                "reference": "68873b7267842315d01d82a83b988bae525eab31",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.2"
+                "php": ">=8.2",
+                "psr/container": "^2.0"
             },
             "require-dev": {
-                "laravel/pint": "^1.2",
+                "laravel/pint": "^1.27",
                 "phpbench/phpbench": "^1.2",
-                "phpstan/phpstan": "^1.10",
+                "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^9.5.25",
                 "swoole/ide-helper": "4.8.3"
             },
@@ -1950,34 +1951,36 @@
             ],
             "description": "A simple and lite library for managing dependency injections",
             "keywords": [
-                "framework",
-                "http",
+                "PSR-11",
+                "container",
+                "dependency-injection",
+                "di",
                 "php",
-                "upf"
+                "utopia"
             ],
             "support": {
                 "issues": "https://github.com/utopia-php/di/issues",
-                "source": "https://github.com/utopia-php/di/tree/0.1.0"
+                "source": "https://github.com/utopia-php/di/tree/0.3.1"
             },
-            "time": "2024-08-08T14:35:19+00:00"
+            "time": "2026-03-13T05:47:23+00:00"
         },
         {
             "name": "utopia-php/servers",
-            "version": "0.2.2",
+            "version": "0.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "0ebdcdbfbccee7badc64d615889f8f4f3481e0f3"
+                "reference": "235be31200df9437fc96a1c270ffef4c64fafe52"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/0ebdcdbfbccee7badc64d615889f8f4f3481e0f3",
-                "reference": "0ebdcdbfbccee7badc64d615889f8f4f3481e0f3",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/235be31200df9437fc96a1c270ffef4c64fafe52",
+                "reference": "235be31200df9437fc96a1c270ffef4c64fafe52",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.0",
-                "utopia-php/di": "0.1.*",
+                "php": ">=8.2",
+                "utopia-php/di": "0.3.*",
                 "utopia-php/validators": "0.*"
             },
             "require-dev": {
@@ -2011,9 +2014,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utopia-php/servers/issues",
-                "source": "https://github.com/utopia-php/servers/tree/0.2.2"
+                "source": "https://github.com/utopia-php/servers/tree/0.3.0"
             },
-            "time": "2025-11-26T12:27:33+00:00"
+            "time": "2026-03-13T11:31:42+00:00"
         },
         {
             "name": "utopia-php/telemetry",
@@ -5257,5 +5260,5 @@
     "platform-dev": {
         "ext-xdebug": "*"
     },
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }

@@ -3,7 +3,6 @@
 require_once __DIR__.'/../vendor/autoload.php';
 
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
@@ -18,9 +17,7 @@ class User
 
 $container = new Container();
 
-$user = new Dependency();
-$user->setName('user')->setCallback(fn () => new User("Demo user"));
-$container->set($user);
+$container->set('user', fn () => new User("Demo user"));
 
 Http::get('/')
     ->param('name', 'World', new Text(256), 'Name to greet. Optional, max length 256.', true)

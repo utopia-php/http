@@ -4,7 +4,6 @@ namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Validator\Numeric;
 use Utopia\Validator\Text;
 
@@ -58,36 +57,22 @@ class HookTest extends TestCase
 
     public function testResourcesCanBeInjected()
     {
-        $main = $this->hook
-            ->setName('test')
+        $this->hook
             ->inject('user')
             ->inject('time')
-            ->setCallback(function ($user, $time) {
+            ->action(function ($user, $time) {
                 return $user . ':' . $time;
-            });
-
-        $user = new Dependency();
-        $user
-            ->setName('user')
-            ->setCallback(function () {
-                return 'user';
-            });
-
-        $time = new Dependency();
-        $time
-            ->setName('time')
-            ->setCallback(function () {
-                return '00:00:00';
             });
 
         $context = new Container();
 
         $context
-            ->set($user)
-            ->set($time)
+            ->set('user', fn () => 'user')
+            ->set('time', fn () => '00:00:00')
         ;
 
-        $result = $context->inject($main);
+        $deps = \array_map(fn ($dep) => $context->get($dep), $this->hook->getDependencies());
+        $result = \call_user_func_array($this->hook->getAction(), $deps);
 
         $this->assertSame('user:00:00:00', $result);
     }
