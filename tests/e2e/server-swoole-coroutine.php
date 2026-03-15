@@ -5,7 +5,6 @@ require_once __DIR__.'/../../vendor/autoload.php';
 use Swoole\Database\PDOConfig;
 use Swoole\Database\PDOPool;
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Http\Request;
 use Utopia\Http\Adapter\SwooleCoroutine\Server;
 use Utopia\Http\Http;
@@ -24,25 +23,13 @@ $pool = new PDOPool((new PDOConfig())
     ->withPassword('password'), 9000);
 
 
-$dependency = new Dependency();
+$container->set('key', function (Request $request) {
+    return $request->getHeader('x-utopia-key', 'unknown');
+}, ['request']);
 
-$dependency
-    ->setName('key')
-    ->inject('request')
-    ->setCallback(function (Request $request) {
-        return $request->getHeader('x-utopia-key', 'unknown');
-    });
-
-$container->set($dependency);
-
-$dependency1 = new Dependency();
-$dependency1
-    ->setName('pool')
-    ->setCallback(function () use ($pool) {
-        return $pool;
-    });
-
-$container->set($dependency1);
+$container->set('pool', function () use ($pool) {
+    return $pool;
+});
 
 $server = new Server('0.0.0.0', '80');
 $http = new Http($server, $container, 'UTC');

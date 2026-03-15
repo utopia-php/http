@@ -5,7 +5,6 @@ namespace Utopia\Http;
 use PHPUnit\Framework\TestCase;
 use Throwable;
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Http\Tests\MockRequest as Request;
 use Utopia\Http\Tests\MockResponse as Response;
 use Utopia\Validator\Text;
@@ -28,19 +27,9 @@ class HttpTest extends TestCase
 
         $this->context = new Container();
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(fn () => new Request());
-
-        $response = new Dependency();
-        $response
-            ->setName('response')
-            ->setCallback(fn () => new Response());
-
         $this->context
-            ->set($request)
-            ->set($response);
+            ->set('request', fn () => new Request())
+            ->set('response', fn () => new Response());
 
         $this->http = new Http(new Server(), $this->context, 'Asia/Tel_Aviv');
 
@@ -118,18 +107,12 @@ class HttpTest extends TestCase
                 echo $x . '-' . $y;
             });
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request([]);
-                $request->setURI('/path');
-                $request->setMethod('GET');
-                return $request;
-            });
-
-        $context
-            ->set($request);
+        $context->set('request', function () {
+            $request = new Request([]);
+            $request->setURI('/path');
+            $request->setMethod('GET');
+            return $request;
+        });
 
         \ob_start();
         $this->http->run($context);
@@ -143,26 +126,16 @@ class HttpTest extends TestCase
     {
         $context = clone $this->context;
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-                $request->setURI('/test-params');
-                $request->setMethod('GET');
-                return $request;
-            });
+        $context->set('request', function () {
+            $request = new Request(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
+            $request->setURI('/test-params');
+            $request->setMethod('GET');
+            return $request;
+        });
 
-        $rand = new Dependency();
-        $rand
-            ->setName('rand')
-            ->setCallback(function () {
-                return rand(0, 1000);
-            });
-
-        $context
-            ->set($request)
-            ->set($rand);
+        $context->set('rand', function () {
+            return rand(0, 1000);
+        });
 
         $this->http
             ->error()
@@ -215,26 +188,16 @@ class HttpTest extends TestCase
         \ob_start();
         $context = clone $this->context;
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
-                $request->setURI('/test-params-error');
-                $request->setMethod('GET');
-                return $request;
-            });
+        $context->set('request', function () {
+            $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
+            $request->setURI('/test-params-error');
+            $request->setMethod('GET');
+            return $request;
+        });
 
-        $rand = new Dependency();
-        $rand
-            ->setName('rand')
-            ->setCallback(function () {
-                return rand(0, 1000);
-            });
-
-        $context
-            ->set($request)
-            ->set($rand);
+        $context->set('rand', function () {
+            return rand(0, 1000);
+        });
 
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -319,26 +282,16 @@ class HttpTest extends TestCase
 
         \ob_start();
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
-                $request->setURI('/path-1');
-                $request->setMethod('GET');
-                return $request;
-            });
+        $context->set('request', function () {
+            $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
+            $request->setURI('/path-1');
+            $request->setMethod('GET');
+            return $request;
+        });
 
-        $rand = new Dependency();
-        $rand
-            ->setName('rand')
-            ->setCallback(function () {
-                return rand(0, 1000);
-            });
-
-        $context
-            ->set($request)
-            ->set($rand);
+        $context->set('rand', function () {
+            return rand(0, 1000);
+        });
 
         $resource = $context->get('rand');
         $this->http->run($context);
@@ -349,26 +302,16 @@ class HttpTest extends TestCase
 
         $context = clone $this->context;
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
-                $request->setURI('/path-2');
-                $request->setMethod('GET');
-                return $request;
-            });
+        $context->set('request', function () {
+            $request = new Request(['x' => 'param-x', 'y' => 'param-y']);
+            $request->setURI('/path-2');
+            $request->setMethod('GET');
+            return $request;
+        });
 
-        $rand = new Dependency();
-        $rand
-            ->setName('rand')
-            ->setCallback(function () {
-                return rand(0, 1000);
-            });
-
-        $context
-            ->set($request)
-            ->set($rand);
+        $context->set('rand', function () {
+            return rand(0, 1000);
+        });
 
         $resource = $context->get('rand');
         \ob_start();
@@ -403,18 +346,12 @@ class HttpTest extends TestCase
                 echo $x;
             });
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request([]);
-                $request->setURI('/path-3');
-                $request->setMethod('GET');
-                return $request;
-            });
-
-        $context
-            ->set($request);
+        $context->set('request', function () {
+            $request = new Request([]);
+            $request->setURI('/path-3');
+            $request->setMethod('GET');
+            return $request;
+        });
 
         \ob_start();
         $this->http->run($context);
@@ -431,19 +368,13 @@ class HttpTest extends TestCase
                 echo $x;
             });
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request([]);
-                $request->setURI('/path-4');
-                $request->setMethod('GET');
-                return $request;
-            });
-
-        $context
-            ->set($request)
-        ;
+        $context = clone $this->context;
+        $context->set('request', function () {
+            $request = new Request([]);
+            $request->setURI('/path-4');
+            $request->setMethod('GET');
+            return $request;
+        });
 
         \ob_start();
         $this->http->run($context);
@@ -515,18 +446,12 @@ class HttpTest extends TestCase
                 echo $x;
             });
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request([]);
-                $request->setURI('/path-5');
-                $request->setMethod('GET');
-                return $request;
-            });
-
-        $context
-            ->set($request);
+        $context->set('request', function () {
+            $request = new Request([]);
+            $request->setURI('/path-5');
+            $request->setMethod('GET');
+            return $request;
+        });
 
         \ob_start();
         $this->http->run($context);
@@ -537,18 +462,12 @@ class HttpTest extends TestCase
 
         $context = clone $this->context;
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $request = new Request(['y' => 'y-def']);
-                $request->setURI('/path-5');
-                $request->setMethod('GET');
-                return $request;
-            });
-
-        $context
-            ->set($request);
+        $context->set('request', function () {
+            $request = new Request(['y' => 'y-def']);
+            $request->setURI('/path-5');
+            $request->setMethod('GET');
+            return $request;
+        });
 
         \ob_start();
         $this->http->run($context);
@@ -683,17 +602,11 @@ class HttpTest extends TestCase
 
             $context = clone $this->context;
 
-            $request = new Dependency();
-            $request
-                ->setName('request')
-                ->setCallback(function () use ($requestObj) {
-                    $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
-                    $_SERVER['REQUEST_URI'] = $requestObj['url'];
-                    return new Request();
-                });
-
-            $context
-                ->set($request);
+            $context->set('request', function () use ($requestObj) {
+                $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
+                $_SERVER['REQUEST_URI'] = $requestObj['url'];
+                return new Request();
+            });
 
             $this->http->run($context);
 
@@ -715,17 +628,11 @@ class HttpTest extends TestCase
 
         $context = clone $this->context;
 
-        $request = new Dependency();
-        $request
-            ->setName('request')
-            ->setCallback(function () {
-                $_SERVER['REQUEST_METHOD'] = 'HEAD';
-                $_SERVER['REQUEST_URI'] = '/path';
-                return new Request();
-            });
-
-        $this->context
-            ->set($request);
+        $this->context->set('request', function () {
+            $_SERVER['REQUEST_METHOD'] = 'HEAD';
+            $_SERVER['REQUEST_URI'] = '/path';
+            return new Request();
+        });
 
         $this->http->run($context);
         $result = \ob_get_contents();
@@ -744,12 +651,8 @@ class HttpTest extends TestCase
 
         Http::init()
             ->inject('route')
-            ->inject('di')
-            ->action(function (Route $route, Container $di) {
-                $dependency = new Dependency();
-                $dependency->setName('myRoute');
-                $dependency->setCallback(fn () => $route);
-                $di->set($dependency);
+            ->action(function (Route $route) {
+                // Verify route is available in init hook
             });
 
         Http::wildcard()

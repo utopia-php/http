@@ -2,7 +2,6 @@
 
 use Swoole\Coroutine\System;
 use Swoole\Database\PDOPool;
-use Utopia\DI\Dependency;
 use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
@@ -16,15 +15,9 @@ error_reporting(E_ALL);
 
 global $container;
 
-$dependency = new Dependency();
-
-$dependency
-    ->setName('num')
-    ->setCallback(function () {
-        return 10;
-    });
-
-$container->set($dependency);
+$container->set('num', function () {
+    return 10;
+});
 
 Http::init()
     ->inject('response')
