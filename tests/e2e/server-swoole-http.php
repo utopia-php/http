@@ -1,0 +1,24 @@
+<?php
+
+require_once __DIR__.'/init.php';
+
+use Swoole\Http\Request as SwooleRequest;
+use Swoole\Http\Response as SwooleResponse;
+use Utopia\Http\Adapter\Swoole\HttpServer;
+use Utopia\Http\Http;
+
+Http::delete('/swoole-test')
+    ->inject('swooleRequest')
+    ->inject('swooleResponse')
+    ->action(function (SwooleRequest $swooleRequest, SwooleResponse $swooleResponse) {
+        $method = $swooleRequest->getMethod();
+        $swooleResponse->header('Content-Type', 'text/plain');
+        $swooleResponse->header('Cache-Control', 'no-cache');
+        $swooleResponse->setStatusCode(200);
+        $swooleResponse->write($method);
+        $swooleResponse->end();
+    });
+
+$server = new HttpServer('0.0.0.0', 80);
+$http = new Http($server, 'UTC');
+$http->start();

@@ -116,6 +116,34 @@ $http->start();
 
 > When using Swoole, you can use the command `php src/server.php` to run the HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
 
+#### Using Swoole HTTP server (non-coroutine)
+
+For the traditional multi-process `Swoole\Http\Server` with worker management and graceful reload support:
+
+```php
+use Utopia\DI\Container;
+use Utopia\Http\Http;
+use Utopia\Http\Request;
+use Utopia\Http\Response;
+use Utopia\Http\Adapter\Swoole\HttpServer;
+
+$container = new Container();
+
+Http::get('/')
+    ->inject('request')
+    ->inject('response')
+    ->action(
+        function(Request $request, Response $response) {
+            $response->send('Hello from Swoole HTTP Server');
+        }
+    );
+
+$http = new Http(new HttpServer('0.0.0.0', 80), 'America/New_York', $container);
+$http->start();
+```
+
+> The `HttpServer` adapter uses `Swoole\Http\Server` instead of `Swoole\Coroutine\Http\Server`. It supports the same API as the coroutine-based `Server` adapter and can be used interchangeably.
+
 ### Parameters
 
 Parameters are used to receive input into endpoint action from the HTTP request. Parameters could be defined as URL parameters or in a body with a structure such as JSON.
