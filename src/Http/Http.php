@@ -658,30 +658,6 @@ class Http extends Base
 
         if (null !== $route) {
             return $this->lifecycle($route, $request, $container);
-        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        if (in_array($group, $option->getGroups())) {
-                            $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    if (in_array('*', $option->getGroups())) {
-                        $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (in_array('*', $error->getGroups())) {
-                        $container->set('error', fn () => $e);
-
-                        $this->executeHook($this->prepare($container, $error, [], $request->getParams()), $error);
-                    }
-                }
-            }
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
