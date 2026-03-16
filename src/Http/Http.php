@@ -395,7 +395,7 @@ class Http extends Base
                 $response = new $this->responseClass($response);
             }
 
-            $container = clone $this->container;
+            $container = new Container($this->container);
 
             $container->set('request', fn () => $request)
                 ->set('response', fn () => $response);
@@ -411,7 +411,7 @@ class Http extends Base
         });
 
         $this->server->onStart(function () {
-            $container = clone $this->container;
+            $container = new Container($this->container);
 
             $container->set('server', fn () => $this->server);
 
