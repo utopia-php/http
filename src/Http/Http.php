@@ -395,19 +395,19 @@ class Http extends Base
                 $response = new $this->responseClass($response);
             }
 
-            $context = clone $this->container;
+            $container = clone $this->container;
 
-            $context->set('request', fn () => $request)
+            $container->set('request', fn () => $request)
                 ->set('response', fn () => $response);
 
             // More base injection for GraphQL only
             if ($request->getUri() === '/v1/graphql') {
-                $context->set('http', fn () => $this)
-                    ->set('context', fn () => $context);
+                $container->set('http', fn () => $this)
+                    ->set('context', fn () => $container);
             }
 
 
-            $this->run($context);
+            $this->run($container);
         });
 
         $this->server->onStart(function () {
@@ -460,9 +460,9 @@ class Http extends Base
     }
 
 
-    public function execute(Route $route, Request $request, Container $context): self
+    public function execute(Route $route, Request $request, Container $container): self
     {
-        return $this->lifecycle($route, $request, $context);
+        return $this->lifecycle($route, $request, $container);
     }
 
     /**
@@ -471,7 +471,7 @@ class Http extends Base
      * @param Route $route
      * @param Request $request
      */
-    protected function lifecycle(Route $route, Request $request, Container $context): static
+    protected function lifecycle(Route $route, Request $request, Container $container): static
     {
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
@@ -480,7 +480,7 @@ class Http extends Base
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->executeHook($this->prepare($context, $hook, $pathValues, $request->getParams()), $hook);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
@@ -488,17 +488,17 @@ class Http extends Base
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->executeHook($this->prepare($context, $hook, $pathValues, $request->getParams()), $hook);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
 
-            $this->executeHook($this->prepare($context, $route, $pathValues, $request->getParams()), $route);
+            $this->executeHook($this->prepare($container, $route, $pathValues, $request->getParams()), $route);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->executeHook($this->prepare($context, $hook, $pathValues, $request->getParams()), $hook);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
@@ -506,18 +506,18 @@ class Http extends Base
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Global shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->executeHook($this->prepare($context, $hook, $pathValues, $request->getParams()), $hook);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
         } catch (\Throwable $e) {
-            $context->set('error', fn () => $e);
+            $container->set('error', fn () => $e);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $this->executeHook($this->prepare($context, $error, $pathValues, $request->getParams()), $error);
+                            $this->executeHook($this->prepare($container, $error, $pathValues, $request->getParams()), $error);
                         } catch (\Throwable $e) {
                             throw new Exception('Group error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
@@ -528,7 +528,7 @@ class Http extends Base
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $this->executeHook($this->prepare($context, $error, $pathValues, $request->getParams()), $error);
+                        $this->executeHook($this->prepare($container, $error, $pathValues, $request->getParams()), $error);
                     } catch (\Throwable $e) {
                         throw new Exception('Global error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                     }
@@ -536,16 +536,16 @@ class Http extends Base
             }
         }
 
-        unset($context);
+        unset($container);
 
         return $this;
     }
 
-    public function run(Container $context): static
+    public function run(Container $container): static
     {
-        $request = $context->get('request');
+        $request = $container->get('request');
         /** @var Request $request */
-        $response = $context->get('response');
+        $response = $container->get('response');
         /** @var Response $response */
         $route = $this->match($request);
         /** @var ?Route $route */
@@ -556,7 +556,7 @@ class Http extends Base
             'url.scheme' => $request->getProtocol(),
         ]);
         $start = microtime(true);
-        $result = $this->runInternal($context, $route);
+        $result = $this->runInternal($container, $route);
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
@@ -582,13 +582,13 @@ class Http extends Base
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
      *
-     * @param Container $context
+     * @param Container $container
      */
-    protected function runInternal(Container $context, ?Route $route): static
+    protected function runInternal(Container $container, ?Route $route): static
     {
-        $request = $context->get('request');
+        $request = $container->get('request');
         /** @var Request $request */
-        $response = $context->get('response');
+        $response = $container->get('response');
         /** @var Response $response */
 
         if ($this->compression) {
@@ -618,7 +618,7 @@ class Http extends Base
             $route->path($path);
         }
 
-        $context->set('route', fn () => $route ?? new Route($request->getMethod(), $request->getURI()));
+        $container->set('route', fn () => $route ?? new Route($request->getMethod(), $request->getURI()));
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -631,7 +631,7 @@ class Http extends Base
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            $this->executeHook($this->prepare($context, $option, [], $request->getParams()), $option);
+                            $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
                         }
                     }
                 }
@@ -639,16 +639,16 @@ class Http extends Base
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        $this->executeHook($this->prepare($context, $option, [], $request->getParams()), $option);
+                        $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        $context->set('error', fn () => $e);
+                        $container->set('error', fn () => $e);
 
-                        $this->executeHook($this->prepare($context, $error, [], $request->getParams()), $error);
+                        $this->executeHook($this->prepare($container, $error, [], $request->getParams()), $error);
                     }
                 }
             }
@@ -657,37 +657,37 @@ class Http extends Base
         }
 
         if (null !== $route) {
-            return $this->lifecycle($route, $request, $context);
+            return $this->lifecycle($route, $request, $container);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         if (in_array($group, $option->getGroups())) {
-                            $this->executeHook($this->prepare($context, $option, [], $request->getParams()), $option);
+                            $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
                         }
                     }
                 }
 
                 foreach (self::$options as $option) { // Global options hooks
                     if (in_array('*', $option->getGroups())) {
-                        $this->executeHook($this->prepare($context, $option, [], $request->getParams()), $option);
+                        $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
-                        $context->set('error', fn () => $e);
+                        $container->set('error', fn () => $e);
 
-                        $this->executeHook($this->prepare($context, $error, [], $request->getParams()), $error);
+                        $this->executeHook($this->prepare($container, $error, [], $request->getParams()), $error);
                     }
                 }
             }
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
-                    $context->set('error', fn () => new Exception('Not Found', 404));
+                    $container->set('error', fn () => new Exception('Not Found', 404));
 
-                    $this->executeHook($this->prepare($context, $error, [], $request->getParams()), $error);
+                    $this->executeHook($this->prepare($container, $error, [], $request->getParams()), $error);
                 }
             }
         }
