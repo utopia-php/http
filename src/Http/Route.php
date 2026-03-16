@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Utopia\Servers\Hook;
+
 class Route extends Hook
 {
     /**

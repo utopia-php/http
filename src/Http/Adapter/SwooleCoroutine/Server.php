@@ -1,11 +1,11 @@
 <?php
 
-namespace Utopia\Http\Adapter\Swoole;
+namespace Utopia\Http\Adapter\SwooleCoroutine;
 
 use Swoole\Coroutine;
 use Utopia\Http\Adapter;
 use Utopia\DI\Container;
-use Swoole\Http\Server as SwooleServer;
+use Swoole\Coroutine\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 
@@ -17,17 +17,14 @@ class Server extends Adapter
 
     public function __construct(string $host, ?string $port = null, array $settings = [], ?Container $container = null)
     {
-        $this->server = new SwooleServer($host, (int) $port);
-        $this->server->set(\array_merge($settings, [
-            'open_http2_protocol' => true,
-            'dispatch_mode' => 2,
-        ]));
+        $this->server = new SwooleServer($host, $port, false, true);
+        $this->server->set($settings);
         $this->container = $container ?? new Container();
     }
 
     public function onRequest(callable $callback)
     {
-        $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
+        $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             go(function () use ($request, $response, $callback) {
                 $requestContainer = new Container($this->container);
                 $requestContainer->set('swooleRequest', fn () => $request);
@@ -56,15 +53,13 @@ class Server extends Adapter
 
     public function onStart(callable $callback)
     {
-        $this->server->on('start', function () use ($callback) {
-            go(function () use ($callback) {
-                \call_user_func($callback, $this);
-            });
-        });
+        \call_user_func($callback, $this);
     }
 
     public function start()
     {
-        return $this->server->start();
+        go(function () {
+            $this->server->start();
+        });
     }
 }

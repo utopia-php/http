@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Utopia\Compression\Compression;
+
 abstract class Response
 {
     /**
@@ -183,17 +185,71 @@ abstract class Response
      *
      * @var array
      */
-    protected $compressed = [
+    private static $compressible = [
+        // Text
+        'text/html' => true,
+        'text/richtext' => true,
         'text/plain' => true,
         'text/css' => true,
-        'text/javascript' => true,
+        'text/x-script' => true,
+        'text/x-component' => true,
+        'text/x-java-source' => true,
+        'text/x-markdown' => true,
+
+        // JavaScript
         'application/javascript' => true,
-        'text/html' => true,
-        'text/html; charset=UTF-8' => true,
+        'application/x-javascript' => true,
+        'text/javascript' => true,
+        'text/js' => true,
+
+        // Icons
+        'image/x-icon' => true,
+        'image/vnd.microsoft.icon' => true,
+
+        // Scripts
+        'application/x-perl' => true,
+        'application/x-httpd-cgi' => true,
+
+        // XML and JSON
+        'text/xml' => true,
+        'application/xml' => true,
+        'application/rss+xml' => true,
+        'application/vnd.api+json' => true,
+        'application/x-protobuf' => true,
         'application/json' => true,
-        'application/json; charset=UTF-8' => true,
+        'application/manifest+json' => true,
+        'application/ld+json' => true,
+        'application/graphql+json' => true,
+        'application/geo+json' => true,
+
+        // Multipart
+        'multipart/bag' => true,
+        'multipart/mixed' => true,
+
+        // XHTML
+        'application/xhtml+xml' => true,
+
+        // Fonts
+        'font/ttf' => true,
+        'font/otf' => true,
+        'font/x-woff' => true,
         'image/svg+xml' => true,
-        'application/xml+rss' => true,
+        'application/vnd.ms-fontobject' => true,
+        'application/ttf' => true,
+        'application/x-ttf' => true,
+        'application/otf' => true,
+        'application/x-otf' => true,
+        'application/truetype' => true,
+        'application/opentype' => true,
+        'application/x-opentype' => true,
+        'application/font-woff' => true,
+        'application/eot' => true,
+        'application/font' => true,
+        'application/font-sfnt' => true,
+
+        // WebAssembly
+        'application/wasm' => true,
+        'application/javascript-binast' => true,
     ];
 
     public const COOKIE_SAMESITE_NONE = 'None';
@@ -247,6 +303,21 @@ abstract class Response
     protected int $size = 0;
 
     /**
+     * @var string
+     */
+    protected string $acceptEncoding = '';
+
+    /**
+     * @var int
+     */
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+
+    /**
+     * @var mixed
+     */
+    protected mixed $compressionSupported = [];
+
+    /**
      * Response constructor.
      *
      * @param  float  $time response start time
@@ -254,6 +325,58 @@ abstract class Response
     public function __construct(float $time = 0)
     {
         $this->startTime = (!empty($time)) ? $time : \microtime(true);
+    }
+
+    private function isCompressible(?string $contentType): bool
+    {
+        if (!$contentType) {
+            return false;
+        }
+
+        // Strip any parameters (e.g. ;charset=utf-8)
+        $contentType = strtolower(trim(explode(';', $contentType)[0]));
+
+        return isset(self::$compressible[$contentType]);
+    }
+
+    /**
+     * Set accept encoding
+     *
+     * Set HTTP accept encoding header.
+     *
+     * @param  string  $acceptEncoding
+     */
+    public function setAcceptEncoding(string $acceptEncoding): static
+    {
+        $this->acceptEncoding = $acceptEncoding;
+
+        return $this;
+    }
+
+    /**
+     * Set min compression size
+     *
+     * Set minimum size for compression to be applied in bytes.
+     *
+     * @param  int  $compressionMinSize
+     */
+    public function setCompressionMinSize(int $compressionMinSize): static
+    {
+        $this->compressionMinSize = $compressionMinSize;
+
+        return $this;
+    }
+
+    /**
+     * Set supported compression algorithms
+     *
+     * @param mixed  $compressionSupported
+     */
+    public function setCompressionSupported(mixed $compressionSupported): static
+    {
+        $this->compressionSupported = $compressionSupported;
+
+        return $this;
     }
 
     /**
@@ -482,50 +605,74 @@ abstract class Response
             return;
         }
 
-        $this->sent = true;
+        $this->appendCookies();
 
-        $this->addHeader('X-Debug-Speed', (string) (\microtime(true) - $this->startTime));
-
-        $this
-            ->appendCookies()
-            ->appendHeaders();
-
-        $this->headersSent = true;
-
-        if (!$this->disablePayload) {
-            $length = strlen($body);
-
-            $headersSize = 0;
-            foreach ($this->headers as $name => $values) {
-                if (\is_array($values)) {
-                    foreach ($values as $value) {
-                        $headersSize += \strlen($name . ': ' . $value);
-                    }
-                    $headersSize += (\count($values) - 1) * 2; // linebreaks
-                } else {
-                    $headersSize += \strlen($name . ': ' . $values);
-                }
+        $hasContentEncoding = false;
+        foreach ($this->headers as $name => $values) {
+            if (\strtolower($name) === 'content-encoding') {
+                $hasContentEncoding = true;
+                break;
             }
-            $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
-            $this->size = $this->size + $headersSize + $length;
+        }
 
-            if (array_key_exists(
-                $this->contentType,
-                $this->compressed
-            ) && ($length <= self::CHUNK_SIZE)) { // Dont compress with GZIP / Brotli if header is not listed and size is bigger than 2mb
-                $this->end($body);
+        // Compress body only if all conditions are met:
+        if (
+            !$hasContentEncoding &&
+            !empty($this->acceptEncoding) &&
+            $this->isCompressible($this->contentType) &&
+            strlen($body) > $this->compressionMinSize
+        ) {
+            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
+
+            if ($algorithm) {
+                $body = $algorithm->compress($body);
+                $this->addHeader('Content-Length', (string) \strlen($body));
+                $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
+                $this->addHeader('X-Utopia-Compression', 'true');
+                $this->addHeader('Vary', 'Accept-Encoding');
+            }
+        }
+
+        $this->addHeader('X-Debug-Speed', (string) (microtime(true) - $this->startTime));
+        $this->appendHeaders();
+
+        // Send response
+        if ($this->disablePayload) {
+            $this->end();
+            $this->sent = true;
+
+            return;
+        }
+
+        $headersSize = 0;
+        foreach ($this->headers as $name => $values) {
+            if (\is_array($values)) {
+                foreach ($values as $value) {
+                    $headersSize += \strlen($name . ': ' . $value);
+                }
+                $headersSize += (\count($values) - 1) * 2; // linebreaks
             } else {
-                for ($i = 0; $i < ceil($length / self::CHUNK_SIZE); $i++) {
-                    $this->write(substr($body, ($i * self::CHUNK_SIZE), min(self::CHUNK_SIZE, $length - ($i * self::CHUNK_SIZE))));
-                }
-
-                $this->end();
+                $headersSize += \strlen($name . ': ' . $values);
             }
+        }
+        $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
 
-            $this->disablePayload();
+        $bodyLength = strlen($body);
+        $this->size += $headersSize + $bodyLength;
+
+        if ($bodyLength <= self::CHUNK_SIZE) {
+            $this->end($body);
         } else {
+            $chunks = str_split($body, self::CHUNK_SIZE);
+            foreach ($chunks as $chunk) {
+                $this->write($chunk);
+            }
             $this->end();
         }
+
+        $this->sent = true;
+
+        $this->disablePayload();
     }
 
     /**

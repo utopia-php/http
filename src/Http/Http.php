@@ -2,11 +2,16 @@
 
 namespace Utopia\Http;
 
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Utopia\DI\Container;
+use Utopia\Servers\Hook;
 use Utopia\Validator;
 
 class Http
 {
+    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+
     /**
      * Request method constants
      */
@@ -117,6 +122,15 @@ class Http
     protected static ?Route $wildcardRoute = null;
 
     /**
+     * Compression
+     */
+    protected bool $compression = false;
+
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+
+    protected mixed $compressionSupported = [];
+
+    /**
      * @var Adapter
      */
     protected Adapter $server;
@@ -132,6 +146,30 @@ class Http
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
+    }
+
+    /**
+     * Set Compression
+     */
+    public function setCompression(bool $compression)
+    {
+        $this->compression = $compression;
+    }
+
+    /**
+     * Set minimum compression size
+     */
+    public function setCompressionMinSize(int $compressionMinSize)
+    {
+        $this->compressionMinSize = $compressionMinSize;
+    }
+
+    /**
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported)
+    {
+        $this->compressionSupported = $compressionSupported;
     }
 
     /**
@@ -352,7 +390,7 @@ class Http
     {
         try {
             return $this->server->getContainer()->get($name);
-        } catch (\Throwable $e) {
+        } catch (ContainerExceptionInterface | NotFoundExceptionInterface $e) {
             // Normalize DI container errors to the Http layer's "resource" terminology.
             $message = \str_replace('dependency', 'resource', $e->getMessage());
 
@@ -702,7 +740,7 @@ class Http
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
-                $arg = \call_user_func_array($arg, $this->getResources($param['injections']));
+                $arg = \call_user_func_array($arg, \array_values($this->getResources($param['injections'])));
             }
             $value = $existsInValues ? $values[$key] : $arg;
 
@@ -738,6 +776,12 @@ class Http
      */
     public function run(Request $request, Response $response): static
     {
+        if ($this->compression) {
+            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
+            $response->setCompressionMinSize($this->compressionMinSize);
+            $response->setCompressionSupported($this->compressionSupported);
+        }
+
         $this->setResource('request', fn () => $request);
         $this->setResource('response', fn () => $response);
 
@@ -886,7 +930,7 @@ class Http
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
+            $validator = \call_user_func_array($validator, \array_values($this->getResources($param['injections'])));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
