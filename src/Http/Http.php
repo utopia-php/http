@@ -172,7 +172,7 @@ class Http extends Base
             $dependencies[] = ['name' => $key, 'order' => $param['order']];
         }
 
-        foreach ($hook->getInjections() as $name => $injection) {
+        foreach ($hook->getInjections() as $injection) {
             $dependencies[] = $injection;
         }
 
