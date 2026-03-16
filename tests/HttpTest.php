@@ -756,4 +756,115 @@ class HttpTest extends TestCase
 
         $this->assertSame('generated: generated-value', $result);
     }
+
+    public function testContainerIsolationBetweenRequests(): void
+    {
+        $this->http
+            ->error()
+            ->inject('error')
+            ->inject('response')
+            ->action(function ($error, $response) {
+                $response->send('error: ' . $error->getMessage());
+            });
+
+        // Route that echoes request-scoped value
+        $route = $this->http->addRoute('GET', '/isolation-test');
+        $route
+            ->inject('request')
+            ->action(function ($request) {
+                echo $request->getHeader('x-req-id', 'none');
+            });
+
+        // First request
+        $container1 = new Container($this->context);
+        $container1->set('request', function () {
+            $request = new Request([]);
+            $request->setURI('/isolation-test');
+            $request->setMethod('GET');
+            $request->addHeader('x-req-id', 'first');
+            return $request;
+        });
+        $container1->set('response', fn () => new Response());
+
+        \ob_start();
+        $this->http->run($container1);
+        $result1 = \ob_get_contents();
+        \ob_end_clean();
+
+        // Second request with different header
+        $container2 = new Container($this->context);
+        $container2->set('request', function () {
+            $request = new Request([]);
+            $request->setURI('/isolation-test');
+            $request->setMethod('GET');
+            $request->addHeader('x-req-id', 'second');
+            return $request;
+        });
+        $container2->set('response', fn () => new Response());
+
+        \ob_start();
+        $this->http->run($container2);
+        $result2 = \ob_get_contents();
+        \ob_end_clean();
+
+        // Each child container should resolve its own request, not bleed across
+        $this->assertSame('first', $result1);
+        $this->assertSame('second', $result2, 'Second request must not see first request state');
+
+        // Parent container must not be polluted with request-scoped deps
+        $this->assertFalse($this->context->has('route'));
+    }
+
+    public function testContainerIsolationForErrors(): void
+    {
+        $errorMessages = [];
+
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) use (&$errorMessages) {
+                $errorMessages[] = $error->getMessage();
+            });
+
+        // Route that always throws
+        $route = $this->http->addRoute('GET', '/error-isolation');
+        $route
+            ->param('msg', '', new Text(200), 'error message')
+            ->action(function ($msg) {
+                throw new Exception($msg, 500);
+            });
+
+        // First request triggers error "first"
+        $container1 = new Container($this->context);
+        $container1->set('request', function () {
+            $request = new Request(['msg' => 'first']);
+            $request->setURI('/error-isolation');
+            $request->setMethod('GET');
+            return $request;
+        });
+        $container1->set('response', fn () => new Response());
+
+        \ob_start();
+        $this->http->run($container1);
+        \ob_end_clean();
+
+        // Second request triggers error "second"
+        $container2 = new Container($this->context);
+        $container2->set('request', function () {
+            $request = new Request(['msg' => 'second']);
+            $request->setURI('/error-isolation');
+            $request->setMethod('GET');
+            return $request;
+        });
+        $container2->set('response', fn () => new Response());
+
+        \ob_start();
+        $this->http->run($container2);
+        \ob_end_clean();
+
+        // Each error handler should receive its own error, not a stale one
+        $this->assertCount(2, $errorMessages);
+        $this->assertSame('first', $errorMessages[0]);
+        $this->assertSame('second', $errorMessages[1], 'Second error handler should not receive stale error from first request');
+    }
 }
