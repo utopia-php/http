@@ -48,7 +48,7 @@ class RouteTest extends TestCase
 
     public function testCanSetAndGetAction()
     {
-        $this->assertSame(null, $this->route->getAction());
+        $this->assertIsCallable($this->route->getAction());
 
         $this->route->action(fn () => 'hello world');
 

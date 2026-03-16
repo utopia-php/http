@@ -3,7 +3,6 @@
 namespace Utopia\Http;
 
 use Utopia\DI\Container;
-use Utopia\DI\Dependency;
 use Utopia\Servers\Base;
 use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
@@ -155,6 +154,32 @@ class Http extends Base
     public function setRequestClass(string $requestClass)
     {
         $this->requestClass = $requestClass;
+    }
+
+    /**
+     * Execute a hook by resolving its dependencies and calling its action.
+     *
+     * @param Container $scope
+     * @param \Utopia\Servers\Hook $hook
+     * @return void
+     */
+    protected function executeHook(Container $scope, \Utopia\Servers\Hook $hook): void
+    {
+        // Build ordered list of all dependencies (params + injections)
+        $dependencies = [];
+
+        foreach ($hook->getParams() as $key => $param) {
+            $dependencies[] = ['name' => $key, 'order' => $param['order']];
+        }
+
+        foreach ($hook->getInjections() as $injection) {
+            $dependencies[] = $injection;
+        }
+
+        \usort($dependencies, fn ($a, $b) => $a['order'] <=> $b['order']);
+
+        $args = \array_map(fn ($dep) => $scope->get($dep['name']), $dependencies);
+        \call_user_func_array($hook->getAction(), $args);
     }
 
     /**
@@ -362,8 +387,6 @@ class Http extends Base
     public function start()
     {
         $this->server->onRequest(function ($request, $response) {
-            $dependency = new Dependency();
-
             if (!\is_null($this->requestClass)) {
                 $request = new $this->requestClass($request);
             }
@@ -372,48 +395,37 @@ class Http extends Base
                 $response = new $this->responseClass($response);
             }
 
-            $context = clone $this->container;
+            $container = new Container($this->container);
 
-            $context->set(clone $dependency->setName('request')->setCallback(fn () => $request))
-                ->set(clone $dependency->setName('response')->setCallback(fn () => $response));
+            $container->set('request', fn () => $request)
+                ->set('response', fn () => $response);
 
             // More base injection for GraphQL only
             if ($request->getUri() === '/v1/graphql') {
-                $context->set(clone $dependency->setName('http')->setCallback(fn () => $this))
-                    ->set(clone $dependency->setName('context')->setCallback(fn () => $context));
+                $container->set('http', fn () => $this)
+                    ->set('context', fn () => $container);
             }
 
 
-            $this->run($context);
+            $this->run($container);
         });
 
         $this->server->onStart(function () {
-            $container = clone $this->container;
+            $container = new Container($this->container);
 
-            $dependency = new Dependency();
-            $container
-                ->set(
-                    $dependency
-                        ->setName('server')
-                        ->setCallback(fn () => $this->server)
-                );
+            $container->set('server', fn () => $this->server);
 
             try {
                 foreach (self::$start as $hook) {
-                    $this->prepare($container, $hook, [], [])->inject($hook, true);
+                    $this->executeHook($this->prepare($container, $hook, [], []), $hook);
                 }
             } catch (\Exception $e) {
-                $dependency = new Dependency();
-                $container->set(
-                    $dependency
-                        ->setName('error')
-                        ->setCallback(fn () => $e)
-                );
+                $container->set('error', fn () => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
                         try {
-                            $this->prepare($container, $error, [], [])->inject($error, true);
+                            $this->executeHook($this->prepare($container, $error, [], []), $error);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
@@ -448,9 +460,9 @@ class Http extends Base
     }
 
 
-    public function execute(Route $route, Request $request, Container $context): self
+    public function execute(Route $route, Request $request, Container $container): self
     {
-        return $this->lifecycle($route, $request, $context);
+        return $this->lifecycle($route, $request, $container);
     }
 
     /**
@@ -459,7 +471,7 @@ class Http extends Base
      * @param Route $route
      * @param Request $request
      */
-    protected function lifecycle(Route $route, Request $request, Container $context): static
+    protected function lifecycle(Route $route, Request $request, Container $container): static
     {
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($request);
@@ -468,7 +480,7 @@ class Http extends Base
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
@@ -476,17 +488,17 @@ class Http extends Base
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
 
-            $this->prepare($context, $route, $pathValues, $request->getParams())->inject($route, true);
+            $this->executeHook($this->prepare($container, $route, $pathValues, $request->getParams()), $route);
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (in_array($group, $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
@@ -494,23 +506,18 @@ class Http extends Base
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Global shutdown hooks
                     if (in_array('*', $hook->getGroups())) {
-                        $this->prepare($context, $hook, $pathValues, $request->getParams())->inject($hook, true);
+                        $this->executeHook($this->prepare($container, $hook, $pathValues, $request->getParams()), $hook);
                     }
                 }
             }
         } catch (\Throwable $e) {
-            $dependency = new Dependency();
-            $context->set(
-                $dependency
-                    ->setName('error')
-                    ->setCallback(fn () => $e)
-            );
+            $container->set('error', fn () => $e);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
                     if (in_array($group, $error->getGroups())) {
                         try {
-                            $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
+                            $this->executeHook($this->prepare($container, $error, $pathValues, $request->getParams()), $error);
                         } catch (\Throwable $e) {
                             throw new Exception('Group error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                         }
@@ -521,7 +528,7 @@ class Http extends Base
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
                     try {
-                        $this->prepare($context, $error, $pathValues, $request->getParams())->inject($error, true);
+                        $this->executeHook($this->prepare($container, $error, $pathValues, $request->getParams()), $error);
                     } catch (\Throwable $e) {
                         throw new Exception('Global error handler had an error: ' . $e->getMessage() . ' on: ' . $e->getFile() . ':' . $e->getLine(), 500, $e);
                     }
@@ -529,16 +536,16 @@ class Http extends Base
             }
         }
 
-        unset($context);
+        unset($container);
 
         return $this;
     }
 
-    public function run(Container $context): static
+    public function run(Container $container): static
     {
-        $request = $context->get('request');
+        $request = $container->get('request');
         /** @var Request $request */
-        $response = $context->get('response');
+        $response = $container->get('response');
         /** @var Response $response */
         $route = $this->match($request);
         /** @var ?Route $route */
@@ -549,7 +556,7 @@ class Http extends Base
             'url.scheme' => $request->getProtocol(),
         ]);
         $start = microtime(true);
-        $result = $this->runInternal($context, $route);
+        $result = $this->runInternal($container, $route);
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
@@ -575,13 +582,13 @@ class Http extends Base
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
      *
-     * @param Container $context
+     * @param Container $container
      */
-    protected function runInternal(Container $context, ?Route $route): static
+    protected function runInternal(Container $container, ?Route $route): static
     {
-        $request = $context->get('request');
+        $request = $container->get('request');
         /** @var Request $request */
-        $response = $context->get('response');
+        $response = $container->get('response');
         /** @var Response $response */
 
         if ($this->compression) {
@@ -611,12 +618,7 @@ class Http extends Base
             $route->path($path);
         }
 
-        $dependency = new Dependency();
-        $context->set(
-            $dependency
-                ->setName('route')
-                ->setCallback(fn () => $route ?? new Route($request->getMethod(), $request->getURI()))
-        );
+        $container->set('route', fn () => $route ?? new Route($request->getMethod(), $request->getURI()));
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -629,7 +631,7 @@ class Http extends Base
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (in_array($group, $option->getGroups())) {
-                            $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
+                            $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
                         }
                     }
                 }
@@ -637,21 +639,16 @@ class Http extends Base
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (in_array('*', $option->getGroups())) {
-                        $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
+                        $this->executeHook($this->prepare($container, $option, [], $request->getParams()), $option);
                     }
                 }
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (in_array('*', $error->getGroups())) {
-                        $dependency = new Dependency();
-                        $context->set(
-                            $dependency
-                                ->setName('error')
-                                ->setCallback(fn () => $e)
-                        );
+                        $container->set('error', fn () => $e);
 
-                        $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
+                        $this->executeHook($this->prepare($container, $error, [], $request->getParams()), $error);
                     }
                 }
             }
@@ -660,47 +657,13 @@ class Http extends Base
         }
 
         if (null !== $route) {
-            return $this->lifecycle($route, $request, $context);
-        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        if (in_array($group, $option->getGroups())) {
-                            $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    if (in_array('*', $option->getGroups())) {
-                        $this->prepare($context, $option, [], $request->getParams())->inject($option, true);
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (in_array('*', $error->getGroups())) {
-                        $dependency = new Dependency();
-                        $context->set(
-                            $dependency
-                                ->setName('error')
-                                ->setCallback(fn () => $e)
-                        );
-
-                        $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
-                    }
-                }
-            }
+            return $this->lifecycle($route, $request, $container);
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (in_array('*', $error->getGroups())) {
-                    $dependency = new Dependency();
-                    $dependency
-                        ->setName('error')
-                        ->setCallback(fn () => new Exception('Not Found', 404));
+                    $container->set('error', fn () => new Exception('Not Found', 404));
 
-                    $context->set($dependency);
-
-                    $this->prepare($context, $error, [], $request->getParams())->inject($error, true);
+                    $this->executeHook($this->prepare($container, $error, [], $request->getParams()), $error);
                 }
             }
         }

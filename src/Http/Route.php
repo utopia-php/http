@@ -50,6 +50,7 @@ class Route extends Hook
 
     public function __construct(string $method, string $path)
     {
+        parent::__construct();
         $this->path($path);
         $this->method = $method;
         $this->order = ++self::$counter;
