@@ -28,15 +28,13 @@ class Server extends Adapter
     public function onRequest(callable $callback)
     {
         $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            go(function () use ($request, $response, $callback) {
-                $requestContainer = new Container($this->container);
-                $requestContainer->set('swooleRequest', fn () => $request);
-                $requestContainer->set('swooleResponse', fn () => $response);
+            $requestContainer = new Container($this->container);
+            $requestContainer->set('swooleRequest', fn () => $request);
+            $requestContainer->set('swooleResponse', fn () => $response);
 
-                Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
 
-                \call_user_func($callback, new Request($request), new Response($response));
-            });
+            \call_user_func($callback, new Request($request), new Response($response));
         });
     }
 
