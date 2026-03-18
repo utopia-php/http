@@ -15,13 +15,10 @@ class Server extends Adapter
     protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
     protected Container $container;
 
-    public function __construct(string $host, ?string $port = null, array $settings = [], ?Container $container = null)
+    public function __construct(string $host, ?string $port = null, array $settings = [], int $mode = SWOOLE_PROCESS, ?Container $container = null)
     {
-        $this->server = new SwooleServer($host, (int) $port);
-        $this->server->set(\array_merge($settings, [
-            'open_http2_protocol' => true,
-            'dispatch_mode' => 2,
-        ]));
+        $this->server = new SwooleServer($host, (int) $port, $mode);
+        $this->server->set($settings);
         $this->container = $container ?? new Container();
     }
 
