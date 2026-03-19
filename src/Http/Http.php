@@ -2,11 +2,16 @@
 
 namespace Utopia\Http;
 
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Utopia\DI\Container;
+use Utopia\Servers\Hook;
 use Utopia\Validator;
 
 class Http
 {
+    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+
     /**
      * Request method constants
      */
@@ -117,6 +122,15 @@ class Http
     protected static ?Route $wildcardRoute = null;
 
     /**
+     * Compression
+     */
+    protected bool $compression = false;
+
+    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
+
+    protected mixed $compressionSupported = [];
+
+    /**
      * @var Adapter
      */
     protected Adapter $server;
@@ -132,6 +146,31 @@ class Http
         \date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
+        $this->container = $server->getContainer();
+    }
+
+    /**
+     * Set Compression
+     */
+    public function setCompression(bool $compression)
+    {
+        $this->compression = $compression;
+    }
+
+    /**
+     * Set minimum compression size
+     */
+    public function setCompressionMinSize(int $compressionMinSize)
+    {
+        $this->compressionMinSize = $compressionMinSize;
+    }
+
+    /**
+     * Set supported compression algorithms
+     */
+    public function setCompressionSupported(mixed $compressionSupported)
+    {
+        $this->compressionSupported = $compressionSupported;
     }
 
     /**
@@ -352,7 +391,7 @@ class Http
     {
         try {
             return $this->server->getContainer()->get($name);
-        } catch (\Throwable $e) {
+        } catch (ContainerExceptionInterface | NotFoundExceptionInterface $e) {
             // Normalize DI container errors to the Http layer's "resource" terminology.
             $message = \str_replace('dependency', 'resource', $e->getMessage());
 
@@ -389,6 +428,16 @@ class Http
      * @param string[] $injections
      */
     public function setResource(string $name, callable $callback, array $injections = []): void
+    {
+        $this->container->set($name, $callback, $injections);
+    }
+
+    /**
+     * Set a request-scoped resource on the current request's container.
+     *
+     * @param string[] $injections
+     */
+    protected function setRequestResource(string $name, callable $callback, array $injections = []): void
     {
         $this->server->getContainer()->set($name, $callback, $injections);
     }
@@ -610,7 +659,9 @@ class Http
     {
         $arguments = [];
         $groups = $route->getGroups();
-        $pathValues = $route->getPathValues($request);
+
+        $preparedPath = Router::preparePath($route->getMatchedPath());
+        $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
             if ($route->getHook()) {
@@ -652,7 +703,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            $this->setResource('error', fn () => $e, []);
+            $this->setRequestResource('error', fn () => $e, []);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -702,7 +753,7 @@ class Http
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
-                $arg = \call_user_func_array($arg, $this->getResources($param['injections']));
+                $arg = \call_user_func_array($arg, \array_values($this->getResources($param['injections'])));
             }
             $value = $existsInValues ? $values[$key] : $arg;
 
@@ -738,8 +789,14 @@ class Http
      */
     public function run(Request $request, Response $response): static
     {
-        $this->setResource('request', fn () => $request);
-        $this->setResource('response', fn () => $response);
+        if ($this->compression) {
+            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
+            $response->setCompressionMinSize($this->compressionMinSize);
+            $response->setCompressionSupported($this->compressionSupported);
+        }
+
+        $this->setRequestResource('request', fn () => $request);
+        $this->setRequestResource('response', fn () => $response);
 
         try {
             foreach (self::$requestHooks as $hook) {
@@ -747,7 +804,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->setResource('error', fn () => $e, []);
+            $this->setRequestResource('error', fn () => $e, []);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
@@ -777,7 +834,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setResource('route', fn () => $route, []);
+        $this->setRequestResource('route', fn () => $route, []);
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -805,7 +862,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setResource('error', function () use ($e) {
+                        $this->setRequestResource('error', function () use ($e) {
                             return $e;
                         }, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
@@ -822,7 +879,7 @@ class Http
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $route->path($path);
 
-            $this->setResource('route', fn () => $route, []);
+            $this->setRequestResource('route', fn () => $route, []);
         }
 
         if (null !== $route) {
@@ -845,7 +902,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setResource('error', function () use ($e) {
+                        $this->setRequestResource('error', function () use ($e) {
                             return $e;
                         }, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
@@ -855,7 +912,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
-                    $this->setResource('error', fn () => new Exception('Not Found', 404), []);
+                    $this->setRequestResource('error', fn () => new Exception('Not Found', 404), []);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }
@@ -886,7 +943,7 @@ class Http
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, $this->getResources($param['injections']));
+            $validator = \call_user_func_array($validator, \array_values($this->getResources($param['injections'])));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class

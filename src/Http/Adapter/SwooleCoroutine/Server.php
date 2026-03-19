@@ -1,11 +1,11 @@
 <?php
 
-namespace Utopia\Http\Adapter\Swoole;
+namespace Utopia\Http\Adapter\SwooleCoroutine;
 
 use Swoole\Coroutine;
 use Utopia\Http\Adapter;
 use Utopia\DI\Container;
-use Swoole\Http\Server as SwooleServer;
+use Swoole\Coroutine\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 
@@ -15,9 +15,9 @@ class Server extends Adapter
     protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
     protected Container $container;
 
-    public function __construct(string $host, ?string $port = null, array $settings = [], int $mode = SWOOLE_PROCESS, ?Container $container = null)
+    public function __construct(string $host, ?string $port = null, array $settings = [], ?Container $container = null)
     {
-        $this->server = new SwooleServer($host, (int) $port, $mode);
+        $this->server = new SwooleServer($host, $port, false, true);
         $this->server->set(\array_merge($settings, [
             'http_parse_cookie' => false,
         ]));
@@ -26,14 +26,16 @@ class Server extends Adapter
 
     public function onRequest(callable $callback)
     {
-        $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            $requestContainer = new Container($this->container);
-            $requestContainer->set('swooleRequest', fn () => $request);
-            $requestContainer->set('swooleResponse', fn () => $response);
+        $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
+            go(function () use ($request, $response, $callback) {
+                $requestContainer = new Container($this->container);
+                $requestContainer->set('swooleRequest', fn () => $request);
+                $requestContainer->set('swooleResponse', fn () => $response);
 
-            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+                Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
 
-            \call_user_func($callback, new Request($request), new Response($response));
+                \call_user_func($callback, new Request($request), new Response($response));
+            });
         });
     }
 
@@ -53,15 +55,13 @@ class Server extends Adapter
 
     public function onStart(callable $callback)
     {
-        $this->server->on('start', function () use ($callback) {
-            go(function () use ($callback) {
-                \call_user_func($callback, $this);
-            });
-        });
+        \call_user_func($callback, $this);
     }
 
     public function start()
     {
-        return $this->server->start();
+        go(function () {
+            $this->server->start();
+        });
     }
 }

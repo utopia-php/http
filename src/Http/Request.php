@@ -46,6 +46,8 @@ abstract class Request
      */
     protected $headers = null;
 
+    protected array $trustedIpHeaders = [];
+
     /**
      * Get Param
      *
@@ -136,6 +138,24 @@ abstract class Request
      * @return static
      */
     abstract public function setServer(string $key, string $value): static;
+
+    /**
+     * Set Trusted IP Headers
+     *
+     * Set which headers to trust for determining client IP address.
+     * Headers are checked in order; the first one found with a valid IP is used.
+     *
+     * @param  array  $headers
+     * @return static
+     */
+    public function setTrustedIpHeaders(array $headers): static
+    {
+        $normalized = \array_map('strtolower', $headers);
+        $trimmed = \array_map('trim', $normalized);
+        $this->trustedIpHeaders = \array_filter($trimmed);
+
+        return $this;
+    }
 
     /**
      * Get IP

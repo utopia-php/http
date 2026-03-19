@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5afd948989df91d546b1694354e2f9d2",
+    "content-hash": "b50963daa3cd55d8307513e3044491ae",
     "packages": [
         {
             "name": "psr/container",
@@ -60,6 +60,52 @@
             "time": "2021-11-05T16:47:00+00:00"
         },
         {
+            "name": "utopia-php/compression",
+            "version": "0.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/utopia-php/compression.git",
+                "reference": "68045cb9d714c1259582d2dfd0e76bd34f83e713"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/utopia-php/compression/zipball/68045cb9d714c1259582d2dfd0e76bd34f83e713",
+                "reference": "68045cb9d714c1259582d2dfd0e76bd34f83e713",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "laravel/pint": "1.2.*",
+                "phpunit/phpunit": "^9.3",
+                "vimeo/psalm": "4.0.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Utopia\\Compression\\": "src/Compression"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A simple Compression library to handle file compression",
+            "keywords": [
+                "compression",
+                "framework",
+                "php",
+                "upf",
+                "utopia"
+            ],
+            "support": {
+                "issues": "https://github.com/utopia-php/compression/issues",
+                "source": "https://github.com/utopia-php/compression/tree/0.1.4"
+            },
+            "time": "2026-02-17T05:53:40+00:00"
+        },
+        {
             "name": "utopia-php/di",
             "version": "0.3.1",
             "source": {
@@ -109,6 +155,60 @@
                 "source": "https://github.com/utopia-php/di/tree/0.3.1"
             },
             "time": "2026-03-13T05:47:23+00:00"
+        },
+        {
+            "name": "utopia-php/servers",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/utopia-php/servers.git",
+                "reference": "235be31200df9437fc96a1c270ffef4c64fafe52"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/235be31200df9437fc96a1c270ffef4c64fafe52",
+                "reference": "235be31200df9437fc96a1c270ffef4c64fafe52",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.2",
+                "utopia-php/di": "0.3.*",
+                "utopia-php/validators": "0.*"
+            },
+            "require-dev": {
+                "laravel/pint": "^0.2.3",
+                "phpstan/phpstan": "^1.8",
+                "phpunit/phpunit": "^9.5.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Utopia\\Servers\\": "src/Servers"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Team Appwrite",
+                    "email": "team@appwrite.io"
+                }
+            ],
+            "description": "A base library for building Utopia style servers.",
+            "keywords": [
+                "framework",
+                "php",
+                "servers",
+                "upf",
+                "utopia"
+            ],
+            "support": {
+                "issues": "https://github.com/utopia-php/servers/issues",
+                "source": "https://github.com/utopia-php/servers/tree/0.3.0"
+            },
+            "time": "2026-03-13T11:31:42+00:00"
         },
         {
             "name": "utopia-php/validators",
@@ -3587,5 +3687,5 @@
         "ext-swoole": "*"
     },
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }
