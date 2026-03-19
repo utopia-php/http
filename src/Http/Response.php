@@ -626,6 +626,7 @@ abstract class Response
 
             if ($algorithm) {
                 $body = $algorithm->compress($body);
+                $this->removeHeader('Content-Length');
                 $this->addHeader('Content-Length', (string) \strlen($body));
                 $this->addHeader('Content-Encoding', $algorithm->getContentEncoding());
                 $this->addHeader('X-Utopia-Compression', 'true');

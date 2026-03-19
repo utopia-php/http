@@ -293,7 +293,7 @@ class View
                 '\\1',
             ];
 
-            $html = \preg_replace($search, $replace, $html);
+            $html = \preg_replace($search, $replace, $html) ?? $html;
 
             // Replacing back with content
             $html = \str_replace(\array_map(function ($el) {

@@ -14,6 +14,8 @@ class Server extends Adapter
     protected SwooleServer $server;
     protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
     protected Container $container;
+    /** @var callable|null */
+    protected $onStartCallback = null;
 
     public function __construct(string $host, ?string $port = null, array $settings = [], ?Container $container = null)
     {
@@ -55,12 +57,15 @@ class Server extends Adapter
 
     public function onStart(callable $callback)
     {
-        \call_user_func($callback, $this);
+        $this->onStartCallback = $callback;
     }
 
     public function start()
     {
         go(function () {
+            if ($this->onStartCallback) {
+                \call_user_func($this->onStartCallback, $this);
+            }
             $this->server->start();
         });
     }

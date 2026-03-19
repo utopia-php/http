@@ -152,7 +152,7 @@ class Http
     /**
      * Set Compression
      */
-    public function setCompression(bool $compression)
+    public function setCompression(bool $compression): void
     {
         $this->compression = $compression;
     }
@@ -160,7 +160,7 @@ class Http
     /**
      * Set minimum compression size
      */
-    public function setCompressionMinSize(int $compressionMinSize)
+    public function setCompressionMinSize(int $compressionMinSize): void
     {
         $this->compressionMinSize = $compressionMinSize;
     }
@@ -168,7 +168,7 @@ class Http
     /**
      * Set supported compression algorithms
      */
-    public function setCompressionSupported(mixed $compressionSupported)
+    public function setCompressionSupported(mixed $compressionSupported): void
     {
         $this->compressionSupported = $compressionSupported;
     }
