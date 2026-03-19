@@ -18,7 +18,9 @@ class Server extends Adapter
     public function __construct(string $host, ?string $port = null, array $settings = [], int $mode = SWOOLE_PROCESS, ?Container $container = null)
     {
         $this->server = new SwooleServer($host, (int) $port, $mode);
-        $this->server->set($settings);
+        $this->server->set(\array_merge($settings, [
+            'http_parse_cookie' => false,
+        ]));
         $this->container = $container ?? new Container();
     }
 
