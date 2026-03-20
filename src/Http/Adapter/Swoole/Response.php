@@ -86,14 +86,14 @@ class Response extends UtopiaResponse
     protected function sendCookie(string $name, string $value, array $options): void
     {
         $this->swoole->cookie(
-            name: $name,
-            value: $value,
-            expires: $options['expire'] ?? 0,
-            path: $options['path'] ?? '',
-            domain: $options['domain'] ?? '',
-            secure: $options['secure'] ?? false,
-            httponly: $options['httponly'] ?? false,
-            samesite: $options['samesite'] ?? false,
+            $name,
+            $value,
+            $options['expire'] ?? 0,
+            $options['path'] ?? '',
+            $options['domain'] ?? '',
+            $options['secure'] ?? false,
+            $options['httponly'] ?? false,
+            $options['samesite'] ?? false,
         );
     }
 }
