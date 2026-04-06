@@ -11,14 +11,20 @@ use Swoole\Http\Response as SwooleResponse;
 
 class Server extends Adapter
 {
-    protected SwooleServer $server;
     protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
+
+    protected SwooleServer $server;
     protected Container $container;
+
     /** @var callable|null */
     protected $onStartCallback = null;
 
-    public function __construct(string $host, ?string $port = null, array $settings = [], ?Container $container = null)
-    {
+    public function __construct(
+        string $host,
+        ?string $port = null,
+        array $settings = [],
+        ?Container $container = null
+    ) {
         $this->server = new SwooleServer($host, $port, false, true);
         $this->server->set(\array_merge($settings, [
             'http_parse_cookie' => false,
@@ -29,25 +35,23 @@ class Server extends Adapter
     public function onRequest(callable $callback)
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            go(function () use ($request, $response, $callback) {
-                $requestContainer = new Container($this->container);
-                $requestContainer->set('swooleRequest', fn () => $request);
-                $requestContainer->set('swooleResponse', fn () => $response);
+            $requestContainer = new Container($this->container);
+            $requestContainer->set('swooleRequest', fn () => $request);
+            $requestContainer->set('swooleResponse', fn () => $response);
 
-                Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
 
+            try {
                 \call_user_func($callback, new Request($request), new Response($response));
-            });
+            } finally {
+                unset(Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY]);
+            }
         });
     }
 
     public function getContainer(): Container
     {
-        if (Coroutine::getCid() !== -1) {
-            return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
-        }
-
-        return $this->container;
+        return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
     }
 
     public function getServer(): SwooleServer
@@ -62,11 +66,10 @@ class Server extends Adapter
 
     public function start()
     {
-        go(function () {
-            if ($this->onStartCallback) {
-                \call_user_func($this->onStartCallback, $this);
-            }
-            $this->server->start();
-        });
+        if ($this->onStartCallback) {
+            \call_user_func($this->onStartCallback, $this);
+        }
+
+        $this->server->start();
     }
 }
