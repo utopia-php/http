@@ -483,6 +483,17 @@ class HttpTest extends TestCase
         }
     }
 
+    public function testCanMatchRootRouteWhenUriHasNoPath(): void
+    {
+        $route = Http::get('/');
+
+        $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
+        $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
+
+        $this->assertSame($route, $this->http->match(new Request()));
+        $this->assertSame($route, $this->http->getRoute());
+    }
+
     public function testCanRunRequest(): void
     {
         // Test head requests
@@ -554,6 +565,31 @@ class HttpTest extends TestCase
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
+    }
+
+    public function testWildcardRouteWhenUriHasNoPath(): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $uri = $_SERVER['REQUEST_URI'] ?? null;
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
+
+        Http::wildcard()
+            ->inject('response')
+            ->action(function ($response) {
+                $response->send('HELLO');
+            });
+
+        \ob_start();
+        @$this->http->run(new Request(), new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $_SERVER['REQUEST_METHOD'] = $method;
+        $_SERVER['REQUEST_URI'] = $uri;
+
+        $this->assertEquals('HELLO', $result);
     }
 
     public function testCallableStringParametersNotExecuted(): void
