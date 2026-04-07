@@ -678,6 +678,7 @@ class Http
         }
 
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
+        $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
@@ -945,6 +946,7 @@ class Http
             $route = self::$wildcardRoute;
             $this->route = $route;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
             $this->setRequestResource('route', fn () => $route, []);
