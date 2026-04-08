@@ -8,9 +8,18 @@ use Utopia\Http\Adapter\Swoole\Request;
 
 class SwooleRequestTest extends TestCase
 {
+    private function createSwooleRequest(): SwooleRequest
+    {
+        if (!\class_exists(SwooleRequest::class)) {
+            $this->markTestSkipped('Swoole extension is not available.');
+        }
+
+        return new SwooleRequest();
+    }
+
     public function testCanGetCookieFromParsedSwooleCookies(): void
     {
-        $swooleRequest = new SwooleRequest();
+        $swooleRequest = $this->createSwooleRequest();
         $swooleRequest->cookie = [
             'cookie1' => 'value1',
             'cookie2' => 'value2',
@@ -25,7 +34,7 @@ class SwooleRequestTest extends TestCase
 
     public function testGetHeadersDoesNotSynthesizeCookieHeader(): void
     {
-        $swooleRequest = new SwooleRequest();
+        $swooleRequest = $this->createSwooleRequest();
         $swooleRequest->header = [
             'host' => 'localhost',
         ];
