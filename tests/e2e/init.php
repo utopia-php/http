@@ -34,6 +34,14 @@ Http::get('/cookies')
         $response->send($request->getHeaders()['cookie'] ?? '');
     });
 
+Http::get('/cookie/:key')
+    ->param('key', '', new Text(64))
+    ->inject('request')
+    ->inject('response')
+    ->action(function (string $key, Request $request, Response $response) {
+        $response->send($request->getCookie($key, ''));
+    });
+
 Http::get('/set-cookie')
     ->inject('request')
     ->inject('response')

@@ -14,4 +14,32 @@ class ResponseFPMTest extends TestCase
     {
         $this->client = new Client();
     }
+
+    public function testCookie(): void
+    {
+        $cookie = 'cookie1=value1';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie: ' . $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        $cookie = 'cookie1=value1; cookie2=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie: ' . $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        $cookie = 'cookie1=value1;cookie2=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie: ' . $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        $cookie = 'cookie1=value1=value2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie: ' . $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+
+        $cookie = 'cookie1=v1; Cookie1=v2';
+        $response = $this->client->call(Client::METHOD_GET, '/cookies', ['Cookie: ' . $cookie]);
+        $this->assertEquals(200, $response['headers']['status-code']);
+        $this->assertEquals($cookie, $response['body']);
+    }
 }

@@ -271,23 +271,9 @@ class Request extends UtopiaRequest
      */
     public function getCookie(string $key, string $default = ''): string
     {
-        $key = \strtolower($key);
+        $key = strtolower($key);
 
-        $cookies = \explode(';', $this->getHeader('cookie', ''));
-        foreach ($cookies as $cookie) {
-            $cookie = \trim($cookie);
-            if ($cookie === '') {
-                continue;
-            }
-            $parts = \explode('=', $cookie, 2);
-            $cookieKey = \trim($parts[0]);
-            $cookieValue = isset($parts[1]) ? \trim($parts[1]) : '';
-            if ($cookieKey === $key) {
-                return $cookieValue;
-            }
-        }
-
-        return $default;
+        return $this->swoole->cookie[$key] ?? $default;
     }
 
     /**
@@ -391,12 +377,6 @@ class Request extends UtopiaRequest
      */
     protected function generateHeaders(): array
     {
-        $headers = $this->swoole->header;
-
-        foreach ($headers as $key => $value) {
-            $headers[strtolower($key)] = $value;
-        }
-
-        return $headers;
+        return $this->swoole->header;
     }
 }

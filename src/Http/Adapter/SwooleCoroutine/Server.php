@@ -26,9 +26,7 @@ class Server extends Adapter
         ?Container $container = null
     ) {
         $this->server = new SwooleServer($host, $port, false, true);
-        $this->server->set(\array_merge($settings, [
-            'http_parse_cookie' => false,
-        ]));
+        $this->server->set($settings);
         $this->container = $container ?? new Container();
     }
 
