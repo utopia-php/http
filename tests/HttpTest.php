@@ -108,7 +108,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -132,7 +132,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request);
+        $this->http->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -152,7 +152,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request);
+        $this->http->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -224,7 +224,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request);
+        $this->http->execute($route, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -234,7 +234,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request);
+        $this->http->execute($homepage, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -264,7 +264,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -280,7 +280,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -348,7 +348,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -356,7 +356,7 @@ class HttpTest extends TestCase
 
         \ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -606,7 +606,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route, new Request());
+        $this->http->execute($route, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -624,7 +624,7 @@ class HttpTest extends TestCase
         \ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
-        $this->http->execute($route2, $request);
+        $this->http->execute($route2, $request, new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 
@@ -642,7 +642,7 @@ class HttpTest extends TestCase
             });
 
         \ob_start();
-        $this->http->execute($route3, new Request());
+        $this->http->execute($route3, new Request(), new Response());
         $result = \ob_get_contents();
         \ob_end_clean();
 

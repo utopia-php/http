@@ -693,7 +693,7 @@ class Http
      * @param  Route  $route
      * @param  Request  $request
      */
-    public function execute(Route $route, Request $request): static
+    public function execute(Route $route, Request $request, Response $response): static
     {
         $arguments = [];
         $groups = $route->getGroups();
@@ -720,8 +720,10 @@ class Http
                 }
             }
 
-            $arguments = $this->getArguments($route, $pathValues, $request->getParams());
-            \call_user_func_array($route->getAction(), $arguments);
+            if (!$response->isSent()) {
+                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+                \call_user_func_array($route->getAction(), $arguments);
+            }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
@@ -953,7 +955,7 @@ class Http
         }
 
         if (null !== $route) {
-            return $this->execute($route, $request);
+            return $this->execute($route, $request, $response);
         } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
             try {
                 foreach ($groups as $group) {
