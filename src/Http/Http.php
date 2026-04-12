@@ -720,8 +720,10 @@ class Http
                 }
             }
 
-            $arguments = $this->getArguments($route, $pathValues, $request->getParams());
-            \call_user_func_array($route->getAction(), $arguments);
+            if (!$response->isSent()) {
+                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+                \call_user_func_array($route->getAction(), $arguments);
+            }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
