@@ -3,6 +3,7 @@
 namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Http\Request as SwooleRequest;
+use Stringable;
 use Utopia\Http\Request as UtopiaRequest;
 
 class Request extends UtopiaRequest
@@ -287,7 +288,9 @@ class Request extends UtopiaRequest
      */
     public function getHeader(string $key, string $default = ''): string
     {
-        return $this->swoole->header[$key] ?? $default;
+        $key = strtolower($key);
+
+        return $this->normalizeHeaderValue($this->swoole->header[$key] ?? $default, $default);
     }
 
     /**
@@ -322,6 +325,27 @@ class Request extends UtopiaRequest
     public function getSwooleRequest(): SwooleRequest
     {
         return $this->swoole;
+    }
+
+    private function normalizeHeaderValue(mixed $value, string $default): string
+    {
+        if (is_array($value)) {
+            for ($i = count($value) - 1; $i >= 0; $i--) {
+                $candidate = $value[$i];
+
+                if (is_scalar($candidate) || $candidate instanceof Stringable) {
+                    return (string) $candidate;
+                }
+            }
+
+            return $default;
+        }
+
+        if (is_scalar($value) || $value instanceof Stringable) {
+            return (string) $value;
+        }
+
+        return $default;
     }
 
     /**
