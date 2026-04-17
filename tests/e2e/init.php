@@ -70,3 +70,12 @@ Http::get('/humans.txt')
     ->action(function (Response $response) {
         $response->noContent();
     });
+
+Http::get('/aliased')
+    ->alias('/aliased-1')
+    ->alias('/aliased-2')
+    ->alias('/aliased-3')
+    ->inject('response')
+    ->action(function (Response $response) {
+        $response->send('Aliased!');
+    });
