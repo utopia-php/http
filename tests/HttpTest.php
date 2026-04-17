@@ -648,4 +648,46 @@ class HttpTest extends TestCase
 
         $this->assertEquals('generated: generated-value', $result);
     }
+
+    public function testCanInjectResourceAndParamWithSameName(): void
+    {
+        // Register a 'locale' resource returning a Locale instance whose
+        // `name` statically resolves to "en".
+        $this->container->set('locale', fn () => new Locale());
+
+        $route = new Route('GET', '/path');
+
+        $route
+            ->param('locale', 'en-default', new Text(10), 'locale param', false)
+            ->inject('locale')
+            ->action(function (string $localeParam, Locale $localeResource) {
+                echo \json_encode([
+                    'localeParam' => $localeParam,
+                    'localeResource' => $localeResource->name,
+                ]);
+            });
+
+        \ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['locale' => 'es']);
+        $this->http->execute($route, $request, new Response());
+        $result = \ob_get_contents();
+        \ob_end_clean();
+
+        $expected = \json_encode([
+            'localeParam' => 'es',
+            'localeResource' => 'en',
+        ]);
+
+        $this->assertEquals($expected, $result);
+    }
+}
+
+/**
+ * Dummy Locale class used by testCanInjectResourceAndParamWithSameName to
+ * verify resource injection alongside a same-named request parameter.
+ */
+class Locale
+{
+    public string $name = 'en';
 }
