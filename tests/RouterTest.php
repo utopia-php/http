@@ -96,6 +96,22 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias2'));
     }
 
+    public function testCanMatchMultipleAliases(): void
+    {
+        $routeGET = new Route(Http::REQUEST_METHOD_GET, '/target');
+        $routeGET
+            ->alias('/alias1')
+            ->alias('/alias2')
+            ->alias('/alias3');
+
+        Router::addRoute($routeGET);
+
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/target'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias1'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias2'));
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/alias3'));
+    }
+
     public function testCanMatchMix(): void
     {
         $routeGET = new Route(Http::REQUEST_METHOD_GET, '/');

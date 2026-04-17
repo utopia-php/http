@@ -43,4 +43,15 @@ trait BaseTest
         $this->assertEquals('value1', $response['cookies']['key1']);
         $this->assertEquals('value2', $response['cookies']['key2']);
     }
+
+    public function testAliases()
+    {
+        $paths = ['/aliased', '/aliased-1', '/aliased-2', '/aliased-3'];
+
+        foreach ($paths as $path) {
+            $response = $this->client->call(Client::METHOD_GET, $path);
+            $this->assertEquals(200, $response['headers']['status-code']);
+            $this->assertEquals('Aliased!', $response['body']);
+        }
+    }
 }
