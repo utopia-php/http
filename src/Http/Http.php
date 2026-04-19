@@ -15,6 +15,8 @@ use Utopia\Validator;
 class Http
 {
     public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+    public const COMPRESSION_BROTLI_LEVEL_DEFAULT = 4;
+    public const COMPRESSION_ZSTD_LEVEL_DEFAULT = 3;
 
     /**
      * Request method constants
