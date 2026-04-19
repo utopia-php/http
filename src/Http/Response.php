@@ -2,6 +2,8 @@
 
 namespace Utopia\Http;
 
+use Utopia\Compression\Algorithms\Brotli;
+use Utopia\Compression\Algorithms\Zstd;
 use Utopia\Compression\Compression;
 
 abstract class Response
@@ -625,6 +627,12 @@ abstract class Response
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
 
             if ($algorithm) {
+                if ($algorithm instanceof Brotli) {
+                    $algorithm->setLevel(Http::COMPRESSION_BROTLI_LEVEL_DEFAULT);
+                } elseif ($algorithm instanceof Zstd) {
+                    $algorithm->setLevel(Http::COMPRESSION_ZSTD_LEVEL_DEFAULT);
+                }
+
                 $body = $algorithm->compress($body);
                 $this->removeHeader('Content-Length');
                 $this->addHeader('Content-Length', (string) \strlen($body));
