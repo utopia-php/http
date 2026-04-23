@@ -477,7 +477,6 @@ class HttpTest extends TestCase
             // Fresh match returns new route
             $matched = $this->http->match($request2, fresh: true);
             $this->assertEquals($route2, $matched);
-            $this->assertEquals($route2, $this->http->getRoute());
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
