@@ -111,15 +111,6 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     *
-     * @var Route|null
-     */
-    protected ?Route $route = null;
-
-    /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
      *
@@ -524,13 +515,44 @@ class Http
     }
 
     /**
+     * Get the current route match (Route + matchedPath) for this request.
+     */
+    public function getMatch(): ?RouteMatch
+    {
+        $container = $this->server->getContainer();
+
+        if (!$container->has('routeMatch')) {
+            return null;
+        }
+
+        try {
+            $match = $container->get('routeMatch');
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $match instanceof RouteMatch ? $match : null;
+    }
+
+    /**
      * Get the current route
      *
      * @return null|Route
      */
     public function getRoute(): ?Route
     {
-        return $this->route ?? null;
+        return $this->getMatch()?->route;
+    }
+
+    private function resolveTelemetryPath(): ?string
+    {
+        $match = $this->getMatch();
+
+        if ($match === null) {
+            return null;
+        }
+
+        return $match->resolvedPath !== '' ? $match->resolvedPath : $match->route->getPath();
     }
 
     /**
@@ -540,7 +562,8 @@ class Http
      */
     public function setRoute(Route $route): self
     {
-        $this->route = $route;
+        $match = new RouteMatch($route, $route->getPath());
+        $this->setRequestResource('routeMatch', fn () => $match, []);
 
         return $this;
     }
@@ -675,8 +698,12 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
+        if (!$fresh) {
+            $cached = $this->getMatch();
+
+            if (null !== $cached) {
+                return $cached->route;
+            }
         }
 
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
@@ -684,9 +711,13 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $match = Router::match($method, $url);
 
-        return $this->route;
+        if (null !== $match) {
+            $this->setRequestResource('routeMatch', fn () => $match, []);
+        }
+
+        return $match?->route;
     }
 
     /**
@@ -700,7 +731,8 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $preparedPath = Router::preparePath($route->getMatchedPath());
+        $matchedPath = $this->getMatch()?->matchedPath ?? '';
+        $preparedPath = Router::preparePath($matchedPath);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
@@ -837,7 +869,7 @@ class Http
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $this->resolveTelemetryPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -948,12 +980,11 @@ class Http
 
         if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
-            $this->route = $route;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
-            $route->path($path);
 
-            $this->setRequestResource('route', fn () => $route, []);
+            $match = new RouteMatch($route, '', $path);
+            $this->setRequestResource('routeMatch', fn () => $match, []);
         }
 
         if (null !== $route) {

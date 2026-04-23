@@ -48,25 +48,12 @@ class Route extends Hook
      */
     protected int $order;
 
-    protected string $matchedPath = '';
-
     public function __construct(string $method, string $path)
     {
         parent::__construct();
         $this->path($path);
         $this->method = $method;
         $this->order = ++self::$counter;
-    }
-
-    public function setMatchedPath(string $path): self
-    {
-        $this->matchedPath = $path;
-        return $this;
-    }
-
-    public function getMatchedPath(): string
-    {
-        return $this->matchedPath;
     }
 
     /**

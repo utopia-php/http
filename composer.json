@@ -31,7 +31,7 @@
     "require": {
         "php": ">=8.2",
         "ext-swoole": "*",
-        "utopia-php/di": "0.3.*",
+        "utopia-php/di": "^0.3.2",
         "utopia-php/servers": "0.3.*",
         "utopia-php/compression": "0.1.*",
         "utopia-php/telemetry": "0.2.*",
