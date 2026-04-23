@@ -111,15 +111,6 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     *
-     * @var Route|null
-     */
-    protected ?Route $route = null;
-
-    /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
      *
@@ -530,7 +521,19 @@ class Http
      */
     public function getRoute(): ?Route
     {
-        return $this->route ?? null;
+        $container = $this->server->getContainer();
+
+        if (!$container->has('route')) {
+            return null;
+        }
+
+        try {
+            $route = $container->get('route');
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $route instanceof Route ? $route : null;
     }
 
     /**
@@ -540,7 +543,7 @@ class Http
      */
     public function setRoute(Route $route): self
     {
-        $this->route = $route;
+        $this->setRequestResource('route', fn () => $route, []);
 
         return $this;
     }
@@ -675,8 +678,12 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
+        if (!$fresh) {
+            $cached = $this->getRoute();
+
+            if (null !== $cached) {
+                return $cached;
+            }
         }
 
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
@@ -684,9 +691,13 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $route = Router::match($method, $url);
 
-        return $this->route;
+        if (null !== $route) {
+            $this->setRequestResource('route', fn () => $route, []);
+        }
+
+        return $route;
     }
 
     /**
@@ -837,7 +848,7 @@ class Http
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $this->getRoute()?->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -948,7 +959,6 @@ class Http
 
         if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
-            $this->route = $route;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
