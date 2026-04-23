@@ -958,7 +958,7 @@ class Http
         }
 
         if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
+            $route = clone self::$wildcardRoute;
             $path = \parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
