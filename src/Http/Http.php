@@ -918,8 +918,6 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setRequestResource('route', fn () => $route, []);
-
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
