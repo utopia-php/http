@@ -455,28 +455,31 @@ final class HttpTest extends TestCase
         }
     }
 
-    public function testCanMatchFreshRoute(): void
+    public function testMatchAlwaysReturnsFreshRoute(): void
     {
+        // The previous implementation cached the last matched route on the
+        // Http singleton and returned it on subsequent match() calls with
+        // `fresh: false`. That cache was unsafe under concurrent request
+        // handling and has been removed; match() now always returns the
+        // fresh result, regardless of the `$fresh` argument.
         $route1 = Http::get('/path1');
         $route2 = Http::get('/path2');
 
         try {
-            // Match first request
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
             $this->assertSame($route1, $matched);
             $this->assertSame($route1, $this->http->getRoute());
 
-            // Second request match returns cached route
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path2';
             $request2 = new Request();
-            $matched = $this->http->match($request2, fresh: false);
-            $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getRoute());
 
-            // Fresh match returns new route
+            $matched = $this->http->match($request2, fresh: false);
+            $this->assertSame($route2, $matched);
+            $this->assertSame($route2, $this->http->getRoute());
+
             $matched = $this->http->match($request2, fresh: true);
             $this->assertSame($route2, $matched);
             $this->assertSame($route2, $this->http->getRoute());

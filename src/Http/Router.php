@@ -107,8 +107,12 @@ class Router
 
     /**
      * Match route against the method and path.
+     *
+     * Returns an immutable {@see RouteMatch} carrying the matched route and
+     * the per-request match facts (URL path, router table key, prepared
+     * path). The shared {@see Route} definition is never mutated.
      */
-    public static function match(string $method, string $path): ?Route
+    public static function matchRoute(string $method, string $path): ?RouteMatch
     {
         if (!array_key_exists($method, self::$routes)) {
             return null;
@@ -129,9 +133,7 @@ class Router
             );
 
             if (array_key_exists($match, self::$routes[$method])) {
-                $route = self::$routes[$method][$match];
-                $route->setMatchedPath($match);
-                return $route;
+                return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
             }
         }
 
@@ -140,9 +142,7 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (array_key_exists($match, self::$routes[$method])) {
-            $route = self::$routes[$method][$match];
-            $route->setMatchedPath($match);
-            return $route;
+            return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
         }
 
         /**
@@ -152,13 +152,22 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (array_key_exists($match, self::$routes[$method])) {
-                $route = self::$routes[$method][$match];
-                $route->setMatchedPath($match);
-                return $route;
+                return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
             }
         }
 
         return null;
+    }
+
+    /**
+     * @deprecated Use {@see Router::matchRoute()} which returns a per-request
+     *   {@see RouteMatch}. The old signature returned the shared Route
+     *   definition; under concurrent request handling (Swoole coroutines)
+     *   mutating that return value is racy.
+     */
+    public static function match(string $method, string $path): ?Route
+    {
+        return self::matchRoute($method, $path)?->route;
     }
 
     /**

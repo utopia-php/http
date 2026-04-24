@@ -48,8 +48,6 @@ class Http
 
     protected Container $container;
 
-    protected ?Container $requestContainer = null;
-
     /**
      * Current running mode
      */
@@ -104,13 +102,6 @@ class Http
      * @var Hook[]
      */
     protected static array $requestHooks = [];
-
-    /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     */
-    protected ?Route $route = null;
 
     /**
      * Wildcard route
@@ -178,6 +169,11 @@ class Http
         $this->compression = $compression;
     }
 
+    public function isCompressionEnabled(): bool
+    {
+        return $this->compression;
+    }
+
     /**
      * Set minimum compression size
      */
@@ -186,12 +182,22 @@ class Http
         $this->compressionMinSize = $compressionMinSize;
     }
 
+    public function getCompressionMinSize(): int
+    {
+        return $this->compressionMinSize;
+    }
+
     /**
      * Set supported compression algorithms
      */
     public function setCompressionSupported(mixed $compressionSupported): void
     {
         $this->compressionSupported = $compressionSupported;
+    }
+
+    public function getCompressionSupported(): mixed
+    {
+        return $this->compressionSupported;
     }
 
     /**
@@ -257,6 +263,18 @@ class Http
     }
 
     /**
+     * Returns the registered wildcard route, if any.
+     *
+     * The returned Route is a shared definition and MUST NOT be mutated by
+     * request-handling code. Per-request state belongs on {@see RouteMatch}
+     * or {@see RequestContext}.
+     */
+    public static function getWildcardRoute(): ?Route
+    {
+        return self::$wildcardRoute;
+    }
+
+    /**
      * Init
      *
      * Set a callback function that will be initialized on application start
@@ -314,6 +332,42 @@ class Http
         self::$errors[] = $hook;
 
         return $hook;
+    }
+
+    /** @return Hook[] */
+    public static function getInitHooks(): array
+    {
+        return self::$init;
+    }
+
+    /** @return Hook[] */
+    public static function getShutdownHooks(): array
+    {
+        return self::$shutdown;
+    }
+
+    /** @return Hook[] */
+    public static function getOptionsHooks(): array
+    {
+        return self::$options;
+    }
+
+    /** @return Hook[] */
+    public static function getErrorHooks(): array
+    {
+        return self::$errors;
+    }
+
+    /** @return Hook[] */
+    public static function getStartHooks(): array
+    {
+        return self::$startHooks;
+    }
+
+    /** @return Hook[] */
+    public static function getRequestHooks(): array
+    {
+        return self::$requestHooks;
     }
 
     /**
@@ -417,9 +471,14 @@ class Http
     /**
      * Set a request-scoped resource on the current request's container.
      *
+     * Relies on {@see Adapter::getContainer()} returning a container scoped
+     * to the current request/coroutine. Swoole adapters back this with
+     * `Coroutine::getContext()`; the FPM adapter has a single request per
+     * process so the shared container is safe there.
+     *
      * @param list<string> $injections
      */
-    protected function setRequestResource(string $name, callable $callback, array $injections = []): void
+    public function setRequestResource(string $name, callable $callback, array $injections = []): void
     {
         $this->server->getContainer()->set($name, $callback, $injections);
     }
@@ -461,19 +520,32 @@ class Http
     }
 
     /**
-     * Get the current route
+     * @deprecated Read the `routeMatch` or `route` request resource instead
+     *   (e.g. `$http->getResource('routeMatch')?->route`). The per-request
+     *   route lives in the per-request DI container; returning it from the
+     *   shared Http singleton is not safe under concurrent request handling.
      */
     public function getRoute(): ?Route
     {
-        return $this->route ?? null;
+        try {
+            $match = $this->server->getContainer()->get('routeMatch');
+        } catch (ContainerExceptionInterface|NotFoundExceptionInterface) {
+            return null;
+        }
+
+        return $match instanceof RouteMatch ? $match->route : null;
     }
 
     /**
-     * Set the current route
+     * @deprecated Construct a {@see RouteMatch} and register it via
+     *   `setRequestResource('routeMatch', ...)` instead. Provided as a shim
+     *   for tests and legacy callers only.
      */
     public function setRoute(Route $route): self
     {
-        $this->route = $route;
+        $match = new RouteMatch($route, '', '', '');
+        $this->setRequestResource('route', fn() => $route);
+        $this->setRequestResource('routeMatch', fn() => $match);
 
         return $this;
     }
@@ -506,7 +578,7 @@ class Http
     /**
      * Is file loaded.
      */
-    protected function isFileLoaded(string $uri): bool
+    public function isFileLoaded(string $uri): bool
     {
         return $this->files->isFileLoaded($uri);
     }
@@ -514,10 +586,9 @@ class Http
     /**
      * Get file contents.
      *
-     * @return string
      * @throws \Exception
      */
-    protected function getFileContents(string $uri): mixed
+    public function getFileContents(string $uri): mixed
     {
         return $this->files->getFileContents($uri);
     }
@@ -525,10 +596,9 @@ class Http
     /**
      * Get file MIME type.
      *
-     * @return string
      * @throws \Exception
      */
-    protected function getFileMimeType(string $uri): mixed
+    public function getFileMimeType(string $uri): mixed
     {
         return $this->files->getFileMimeType($uri);
     }
@@ -549,7 +619,6 @@ class Http
 
     public function start(): void
     {
-
         $this->server->onRequest(
             fn(Request $request, Response $response) => $this->run($request, $response),
         );
@@ -557,7 +626,6 @@ class Http
         $this->server->onStart(function ($server) {
             $this->setResource('server', fn() => $server);
             try {
-
                 foreach (self::$startHooks as $hook) {
                     $arguments = $this->getArguments($hook, [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
@@ -565,7 +633,7 @@ class Http
             } catch (\Exception $e) {
                 $this->setResource('error', fn() => $e);
 
-                foreach (self::$errors as $error) { // Global error hooks
+                foreach (self::$errors as $error) {
                     if (in_array('*', $error->getGroups())) {
                         try {
                             $arguments = $this->getArguments($error, [], []);
@@ -582,107 +650,52 @@ class Http
     }
 
     /**
-     * Match
-     *
-     * Find matching route given current user request
-     *
-     * @param  bool  $fresh If true, will not match any cached route
+     * @deprecated Use {@see Router::matchRoute()} which returns a per-request
+     *   {@see RouteMatch}. This shim discards the `$fresh` argument: the
+     *   previous implementation cached the match on the Http singleton,
+     *   which is not safe under concurrent request handling.
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
-        }
-
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
         $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $match = Router::matchRoute($method, $url);
+        if ($match === null) {
+            return null;
+        }
 
-        return $this->route;
+        $this->setRequestResource('route', fn() => $match->route);
+        $this->setRequestResource('routeMatch', fn() => $match);
+
+        return $match->route;
     }
 
     /**
-     * Execute a given route with middlewares and error handling
+     * Execute a given route with middlewares and error handling.
+     *
+     * @deprecated Internal dispatch moved to {@see Dispatcher}. This shim
+     *   remains for tests and callers that invoke `execute()` directly with a
+     *   Route built outside the router; it synthesises a {@see RouteMatch}
+     *   from the route's registered path.
      */
     public function execute(Route $route, Request $request, Response $response): static
     {
-        $arguments = [];
-        $groups = $route->getGroups();
+        [$preparedPath] = Router::preparePath($route->getPath());
+        $urlPath = \parse_url($request->getURI(), PHP_URL_PATH);
+        $urlPath = \is_string($urlPath) ? ($urlPath === '' ? '/' : $urlPath) : '/';
+        $match = new RouteMatch($route, $urlPath, $preparedPath, $preparedPath);
 
-        $preparedPath = Router::preparePath($route->getMatchedPath());
-        $pathValues = $route->getPathValues($request, $preparedPath[0]);
+        $context = new RequestContext($match);
+        $this->setRequestResource('request', fn() => $request);
+        $this->setRequestResource('response', fn() => $response);
+        $this->setRequestResource('context', fn() => $context);
+        $this->setRequestResource('route', fn() => $route);
+        $this->setRequestResource('routeMatch', fn() => $match);
 
-        try {
-            if ($route->getHook()) {
-                foreach (self::$init as $hook) { // Global init hooks
-                    if (in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
-            }
-
-            foreach ($groups as $group) {
-                foreach (self::$init as $hook) { // Group init hooks
-                    if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
-            }
-
-            if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
-                \call_user_func_array($route->getAction(), $arguments);
-            }
-
-            foreach ($groups as $group) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
-            }
-
-            if ($route->getHook()) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
-                    if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
-                        \call_user_func_array($hook->getAction(), $arguments);
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            $this->setRequestResource('error', fn() => $e, []);
-
-            foreach ($groups as $group) {
-                foreach (self::$errors as $error) { // Group error hooks
-                    if (\in_array($group, $error->getGroups())) {
-                        try {
-                            $arguments = $this->getArguments($error, $pathValues, $request->getParams());
-                            \call_user_func_array($error->getAction(), $arguments);
-                        } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                        }
-                    }
-                }
-            }
-
-            foreach (self::$errors as $error) { // Global error hooks
-                if (\in_array('*', $error->getGroups())) {
-                    try {
-                        $arguments = $this->getArguments($error, $pathValues, $request->getParams());
-                        \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                    }
-                }
-            }
-        }
+        (new Dispatcher($this, $request, $response))->execute($match);
 
         return $this;
     }
@@ -695,10 +708,10 @@ class Http
      * @return array<int, mixed>
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    public function getArguments(Hook $hook, array $values, array $requestParams): array
     {
         $arguments = [];
-        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
+        foreach ($hook->getParams() as $key => $param) {
             $existsInRequest = \array_key_exists($key, $requestParams);
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
@@ -731,7 +744,7 @@ class Http
     }
 
     /**
-     * Run: wrapper function to record telemetry. All domain logic should happen in `runInternal`.
+     * Run: wrapper function to record telemetry. Dispatch lives in {@see Dispatcher}.
      */
     public function run(Request $request, Response $response): static
     {
@@ -741,13 +754,15 @@ class Http
         ]);
 
         $start = microtime(true);
-        $result = $this->runInternal($request, $response);
+
+        $dispatcher = new Dispatcher($this, $request, $response);
+        $dispatcher->handle();
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $dispatcher->matchedRoute()?->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -758,149 +773,8 @@ class Http
             'url.scheme' => $request->getProtocol(),
         ]);
 
-        return $result;
-    }
-
-    /**
-     * Run internal
-     *
-     * This is the place to initialize any pre routing logic.
-     * This is where you might want to parse the application current URL by any desired logic
-     *
-     * @param Response $response;
-     */
-    private function runInternal(Request $request, Response $response): static
-    {
-        if ($this->compression) {
-            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
-            $response->setCompressionMinSize($this->compressionMinSize);
-            $response->setCompressionSupported($this->compressionSupported);
-        }
-
-        $this->setRequestResource('request', fn() => $request);
-        $this->setRequestResource('response', fn() => $response);
-
-        try {
-            foreach (self::$requestHooks as $hook) {
-                $arguments = $this->getArguments($hook, [], []);
-                \call_user_func_array($hook->getAction(), $arguments);
-            }
-        } catch (\Exception $e) {
-            $this->setRequestResource('error', fn() => $e, []);
-
-            foreach (self::$errors as $error) { // Global error hooks
-                if (\in_array('*', $error->getGroups())) {
-                    try {
-                        $arguments = $this->getArguments($error, [], []);
-                        \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
-                    }
-                }
-            }
-        }
-
-        if ($this->isFileLoaded($request->getURI())) {
-            $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
-
-            $response
-                ->setContentType($this->getFileMimeType($request->getURI()))
-                ->addHeader('Cache-Control', 'public, max-age=' . $time)
-                ->addHeader('Expires', \date('D, d M Y H:i:s', \time() + $time) . ' GMT') // 45 days cache
-                ->send($this->getFileContents($request->getURI()));
-
-            return $this;
-        }
-
-        $method = $request->getMethod();
-        $route = $this->match($request);
-        $groups = ($route instanceof Route) ? $route->getGroups() : [];
-
-        $this->setRequestResource('route', fn() => $route, []);
-
-        if (self::REQUEST_METHOD_HEAD === $method) {
-            $method = self::REQUEST_METHOD_GET;
-            $response->disablePayload();
-        }
-
-        if (self::REQUEST_METHOD_OPTIONS === $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        /** @var Hook $option */
-                        if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    /** @var Hook $option */
-                    if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    /** @var Hook $error */
-                    if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                    }
-                }
-            }
-
-            return $this;
-        }
-
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
-            $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
-            $route->path($path);
-
-            $this->setRequestResource('route', fn() => $route, []);
-        }
-        if (null !== $route) {
-            return $this->execute($route, $request, $response);
-        }
-
-        if (self::REQUEST_METHOD_OPTIONS === $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                    }
-                }
-            }
-        } else {
-            foreach (self::$errors as $error) { // Global error hooks
-                if (\in_array('*', $error->getGroups())) {
-                    $this->setRequestResource('error', fn() => new Exception('Not Found', 404), []);
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                }
-            }
-        }
-
         return $this;
     }
-
 
     /**
      * Validate Param
@@ -917,13 +791,13 @@ class Http
             return;
         }
 
-        $validator = $param['validator']; // checking whether the class exists
+        $validator = $param['validator'];
 
         if (\is_callable($validator)) {
             $validator = \call_user_func_array($validator, \array_values($this->getResources($param['injections'])));
         }
 
-        if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
+        if (!$validator instanceof Validator) {
             throw new Exception('Validator object is not an instance of the Validator class', 500);
         }
 
