@@ -76,16 +76,7 @@ final class Dispatcher
         }
 
         $method = $this->request->getMethod();
-        $url = \parse_url($this->request->getURI(), PHP_URL_PATH);
-        $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
-        $matchMethod = (Http::REQUEST_METHOD_HEAD === $method) ? Http::REQUEST_METHOD_GET : $method;
-
-        $this->match = Router::matchRoute($matchMethod, $url);
-
-        if ($this->match === null && Http::getWildcardRoute() !== null) {
-            $wildcard = Http::getWildcardRoute();
-            $this->match = new RouteMatch($wildcard, $url, Router::WILDCARD_TOKEN, Router::WILDCARD_TOKEN);
-        }
+        $this->match = Router::matchRequest($this->request);
 
         $this->http->setRequestResource('route', fn() => $this->match?->route);
         $this->http->setRequestResource('routeMatch', fn() => $this->match);

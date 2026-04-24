@@ -54,12 +54,6 @@ class Http
     protected static string $mode = '';
 
     /**
-     * Wildcard route
-     * If set, this get's executed if no other route is matched
-     */
-    protected static ?Route $wildcardRoute = null;
-
-    /**
      * Compression
      */
     protected bool $compression = false;
@@ -201,26 +195,15 @@ class Http
     }
 
     /**
-     * Wildcard
-     *
-     * Add Wildcard route
+     * Register a method-agnostic wildcard route. Invoked when no
+     * method-specific route matches the incoming request.
      */
     public static function wildcard(): Route
     {
-        self::$wildcardRoute = new Route('', '');
+        $route = new Route('', '');
+        Router::setWildcard($route);
 
-        return self::$wildcardRoute;
-    }
-
-    /**
-     * Returns the registered wildcard route, if any.
-     *
-     * The returned Route is a shared definition and MUST NOT be mutated by
-     * request-handling code. Per-request state belongs on {@see RouteMatch}.
-     */
-    public static function getWildcardRoute(): ?Route
-    {
-        return self::$wildcardRoute;
+        return $route;
     }
 
     /**
@@ -688,6 +671,5 @@ class Http
         Router::reset();
         Hooks::reset();
         self::$mode = '';
-        self::$wildcardRoute = null;
     }
 }

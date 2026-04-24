@@ -33,6 +33,12 @@ class Router
     protected static array $params = [];
 
     /**
+     * Method-agnostic wildcard route, used as last-resort fallback when no
+     * method-specific route matches. Registered via {@see self::setWildcard()}.
+     */
+    protected static ?Route $wildcard = null;
+
+    /**
      * Get all registered routes.
      *
      * @return array<string, Route[]>
@@ -106,67 +112,23 @@ class Router
     }
 
     /**
-     * Match route against the method and path.
-     *
-     * Returns an immutable {@see RouteMatch} carrying the matched route and
-     * the per-request match facts (URL path, router table key, prepared
-     * path). The shared {@see Route} definition is never mutated.
+     * Register a method-agnostic wildcard route. Used as the last-resort
+     * fallback when no method-specific route matches. At most one wildcard
+     * can be registered; a subsequent call replaces the previous one.
      */
-    public static function matchRoute(string $method, string $path): ?RouteMatch
+    public static function setWildcard(Route $route): void
     {
-        if (!array_key_exists($method, self::$routes)) {
-            return null;
-        }
-
-        $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
-        $length = count($parts) - 1;
-        $filteredParams = array_filter(self::$params, fn($i) => $i <= $length);
-
-        foreach (self::combinations($filteredParams) as $sample) {
-            $sample = array_filter($sample, fn(int $i) => $i <= $length);
-            $match = implode(
-                '/',
-                array_replace(
-                    $parts,
-                    array_fill_keys($sample, self::PLACEHOLDER_TOKEN),
-                ),
-            );
-
-            if (array_key_exists($match, self::$routes[$method])) {
-                return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
-            }
-        }
-
-        /**
-         * Match root wildcard.
-         */
-        $match = self::WILDCARD_TOKEN;
-        if (array_key_exists($match, self::$routes[$method])) {
-            return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
-        }
-
-        /**
-         * Match wildcard for path segments.
-         */
-        foreach ($parts as $part) {
-            $current = ($current ?? '') . "{$part}/";
-            $match = $current . self::WILDCARD_TOKEN;
-            if (array_key_exists($match, self::$routes[$method])) {
-                return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
-            }
-        }
-
-        return null;
+        self::$wildcard = $route;
     }
 
     /**
      * Match a {@see Request} against the router.
      *
-     * Convenience wrapper around {@see Router::matchRoute()} that extracts
-     * the path from the request URI and normalises HEAD to GET (the
+     * Extracts the path from the request URI, normalises HEAD to GET (the
      * HEAD method is served by the GET handler with the response payload
-     * disabled). Prefer this over hand-rolling the parse + HEAD logic at
-     * every call site.
+     * disabled), and returns an immutable {@see RouteMatch} carrying the
+     * matched route and per-request match facts. The shared {@see Route}
+     * definition is never mutated.
      */
     public static function matchRequest(Request $request): ?RouteMatch
     {
@@ -180,14 +142,61 @@ class Router
     }
 
     /**
-     * @deprecated Use {@see Router::matchRoute()} which returns a per-request
-     *   {@see RouteMatch}. The old signature returned the shared Route
-     *   definition; under concurrent request handling (Swoole coroutines)
-     *   mutating that return value is racy.
+     * Match against a (method, path) pair. Internal — application code should
+     * call {@see self::matchRequest()} so URL parsing and HEAD normalisation
+     * are handled consistently.
      */
-    public static function match(string $method, string $path): ?Route
+    private static function matchRoute(string $method, string $path): ?RouteMatch
     {
-        return self::matchRoute($method, $path)?->route;
+        if (array_key_exists($method, self::$routes)) {
+            $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
+            $length = count($parts) - 1;
+            $filteredParams = array_filter(self::$params, fn($i) => $i <= $length);
+
+            foreach (self::combinations($filteredParams) as $sample) {
+                $sample = array_filter($sample, fn(int $i) => $i <= $length);
+                $match = implode(
+                    '/',
+                    array_replace(
+                        $parts,
+                        array_fill_keys($sample, self::PLACEHOLDER_TOKEN),
+                    ),
+                );
+
+                if (array_key_exists($match, self::$routes[$method])) {
+                    return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
+                }
+            }
+
+            /**
+             * Match root wildcard for this method (e.g. GET /*).
+             */
+            $match = self::WILDCARD_TOKEN;
+            if (array_key_exists($match, self::$routes[$method])) {
+                return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
+            }
+
+            /**
+             * Match wildcard for path segments (e.g. GET /foo/*).
+             */
+            foreach ($parts as $part) {
+                $current = ($current ?? '') . "{$part}/";
+                $match = $current . self::WILDCARD_TOKEN;
+                if (array_key_exists($match, self::$routes[$method])) {
+                    return new RouteMatch(self::$routes[$method][$match], $path, $match, $match);
+                }
+            }
+        }
+
+        /**
+         * Fall through to the method-agnostic wildcard registered via
+         * {@see self::setWildcard()}.
+         */
+        if (self::$wildcard !== null) {
+            return new RouteMatch(self::$wildcard, $path, self::WILDCARD_TOKEN, self::WILDCARD_TOKEN);
+        }
+
+        return null;
     }
 
     /**
@@ -248,6 +257,7 @@ class Router
     public static function reset(): void
     {
         self::$params = [];
+        self::$wildcard = null;
         self::$routes = [
             Http::REQUEST_METHOD_GET => [],
             Http::REQUEST_METHOD_POST => [],
