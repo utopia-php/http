@@ -16,11 +16,10 @@ use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 use Rector\Php81\Rector\Property\ReadOnlyPropertyRector;
 use Rector\Php82\Rector\Class_\ReadOnlyClassRector;
+use Rector\PHPUnit\CodeQuality\Rector\MethodCall\AssertEmptyNullableObjectToAssertInstanceofRector;
+use Rector\PHPUnit\Set\PHPUnitSetList;
 use Rector\Set\ValueObject\LevelSetList;
 use Rector\Set\ValueObject\SetList;
-use Rector\TypeDeclaration\Rector\ClassMethod\ParamTypeByParentCallTypeRector;
-use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromAssignsRector;
-use Rector\TypeDeclaration\Rector\Property\TypedPropertyFromStrictConstructorRector;
 
 return RectorConfig::configure()
     ->withPaths([
@@ -34,6 +33,11 @@ return RectorConfig::configure()
         SetList::DEAD_CODE,
         SetList::EARLY_RETURN,
         SetList::INSTANCEOF,
+        PHPUnitSetList::PHPUNIT_100,
+        PHPUnitSetList::PHPUNIT_110,
+        PHPUnitSetList::PHPUNIT_120,
+        PHPUnitSetList::PHPUNIT_CODE_QUALITY,
+        PHPUnitSetList::ANNOTATIONS_TO_ATTRIBUTES,
     ])
     ->withImportNames(importShortClasses: false, removeUnusedImports: true)
     ->withSkip([
@@ -44,11 +48,6 @@ return RectorConfig::configure()
         // Changes truthy semantics — "0", null, "" behave differently
         ExplicitBoolCompareRector::class,
         SimplifyEmptyCheckOnEmptyArrayRector::class,
-
-        // Can throw TypeError on previously-working callers (library is public API)
-        TypedPropertyFromAssignsRector::class,
-        TypedPropertyFromStrictConstructorRector::class,
-        ParamTypeByParentCallTypeRector::class,
 
         // Different distribution and failure mode than rand()
         RandomFunctionRector::class,
@@ -68,4 +67,7 @@ return RectorConfig::configure()
 
         // Throws TypeError when args are objects/arrays — review per-call
         NullToStrictStringFuncCallArgRector::class,
+
+        // Weakens `assertNull` to `assertNotInstanceOf` — keep the stricter assertion
+        AssertEmptyNullableObjectToAssertInstanceofRector::class,
     ]);

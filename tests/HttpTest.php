@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Http;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Utopia\DI\Container;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
@@ -10,7 +13,7 @@ use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
-class HttpTest extends TestCase
+final class HttpTest extends TestCase
 {
     protected ?Http $http;
 
@@ -56,21 +59,21 @@ class HttpTest extends TestCase
 
         Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-        $this->assertEquals(Http::MODE_TYPE_PRODUCTION, Http::getMode());
+        $this->assertSame(Http::MODE_TYPE_PRODUCTION, Http::getMode());
         $this->assertTrue(Http::isProduction());
         $this->assertFalse(Http::isDevelopment());
         $this->assertFalse(Http::isStage());
 
         Http::setMode(Http::MODE_TYPE_DEVELOPMENT);
 
-        $this->assertEquals(Http::MODE_TYPE_DEVELOPMENT, Http::getMode());
+        $this->assertSame(Http::MODE_TYPE_DEVELOPMENT, Http::getMode());
         $this->assertFalse(Http::isProduction());
         $this->assertTrue(Http::isDevelopment());
         $this->assertFalse(Http::isStage());
 
         Http::setMode(Http::MODE_TYPE_STAGE);
 
-        $this->assertEquals(Http::MODE_TYPE_STAGE, Http::getMode());
+        $this->assertSame(Http::MODE_TYPE_STAGE, Http::getMode());
         $this->assertFalse(Http::isProduction());
         $this->assertFalse(Http::isDevelopment());
         $this->assertTrue(Http::isStage());
@@ -81,8 +84,8 @@ class HttpTest extends TestCase
         // Mock
         $_SERVER['key'] = 'value';
 
-        $this->assertEquals(Http::getEnv('key'), 'value');
-        $this->assertEquals(Http::getEnv('unknown', 'test'), 'test');
+        $this->assertSame('value', Http::getEnv('key'));
+        $this->assertSame('test', Http::getEnv('unknown', 'test'));
     }
 
     public function testCanExecuteRoute(): void
@@ -136,7 +139,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals($resource . '-param-x-param-y', $result);
+        $this->assertSame($resource . '-param-x-param-y', $result);
 
         // With Error
         $resource = $this->container->get('rand');
@@ -156,7 +159,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
+        $this->assertSame('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
 
         // With Hooks
         $resource = $this->container->get('rand');
@@ -228,7 +231,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
+        $this->assertSame('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         $resource = $this->container->get('rand');
         \ob_start();
@@ -238,7 +241,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
+        $this->assertSame('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
     public function testCanAddAndExecuteHooks(): void
@@ -268,7 +271,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('(init)-x-def-(shutdown)', $result);
+        $this->assertSame('(init)-x-def-(shutdown)', $result);
 
         // Default Params
         $route = new Route('GET', '/path');
@@ -284,7 +287,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('x-def', $result);
+        $this->assertSame('x-def', $result);
     }
 
     public function testAllowRouteOverrides(): void
@@ -302,7 +305,7 @@ class HttpTest extends TestCase
             $this->fail('Failed to throw exception');
         } catch (\Exception $e) {
             // Threw exception as expected
-            $this->assertEquals('Route for (GET:) already registered.', $e->getMessage());
+            $this->assertSame('Route for (GET:) already registered.', $e->getMessage());
         }
 
         // Test success
@@ -352,7 +355,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('error-Param "y" is not optional.', $result);
+        $this->assertSame('error-Param "y" is not optional.', $result);
 
         \ob_start();
         $_GET['y'] = 'y-def';
@@ -360,42 +363,38 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
+        $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
     }
 
     public function testCanSetRoute(): void
     {
         $route = new Route('GET', '/path');
 
-        $this->assertEquals($this->http->getRoute(), null);
+        $this->assertNull($this->http->getRoute());
         $this->http->setRoute($route);
         $this->assertEquals($this->http->getRoute(), $route);
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return \Iterator<string, array<int, string>>
      */
-    public function providerRouteMatching(): array
+    public static function providerRouteMatching(): \Iterator
     {
-        return [
-            'GET request' => [Http::REQUEST_METHOD_GET, '/path1'],
-            'GET request on different route' => [Http::REQUEST_METHOD_GET, '/path2'],
-            'GET request with trailing slash #1' => [Http::REQUEST_METHOD_GET, '/path3', '/path3/'],
-            'GET request with trailing slash #2' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3/'],
-            'GET request with trailing slash #3' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3'],
-            'POST request' => [Http::REQUEST_METHOD_POST, '/path1'],
-            'PUT request' => [Http::REQUEST_METHOD_PUT, '/path1'],
-            'PATCH request' => [Http::REQUEST_METHOD_PATCH, '/path1'],
-            'DELETE request' => [Http::REQUEST_METHOD_DELETE, '/path1'],
-            '1 separators' => [Http::REQUEST_METHOD_GET, '/a/'],
-            '2 separators' => [Http::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [Http::REQUEST_METHOD_GET, '/a/b/c'],
-        ];
+        yield 'GET request' => [Http::REQUEST_METHOD_GET, '/path1'];
+        yield 'GET request on different route' => [Http::REQUEST_METHOD_GET, '/path2'];
+        yield 'GET request with trailing slash #1' => [Http::REQUEST_METHOD_GET, '/path3', '/path3/'];
+        yield 'GET request with trailing slash #2' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3/'];
+        yield 'GET request with trailing slash #3' => [Http::REQUEST_METHOD_GET, '/path3/', '/path3'];
+        yield 'POST request' => [Http::REQUEST_METHOD_POST, '/path1'];
+        yield 'PUT request' => [Http::REQUEST_METHOD_PUT, '/path1'];
+        yield 'PATCH request' => [Http::REQUEST_METHOD_PATCH, '/path1'];
+        yield 'DELETE request' => [Http::REQUEST_METHOD_DELETE, '/path1'];
+        yield '1 separators' => [Http::REQUEST_METHOD_GET, '/a/'];
+        yield '2 separators' => [Http::REQUEST_METHOD_GET, '/a/b'];
+        yield '3 separators' => [Http::REQUEST_METHOD_GET, '/a/b/c'];
     }
 
-    /**
-     * @dataProvider providerRouteMatching
-     */
+    #[DataProvider('providerRouteMatching')]
     public function testCanMatchRoute(string $method, string $path, ?string $url = null): void
     {
         $url ??= $path;
@@ -451,8 +450,8 @@ class HttpTest extends TestCase
 
             $route = $this->http->match(new Request(), fresh: true);
 
-            $this->assertEquals(null, $route);
-            $this->assertEquals(null, $this->http->getRoute());
+            $this->assertNull($route);
+            $this->assertNull($this->http->getRoute());
         }
     }
 
@@ -555,7 +554,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('HELLO', $result);
+        $this->assertSame('HELLO', $result);
 
         \ob_start();
         $req = new Request();
@@ -564,7 +563,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('', $result);
+        $this->assertSame('', $result);
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
@@ -592,7 +591,7 @@ class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
 
-        $this->assertEquals('HELLO', $result);
+        $this->assertSame('HELLO', $result);
     }
 
     public function testCallableStringParametersNotExecuted(): void
@@ -613,7 +612,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('callback-value: phpinfo', $result);
+        $this->assertSame('callback-value: phpinfo', $result);
 
         // Test with request parameter that is a callable string
         $route2 = new Route('GET', '/test-callable-string-param');
@@ -631,7 +630,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('func-value: system', $result);
+        $this->assertSame('func-value: system', $result);
 
         // Test callable closure still works
         $route3 = new Route('GET', '/test-callable-closure');
@@ -647,7 +646,7 @@ class HttpTest extends TestCase
         $result = \ob_get_contents();
         \ob_end_clean();
 
-        $this->assertEquals('generated: generated-value', $result);
+        $this->assertSame('generated: generated-value', $result);
     }
 
     public function testCanInjectResourceAndParamWithSameName(): void

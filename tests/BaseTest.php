@@ -9,39 +9,39 @@ trait BaseTest
     public function testResponse(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/');
-        $this->assertEquals('Hello World!', $response['body']);
+        $this->assertSame('Hello World!', $response['body']);
     }
 
     public function testResponseValue(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/value/123');
-        $this->assertEquals('123', $response['body']);
+        $this->assertSame('123', $response['body']);
     }
 
     public function testChunkResponse(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/chunked');
-        $this->assertEquals('Hello World!', $response['body']);
+        $this->assertSame('Hello World!', $response['body']);
     }
 
     public function testRedirect(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/redirect');
-        $this->assertEquals('Hello World!', $response['body']);
+        $this->assertSame('Hello World!', $response['body']);
     }
 
     public function testFile(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
-        $this->assertEquals(204, $response['headers']['status-code']);
+        $this->assertSame(204, $response['headers']['status-code']);
     }
 
     public function testSetCookie(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/set-cookie');
-        $this->assertEquals(200, $response['headers']['status-code']);
-        $this->assertEquals('value1', $response['cookies']['key1']);
-        $this->assertEquals('value2', $response['cookies']['key2']);
+        $this->assertSame(200, $response['headers']['status-code']);
+        $this->assertSame('value1', $response['cookies']['key1']);
+        $this->assertSame('value2', $response['cookies']['key2']);
     }
 
     public function testAliases(): void
@@ -50,8 +50,8 @@ trait BaseTest
 
         foreach ($paths as $path) {
             $response = $this->client->call(Client::METHOD_GET, $path);
-            $this->assertEquals(200, $response['headers']['status-code']);
-            $this->assertEquals('Aliased!', $response['body']);
+            $this->assertSame(200, $response['headers']['status-code']);
+            $this->assertSame('Aliased!', $response['body']);
         }
     }
 }
