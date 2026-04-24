@@ -52,7 +52,7 @@
     "require-dev": {
         "doctrine/instantiator": "^1.5",
         "laravel/pint": "1.*",
-        "phpstan/phpstan": "1.*",
+        "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^9.5.25",
         "swoole/ide-helper": "4.8.3"
     }

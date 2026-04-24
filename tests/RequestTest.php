@@ -28,7 +28,6 @@ class RequestTest extends TestCase
         $this->assertEquals('value2', $this->request->getHeader('custom-new'));
 
         $headers = $this->request->getHeaders();
-        $this->assertIsArray($headers);
         $this->assertCount(2, $headers);
         $this->assertEquals('value1', $headers['custom']);
         $this->assertEquals('value2', $headers['custom-new']);
@@ -329,7 +328,6 @@ class RequestTest extends TestCase
 
         $size = $this->request->getSize();
 
-        $this->assertIsInt($size);
         $this->assertGreaterThan(0, $size);
     }
 }
