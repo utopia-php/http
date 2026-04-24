@@ -64,11 +64,33 @@ $ git push origin [name_of_your_new_branch]
 8. After approval, merge your PR
 9. GitHub will automatically delete the branch after the merge is done. (they can still be restored).
 
-### Testing
+### Development environment
 
-- `docker compose up -d`
-- `docker compose exec web  vendor/bin/phpunit --configuration phpunit.xml`
-- `docker compose exec web vendor/bin/psalm --show-info=true`
+The repo ships two server adapters (FPM and Swoole), each with its own container. For most inner-loop work you don't need Docker — install deps on the host and run the unit suite directly:
+
+```
+composer install --ignore-platform-req=ext-opentelemetry
+composer test        # unit suite
+composer analyze     # PHPStan
+composer format:check
+composer format      # auto-fix
+```
+
+The end-to-end suites need the adapter containers:
+
+```
+docker compose up -d --build
+docker compose exec fpm    vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-fpm
+docker compose exec swoole vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-swoole
+```
+
+You can also run the unit suite and lint/analyze inside either container — `composer.json`, `phpstan.neon`, and `pint.json` are all present in the image:
+
+```
+docker compose exec fpm composer test
+docker compose exec fpm composer analyze
+docker compose exec fpm composer format:check
+```
 
 ## Introducing New Features
 

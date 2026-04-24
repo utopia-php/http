@@ -13,7 +13,7 @@ RUN composer install --ignore-platform-reqs --optimize-autoloader \
     --no-plugins --no-scripts --prefer-dist \
     `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
 
-FROM php:8.2-fpm-alpine AS final
+FROM php:8.3-fpm-alpine AS final
 LABEL maintainer="team@appwrite.io"
 
 ENV DEBIAN_FRONTEND=noninteractive \
@@ -34,10 +34,14 @@ COPY ./tests/docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 # Script
 COPY ./tests/docker/start /usr/local/bin/start
 
+# Composer binary (for running scripts inside the container)
+COPY --from=composer:2.7 /usr/bin/composer /usr/local/bin/composer
+
 # Add PHP Source Code
 COPY ./src /usr/share/nginx/html/src
 COPY ./tests /usr/share/nginx/html/tests
 COPY ./phpunit.xml /usr/share/nginx/html/phpunit.xml
+COPY ./composer.json ./composer.lock ./phpstan.neon ./pint.json /usr/share/nginx/html/
 COPY --from=step0 /usr/local/src/vendor /usr/share/nginx/html/vendor
 
 # Supervisord Conf
