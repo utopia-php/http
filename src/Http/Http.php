@@ -266,8 +266,7 @@ class Http
      * Returns the registered wildcard route, if any.
      *
      * The returned Route is a shared definition and MUST NOT be mutated by
-     * request-handling code. Per-request state belongs on {@see RouteMatch}
-     * or {@see RequestContext}.
+     * request-handling code. Per-request state belongs on {@see RouteMatch}.
      */
     public static function getWildcardRoute(): ?Route
     {
@@ -688,10 +687,8 @@ class Http
         $urlPath = \is_string($urlPath) ? ($urlPath === '' ? '/' : $urlPath) : '/';
         $match = new RouteMatch($route, $urlPath, $preparedPath, $preparedPath);
 
-        $context = new RequestContext($match);
         $this->setRequestResource('request', fn() => $request);
         $this->setRequestResource('response', fn() => $response);
-        $this->setRequestResource('context', fn() => $context);
         $this->setRequestResource('route', fn() => $route);
         $this->setRequestResource('routeMatch', fn() => $match);
 

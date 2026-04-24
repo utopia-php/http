@@ -40,10 +40,8 @@ final class Dispatcher
             $this->response->setCompressionSupported($this->http->getCompressionSupported());
         }
 
-        $context = new RequestContext();
         $this->http->setRequestResource('request', fn() => $this->request);
         $this->http->setRequestResource('response', fn() => $this->response);
-        $this->http->setRequestResource('context', fn() => $context);
 
         try {
             foreach (Http::getRequestHooks() as $hook) {
@@ -89,7 +87,6 @@ final class Dispatcher
             $this->match = new RouteMatch($wildcard, $url, Router::WILDCARD_TOKEN, Router::WILDCARD_TOKEN);
         }
 
-        $context->setMatch($this->match);
         $this->http->setRequestResource('route', fn() => $this->match?->route);
         $this->http->setRequestResource('routeMatch', fn() => $this->match);
 

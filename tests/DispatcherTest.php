@@ -91,25 +91,6 @@ final class DispatcherTest extends TestCase
         $this->assertInstanceOf(Route::class, $route);
     }
 
-    public function testRegistersFreshRequestContextEveryDispatch(): void
-    {
-        Http::get('/ctx')
-            ->inject('context')
-            ->inject('response')
-            ->action(function (RequestContext $context, Response $response) {
-                $response->send((string) ($context->getLabel('seen', 0) + 1));
-                $context->label('seen', ($context->getLabel('seen', 0)) + 1);
-            });
-
-        // If `context` leaked across requests, the second request would
-        // observe the override set during the first.
-        $first = $this->runRequest('GET', '/ctx');
-        $second = $this->runRequest('GET', '/ctx');
-
-        $this->assertSame('1', $first);
-        $this->assertSame('1', $second);
-    }
-
     public function testWildcardRouteIsNeverMutated(): void
     {
         $wildcard = Http::wildcard()
@@ -237,24 +218,6 @@ final class DispatcherTest extends TestCase
 
         $this->assertSame('OPTIONS-HANDLER', $output);
         $this->assertStringNotContainsString('GET-HANDLER', $output);
-    }
-
-    public function testContextLabelOverrideDoesNotLeakToRoute(): void
-    {
-        $route = Http::get('/lbl')
-            ->label('router', false)
-            ->inject('context')
-            ->inject('response')
-            ->action(function (RequestContext $context, Response $response) {
-                $context->label('router', true);
-                $response->send($context->getLabel('router') ? 'on' : 'off');
-            });
-
-        $this->assertSame('on', $this->runRequest('GET', '/lbl'));
-
-        // The shared Route's label is untouched — a concurrent request
-        // that doesn't set the override still sees the registered default.
-        $this->assertFalse($route->getLabel('router', null));
     }
 
     public function testWildcardRouteMatchCarriesWildcardToken(): void
