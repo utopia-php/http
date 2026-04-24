@@ -15,29 +15,35 @@
             "Utopia\\": "src/"                                                                                                                     
         }                                                                                                                                          
     },                                                                                                                                             
-    "autoload-dev": {           
+    "autoload-dev": {
         "psr-4": {
-            "Utopia\\Http\\Tests\\": "tests/",                                                                                                     
-            "Tests\\E2E\\": "tests/e2e"                                                                                                            
-        }                                                                                                                                          
+            "Utopia\\Http\\Tests\\": "tests/",
+            "Tests\\E2E\\": "tests/e2e"
+        }
     },   
     "scripts": {
-        "lint": "vendor/bin/pint --test",
         "format": "vendor/bin/pint",
-        "check": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
-        "test": "vendor/bin/phpunit --configuration phpunit.xml",
-        "bench": "vendor/bin/phpbench run --report=benchmark"
+        "format:check": "vendor/bin/pint --test",
+        "analyze": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
+        "test": "vendor/bin/phpunit --configuration phpunit.xml"
     },
     "require": {
         "php": ">=8.2",
-        "ext-swoole": "*",
         "utopia-php/di": "0.3.*",
         "utopia-php/servers": "0.3.*",
         "utopia-php/compression": "0.1.*",
         "utopia-php/telemetry": "0.2.*",
         "utopia-php/validators": "0.2.*"
     },
+    "suggest": {
+        "ext-swoole": "Required to use the Swoole server adapter (\\Utopia\\Http\\Adapter\\Swoole\\Server)."
+    },
     "config": {
+        "platform": {
+            "php": "8.2",
+            "ext-opentelemetry": "1.0.0",
+            "ext-protobuf": "4.26.1"
+        },
         "allow-plugins": {
             "php-http/discovery": true,
             "tbachert/spi": true
@@ -46,7 +52,6 @@
     "require-dev": {
         "doctrine/instantiator": "^1.5",
         "laravel/pint": "1.*",
-        "phpbench/phpbench": "^1.2",
         "phpstan/phpstan": "1.*",
         "phpunit/phpunit": "^9.5.25",
         "swoole/ide-helper": "4.8.3"

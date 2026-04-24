@@ -1,0 +1,155 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master, "*.x"]
+
+jobs:
+  format:
+    name: Checks / Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Run Pint
+        run: |
+          docker run --rm -v "$PWD":/app -w /app composer:2.7 sh -c \
+            "composer install --profile --ignore-platform-reqs --no-interaction && composer format:check"
+
+  analyze:
+    name: Checks / Analyze
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: swoole
+          coverage: none
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate --strict
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=ext-opentelemetry
+
+      - name: PHPStan
+        run: composer analyze
+
+  unit:
+    name: Tests / Unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: swoole
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=ext-opentelemetry
+
+      - name: Run unit tests
+        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite unit
+
+  e2e:
+    name: Tests / E2E / ${{ matrix.adapter.display }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        adapter:
+          - { id: fpm, display: FPM }
+          - { id: swoole, display: Swoole }
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build and wait for ${{ matrix.adapter.id }} to be healthy
+        run: docker compose up -d --build --wait ${{ matrix.adapter.id }}
+
+      - name: Run E2E tests
+        run: docker compose exec -T ${{ matrix.adapter.id }} vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-${{ matrix.adapter.id }}
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs ${{ matrix.adapter.id }}
+
+  benchmark:
+    name: Benchmark
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build and wait for swoole to be healthy
+        run: docker compose up -d --build --wait swoole
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 benchmark
+        uses: grafana/run-k6-action@v1
+        with:
+          path: tests/bench/benchmark.js
+          flags: --summary-export=summary.json
+        env:
+          BASE_URL: http://localhost:9501
+
+      - name: Render PR comment body
+        if: always() && hashFiles('summary.json') != ''
+        run: |
+          jq -r '
+            .metrics as $m |
+            [
+              "### k6 benchmark",
+              "",
+              "| Throughput | Requests | Fail rate | p50 | p95 |",
+              "| --- | --- | --- | --- | --- |",
+              "| \(($m.http_reqs.rate // 0) | floor) req/s | \($m.http_reqs.count // 0) | \((($m.http_req_failed.value // 0) * 100) * 1000 | floor / 1000)% | \(($m.http_req_duration.med // 0) * 100 | floor / 100) ms | \(($m.http_req_duration["p(95)"] // 0) * 100 | floor / 100) ms |"
+            ] | .[]
+          ' summary.json > summary.md
+
+      - name: Upload raw k6 summary
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: k6-summary
+          path: summary.json
+          if-no-files-found: ignore
+
+      - name: Comment benchmark summary on PR
+        if: github.event_name == 'pull_request' && always() && hashFiles('summary.md') != ''
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          header: k6-benchmark
+          path: summary.md
+
+      - name: Dump swoole logs on failure
+        if: failure()
+        run: docker compose logs swoole
