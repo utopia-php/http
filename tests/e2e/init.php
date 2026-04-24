@@ -55,7 +55,7 @@ Http::get('/chunked')
     ->inject('response')
     ->action(function (Response $response) {
         foreach (['Hello ', 'World!'] as $key => $word) {
-            $response->chunk($word, $key == 1);
+            $response->chunk($word, $key === 1);
         }
     });
 

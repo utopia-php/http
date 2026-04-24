@@ -8,22 +8,16 @@ class Route extends Hook
 {
     /**
      * HTTP Method
-     *
-     * @var string
      */
     protected string $method = '';
 
     /**
      * Whether to use hook
-     *
-     * @var bool
      */
     protected bool $hook = true;
 
     /**
      * Path
-     *
-     * @var string
      */
     protected string $path = '';
 
@@ -36,15 +30,11 @@ class Route extends Hook
 
     /**
      * Internal counter.
-     *
-     * @var int
      */
     protected static int $counter = 0;
 
     /**
      * Route order ID.
-     *
-     * @var int
      */
     protected int $order;
 
@@ -71,8 +61,6 @@ class Route extends Hook
 
     /**
      * Get Route Order ID
-     *
-     * @return int
      */
     public function getOrder(): int
     {
@@ -81,9 +69,6 @@ class Route extends Hook
 
     /**
      * Add path
-     *
-     * @param string $path
-     * @return self
      */
     public function path(string $path): self
     {
@@ -94,9 +79,6 @@ class Route extends Hook
 
     /**
      * Add alias
-     *
-     * @param  string $path
-     * @return self
      */
     public function alias(string $path): self
     {
@@ -107,9 +89,6 @@ class Route extends Hook
 
     /**
      * When set false, hooks for this route will be skipped.
-     *
-     * @param bool $hook
-     * @return self
      */
     public function hook(bool $hook = true): self
     {
@@ -120,8 +99,6 @@ class Route extends Hook
 
     /**
      * Get HTTP Method
-     *
-     * @return string
      */
     public function getMethod(): string
     {
@@ -130,8 +107,6 @@ class Route extends Hook
 
     /**
      * Get path
-     *
-     * @return string
      */
     public function getPath(): string
     {
@@ -140,8 +115,6 @@ class Route extends Hook
 
     /**
      * Get hook status
-     *
-     * @return bool
      */
     public function getHook(): bool
     {
@@ -150,10 +123,6 @@ class Route extends Hook
 
     /**
      * Set path param.
-     *
-     * @param string $key
-     * @param int $index
-     * @return void
      */
     public function setPathParam(string $key, int $index, string $path = ''): void
     {
@@ -163,8 +132,6 @@ class Route extends Hook
     /**
      * Get path params.
      *
-     * @param \Utopia\Http\Request $request
-     * @param string $path
      * @return array<string, mixed>
      */
     public function getPathValues(Request $request, string $path = ''): array

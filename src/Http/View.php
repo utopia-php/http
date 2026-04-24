@@ -15,14 +15,8 @@ class View
      */
     protected ?self $parent = null;
 
-    /**
-     * @var string
-     */
     protected string $path = '';
 
-    /**
-     * @var bool
-     */
     protected bool $rendered = false;
 
     /**
@@ -40,7 +34,6 @@ class View
      *
      * You can optionally initialize the View object with a template path, although this can also be set later using the $this->setPath($path) method
      *
-     * @param  string  $path
      *
      * @throws Exception
      */
@@ -49,9 +42,7 @@ class View
         $this->setPath($path);
 
         $this
-            ->addFilter(self::FILTER_ESCAPE, function (string $value) {
-                return \htmlentities($value, ENT_QUOTES, 'UTF-8');
-            })
+            ->addFilter(self::FILTER_ESCAPE, fn(string $value) => \htmlentities($value, ENT_QUOTES, 'UTF-8'))
             ->addFilter(self::FILTER_NL2P, function (string $value) {
                 $paragraphs = '';
 
@@ -61,9 +52,7 @@ class View
                     }
                 }
 
-                $paragraphs = \str_replace("\n", '<br />', $paragraphs);
-
-                return $paragraphs;
+                return \str_replace("\n", '<br />', $paragraphs);
             });
     }
 
@@ -72,14 +61,12 @@ class View
      *
      * Assign a parameter by key
      *
-     * @param  string  $key
-     * @param  mixed  $value
      *
      * @throws Exception
      */
     public function setParam(string $key, mixed $value, bool $escapeHtml = true): static
     {
-        if (\strpos($key, '.') !== false) {
+        if (str_contains($key, '.')) {
             throw new Exception('$key can\'t contain a dot "." character');
         }
 
@@ -94,8 +81,6 @@ class View
 
     /**
      * Set parent View object conatining this object
-     *
-     * @param  self  $view
      */
     public function setParent(self $view): static
     {
@@ -111,7 +96,7 @@ class View
      */
     public function getParent(): ?self
     {
-        if (!empty($this->parent)) {
+        if ($this->parent instanceof \Utopia\Http\View) {
             return $this->parent;
         }
 
@@ -123,9 +108,7 @@ class View
      *
      * Returns an assigned parameter by its key or $default if param key doesn't exists
      *
-     * @param  string  $path
      * @param  mixed  $default (optional)
-     * @return mixed
      */
     public function getParam(string $path, mixed $default = null): mixed
     {
@@ -133,7 +116,7 @@ class View
         $temp = $this->params;
 
         foreach ($path as $key) {
-            $temp = (isset($temp[$key])) ? $temp[$key] : null;
+            $temp = $temp[$key] ?? null;
 
             if (null !== $temp) {
                 $value = $temp;
@@ -150,7 +133,6 @@ class View
      *
      * Set object template path that will be used to render view output
      *
-     * @param  string  $path
      *
      * @throws Exception
      */
@@ -165,8 +147,6 @@ class View
      * Set rendered
      *
      * By enabling rendered state to true, the object will not render its template and will return an empty string instead
-     *
-     * @param  bool  $state
      */
     public function setRendered(bool $state = true): static
     {
@@ -179,8 +159,6 @@ class View
      * Is rendered
      *
      * Return whether current View rendering state is set to true or false
-     *
-     * @return bool
      */
     public function isRendered(): bool
     {
@@ -189,9 +167,6 @@ class View
 
     /**
      * Add Filter
-     *
-     * @param  string  $name
-     * @param  callable  $callback
      */
     public function addFilter(string $name, callable $callback): static
     {
@@ -203,9 +178,7 @@ class View
     /**
      * Output and filter value
      *
-     * @param  mixed  $value
      * @param  string|array<int, string>  $filter
-     * @return mixed
      *
      * @throws Exception
      */
@@ -238,8 +211,6 @@ class View
      * Render view .phtml template file if template has not been set as rendered yet using $this->setRendered(true).
      * In case path is not readable throws Exception.
      *
-     * @param  bool  $minify
-     * @return string
      *
      * @throws Exception
      */
@@ -273,12 +244,8 @@ class View
             \preg_match_all('#\<pre.*\>.*\<\/pre\>#Uis', $html, $foundPre);
 
             // replacing both with <textarea>$index</textarea> / <pre>$index</pre>
-            $html = \str_replace($foundTxt[0], \array_map(function ($el) {
-                return '<textarea>' . $el . '</textarea>';
-            }, \array_keys($foundTxt[0])), $html);
-            $html = \str_replace($foundPre[0], \array_map(function ($el) {
-                return '<pre>' . $el . '</pre>';
-            }, \array_keys($foundPre[0])), $html);
+            $html = \str_replace($foundTxt[0], \array_map(fn($el) => '<textarea>' . $el . '</textarea>', \array_keys($foundTxt[0])), $html);
+            $html = \str_replace($foundPre[0], \array_map(fn($el) => '<pre>' . $el . '</pre>', \array_keys($foundPre[0])), $html);
 
             // your stuff
             $search = [
@@ -296,26 +263,20 @@ class View
             $html = \preg_replace($search, $replace, $html) ?? $html;
 
             // Replacing back with content
-            $html = \str_replace(\array_map(function ($el) {
-                return '<textarea>' . $el . '</textarea>';
-            }, \array_keys($foundTxt[0])), $foundTxt[0], $html);
-            $html = \str_replace(\array_map(function ($el) {
-                return '<pre>' . $el . '</pre>';
-            }, \array_keys($foundPre[0])), $foundPre[0], $html);
+            $html = \str_replace(\array_map(fn($el) => '<textarea>' . $el . '</textarea>', \array_keys($foundTxt[0])), $foundTxt[0], $html);
+            $html = \str_replace(\array_map(fn($el) => '<pre>' . $el . '</pre>', \array_keys($foundPre[0])), $foundPre[0], $html);
         }
 
         return $html;
     }
 
     /* View Helpers */
-
     /**
      * Exec
      *
      * Exec child View components
      *
      * @param  array<int, mixed>|self  $view
-     * @return string
      *
      * @throws Exception
      */

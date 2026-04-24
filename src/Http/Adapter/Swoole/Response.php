@@ -31,7 +31,6 @@ class Response extends UtopiaResponse
     /**
      * Write
      *
-     * @param  string  $content
      * @return bool False if write cannot complete, such as request ended by client
      */
     public function write(string $content): bool
@@ -41,9 +40,6 @@ class Response extends UtopiaResponse
 
     /**
      * End
-     *
-     * @param  string|null  $content
-     * @return void
      */
     public function end(?string $content = null): void
     {
@@ -52,9 +48,6 @@ class Response extends UtopiaResponse
 
     /**
      * Send Status Code
-     *
-     * @param  int  $statusCode
-     * @return void
      */
     protected function sendStatus(int $statusCode): void
     {
@@ -64,9 +57,7 @@ class Response extends UtopiaResponse
     /**
      * Send Header
      *
-     * @param  string  $key
      * @param  string|array<string>  $value
-     * @return void
      */
     public function sendHeader(string $key, mixed $value): void
     {
@@ -78,10 +69,7 @@ class Response extends UtopiaResponse
      *
      * Send a cookie
      *
-     * @param  string  $name
-     * @param  string  $value
      * @param  array<string, mixed>  $options
-     * @return void
      */
     protected function sendCookie(string $name, string $value, array $options): void
     {

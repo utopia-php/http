@@ -30,21 +30,21 @@ abstract class Request
      *
      * @var array<string, mixed>|null
      */
-    protected $payload = null;
+    protected $payload;
 
     /**
      * Container for parsed query string params
      *
      * @var array<string, mixed>|null
      */
-    protected $queryString = null;
+    protected $queryString;
 
     /**
      * Container for parsed headers
      *
      * @var array<string, string|array<int, string>>|null
      */
-    protected $headers = null;
+    protected $headers;
 
     /**
      * @var array<int, string>
@@ -55,16 +55,12 @@ abstract class Request
      * Get Param
      *
      * Get param by current method name
-     *
-     * @param  string  $key
-     * @param  mixed  $default
-     * @return mixed
      */
     public function getParam(string $key, mixed $default = null): mixed
     {
         $params = $this->getParams();
 
-        return (isset($params[$key])) ? $params[$key] : $default;
+        return $params[$key] ?? $default;
     }
 
     /**
@@ -83,10 +79,6 @@ abstract class Request
      * Get Query
      *
      * Method for querying HTTP GET request parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  mixed  $default
-     * @return mixed
      */
     public function getQuery(string $key, mixed $default = null): mixed
     {
@@ -99,10 +91,6 @@ abstract class Request
      * Get payload
      *
      * Method for querying HTTP request payload parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  mixed  $default
-     * @return mixed
      */
     public function getPayload(string $key, mixed $default = null): mixed
     {
@@ -115,8 +103,6 @@ abstract class Request
      * Get raw payload
      *
      * Method for getting the HTTP request payload as a raw string.
-     *
-     * @return string
      */
     abstract public function getRawPayload(): string;
 
@@ -124,10 +110,6 @@ abstract class Request
      * Get server
      *
      * Method for querying server parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string|null  $default
-     * @return string|null
      */
     abstract public function getServer(string $key, ?string $default = null): ?string;
 
@@ -135,10 +117,6 @@ abstract class Request
      * Set server
      *
      * Method for setting server parameters.
-     *
-     * @param  string  $key
-     * @param  string  $value
-     * @return static
      */
     abstract public function setServer(string $key, string $value): static;
 
@@ -149,12 +127,11 @@ abstract class Request
      * Headers are checked in order; the first one found with a valid IP is used.
      *
      * @param  array<int, string>  $headers
-     * @return static
      */
     public function setTrustedIpHeaders(array $headers): static
     {
-        $normalized = \array_map('strtolower', $headers);
-        $trimmed = \array_map('trim', $normalized);
+        $normalized = \array_map(strtolower(...), $headers);
+        $trimmed = \array_map(trim(...), $normalized);
         $this->trustedIpHeaders = \array_filter($trimmed);
 
         return $this;
@@ -166,8 +143,6 @@ abstract class Request
      * Returns users IP address.
      * Support HTTP_X_FORWARDED_FOR header usually return
      *  from different proxy servers or PHP default REMOTE_ADDR
-     *
-     * @return string
      */
     abstract public function getIP(): string;
 
@@ -177,8 +152,6 @@ abstract class Request
      * Returns request protocol.
      * Support HTTP_X_FORWARDED_PROTO header usually return
      *  from different proxy servers or PHP default REQUEST_SCHEME
-     *
-     * @return string
      */
     abstract public function getProtocol(): string;
 
@@ -186,8 +159,6 @@ abstract class Request
      * Get Port
      *
      * Returns request port.
-     *
-     * @return string
      */
     abstract public function getPort(): string;
 
@@ -195,8 +166,6 @@ abstract class Request
      * Get Hostname
      *
      * Returns request hostname.
-     *
-     * @return string
      */
     abstract public function getHostname(): string;
 
@@ -204,8 +173,6 @@ abstract class Request
      * Get Method
      *
      * Return HTTP request method
-     *
-     * @return string
      */
     abstract public function getMethod(): string;
 
@@ -213,9 +180,6 @@ abstract class Request
      * Set Method
      *
      * Set HTTP request method
-     *
-     * @param  string  $method
-     * @return static
      */
     abstract public function setMethod(string $method): static;
 
@@ -223,8 +187,6 @@ abstract class Request
      * Get URI
      *
      * Return HTTP request URI
-     *
-     * @return string
      */
     public function getURI(): string
     {
@@ -235,9 +197,6 @@ abstract class Request
      * Get Path
      *
      * Return HTTP request path
-     *
-     * @param  string  $uri
-     * @return static
      */
     abstract public function setURI(string $uri): static;
 
@@ -246,7 +205,6 @@ abstract class Request
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.
      *
-     * @param  string  $key
      * @return array<string, mixed>
      */
     abstract public function getFiles(string $key): array;
@@ -255,9 +213,6 @@ abstract class Request
      * Get Referer
      *
      * Return HTTP referer header
-     *
-     * @param  string  $default
-     * @return string
      */
     abstract public function getReferer(string $default = ''): string;
 
@@ -265,9 +220,6 @@ abstract class Request
      * Get Origin
      *
      * Return HTTP origin header
-     *
-     * @param  string  $default
-     * @return string
      */
     abstract public function getOrigin(string $default = ''): string;
 
@@ -275,9 +227,6 @@ abstract class Request
      * Get User Agent
      *
      * Return HTTP user agent header
-     *
-     * @param  string  $default
-     * @return string
      */
     abstract public function getUserAgent(string $default = ''): string;
 
@@ -285,9 +234,6 @@ abstract class Request
      * Get Accept
      *
      * Return HTTP accept header
-     *
-     * @param  string  $default
-     * @return string
      */
     abstract public function getAccept(string $default = ''): string;
 
@@ -295,10 +241,6 @@ abstract class Request
      * Get cookie
      *
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string  $default
-     * @return string
      */
     abstract public function getCookie(string $key, string $default = ''): string;
 
@@ -306,10 +248,6 @@ abstract class Request
      * Get header
      *
      * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string  $default
-     * @return string
      */
     abstract public function getHeader(string $key, string $default = ''): string;
 
@@ -329,10 +267,6 @@ abstract class Request
      * Set header
      *
      * Method for adding HTTP header parameters.
-     *
-     * @param  string  $key
-     * @param  string  $value
-     * @return static
      */
     abstract public function addHeader(string $key, string $value): static;
 
@@ -340,9 +274,6 @@ abstract class Request
      * Remvoe header
      *
      * Method for removing HTTP header parameters.
-     *
-     * @param  string  $key
-     * @return static
      */
     abstract public function removeHeader(string $key): static;
 
@@ -350,19 +281,13 @@ abstract class Request
      * Get Request Size
      *
      * Returns request size in bytes
-     *
-     * @return int
      */
     public function getSize(): int
     {
         $headers = $this->generateHeaders();
         $headerStrings = [];
         foreach ($headers as $key => $value) {
-            if (\is_array($value)) {
-                $headerStrings[] = $key . ': ' . \implode(', ', $value);
-            } else {
-                $headerStrings[] = $key . ': ' . $value;
-            }
+            $headerStrings[] = \is_array($value) ? $key . ': ' . \implode(', ', $value) : $key . ': ' . $value;
         }
         return \mb_strlen(\implode("\n", $headerStrings), '8bit') + \mb_strlen(\file_get_contents('php://input') ?: '', '8bit');
     }
@@ -371,76 +296,62 @@ abstract class Request
      * Get Content Range Start
      *
      * Returns the start of content range
-     *
-     * @return int|null
      */
     public function getContentRangeStart(): ?int
     {
         $data = $this->parseContentRange();
         if (!empty($data)) {
             return $data['start'];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
      * Get Content Range End
      *
      * Returns the end of content range
-     *
-     * @return int|null
      */
     public function getContentRangeEnd(): ?int
     {
         $data = $this->parseContentRange();
         if (!empty($data)) {
             return $data['end'];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
      * Get Content Range Size
      *
      * Returns the size of content range
-     *
-     * @return int|null
      */
     public function getContentRangeSize(): ?int
     {
         $data = $this->parseContentRange();
         if (!empty($data)) {
             return $data['size'];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
      * Get Content Range Unit
      *
      * Returns the unit of content range
-     *
-     * @return string|null
      */
     public function getContentRangeUnit(): ?string
     {
         $data = $this->parseContentRange();
         if (!empty($data)) {
             return $data['unit'];
-        } else {
-            return null;
         }
+        return null;
     }
 
     /**
      * Get Range Start
      *
      * Returns the start of range header
-     *
-     * @return int|null
      */
     public function getRangeStart(): ?int
     {
@@ -456,8 +367,6 @@ abstract class Request
      * Get Range End
      *
      * Returns the end of range header
-     *
-     * @return int|null
      */
     public function getRangeEnd(): ?int
     {
@@ -473,8 +382,6 @@ abstract class Request
      * Get Range Unit
      *
      * Returns the unit of range header
-     *
-     * @return string|null
      */
     public function getRangeUnit(): ?string
     {
@@ -490,7 +397,6 @@ abstract class Request
      * Set query string parameters
      *
      * @param  array<string, mixed>  $params
-     * @return static
      */
     public function setQueryString(array $params): static
     {
@@ -503,7 +409,6 @@ abstract class Request
      * Set payload parameters
      *
      * @param  array<string, mixed>  $params
-     * @return static
      */
     public function setPayload(array $params): static
     {
@@ -530,7 +435,7 @@ abstract class Request
                 $headers = [];
 
                 foreach ($_SERVER as $name => $value) {
-                    if (\substr($name, 0, 5) == 'HTTP_') {
+                    if (str_starts_with($name, 'HTTP_')) {
                         $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
                     }
                 }
@@ -589,7 +494,7 @@ abstract class Request
 
             $data['size'] = (int) $rangeData[1];
             $parts = explode('-', $rangeData[0]);
-            if (count($parts) != 2) {
+            if (count($parts) !== 2) {
                 return null;
             }
 
@@ -631,7 +536,7 @@ abstract class Request
         $data['unit'] = $ranges[0];
 
         $ranges = explode('-', $ranges[1]);
-        if (count($ranges) !== 2 || strlen($ranges[0]) === 0) {
+        if (count($ranges) !== 2 || $ranges[0] === '') {
             return null;
         }
 
@@ -641,7 +546,7 @@ abstract class Request
 
         $data['start'] = (int) $ranges[0];
 
-        if (strlen($ranges[1]) === 0) {
+        if ($ranges[1] === '') {
             $data['end'] = null;
         } else {
             if (!ctype_digit($ranges[1])) {

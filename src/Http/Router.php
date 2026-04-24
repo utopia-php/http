@@ -45,8 +45,6 @@ class Router
     /**
      * Get allow override
      *
-     *
-     * @return bool
      */
     public static function getAllowOverride(): bool
     {
@@ -56,9 +54,6 @@ class Router
     /**
      * Set Allow override
      *
-     *
-     * @param  bool  $value
-     * @return void
      */
     public static function setAllowOverride(bool $value): void
     {
@@ -69,8 +64,6 @@ class Router
     /**
      * Add route to router.
      *
-     * @param \Utopia\Http\Route $route
-     * @return void
      * @throws \Exception
      */
     public static function addRoute(Route $route): void
@@ -95,8 +88,6 @@ class Router
     /**
      * Add route to router.
      *
-     * @param \Utopia\Http\Route $route
-     * @return void
      * @throws \Exception
      */
     public static function addRouteAlias(string $path, Route $route): void
@@ -116,10 +107,6 @@ class Router
 
     /**
      * Match route against the method and path.
-     *
-     * @param string $method
-     * @param string $path
-     * @return \Utopia\Http\Route|null
      */
     public static function match(string $method, string $path): ?Route
     {
@@ -199,7 +186,6 @@ class Router
     /**
      * Prepare path for matching
      *
-     * @param string $path
      * @return array{0: string, 1: array<string, int>}
      */
     public static function preparePath(string $path): array
@@ -229,8 +215,6 @@ class Router
 
     /**
      * Reset router
-     *
-     * @return void
      */
     public static function reset(): void
     {

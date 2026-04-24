@@ -17,8 +17,6 @@ class Request extends UtopiaRequest
      * Get raw payload
      *
      * Method for getting the HTTP request payload as a raw string.
-     *
-     * @return string
      */
     public function getRawPayload(): string
     {
@@ -31,10 +29,6 @@ class Request extends UtopiaRequest
      * Get server
      *
      * Method for querying server parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string|null  $default
-     * @return string|null
      */
     public function getServer(string $key, ?string $default = null): ?string
     {
@@ -45,10 +39,6 @@ class Request extends UtopiaRequest
      * Set server
      *
      * Method for setting server parameters.
-     *
-     * @param  string  $key
-     * @param  string  $value
-     * @return static
      */
     public function setServer(string $key, string $value): static
     {
@@ -63,8 +53,6 @@ class Request extends UtopiaRequest
      * Returns users IP address.
      * Support HTTP_X_FORWARDED_FOR header usually return
      *  from different proxy servers or PHP default REMOTE_ADDR
-     *
-     * @return string
      */
     public function getIP(): string
     {
@@ -96,8 +84,6 @@ class Request extends UtopiaRequest
      * Returns request protocol.
      * Support HTTP_X_FORWARDED_PROTO header usually return
      *  from different proxy servers or PHP default REQUEST_SCHEME
-     *
-     * @return string
      */
     public function getProtocol(): string
     {
@@ -108,8 +94,6 @@ class Request extends UtopiaRequest
      * Get Port
      *
      * Returns request port.
-     *
-     * @return string
      */
     public function getPort(): string
     {
@@ -120,8 +104,6 @@ class Request extends UtopiaRequest
      * Get Hostname
      *
      * Returns request hostname.
-     *
-     * @return string
      */
     public function getHostname(): string
     {
@@ -133,8 +115,6 @@ class Request extends UtopiaRequest
      * Get Method
      *
      * Return HTTP request method
-     *
-     * @return string
      */
     public function getMethod(): string
     {
@@ -145,9 +125,6 @@ class Request extends UtopiaRequest
      * Set Method
      *
      * Set HTTP request method
-     *
-     * @param  string  $method
-     * @return static
      */
     public function setMethod(string $method): static
     {
@@ -160,9 +137,8 @@ class Request extends UtopiaRequest
      * Get URI
      *
      * Return HTTP request URI
-     *
-     * @return string
      */
+    #[\Override]
     public function getURI(): string
     {
         return $this->getServer('REQUEST_URI') ?? '';
@@ -172,9 +148,6 @@ class Request extends UtopiaRequest
      * Get Path
      *
      * Return HTTP request path
-     *
-     * @param  string  $uri
-     * @return static
      */
     public function setURI(string $uri): static
     {
@@ -188,21 +161,17 @@ class Request extends UtopiaRequest
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.
      *
-     * @param  string  $key
      * @return array<string, mixed>
      */
     public function getFiles(string $key): array
     {
-        return (isset($_FILES[$key])) ? $_FILES[$key] : [];
+        return $_FILES[$key] ?? [];
     }
 
     /**
      * Get Referer
      *
      * Return HTTP referer header
-     *
-     * @param  string  $default
-     * @return string
      */
     public function getReferer(string $default = ''): string
     {
@@ -213,9 +182,6 @@ class Request extends UtopiaRequest
      * Get Origin
      *
      * Return HTTP origin header
-     *
-     * @param  string  $default
-     * @return string
      */
     public function getOrigin(string $default = ''): string
     {
@@ -226,9 +192,6 @@ class Request extends UtopiaRequest
      * Get User Agent
      *
      * Return HTTP user agent header
-     *
-     * @param  string  $default
-     * @return string
      */
     public function getUserAgent(string $default = ''): string
     {
@@ -239,9 +202,6 @@ class Request extends UtopiaRequest
      * Get Accept
      *
      * Return HTTP accept header
-     *
-     * @param  string  $default
-     * @return string
      */
     public function getAccept(string $default = ''): string
     {
@@ -252,24 +212,16 @@ class Request extends UtopiaRequest
      * Get cookie
      *
      * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string  $default
-     * @return string
      */
     public function getCookie(string $key, string $default = ''): string
     {
-        return (isset($_COOKIE[$key])) ? $_COOKIE[$key] : $default;
+        return $_COOKIE[$key] ?? $default;
     }
 
     /**
      * Get header
      *
      * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string  $default
-     * @return string
      */
     public function getHeader(string $key, string $default = ''): string
     {
@@ -288,10 +240,6 @@ class Request extends UtopiaRequest
      * Set header
      *
      * Method for adding HTTP header parameters.
-     *
-     * @param  string  $key
-     * @param  string  $value
-     * @return static
      */
     public function addHeader(string $key, string $value): static
     {
@@ -304,9 +252,6 @@ class Request extends UtopiaRequest
      * Remvoe header
      *
      * Method for removing HTTP header parameters.
-     *
-     * @param  string  $key
-     * @return static
      */
     public function removeHeader(string $key): static
     {
@@ -339,14 +284,10 @@ class Request extends UtopiaRequest
 
             $this->rawPayload = \file_get_contents('php://input') ?: '';
 
-            switch ($contentType) {
-                case 'application/json':
-                    $this->payload = \json_decode($this->rawPayload, true);
-                    break;
-                default:
-                    $this->payload = $_POST;
-                    break;
-            }
+            $this->payload = match ($contentType) {
+                'application/json' => \json_decode($this->rawPayload, true),
+                default => $_POST,
+            };
 
             if (empty($this->payload)) { // Make sure we return same data type even if json payload is empty or failed
                 $this->payload = [];
@@ -369,6 +310,7 @@ class Request extends UtopiaRequest
      *
      * @return array<string, string|array<int, string>>
      */
+    #[\Override]
     protected function generateHeaders(): array
     {
         if (null === $this->headers) {
@@ -380,7 +322,7 @@ class Request extends UtopiaRequest
                 $headers = [];
 
                 foreach ($_SERVER as $name => $value) {
-                    if (\substr($name, 0, 5) == 'HTTP_') {
+                    if (str_starts_with($name, 'HTTP_')) {
                         $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
                     }
                 }

@@ -44,9 +44,6 @@ class Http
 
     public const MODE_TYPE_PRODUCTION = 'production';
 
-    /**
-     * @var Files
-     */
     protected Files $files;
 
     protected Container $container;
@@ -55,8 +52,6 @@ class Http
 
     /**
      * Current running mode
-     *
-     * @var string
      */
     protected static string $mode = '';
 
@@ -114,16 +109,12 @@ class Http
      * Route
      *
      * Memory cached result for chosen route
-     *
-     * @var Route|null
      */
     protected ?Route $route = null;
 
     /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
-     *
-     * @var Route|null
      */
     protected static ?Route $wildcardRoute = null;
 
@@ -144,16 +135,10 @@ class Http
 
     private Histogram $responseBodySize;
 
-    /**
-     * @var Adapter
-     */
     protected Adapter $server;
 
     /**
      * Http
-     *
-     * @param Adapter $server
-     * @param  string  $timezone
      */
     public function __construct(Adapter $server, string $timezone)
     {
@@ -166,9 +151,6 @@ class Http
 
     /**
      * Set telemetry adapter.
-     *
-     * @param Telemetry $telemetry
-     * @return void
      */
     public function setTelemetry(Telemetry $telemetry): void
     {
@@ -216,9 +198,6 @@ class Http
      * GET
      *
      * Add GET request route
-     *
-     * @param  string  $url
-     * @return Route
      */
     public static function get(string $url): Route
     {
@@ -229,9 +208,6 @@ class Http
      * POST
      *
      * Add POST request route
-     *
-     * @param  string  $url
-     * @return Route
      */
     public static function post(string $url): Route
     {
@@ -242,9 +218,6 @@ class Http
      * PUT
      *
      * Add PUT request route
-     *
-     * @param  string  $url
-     * @return Route
      */
     public static function put(string $url): Route
     {
@@ -255,9 +228,6 @@ class Http
      * PATCH
      *
      * Add PATCH request route
-     *
-     * @param  string  $url
-     * @return Route
      */
     public static function patch(string $url): Route
     {
@@ -268,9 +238,6 @@ class Http
      * DELETE
      *
      * Add DELETE request route
-     *
-     * @param  string  $url
-     * @return Route
      */
     public static function delete(string $url): Route
     {
@@ -281,8 +248,6 @@ class Http
      * Wildcard
      *
      * Add Wildcard route
-     *
-     * @return Route
      */
     public static function wildcard(): Route
     {
@@ -295,8 +260,6 @@ class Http
      * Init
      *
      * Set a callback function that will be initialized on application start
-     *
-     * @return Hook
      */
     public static function init(): Hook
     {
@@ -312,8 +275,6 @@ class Http
      * Shutdown
      *
      * Set a callback function that will be initialized on application end
-     *
-     * @return Hook
      */
     public static function shutdown(): Hook
     {
@@ -329,8 +290,6 @@ class Http
      * Options
      *
      * Set a callback function for all request with options method
-     *
-     * @return Hook
      */
     public static function options(): Hook
     {
@@ -346,8 +305,6 @@ class Http
      * Error
      *
      * An error callback for failed or no matched requests
-     *
-     * @return Hook
      */
     public static function error(): Hook
     {
@@ -363,10 +320,6 @@ class Http
      * Get env var
      *
      * Method for querying env varialbles. If $key is not found $default value will be returned.
-     *
-     * @param  string  $key
-     * @param  string|null  $default
-     * @return string|null
      */
     public static function getEnv(string $key, ?string $default = null): ?string
     {
@@ -377,8 +330,6 @@ class Http
      * Get Mode
      *
      * Get current mode
-     *
-     * @return string
      */
     public static function getMode(): string
     {
@@ -389,9 +340,6 @@ class Http
      * Set Mode
      *
      * Set current mode
-     *
-     * @param  string  $value
-     * @return void
      */
     public static function setMode(string $value): void
     {
@@ -401,8 +349,6 @@ class Http
     /**
      * Get allow override
      *
-     *
-     * @return bool
      */
     public static function getAllowOverride(): bool
     {
@@ -412,9 +358,6 @@ class Http
     /**
      * Set Allow override
      *
-     *
-     * @param  bool  $value
-     * @return void
      */
     public static function setAllowOverride(bool $value): void
     {
@@ -483,8 +426,6 @@ class Http
 
     /**
      * Is http in production mode?
-     *
-     * @return bool
      */
     public static function isProduction(): bool
     {
@@ -493,8 +434,6 @@ class Http
 
     /**
      * Is http in development mode?
-     *
-     * @return bool
      */
     public static function isDevelopment(): bool
     {
@@ -503,8 +442,6 @@ class Http
 
     /**
      * Is http in stage mode?
-     *
-     * @return bool
      */
     public static function isStage(): bool
     {
@@ -525,8 +462,6 @@ class Http
 
     /**
      * Get the current route
-     *
-     * @return null|Route
      */
     public function getRoute(): ?Route
     {
@@ -535,8 +470,6 @@ class Http
 
     /**
      * Set the current route
-     *
-     * @param  Route  $route
      */
     public function setRoute(Route $route): self
     {
@@ -549,10 +482,6 @@ class Http
      * Add Route
      *
      * Add routing route method, path and callback
-     *
-     * @param  string  $method
-     * @param  string  $url
-     * @return Route
      */
     public static function addRoute(string $method, string $url): Route
     {
@@ -566,12 +495,9 @@ class Http
     /**
      * Load directory.
      *
-     * @param  string  $directory
-     * @param  string|null  $root
-     * @return void
      *
      * @throws \Exception
-    */
+     */
     public function loadFiles(string $directory, ?string $root = null): void
     {
         $this->files->load($directory, $root);
@@ -579,9 +505,6 @@ class Http
 
     /**
      * Is file loaded.
-     *
-     * @param  string  $uri
-     * @return bool
      */
     protected function isFileLoaded(string $uri): bool
     {
@@ -591,9 +514,7 @@ class Http
     /**
      * Get file contents.
      *
-     * @param  string  $uri
      * @return string
-     *
      * @throws \Exception
      */
     protected function getFileContents(string $uri): mixed
@@ -604,9 +525,7 @@ class Http
     /**
      * Get file MIME type.
      *
-     * @param  string  $uri
      * @return string
-     *
      * @throws \Exception
      */
     protected function getFileMimeType(string $uri): mixed
@@ -636,9 +555,7 @@ class Http
         );
 
         $this->server->onStart(function ($server) {
-            $this->setResource('server', function () use ($server) {
-                return $server;
-            });
+            $this->setResource('server', fn() => $server);
             try {
 
                 foreach (self::$startHooks as $hook) {
@@ -669,9 +586,7 @@ class Http
      *
      * Find matching route given current user request
      *
-     * @param  Request  $request
      * @param  bool  $fresh If true, will not match any cached route
-     * @return null|Route
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
@@ -682,7 +597,7 @@ class Http
         $url = \parse_url($request->getURI(), PHP_URL_PATH);
         $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
         $method = $request->getMethod();
-        $method = (self::REQUEST_METHOD_HEAD == $method) ? self::REQUEST_METHOD_GET : $method;
+        $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
         $this->route = Router::match($method, $url);
 
@@ -691,9 +606,6 @@ class Http
 
     /**
      * Execute a given route with middlewares and error handling
-     *
-     * @param  Route  $route
-     * @param  Request  $request
      */
     public function execute(Route $route, Request $request, Response $response): static
     {
@@ -778,11 +690,9 @@ class Http
     /**
      * Get Arguments
      *
-     * @param  Hook  $hook
      * @param  array<string, mixed>  $values
      * @param  array<string, mixed>  $requestParams
      * @return array<int, mixed>
-     *
      * @throws Exception
      */
     protected function getArguments(Hook $hook, array $values, array $requestParams): array
@@ -813,7 +723,7 @@ class Http
             $arguments[$param['order']] = $value;
         }
 
-        foreach ($hook->getInjections() as $key => $injection) {
+        foreach ($hook->getInjections() as $injection) {
             $arguments[$injection['order']] = $this->getResource($injection['name']);
         }
 
@@ -857,7 +767,6 @@ class Http
      * This is the place to initialize any pre routing logic.
      * This is where you might want to parse the application current URL by any desired logic
      *
-     * @param Request $request
      * @param Response $response;
      */
     private function runInternal(Request $request, Response $response): static
@@ -909,12 +818,12 @@ class Http
 
         $this->setRequestResource('route', fn() => $route, []);
 
-        if (self::REQUEST_METHOD_HEAD == $method) {
+        if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
         }
 
-        if (self::REQUEST_METHOD_OPTIONS == $method) {
+        if (self::REQUEST_METHOD_OPTIONS === $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
@@ -935,9 +844,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', function () use ($e) {
-                            return $e;
-                        }, []);
+                        $this->setRequestResource('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -955,10 +862,11 @@ class Http
 
             $this->setRequestResource('route', fn() => $route, []);
         }
-
         if (null !== $route) {
             return $this->execute($route, $request, $response);
-        } elseif (self::REQUEST_METHOD_OPTIONS == $method) {
+        }
+
+        if (self::REQUEST_METHOD_OPTIONS === $method) {
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
@@ -976,9 +884,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', function () use ($e) {
-                            return $e;
-                        }, []);
+                        $this->setRequestResource('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -1001,10 +907,7 @@ class Http
      *
      * Creates an validator instance and validate given value with given rules.
      *
-     * @param  string  $key
      * @param  array<string, mixed>  $param
-     * @param  mixed  $value
-     * @return void
      *
      * @throws Exception
      */
@@ -1031,8 +934,6 @@ class Http
 
     /**
      * Reset all the static variables
-     *
-     * @return void
      */
     public static function reset(): void
     {
