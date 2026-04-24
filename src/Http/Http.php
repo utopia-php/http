@@ -54,56 +54,6 @@ class Http
     protected static string $mode = '';
 
     /**
-     * Errors
-     *
-     * Errors callbacks
-     *
-     * @var Hook[]
-     */
-    protected static array $errors = [];
-
-    /**
-     * Init
-     *
-     * A callback function that is initialized on application start
-     *
-     * @var Hook[]
-     */
-    protected static array $init = [];
-
-    /**
-     * Shutdown
-     *
-     * A callback function that is initialized on application end
-     *
-     * @var Hook[]
-     */
-    protected static array $shutdown = [];
-
-    /**
-     * Options
-     *
-     * A callback function for options method requests
-     *
-     * @var Hook[]
-     */
-    protected static array $options = [];
-
-    /**
-     * Server Start hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $startHooks = [];
-
-    /**
-     * Request hooks
-     *
-     * @var Hook[]
-     */
-    protected static array $requestHooks = [];
-
-    /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
      */
@@ -274,99 +224,35 @@ class Http
     }
 
     /**
-     * Init
-     *
-     * Set a callback function that will be initialized on application start
+     * Register a callback that runs before the matched route action.
      */
     public static function init(): Hook
     {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$init[] = $hook;
-
-        return $hook;
+        return Hooks::init();
     }
 
     /**
-     * Shutdown
-     *
-     * Set a callback function that will be initialized on application end
+     * Register a callback that runs after the matched route action.
      */
     public static function shutdown(): Hook
     {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$shutdown[] = $hook;
-
-        return $hook;
+        return Hooks::shutdown();
     }
 
     /**
-     * Options
-     *
-     * Set a callback function for all request with options method
+     * Register a callback for OPTIONS method requests.
      */
     public static function options(): Hook
     {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$options[] = $hook;
-
-        return $hook;
+        return Hooks::options();
     }
 
     /**
-     * Error
-     *
-     * An error callback for failed or no matched requests
+     * Register an error callback for failed or unmatched requests.
      */
     public static function error(): Hook
     {
-        $hook = new Hook();
-        $hook->groups(['*']);
-
-        self::$errors[] = $hook;
-
-        return $hook;
-    }
-
-    /** @return Hook[] */
-    public static function getInitHooks(): array
-    {
-        return self::$init;
-    }
-
-    /** @return Hook[] */
-    public static function getShutdownHooks(): array
-    {
-        return self::$shutdown;
-    }
-
-    /** @return Hook[] */
-    public static function getOptionsHooks(): array
-    {
-        return self::$options;
-    }
-
-    /** @return Hook[] */
-    public static function getErrorHooks(): array
-    {
-        return self::$errors;
-    }
-
-    /** @return Hook[] */
-    public static function getStartHooks(): array
-    {
-        return self::$startHooks;
-    }
-
-    /** @return Hook[] */
-    public static function getRequestHooks(): array
-    {
-        return self::$requestHooks;
+        return Hooks::error();
     }
 
     /**
@@ -604,16 +490,12 @@ class Http
 
     public static function onStart(): Hook
     {
-        $hook = new Hook();
-        self::$startHooks[] = $hook;
-        return $hook;
+        return Hooks::onStart();
     }
 
     public static function onRequest(): Hook
     {
-        $hook = new Hook();
-        self::$requestHooks[] = $hook;
-        return $hook;
+        return Hooks::onRequest();
     }
 
     public function start(): void
@@ -625,14 +507,14 @@ class Http
         $this->server->onStart(function ($server) {
             $this->setResource('server', fn() => $server);
             try {
-                foreach (self::$startHooks as $hook) {
+                foreach (Hooks::$start as $hook) {
                     $arguments = $this->getArguments($hook, [], []);
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch (\Exception $e) {
                 $this->setResource('error', fn() => $e);
 
-                foreach (self::$errors as $error) {
+                foreach (Hooks::$errors as $error) {
                     if (in_array('*', $error->getGroups())) {
                         try {
                             $arguments = $this->getArguments($error, [], []);
@@ -809,13 +691,8 @@ class Http
     public static function reset(): void
     {
         Router::reset();
+        Hooks::reset();
         self::$mode = '';
-        self::$errors = [];
-        self::$init = [];
-        self::$shutdown = [];
-        self::$options = [];
-        self::$startHooks = [];
-        self::$requestHooks = [];
         self::$wildcardRoute = null;
     }
 }

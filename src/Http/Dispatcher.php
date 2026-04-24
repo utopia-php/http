@@ -44,14 +44,14 @@ final class Dispatcher
         $this->http->setRequestResource('response', fn() => $this->response);
 
         try {
-            foreach (Http::getRequestHooks() as $hook) {
+            foreach (Hooks::$request as $hook) {
                 $arguments = $this->http->getArguments($hook, [], []);
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
             $this->http->setRequestResource('error', fn() => $e);
 
-            foreach (Http::getErrorHooks() as $error) {
+            foreach (Hooks::$errors as $error) {
                 if (\in_array('*', $error->getGroups())) {
                     try {
                         $arguments = $this->http->getArguments($error, [], []);
@@ -100,20 +100,20 @@ final class Dispatcher
         if (Http::REQUEST_METHOD_OPTIONS === $method) {
             try {
                 foreach ($groups as $group) {
-                    foreach (Http::getOptionsHooks() as $option) {
+                    foreach (Hooks::$options as $option) {
                         if (\in_array($group, $option->getGroups())) {
                             \call_user_func_array($option->getAction(), $this->http->getArguments($option, [], $this->request->getParams()));
                         }
                     }
                 }
 
-                foreach (Http::getOptionsHooks() as $option) {
+                foreach (Hooks::$options as $option) {
                     if (\in_array('*', $option->getGroups())) {
                         \call_user_func_array($option->getAction(), $this->http->getArguments($option, [], $this->request->getParams()));
                     }
                 }
             } catch (\Throwable $e) {
-                foreach (Http::getErrorHooks() as $error) {
+                foreach (Hooks::$errors as $error) {
                     if (\in_array('*', $error->getGroups())) {
                         $this->http->setRequestResource('error', fn() => $e);
                         \call_user_func_array($error->getAction(), $this->http->getArguments($error, [], $this->request->getParams()));
@@ -130,7 +130,7 @@ final class Dispatcher
             return;
         }
 
-        foreach (Http::getErrorHooks() as $error) {
+        foreach (Hooks::$errors as $error) {
             if (\in_array('*', $error->getGroups())) {
                 $this->http->setRequestResource('error', fn() => new Exception('Not Found', 404));
                 \call_user_func_array($error->getAction(), $this->http->getArguments($error, [], $this->request->getParams()));
@@ -147,7 +147,7 @@ final class Dispatcher
 
         try {
             if ($route->getHook()) {
-                foreach (Http::getInitHooks() as $hook) {
+                foreach (Hooks::$init as $hook) {
                     if (\in_array('*', $hook->getGroups())) {
                         \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
                     }
@@ -155,7 +155,7 @@ final class Dispatcher
             }
 
             foreach ($groups as $group) {
-                foreach (Http::getInitHooks() as $hook) {
+                foreach (Hooks::$init as $hook) {
                     if (\in_array($group, $hook->getGroups())) {
                         \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
                     }
@@ -167,7 +167,7 @@ final class Dispatcher
             }
 
             foreach ($groups as $group) {
-                foreach (Http::getShutdownHooks() as $hook) {
+                foreach (Hooks::$shutdown as $hook) {
                     if (\in_array($group, $hook->getGroups())) {
                         \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
                     }
@@ -175,7 +175,7 @@ final class Dispatcher
             }
 
             if ($route->getHook()) {
-                foreach (Http::getShutdownHooks() as $hook) {
+                foreach (Hooks::$shutdown as $hook) {
                     if (\in_array('*', $hook->getGroups())) {
                         \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
                     }
@@ -185,7 +185,7 @@ final class Dispatcher
             $this->http->setRequestResource('error', fn() => $e);
 
             foreach ($groups as $group) {
-                foreach (Http::getErrorHooks() as $error) {
+                foreach (Hooks::$errors as $error) {
                     if (\in_array($group, $error->getGroups())) {
                         try {
                             \call_user_func_array($error->getAction(), $this->http->getArguments($error, $pathValues, $requestParams));
@@ -196,7 +196,7 @@ final class Dispatcher
                 }
             }
 
-            foreach (Http::getErrorHooks() as $error) {
+            foreach (Hooks::$errors as $error) {
                 if (\in_array('*', $error->getGroups())) {
                     try {
                         \call_user_func_array($error->getAction(), $this->http->getArguments($error, $pathValues, $requestParams));
