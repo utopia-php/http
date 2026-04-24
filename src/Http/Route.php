@@ -30,7 +30,7 @@ class Route extends Hook
     /**
      * Path params.
      *
-     * @var array<string,array<string, string>>
+     * @var array<string, array<string, int>>
      */
     protected array $pathParams = [];
 
@@ -165,7 +165,7 @@ class Route extends Hook
      *
      * @param \Utopia\Http\Request $request
      * @param string $path
-     * @return array
+     * @return array<string, mixed>
      */
     public function getPathValues(Request $request, string $path = ''): array
     {

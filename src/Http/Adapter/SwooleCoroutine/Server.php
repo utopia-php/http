@@ -19,6 +19,9 @@ class Server extends Adapter
     /** @var callable|null */
     protected $onStartCallback = null;
 
+    /**
+     * @param  array<string, mixed>  $settings
+     */
     public function __construct(
         string $host,
         ?string $port = null,
@@ -30,7 +33,7 @@ class Server extends Adapter
         $this->container = $container ?? new Container();
     }
 
-    public function onRequest(callable $callback)
+    public function onRequest(callable $callback): void
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $requestContainer = new Container($this->container);
@@ -57,12 +60,12 @@ class Server extends Adapter
         return $this->server;
     }
 
-    public function onStart(callable $callback)
+    public function onStart(callable $callback): void
     {
         $this->onStartCallback = $callback;
     }
 
-    public function start()
+    public function start(): void
     {
         if ($this->onStartCallback) {
             \call_user_func($this->onStartCallback, $this);

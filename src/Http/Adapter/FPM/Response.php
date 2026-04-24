@@ -74,7 +74,7 @@ class Response extends UtopiaResponse
      *
      * @param  string  $name
      * @param  string  $value
-     * @param  array  $options
+     * @param  array<string, mixed>  $options
      * @return void
      */
     protected function sendCookie(string $name, string $value, array $options): void

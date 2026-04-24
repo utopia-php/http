@@ -241,7 +241,7 @@ class HttpTest extends TestCase
         $this->assertEquals('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function testCanAddAndExecuteHooks()
+    public function testCanAddAndExecuteHooks(): void
     {
         $this->http
             ->init()
@@ -287,7 +287,7 @@ class HttpTest extends TestCase
         $this->assertEquals('x-def', $result);
     }
 
-    public function testAllowRouteOverrides()
+    public function testAllowRouteOverrides(): void
     {
         Http::setAllowOverride(false);
         $this->assertFalse(Http::getAllowOverride());
@@ -317,7 +317,7 @@ class HttpTest extends TestCase
         });
     }
 
-    public function testCanHookThrowExceptions()
+    public function testCanHookThrowExceptions(): void
     {
         $this->http
             ->init()
@@ -363,7 +363,7 @@ class HttpTest extends TestCase
         $this->assertEquals('(init)-y-def-x-def-(shutdown)', $result);
     }
 
-    public function testCanSetRoute()
+    public function testCanSetRoute(): void
     {
         $route = new Route('GET', '/path');
 
@@ -372,6 +372,9 @@ class HttpTest extends TestCase
         $this->assertEquals($this->http->getRoute(), $route);
     }
 
+    /**
+     * @return array<string, array<int, string>>
+     */
     public function providerRouteMatching(): array
     {
         return [
@@ -512,7 +515,7 @@ class HttpTest extends TestCase
 
         \ob_start();
         $this->http->run(new Request(), new Response());
-        $result = \ob_get_contents();
+        $result = \ob_get_contents() ?: '';
         \ob_end_clean();
 
         $_SERVER['REQUEST_METHOD'] = $method;

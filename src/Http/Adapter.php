@@ -6,8 +6,8 @@ use Utopia\DI\Container;
 
 abstract class Adapter
 {
-    abstract public function onStart(callable $callback);
-    abstract public function onRequest(callable $callback);
-    abstract public function start();
+    abstract public function onStart(callable $callback): void;
+    abstract public function onRequest(callable $callback): void;
+    abstract public function start(): void;
     abstract public function getContainer(): Container;
 }

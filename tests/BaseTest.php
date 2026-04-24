@@ -6,37 +6,37 @@ use Tests\E2E\Client;
 
 trait BaseTest
 {
-    public function testResponse()
+    public function testResponse(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/');
         $this->assertEquals('Hello World!', $response['body']);
     }
 
-    public function testResponseValue()
+    public function testResponseValue(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/value/123');
         $this->assertEquals('123', $response['body']);
     }
 
-    public function testChunkResponse()
+    public function testChunkResponse(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/chunked');
         $this->assertEquals('Hello World!', $response['body']);
     }
 
-    public function testRedirect()
+    public function testRedirect(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/redirect');
         $this->assertEquals('Hello World!', $response['body']);
     }
 
-    public function testFile()
+    public function testFile(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/humans.txt');
         $this->assertEquals(204, $response['headers']['status-code']);
     }
 
-    public function testSetCookie()
+    public function testSetCookie(): void
     {
         $response = $this->client->call(Client::METHOD_GET, '/set-cookie');
         $this->assertEquals(200, $response['headers']['status-code']);
@@ -44,7 +44,7 @@ trait BaseTest
         $this->assertEquals('value2', $response['cookies']['key2']);
     }
 
-    public function testAliases()
+    public function testAliases(): void
     {
         $paths = ['/aliased', '/aliased-1', '/aliased-2', '/aliased-3'];
 

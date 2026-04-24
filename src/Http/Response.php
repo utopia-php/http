@@ -114,7 +114,7 @@ abstract class Response
     public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
     /**
-     * @var array
+     * @var array<int, string>
      */
     protected $statusCodes = [
         self::STATUS_CODE_CONTINUE => 'Continue',
@@ -185,7 +185,7 @@ abstract class Response
     /**
      * Mime Types with compression support
      *
-     * @var array
+     * @var array<string, bool>
      */
     private static $compressible = [
         // Text
@@ -290,7 +290,7 @@ abstract class Response
     protected array $headers = [];
 
     /**
-     * @var array
+     * @var array<int, array<string, mixed>>
      */
     protected array $cookies = [];
 
@@ -526,7 +526,7 @@ abstract class Response
      *
      * Return array of all response headers
      *
-     * @return array<string, array<string, string>>
+     * @return array<string, string|array<string>>
      */
     public function getHeaders(): array
     {
@@ -586,7 +586,7 @@ abstract class Response
      *
      * Return array of all response cookies
      *
-     * @return array
+     * @return array<int, array<string, mixed>>
      */
     public function getCookies(): array
     {
@@ -795,7 +795,7 @@ abstract class Response
      *
      * @param  string  $name
      * @param  string  $value
-     * @param  array  $options
+     * @param  array<string, mixed>  $options
      * @return void
      */
     abstract protected function sendCookie(string $name, string $value, array $options): void;
@@ -905,7 +905,7 @@ abstract class Response
 
         $this
             ->setContentType(Response::CONTENT_TYPE_JSON, self::CHARSET_UTF8)
-            ->send(\json_encode($data, JSON_UNESCAPED_UNICODE));
+            ->send(\json_encode($data, JSON_UNESCAPED_UNICODE) ?: '');
     }
 
     /**
@@ -917,7 +917,7 @@ abstract class Response
      * @see http://en.wikipedia.org/wiki/JSONP
      *
      * @param  string  $callback
-     * @param  array  $data
+     * @param  array<string, mixed>  $data
      * @return void
      */
     public function jsonp(string $callback, array $data): void
@@ -934,7 +934,7 @@ abstract class Response
      * It sets relevant content type header ('text/html') and convert a PHP array ($data) to valid JSON using native json_encode
      *
      * @param  string  $callback
-     * @param  array  $data
+     * @param  array<string, mixed>  $data
      * @return void
      */
     public function iframe(string $callback, array $data): void

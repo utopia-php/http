@@ -35,7 +35,7 @@ class Router
     /**
      * Get all registered routes.
      *
-     * @return array
+     * @return array<string, Route[]>
      */
     public static function getRoutes(): array
     {
@@ -177,8 +177,8 @@ class Router
     /**
      * Get all combinations of the given set.
      *
-     * @param array $set
-     * @return iterable
+     * @param array<int, mixed> $set
+     * @return iterable<array<int, mixed>>
      */
     protected static function combinations(array $set): iterable
     {
@@ -200,7 +200,7 @@ class Router
      * Prepare path for matching
      *
      * @param string $path
-     * @return array
+     * @return array{0: string, 1: array<string, int>}
      */
     public static function preparePath(string $path): array
     {
