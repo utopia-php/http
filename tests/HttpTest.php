@@ -87,7 +87,7 @@ class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        $this->container->set('rand', fn () => rand());
+        $this->container->set('rand', fn() => rand());
         $resource = $this->container->get('rand');
 
         $this->http
@@ -386,7 +386,7 @@ class HttpTest extends TestCase
             'DELETE request' => [Http::REQUEST_METHOD_DELETE, '/path1'],
             '1 separators' => [Http::REQUEST_METHOD_GET, '/a/'],
             '2 separators' => [Http::REQUEST_METHOD_GET, '/a/b'],
-            '3 separators' => [Http::REQUEST_METHOD_GET, '/a/b/c']
+            '3 separators' => [Http::REQUEST_METHOD_GET, '/a/b/c'],
         ];
     }
 
@@ -428,15 +428,15 @@ class HttpTest extends TestCase
         $requests = [
             [
                 'path' => '/d/:id',
-                'url' => '/d/'
+                'url' => '/d/',
             ],
             [
                 'path' => '/d/:id/e/:id2',
-                'url' => '/d/123/e/'
+                'url' => '/d/123/e/',
             ],
             [
                 'path' => '/d/:id/e/:id2/f/:id3',
-                'url' => '/d/123/e/456/f/'
+                'url' => '/d/123/e/456/f/',
             ],
         ];
 
@@ -532,7 +532,7 @@ class HttpTest extends TestCase
         Http::init()
             ->action(function () {
                 $route = $this->http->getRoute();
-                $this->container->set('myRoute', fn () => $route);
+                $this->container->set('myRoute', fn() => $route);
             });
 
 
@@ -653,7 +653,7 @@ class HttpTest extends TestCase
     {
         // Register a 'locale' resource returning a Locale instance whose
         // `name` statically resolves to "en".
-        $this->container->set('locale', fn () => new Locale());
+        $this->container->set('locale', fn() => new Locale());
 
         $route = new Route('GET', '/path');
 

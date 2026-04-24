@@ -57,7 +57,7 @@ class View
 
                 foreach (\explode("\n\n", $value) as $line) {
                     if (\trim($line)) {
-                        $paragraphs .= '<p>'.$line.'</p>';
+                        $paragraphs .= '<p>' . $line . '</p>';
                     }
                 }
 
@@ -215,14 +215,14 @@ class View
             if (\is_array($filter)) {
                 foreach ($filter as $callback) {
                     if (!isset($this->filters[$callback])) {
-                        throw new Exception('Filter "'.$callback.'" is not registered');
+                        throw new Exception('Filter "' . $callback . '" is not registered');
                     }
 
                     $value = $this->filters[$callback]($value);
                 }
             } else {
                 if (!isset($this->filters[$filter])) {
-                    throw new Exception('Filter "'.$filter.'" is not registered');
+                    throw new Exception('Filter "' . $filter . '" is not registered');
                 }
 
                 $value = $this->filters[$filter]($value);
@@ -260,7 +260,7 @@ class View
             include $this->path;
         } else {
             \ob_end_clean();
-            throw new Exception('"'.$this->path.'" view template is not readable');
+            throw new Exception('"' . $this->path . '" view template is not readable');
         }
 
         $html = \ob_get_contents();
@@ -274,10 +274,10 @@ class View
 
             // replacing both with <textarea>$index</textarea> / <pre>$index</pre>
             $html = \str_replace($foundTxt[0], \array_map(function ($el) {
-                return '<textarea>'.$el.'</textarea>';
+                return '<textarea>' . $el . '</textarea>';
             }, \array_keys($foundTxt[0])), $html);
             $html = \str_replace($foundPre[0], \array_map(function ($el) {
-                return '<pre>'.$el.'</pre>';
+                return '<pre>' . $el . '</pre>';
             }, \array_keys($foundPre[0])), $html);
 
             // your stuff
@@ -297,10 +297,10 @@ class View
 
             // Replacing back with content
             $html = \str_replace(\array_map(function ($el) {
-                return '<textarea>'.$el.'</textarea>';
+                return '<textarea>' . $el . '</textarea>';
             }, \array_keys($foundTxt[0])), $foundTxt[0], $html);
             $html = \str_replace(\array_map(function ($el) {
-                return '<pre>'.$el.'</pre>';
+                return '<pre>' . $el . '</pre>';
             }, \array_keys($foundPre[0])), $foundPre[0], $html);
         }
 

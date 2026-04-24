@@ -7,17 +7,15 @@ use Utopia\Http\Adapter;
 
 class Server extends Adapter
 {
-    public function __construct(private Container $container)
-    {
-    }
+    public function __construct(private Container $container) {}
 
     public function onRequest(callable $callback)
     {
         $request = new Request();
         $response = new Response();
 
-        $this->container->set('fpmRequest', fn () => $request);
-        $this->container->set('fpmResponse', fn () => $response);
+        $this->container->set('fpmRequest', fn() => $request);
+        $this->container->set('fpmResponse', fn() => $response);
 
         \call_user_func($callback, $request, $response);
     }

@@ -121,24 +121,24 @@ class Router
      * @param string $path
      * @return \Utopia\Http\Route|null
      */
-    public static function match(string $method, string $path): Route|null
+    public static function match(string $method, string $path): ?Route
     {
         if (!array_key_exists($method, self::$routes)) {
             return null;
         }
 
-        $parts = array_values(array_filter(explode('/', $path), fn ($segment) => $segment !== ''));
+        $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
         $length = count($parts) - 1;
-        $filteredParams = array_filter(self::$params, fn ($i) => $i <= $length);
+        $filteredParams = array_filter(self::$params, fn($i) => $i <= $length);
 
         foreach (self::combinations($filteredParams) as $sample) {
-            $sample = array_filter($sample, fn (int $i) => $i <= $length);
+            $sample = array_filter($sample, fn(int $i) => $i <= $length);
             $match = implode(
                 '/',
                 array_replace(
                     $parts,
-                    array_fill_keys($sample, self::PLACEHOLDER_TOKEN)
-                )
+                    array_fill_keys($sample, self::PLACEHOLDER_TOKEN),
+                ),
             );
 
             if (array_key_exists($match, self::$routes[$method])) {

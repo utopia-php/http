@@ -110,7 +110,7 @@ class Files
                 continue;
             }
 
-            $dirPath = $directory.'/'.$path;
+            $dirPath = $directory . '/' . $path;
 
             if (is_dir($dirPath)) {
                 $this->load($dirPath, strval($root));
@@ -163,7 +163,7 @@ class Files
     public function getFileContents(string $uri): mixed
     {
         if (!array_key_exists($uri, $this->loaded)) {
-            throw new Exception('File not found or not loaded: '.$uri);
+            throw new Exception('File not found or not loaded: ' . $uri);
         }
 
         return $this->loaded[$uri]['contents'];
@@ -180,7 +180,7 @@ class Files
     public function getFileMimeType(string $uri): mixed
     {
         if (!array_key_exists($uri, $this->loaded)) {
-            throw new Exception('File not found or not loaded: '.$uri);
+            throw new Exception('File not found or not loaded: ' . $uri);
         }
 
         return $this->loaded[$uri]['mimeType'];
