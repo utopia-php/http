@@ -101,10 +101,53 @@ jobs:
   benchmark:
     name: Benchmark
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run phpbench
+      - name: Build and wait for swoole to be healthy
+        run: docker compose up -d --build --wait swoole
+
+      - name: Install k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 benchmark
         run: |
-          docker run --rm -v "$PWD":/app -w /app composer:2.7 sh -c \
-            "composer install --profile --ignore-platform-reqs --no-interaction && git config --global --add safe.directory /app && composer bench -- --progress=plain"
+          set -o pipefail
+          k6 run --summary-export=summary.json tests/bench/benchmark.js 2>&1 | tee summary.txt
+        env:
+          BASE_URL: http://localhost:9501
+
+      - name: Render PR comment body
+        if: always()
+        run: |
+          {
+            echo '### k6 benchmark'
+            echo
+            echo '```'
+            cat summary.txt
+            echo '```'
+          } > summary.md
+
+      - name: Upload raw k6 summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-summary
+          path: |
+            summary.json
+            summary.txt
+          if-no-files-found: ignore
+
+      - name: Comment benchmark summary on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: k6-benchmark
+          path: summary.md
+
+      - name: Dump swoole logs on failure
+        if: failure()
+        run: docker compose logs swoole

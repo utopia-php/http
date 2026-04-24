@@ -21,7 +21,6 @@ WORKDIR /usr/src/code
 COPY ./src /usr/src/code/src
 COPY ./tests /usr/src/code/tests
 COPY ./phpunit.xml /usr/src/code/phpunit.xml
-COPY ./phpbench.json /usr/src/code/phpbench.json
 COPY --from=step0 /usr/local/src/vendor /usr/src/code/vendor
 
 EXPOSE 80

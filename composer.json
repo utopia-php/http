@@ -25,8 +25,7 @@
         "format": "vendor/bin/pint",
         "format:check": "vendor/bin/pint --test",
         "analyze": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
-        "test": "vendor/bin/phpunit --configuration phpunit.xml",
-        "bench": "vendor/bin/phpbench run --report=benchmark"
+        "test": "vendor/bin/phpunit --configuration phpunit.xml"
     },
     "require": {
         "php": ">=8.2",
@@ -53,7 +52,6 @@
     "require-dev": {
         "doctrine/instantiator": "^1.5",
         "laravel/pint": "1.*",
-        "phpbench/phpbench": "^1.2",
         "phpstan/phpstan": "1.*",
         "phpunit/phpunit": "^9.5.25",
         "swoole/ide-helper": "4.8.3"
