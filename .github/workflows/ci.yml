@@ -43,7 +43,7 @@ jobs:
           restore-keys: composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=ext-opentelemetry
 
       - name: PHPStan
         run: composer check
@@ -71,7 +71,7 @@ jobs:
           restore-keys: composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-interaction
+        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=ext-opentelemetry
 
       - name: Run unit tests
         run: vendor/bin/phpunit --configuration phpunit.xml --testsuite unit
