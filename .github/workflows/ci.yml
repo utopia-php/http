@@ -46,7 +46,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=ext-opentelemetry
 
       - name: PHPStan
-        run: composer check
+        run: composer analyze
 
   unit:
     name: Tests / Unit
