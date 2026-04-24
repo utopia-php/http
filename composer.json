@@ -15,11 +15,11 @@
             "Utopia\\": "src/"                                                                                                                     
         }                                                                                                                                          
     },                                                                                                                                             
-    "autoload-dev": {           
+    "autoload-dev": {
         "psr-4": {
-            "Utopia\\Http\\Tests\\": "tests/",                                                                                                     
-            "Tests\\E2E\\": "tests/e2e"                                                                                                            
-        }                                                                                                                                          
+            "Utopia\\Http\\Tests\\": "tests/",
+            "Tests\\E2E\\": "tests/e2e"
+        }
     },   
     "scripts": {
         "lint": "vendor/bin/pint --test",

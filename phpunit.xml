@@ -10,8 +10,15 @@
     stopOnFailure="false"
 >
     <testsuites>
-        <testsuite name="Application Test Suite">
+        <testsuite name="unit">
             <directory>./tests</directory>
+            <exclude>./tests/e2e</exclude>
+        </testsuite>
+        <testsuite name="e2e-fpm">
+            <file>./tests/e2e/ResponseFPMTest.php</file>
+        </testsuite>
+        <testsuite name="e2e-swoole">
+            <file>./tests/e2e/ResponseSwooleTest.php</file>
         </testsuite>
     </testsuites>
 </phpunit>

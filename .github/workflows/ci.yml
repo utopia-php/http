@@ -6,8 +6,8 @@ on:
     branches: [master, "*.x"]
 
 jobs:
-  lint:
-    name: Lint
+  format:
+    name: Format
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,8 +17,8 @@ jobs:
           docker run --rm -v "$PWD":/app -w /app composer:2.7 sh -c \
             "composer install --profile --ignore-platform-reqs --no-interaction && composer lint"
 
-  static:
-    name: Static Analysis
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,28 +48,68 @@ jobs:
       - name: PHPStan
         run: composer check
 
-  tests:
-    name: Tests (${{ matrix.adapter }})
+  unit:
+    name: Tests / Unit
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        adapter: [fpm, swoole]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build and wait for ${{ matrix.adapter }} to be healthy
-        run: docker compose up -d --build --wait ${{ matrix.adapter }}
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: swoole
+          coverage: none
 
-      - name: Run tests
-        run: docker compose exec -T ${{ matrix.adapter }} vendor/bin/phpunit --configuration phpunit.xml
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Run unit tests
+        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite unit
+
+  e2e-fpm:
+    name: Tests / E2E / FPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and wait for fpm to be healthy
+        run: docker compose up -d --build --wait fpm
+
+      - name: Run E2E tests
+        run: docker compose exec -T fpm vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-fpm
 
       - name: Dump container logs on failure
         if: failure()
-        run: docker compose logs ${{ matrix.adapter }}
+        run: docker compose logs fpm
 
-  bench:
-    name: Benchmarks
+  e2e-swoole:
+    name: Tests / E2E / Swoole
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and wait for swoole to be healthy
+        run: docker compose up -d --build --wait swoole
+
+      - name: Run E2E tests
+        run: docker compose exec -T swoole vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-swoole
+
+      - name: Dump container logs on failure
+        if: failure()
+        run: docker compose logs swoole
+
+  benchmark:
+    name: Benchmark
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
