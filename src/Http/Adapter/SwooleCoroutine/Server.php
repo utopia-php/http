@@ -23,7 +23,7 @@ class Server extends Adapter
         string $host,
         ?string $port = null,
         array $settings = [],
-        ?Container $container = null
+        ?Container $container = null,
     ) {
         $this->server = new SwooleServer($host, $port, false, true);
         $this->server->set($settings);
@@ -34,8 +34,8 @@ class Server extends Adapter
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $requestContainer = new Container($this->container);
-            $requestContainer->set('swooleRequest', fn () => $request);
-            $requestContainer->set('swooleResponse', fn () => $response);
+            $requestContainer->set('swooleRequest', fn() => $request);
+            $requestContainer->set('swooleResponse', fn() => $response);
 
             Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
 

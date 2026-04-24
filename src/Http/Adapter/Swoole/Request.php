@@ -114,7 +114,7 @@ class Request extends UtopiaRequest
 
         return match ($protocol) {
             'http', 'https', 'ws', 'wss' => $protocol,
-            default => 'https'
+            default => 'https',
         };
     }
 
@@ -127,7 +127,7 @@ class Request extends UtopiaRequest
      */
     public function getPort(): string
     {
-        return $this->getHeader('x-forwarded-port', (string) \parse_url($this->getProtocol().'://'.$this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_PORT));
+        return $this->getHeader('x-forwarded-port', (string) \parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_PORT));
     }
 
     /**
@@ -139,7 +139,7 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        $hostname = \parse_url($this->getProtocol().'://'.$this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
+        $hostname = \parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
         return strtolower(strval($hostname));
     }
 
@@ -364,7 +364,7 @@ class Request extends UtopiaRequest
             self::METHOD_PUT,
             self::METHOD_PATCH,
             self::METHOD_DELETE => $this->payload,
-            default => $this->queryString
+            default => $this->queryString,
         };
     }
 

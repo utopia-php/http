@@ -391,7 +391,7 @@ abstract class Response
      */
     public function setContentType(string $type, string $charset = ''): static
     {
-        $this->contentType = $type.((!empty($charset) ? '; charset='.$charset : ''));
+        $this->contentType = $type . ((!empty($charset) ? '; charset=' . $charset : ''));
 
         return $this;
     }
@@ -619,10 +619,10 @@ abstract class Response
 
         // Compress body only if all conditions are met:
         if (
-            !$hasContentEncoding &&
-            !empty($this->acceptEncoding) &&
-            $this->isCompressible($this->contentType) &&
-            strlen($body) > $this->compressionMinSize
+            !$hasContentEncoding
+            && !empty($this->acceptEncoding)
+            && $this->isCompressible($this->contentType)
+            && strlen($body) > $this->compressionMinSize
         ) {
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
 
@@ -924,7 +924,7 @@ abstract class Response
     {
         $this
             ->setContentType(self::CONTENT_TYPE_JAVASCRIPT, self::CHARSET_UTF8)
-            ->send('parent.'.$callback.'('.\json_encode($data).');');
+            ->send('parent.' . $callback . '(' . \json_encode($data) . ');');
     }
 
     /**
@@ -941,7 +941,7 @@ abstract class Response
     {
         $this
             ->setContentType(self::CONTENT_TYPE_HTML, self::CHARSET_UTF8)
-            ->send('<script type="text/javascript">window.parent.'.$callback.'('.\json_encode($data).');</script>');
+            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>');
     }
 
     /**

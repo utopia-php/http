@@ -60,10 +60,10 @@ class Response extends UtopiaResponse
     {
         if (\is_array($value)) {
             foreach ($value as $v) {
-                \header($key.': '.$v, false);
+                \header($key . ': ' . $v, false);
             }
         } else {
-            \header($key.': '.$value);
+            \header($key . ': ' . $value);
         }
     }
 

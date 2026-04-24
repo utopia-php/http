@@ -177,7 +177,7 @@ class Http
             'http.server.request.duration',
             's',
             null,
-            ['ExplicitBucketBoundaries' => [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]]
+            ['ExplicitBucketBoundaries' => [0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]],
         );
 
         // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserveractive_requests
@@ -430,7 +430,7 @@ class Http
     {
         try {
             return $this->server->getContainer()->get($name);
-        } catch (ContainerExceptionInterface | NotFoundExceptionInterface $e) {
+        } catch (ContainerExceptionInterface|NotFoundExceptionInterface $e) {
             // Normalize DI container errors to the Http layer's "resource" terminology.
             $message = \str_replace('dependency', 'resource', $e->getMessage());
 
@@ -632,7 +632,7 @@ class Http
     {
 
         $this->server->onRequest(
-            fn (Request $request, Response $response) => $this->run($request, $response)
+            fn(Request $request, Response $response) => $this->run($request, $response),
         );
 
         $this->server->onStart(function ($server) {
@@ -646,7 +646,7 @@ class Http
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch (\Exception $e) {
-                $this->setResource('error', fn () => $e);
+                $this->setResource('error', fn() => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
                     if (in_array('*', $error->getGroups())) {
@@ -745,7 +745,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            $this->setRequestResource('error', fn () => $e, []);
+            $this->setRequestResource('error', fn() => $e, []);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -868,8 +868,8 @@ class Http
             $response->setCompressionSupported($this->compressionSupported);
         }
 
-        $this->setRequestResource('request', fn () => $request);
-        $this->setRequestResource('response', fn () => $response);
+        $this->setRequestResource('request', fn() => $request);
+        $this->setRequestResource('response', fn() => $response);
 
         try {
             foreach (self::$requestHooks as $hook) {
@@ -877,7 +877,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->setRequestResource('error', fn () => $e, []);
+            $this->setRequestResource('error', fn() => $e, []);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
@@ -907,7 +907,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setRequestResource('route', fn () => $route, []);
+        $this->setRequestResource('route', fn() => $route, []);
 
         if (self::REQUEST_METHOD_HEAD == $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -953,7 +953,7 @@ class Http
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
-            $this->setRequestResource('route', fn () => $route, []);
+            $this->setRequestResource('route', fn() => $route, []);
         }
 
         if (null !== $route) {
@@ -986,7 +986,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
-                    $this->setRequestResource('error', fn () => new Exception('Not Found', 404), []);
+                    $this->setRequestResource('error', fn() => new Exception('Not Found', 404), []);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }

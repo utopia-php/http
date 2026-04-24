@@ -2,6 +2,4 @@
 
 namespace Utopia\Http;
 
-class Exception extends \Exception
-{
-}
+class Exception extends \Exception {}

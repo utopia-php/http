@@ -26,8 +26,8 @@ class Server extends Adapter
     {
         $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $requestContainer = new Container($this->container);
-            $requestContainer->set('swooleRequest', fn () => $request);
-            $requestContainer->set('swooleResponse', fn () => $response);
+            $requestContainer->set('swooleRequest', fn() => $request);
+            $requestContainer->set('swooleResponse', fn() => $response);
 
             Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
 

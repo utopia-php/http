@@ -113,7 +113,7 @@ class Request extends UtopiaRequest
      */
     public function getPort(): string
     {
-        return (string) \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
+        return (string) \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
     }
 
     /**
@@ -125,7 +125,7 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        $hostname = \parse_url($this->getProtocol().'://'.$this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
+        $hostname = \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
         return strtolower((string) ($hostname));
     }
 
@@ -352,7 +352,7 @@ class Request extends UtopiaRequest
             self::METHOD_PUT,
             self::METHOD_PATCH,
             self::METHOD_DELETE => $this->payload,
-            default => $this->queryString
+            default => $this->queryString,
         };
     }
 

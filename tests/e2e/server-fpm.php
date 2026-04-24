@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/init.php';
+require_once __DIR__ . '/init.php';
 
 use Utopia\DI\Container;
 use Utopia\Http\Adapter\FPM\Server;

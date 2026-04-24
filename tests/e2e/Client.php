@@ -55,7 +55,7 @@ class Client
     public function call(string $method, string $path = '', array $headers = [], array $params = [])
     {
         usleep(50000);
-        $ch = curl_init($this->baseUrl.$path.(($method == self::METHOD_GET && !empty($params)) ? '?'.http_build_query($params) : ''));
+        $ch = curl_init($this->baseUrl . $path . (($method == self::METHOD_GET && !empty($params)) ? '?' . http_build_query($params) : ''));
         $responseHeaders = [];
         $responseStatus = -1;
         $responseType = '';
@@ -79,7 +79,7 @@ class Client
             }
 
             if (strtolower(trim($header[0])) == 'set-cookie') {
-                $parsed = $this->parseCookie((string)trim($header[1]));
+                $parsed = $this->parseCookie((string) trim($header[1]));
                 $name = array_key_first($parsed);
                 $cookies[$name] = $parsed[$name];
             }
@@ -93,7 +93,7 @@ class Client
         $responseStatus = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if ((curl_errno($ch)/* || 200 != $responseStatus*/)) {
-            throw new Exception(curl_error($ch).' with status code '.$responseStatus, $responseStatus);
+            throw new Exception(curl_error($ch) . ' with status code ' . $responseStatus, $responseStatus);
         }
 
         curl_close($ch);
@@ -101,7 +101,7 @@ class Client
         $responseHeaders['status-code'] = $responseStatus;
 
         if ($responseStatus === 500) {
-            echo 'Server error('.$method.': '.$path.'. Params: '.json_encode($params).'): '.json_encode($responseBody)."\n";
+            echo 'Server error(' . $method . ': ' . $path . '. Params: ' . json_encode($params) . '): ' . json_encode($responseBody) . "\n";
         }
 
         return [
