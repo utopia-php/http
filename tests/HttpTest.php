@@ -372,7 +372,7 @@ final class HttpTest extends TestCase
 
         $this->assertNull($this->http->getRoute());
         $this->http->setRoute($route);
-        $this->assertEquals($this->http->getRoute(), $route);
+        $this->assertSame($route, $this->http->getRoute());
     }
 
     /**
@@ -421,8 +421,8 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $url;
 
-        $this->assertEquals($expected, $this->http->match(new Request()));
-        $this->assertEquals($expected, $this->http->getRoute());
+        $this->assertSame($expected, $this->http->match(new Request()));
+        $this->assertSame($expected, $this->http->getRoute());
     }
 
     public function testNoMismatchRoute(): void
@@ -465,21 +465,21 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
-            $this->assertEquals($route1, $matched);
-            $this->assertEquals($route1, $this->http->getRoute());
+            $this->assertSame($route1, $matched);
+            $this->assertSame($route1, $this->http->getRoute());
 
             // Second request match returns cached route
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path2';
             $request2 = new Request();
             $matched = $this->http->match($request2, fresh: false);
-            $this->assertEquals($route1, $matched);
-            $this->assertEquals($route1, $this->http->getRoute());
+            $this->assertSame($route1, $matched);
+            $this->assertSame($route1, $this->http->getRoute());
 
             // Fresh match returns new route
             $matched = $this->http->match($request2, fresh: true);
-            $this->assertEquals($route2, $matched);
-            $this->assertEquals($route2, $this->http->getRoute());
+            $this->assertSame($route2, $matched);
+            $this->assertSame($route2, $this->http->getRoute());
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }

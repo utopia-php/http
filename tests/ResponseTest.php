@@ -59,13 +59,13 @@ final class FPMResponseTest extends TestCase
     public function testCanAddHeader(): void
     {
         $result = $this->response->addHeader('key', 'value');
-        $this->assertEquals($this->response, $result);
+        $this->assertSame($this->response, $result);
     }
 
     public function testCanAddCookie(): void
     {
         $result = $this->response->addCookie('name', 'value');
-        $this->assertEquals($this->response, $result);
+        $this->assertSame($this->response, $result);
 
         //test cookie case insensitive
         $result = $this->response->addCookie('cookieName', 'cookieValue');
