@@ -1,3 +1,7 @@
 /vendor/
 /.idea/
+/.vscode/
+/composer.phar
+.phpunit.result.cache
+/.phpunit.cache/
 *.cache

@@ -1,4 +1,4 @@
-FROM composer:2.0 AS step0
+FROM composer:2.7 AS step0
 
 
 ARG TESTING=true
