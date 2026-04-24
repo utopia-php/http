@@ -2,7 +2,7 @@
     <img height="45" src="docs/logo.png" alt="Logo">
 </p>
 
-[![Build Status](https://travis-ci.org/utopia-php/http.svg?branch=master)](https://travis-ci.org/utopia-php/http)
+[![Build Status](https://github.com/utopia-php/http/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/utopia-php/http/actions/workflows/ci.yml)
 ![Total Downloads](https://img.shields.io/packagist/dt/utopia-php/http.svg)
 [![Discord](https://img.shields.io/discord/564160730845151244?label=discord)](https://discord.gg/GSeTUeA)
 
@@ -275,7 +275,7 @@ All code contributions - including those of people having commit access - must g
 
 Fork the project, create a feature branch, and send us a pull request.
 
-You can refer to the [Contributing Guide](https://github.com/utopia-php/http/blob/master/CONTRIBUTING.md) for more info.
+You can refer to the [Contributing Guide](https://github.com/utopia-php/http/blob/main/CONTRIBUTING.md) for more info.
 
 For security issues, please email security@appwrite.io instead of posting a public issue in GitHub.
 
