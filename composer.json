@@ -40,6 +40,11 @@
         "ext-swoole": "Required to use the Swoole server adapter (\\Utopia\\Http\\Adapter\\Swoole\\Server)."
     },
     "config": {
+        "platform": {
+            "php": "8.2",
+            "ext-opentelemetry": "1.0.0",
+            "ext-protobuf": "4.26.1"
+        },
         "allow-plugins": {
             "php-http/discovery": true,
             "tbachert/spi": true
