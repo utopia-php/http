@@ -19,7 +19,7 @@ class RequestTest extends TestCase
         $this->request = null;
     }
 
-    public function testCanGetHeaders()
+    public function testCanGetHeaders(): void
     {
         $_SERVER['HTTP_CUSTOM'] = 'value1';
         $_SERVER['HTTP_CUSTOM_NEW'] = 'value2';
@@ -33,7 +33,7 @@ class RequestTest extends TestCase
         $this->assertEquals('value2', $headers['custom-new']);
     }
 
-    public function testCanAddHeaders()
+    public function testCanAddHeaders(): void
     {
         $this->request->addHeader('custom', 'value1');
         $this->request->addHeader('custom-new', 'value2');
@@ -42,7 +42,7 @@ class RequestTest extends TestCase
         $this->assertEquals('value2', $this->request->getHeader('custom-new'));
     }
 
-    public function testCanRemoveHeaders()
+    public function testCanRemoveHeaders(): void
     {
         $this->request->addHeader('custom', 'value1');
         $this->request->addHeader('custom-new', 'value2');
@@ -56,7 +56,7 @@ class RequestTest extends TestCase
         $this->assertEquals('value2', $this->request->getHeader('custom-new'));
     }
 
-    public function testCanGetQueryParameter()
+    public function testCanGetQueryParameter(): void
     {
         $_GET['key'] = 'value';
 
@@ -64,7 +64,7 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getQuery('unknown', 'test'), 'test');
     }
 
-    public function testCanSetQueryString()
+    public function testCanSetQueryString(): void
     {
         $this->request->setQueryString(['key' => 'value']);
 
@@ -72,12 +72,12 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getQuery('unknown', 'test'), 'test');
     }
 
-    public function testCanGetPayload()
+    public function testCanGetPayload(): void
     {
         $this->assertEquals($this->request->getPayload('unknown', 'test'), 'test');
     }
 
-    public function testCanSetPayload()
+    public function testCanSetPayload(): void
     {
         $this->request->setPayload(['key' => 'value']);
 
@@ -85,12 +85,12 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getPayload('unknown', 'test'), 'test');
     }
 
-    public function testCanGetRawPayload()
+    public function testCanGetRawPayload(): void
     {
         $this->assertEquals($this->request->getRawPayload(), '');
     }
 
-    public function testCanGetServer()
+    public function testCanGetServer(): void
     {
         $_SERVER['key'] = 'value';
 
@@ -98,7 +98,7 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getServer('unknown', 'test'), 'test');
     }
 
-    public function testCanSetServer()
+    public function testCanSetServer(): void
     {
         $this->request->setServer('key', 'value');
 
@@ -106,7 +106,7 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getServer('unknown', 'test'), 'test');
     }
 
-    public function testCanGetCookie()
+    public function testCanGetCookie(): void
     {
         $_COOKIE['key'] = 'value';
 
@@ -114,7 +114,7 @@ class RequestTest extends TestCase
         $this->assertEquals($this->request->getCookie('unknown', 'test'), 'test');
     }
 
-    public function testCanGetProtocol()
+    public function testCanGetProtocol(): void
     {
         $_SERVER['HTTP_X_FORWARDED_PROTO'] = null;
         $_SERVER['REQUEST_SCHEME'] = 'http';
@@ -122,7 +122,7 @@ class RequestTest extends TestCase
         $this->assertEquals('http', $this->request->getProtocol());
     }
 
-    public function testCanGetForwardedProtocol()
+    public function testCanGetForwardedProtocol(): void
     {
         $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
         $_SERVER['REQUEST_SCHEME'] = 'http';
@@ -130,7 +130,7 @@ class RequestTest extends TestCase
         $this->assertEquals('https', $this->request->getProtocol());
     }
 
-    public function testCanGetMethod()
+    public function testCanGetMethod(): void
     {
         $this->assertEquals('UNKNOWN', $this->request->getMethod());
 
@@ -139,7 +139,7 @@ class RequestTest extends TestCase
         $this->assertEquals('GET', $this->request->getMethod());
     }
 
-    public function testCanGetUri()
+    public function testCanGetUri(): void
     {
         $this->assertEquals('', $this->request->getURI());
 
@@ -148,14 +148,14 @@ class RequestTest extends TestCase
         $this->assertEquals('/index.html', $this->request->getURI());
     }
 
-    public function testCanSetUri()
+    public function testCanSetUri(): void
     {
         $this->request->setURI('/page.html');
 
         $this->assertEquals('/page.html', $this->request->getURI());
     }
 
-    public function testCanGetPort()
+    public function testCanGetPort(): void
     {
         $_SERVER['HTTP_HOST'] = 'localhost:8080';
 
@@ -166,21 +166,21 @@ class RequestTest extends TestCase
         $this->assertEquals('', $this->request->getPort());
     }
 
-    public function testCanGetHostname()
+    public function testCanGetHostname(): void
     {
         $_SERVER['HTTP_HOST'] = 'localhost';
 
         $this->assertEquals('localhost', $this->request->getHostname());
     }
 
-    public function testCanGetHostnameWithPort()
+    public function testCanGetHostnameWithPort(): void
     {
         $_SERVER['HTTP_HOST'] = 'localhost:8080';
 
         $this->assertEquals('localhost', $this->request->getHostname());
     }
 
-    public function testCanGetReferer()
+    public function testCanGetReferer(): void
     {
         $this->assertEquals('default', $this->request->getReferer('default'));
 
@@ -189,7 +189,7 @@ class RequestTest extends TestCase
         $this->assertEquals('referer', $this->request->getReferer('default'));
     }
 
-    public function testCanGetOrigin()
+    public function testCanGetOrigin(): void
     {
         $this->assertEquals('default', $this->request->getOrigin('default'));
 
@@ -198,7 +198,7 @@ class RequestTest extends TestCase
         $this->assertEquals('origin', $this->request->getOrigin('default'));
     }
 
-    public function testCanGetUserAgent()
+    public function testCanGetUserAgent(): void
     {
         $this->assertEquals('default', $this->request->getUserAgent('default'));
 
@@ -207,7 +207,7 @@ class RequestTest extends TestCase
         $this->assertEquals('user-agent', $this->request->getUserAgent('default'));
     }
 
-    public function testCanGetAccept()
+    public function testCanGetAccept(): void
     {
         $this->assertEquals('default', $this->request->getAccept('default'));
 
@@ -216,7 +216,7 @@ class RequestTest extends TestCase
         $this->assertEquals('accept', $this->request->getAccept('default'));
     }
 
-    public function testCanGetContentRange()
+    public function testCanGetContentRange(): void
     {
         $_SERVER['HTTP_CONTENT_RANGE'] = 'bytes 0-499/2000';
 
@@ -268,7 +268,7 @@ class RequestTest extends TestCase
         $this->assertEquals(null, $this->request->getContentRangeSize());
     }
 
-    public function testCanGetRange()
+    public function testCanGetRange(): void
     {
         $_SERVER['HTTP_RANGE'] = 'bytes=0-499';
 
@@ -313,7 +313,7 @@ class RequestTest extends TestCase
         $this->assertEquals(null, $this->request->getRangeEnd());
     }
 
-    public function testCanGetSizeWithArrayHeaders()
+    public function testCanGetSizeWithArrayHeaders(): void
     {
         $this->request->addHeader('content-type', 'application/json');
 

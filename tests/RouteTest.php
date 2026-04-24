@@ -14,12 +14,12 @@ class RouteTest extends TestCase
         $this->route = new Route('GET', '/');
     }
 
-    public function testCanGetMethod()
+    public function testCanGetMethod(): void
     {
         $this->assertEquals('GET', $this->route->getMethod());
     }
 
-    public function testCanGetAndSetPath()
+    public function testCanGetAndSetPath(): void
     {
         $this->assertEquals('/', $this->route->getPath());
 
@@ -28,7 +28,7 @@ class RouteTest extends TestCase
         $this->assertEquals('/path', $this->route->getPath());
     }
 
-    public function testCanSetAndGetDescription()
+    public function testCanSetAndGetDescription(): void
     {
         $this->assertEquals('', $this->route->getDesc());
 
@@ -37,7 +37,7 @@ class RouteTest extends TestCase
         $this->assertEquals('new route', $this->route->getDesc());
     }
 
-    public function testCanSetAndGetGroups()
+    public function testCanSetAndGetGroups(): void
     {
         $this->assertEquals([], $this->route->getGroups());
 
@@ -46,7 +46,7 @@ class RouteTest extends TestCase
         $this->assertEquals(['api', 'homepage'], $this->route->getGroups());
     }
 
-    public function testCanSetAndGetAction()
+    public function testCanSetAndGetAction(): void
     {
         $this->assertEquals(function (): void {}, $this->route->getAction());
 
@@ -55,7 +55,7 @@ class RouteTest extends TestCase
         $this->assertEquals('hello world', $this->route->getAction()());
     }
 
-    public function testCanGetAndSetParam()
+    public function testCanGetAndSetParam(): void
     {
         $this->assertEquals([], $this->route->getParams());
 
@@ -66,7 +66,7 @@ class RouteTest extends TestCase
         $this->assertCount(2, $this->route->getParams());
     }
 
-    public function testCanInjectResources()
+    public function testCanInjectResources(): void
     {
         $this->assertEquals([], $this->route->getInjections());
 
@@ -80,7 +80,7 @@ class RouteTest extends TestCase
         $this->assertEquals('time', $this->route->getInjections()['time']['name']);
     }
 
-    public function testCanSetAndGetLabels()
+    public function testCanSetAndGetLabels(): void
     {
         $this->assertEquals('default', $this->route->getLabel('key', 'default'));
 
@@ -89,7 +89,7 @@ class RouteTest extends TestCase
         $this->assertEquals('value', $this->route->getLabel('key', 'default'));
     }
 
-    public function testCanSetAndGetHooks()
+    public function testCanSetAndGetHooks(): void
     {
         $this->assertTrue($this->route->getHook());
         $this->route->hook(true);

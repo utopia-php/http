@@ -9,7 +9,7 @@ class Server extends Adapter
 {
     public function __construct(private Container $container) {}
 
-    public function onRequest(callable $callback)
+    public function onRequest(callable $callback): void
     {
         $request = new Request();
         $response = new Response();
@@ -20,7 +20,7 @@ class Server extends Adapter
         \call_user_func($callback, $request, $response);
     }
 
-    public function onStart(callable $callback)
+    public function onStart(callable $callback): void
     {
         \call_user_func($callback, $this);
     }
@@ -30,7 +30,7 @@ class Server extends Adapter
         return $this->container;
     }
 
-    public function start()
+    public function start(): void
     {
         return;
     }

@@ -189,7 +189,7 @@ class Request extends UtopiaRequest
      * Method for querying upload files data. If $key is not found empty array will be returned.
      *
      * @param  string  $key
-     * @return array
+     * @return array<string, mixed>
      */
     public function getFiles(string $key): array
     {
@@ -275,7 +275,13 @@ class Request extends UtopiaRequest
     {
         $headers = $this->generateHeaders();
 
-        return (isset($headers[$key])) ? $headers[$key] : $default;
+        if (!isset($headers[$key])) {
+            return $default;
+        }
+
+        $value = $headers[$key];
+
+        return \is_array($value) ? \implode(', ', $value) : $value;
     }
 
     /**
@@ -316,7 +322,7 @@ class Request extends UtopiaRequest
      *
      * Generate PHP input stream and parse it as an array in order to handle different content type of requests
      *
-     * @return array
+     * @return array<string, mixed>
      */
     protected function generateInput(): array
     {
@@ -331,7 +337,7 @@ class Request extends UtopiaRequest
             $length = (empty($length)) ? \strlen($contentType) : $length;
             $contentType = \substr($contentType, 0, $length);
 
-            $this->rawPayload = \file_get_contents('php://input');
+            $this->rawPayload = \file_get_contents('php://input') ?: '';
 
             switch ($contentType) {
                 case 'application/json':
@@ -361,7 +367,7 @@ class Request extends UtopiaRequest
      *
      * Parse request headers as an array for easy querying using the getHeader method
      *
-     * @return array
+     * @return array<string, string|array<int, string>>
      */
     protected function generateHeaders(): array
     {

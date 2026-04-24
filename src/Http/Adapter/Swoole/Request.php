@@ -31,7 +31,7 @@ class Request extends UtopiaRequest
      */
     public function getRawPayload(): string
     {
-        return $this->swoole->rawContent();
+        return $this->swoole->rawContent() ?: '';
     }
 
     /**

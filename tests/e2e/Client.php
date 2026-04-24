@@ -46,14 +46,18 @@ class Client
      *
      * @param  string  $method
      * @param  string  $path
-     * @param  array  $params
-     * @param  array  $headers
-     * @return array|string
+     * @param  array<int, string>  $headers
+     * @param  array<string, mixed>  $params
+     * @return array<string, mixed>
      *
      * @throws Exception
      */
-    public function call(string $method, string $path = '', array $headers = [], array $params = [])
+    public function call(string $method, string $path = '', array $headers = [], array $params = []): array
     {
+        if ($method === '') {
+            throw new Exception('HTTP method is required');
+        }
+
         usleep(50000);
         $ch = curl_init($this->baseUrl . $path . (($method == self::METHOD_GET && !empty($params)) ? '?' . http_build_query($params) : ''));
         $responseHeaders = [];
@@ -115,7 +119,7 @@ class Client
      * Parse Cookie String
      *
      * @param string $cookie
-     * @return array
+     * @return array<int|string, mixed>
      */
     public function parseCookie(string $cookie): array
     {

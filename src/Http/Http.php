@@ -464,7 +464,7 @@ class Http
     /**
      * Set a resource on the given scope.
      *
-     * @param string[] $injections
+     * @param list<string> $injections
      */
     public function setResource(string $name, callable $callback, array $injections = []): void
     {
@@ -474,7 +474,7 @@ class Http
     /**
      * Set a request-scoped resource on the current request's container.
      *
-     * @param string[] $injections
+     * @param list<string> $injections
      */
     protected function setRequestResource(string $name, callable $callback, array $injections = []): void
     {
@@ -516,7 +516,7 @@ class Http
      *
      * Get all application routes
      *
-     * @return array
+     * @return array<string, Route[]>
      */
     public static function getRoutes(): array
     {
@@ -628,7 +628,7 @@ class Http
         return $hook;
     }
 
-    public function start()
+    public function start(): void
     {
 
         $this->server->onRequest(
@@ -779,9 +779,9 @@ class Http
      * Get Arguments
      *
      * @param  Hook  $hook
-     * @param  array  $values
-     * @param  array  $requestParams
-     * @return array
+     * @param  array<string, mixed>  $values
+     * @param  array<string, mixed>  $requestParams
+     * @return array<int, mixed>
      *
      * @throws Exception
      */
@@ -1002,7 +1002,7 @@ class Http
      * Creates an validator instance and validate given value with given rules.
      *
      * @param  string  $key
-     * @param  array  $param
+     * @param  array<string, mixed>  $param
      * @param  mixed  $value
      * @return void
      *

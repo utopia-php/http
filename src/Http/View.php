@@ -26,12 +26,12 @@ class View
     protected bool $rendered = false;
 
     /**
-     * @var array
+     * @var array<string, mixed>
      */
     protected array $params = [];
 
     /**
-     * @var array
+     * @var array<string, callable>
      */
     protected array $filters = [];
 
@@ -204,7 +204,7 @@ class View
      * Output and filter value
      *
      * @param  mixed  $value
-     * @param  string|array  $filter
+     * @param  string|array<int, string>  $filter
      * @return mixed
      *
      * @throws Exception
@@ -263,7 +263,7 @@ class View
             throw new Exception('"' . $this->path . '" view template is not readable');
         }
 
-        $html = \ob_get_contents();
+        $html = \ob_get_contents() ?: '';
 
         \ob_end_clean(); //End of build
 
@@ -314,7 +314,7 @@ class View
      *
      * Exec child View components
      *
-     * @param  array|self  $view
+     * @param  array<int, mixed>|self  $view
      * @return string
      *
      * @throws Exception

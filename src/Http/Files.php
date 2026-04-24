@@ -95,6 +95,10 @@ class Files
 
         $handle = opendir(strval($directory));
 
+        if ($handle === false) {
+            throw new Exception("Failed to open directory: {$directory}");
+        }
+
         while ($path = readdir($handle)) {
             $extension = pathinfo($path, PATHINFO_EXTENSION);
 

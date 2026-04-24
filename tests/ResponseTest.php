@@ -19,7 +19,7 @@ class FPMResponseTest extends TestCase
         $this->response = null;
     }
 
-    public function testCanSetContentType()
+    public function testCanSetContentType(): void
     {
         $contentType = $this->response->setContentType(Response::CONTENT_TYPE_HTML, Response::CHARSET_UTF8);
 
@@ -27,7 +27,7 @@ class FPMResponseTest extends TestCase
         $this->assertInstanceOf('Utopia\Http\Response', $contentType);
     }
 
-    public function testCanSetStatus()
+    public function testCanSetStatus(): void
     {
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
 
@@ -45,7 +45,7 @@ class FPMResponseTest extends TestCase
         $this->fail('Expected exception');
     }
 
-    public function testCanGetStatus()
+    public function testCanGetStatus(): void
     {
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);
 
@@ -54,13 +54,13 @@ class FPMResponseTest extends TestCase
         $this->assertEquals(Response::STATUS_CODE_OK, $this->response->getStatusCode());
     }
 
-    public function testCanAddHeader()
+    public function testCanAddHeader(): void
     {
         $result = $this->response->addHeader('key', 'value');
         $this->assertEquals($this->response, $result);
     }
 
-    public function testCanAddCookie()
+    public function testCanAddCookie(): void
     {
         $result = $this->response->addCookie('name', 'value');
         $this->assertEquals($this->response, $result);
@@ -71,7 +71,7 @@ class FPMResponseTest extends TestCase
         $result->getCookies()['cookiename']['value'] = 'cookieValue';
     }
 
-    public function testCanSend()
+    public function testCanSend(): void
     {
         ob_start(); //Start of build
 
@@ -86,7 +86,7 @@ class FPMResponseTest extends TestCase
         $this->assertEquals('body', $html);
     }
 
-    public function testCanSendRedirect()
+    public function testCanSendRedirect(): void
     {
         ob_start(); //Start of build
 
@@ -107,7 +107,7 @@ class FPMResponseTest extends TestCase
         $this->assertEquals('', $html);
     }
 
-    public function testCanSendText()
+    public function testCanSendText(): void
     {
         ob_start(); //Start of build
 
@@ -120,7 +120,7 @@ class FPMResponseTest extends TestCase
         $this->assertEquals('text/plain; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testCanSendHtml()
+    public function testCanSendHtml(): void
     {
         ob_start(); //Start of build
 
@@ -133,7 +133,7 @@ class FPMResponseTest extends TestCase
         $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testCanSendJson()
+    public function testCanSendJson(): void
     {
         ob_start(); //Start of build
 
@@ -146,7 +146,7 @@ class FPMResponseTest extends TestCase
         $this->assertEquals('application/json; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testCanSendJsonp()
+    public function testCanSendJsonp(): void
     {
         ob_start(); //Start of build
 
@@ -159,7 +159,7 @@ class FPMResponseTest extends TestCase
         $this->assertEquals('text/javascript; charset=UTF-8', $this->response->getContentType());
     }
 
-    public function testCanSendIframe()
+    public function testCanSendIframe(): void
     {
         ob_start(); //Start of build
 

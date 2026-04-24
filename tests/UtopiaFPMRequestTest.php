@@ -6,6 +6,9 @@ use Utopia\Http\Adapter\FPM\Request as UtopiaFPMRequest;
 
 class UtopiaFPMRequestTest extends UtopiaFPMRequest
 {
+    /**
+     * @var array<string, mixed>|null
+     */
     private static ?array $params;
 
     /**
@@ -31,7 +34,7 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
      *
      * Get all params of current method
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function getParams(): array
     {
@@ -47,10 +50,10 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
     /**
      * Function to set a response filter
      *
-     * @param  ?array  $params
+     * @param  array<string, mixed>|null  $params
      * @return void
      */
-    public static function _setParams(?array $params)
+    public static function _setParams(?array $params): void
     {
         self::$params = $params;
     }
@@ -58,7 +61,7 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
     /**
      * Return the currently set filter
      *
-     * @return ?array
+     * @return array<string, mixed>|null
      */
     public static function _getParams(): ?array
     {

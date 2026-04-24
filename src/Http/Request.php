@@ -28,24 +28,27 @@ abstract class Request
     /**
      * Container for php://input parsed stream as an associative array
      *
-     * @var array|null
+     * @var array<string, mixed>|null
      */
     protected $payload = null;
 
     /**
      * Container for parsed query string params
      *
-     * @var array|null
+     * @var array<string, mixed>|null
      */
     protected $queryString = null;
 
     /**
      * Container for parsed headers
      *
-     * @var array|null
+     * @var array<string, string|array<int, string>>|null
      */
     protected $headers = null;
 
+    /**
+     * @var array<int, string>
+     */
     protected array $trustedIpHeaders = [];
 
     /**
@@ -69,7 +72,7 @@ abstract class Request
      *
      * Get all params of current method
      *
-     * @return array
+     * @return array<string, mixed>
      */
     public function getParams(): array
     {
@@ -145,7 +148,7 @@ abstract class Request
      * Set which headers to trust for determining client IP address.
      * Headers are checked in order; the first one found with a valid IP is used.
      *
-     * @param  array  $headers
+     * @param  array<int, string>  $headers
      * @return static
      */
     public function setTrustedIpHeaders(array $headers): static
@@ -244,7 +247,7 @@ abstract class Request
      * Method for querying upload files data. If $key is not found empty array will be returned.
      *
      * @param  string  $key
-     * @return array
+     * @return array<string, mixed>
      */
     abstract public function getFiles(string $key): array;
 
@@ -361,7 +364,7 @@ abstract class Request
                 $headerStrings[] = $key . ': ' . $value;
             }
         }
-        return \mb_strlen(\implode("\n", $headerStrings), '8bit') + \mb_strlen(\file_get_contents('php://input'), '8bit');
+        return \mb_strlen(\implode("\n", $headerStrings), '8bit') + \mb_strlen(\file_get_contents('php://input') ?: '', '8bit');
     }
 
     /**
@@ -486,7 +489,7 @@ abstract class Request
     /**
      * Set query string parameters
      *
-     * @param  array  $params
+     * @param  array<string, mixed>  $params
      * @return static
      */
     public function setQueryString(array $params): static
@@ -499,7 +502,7 @@ abstract class Request
     /**
      * Set payload parameters
      *
-     * @param  array  $params
+     * @param  array<string, mixed>  $params
      * @return static
      */
     public function setPayload(array $params): static
@@ -514,7 +517,7 @@ abstract class Request
      *
      * Parse request headers as an array for easy querying using the getHeader method
      *
-     * @return array
+     * @return array<string, string|array<int, string>>
      */
     protected function generateHeaders(): array
     {
@@ -548,7 +551,7 @@ abstract class Request
      *
      * Generate PHP input stream and parse it as an array in order to handle different content type of requests
      *
-     * @return array
+     * @return array<string, mixed>
      */
     abstract protected function generateInput(): array;
 
@@ -557,7 +560,7 @@ abstract class Request
      *
      * Parse content-range request header for easy access
      *
-     * @return array|null
+     * @return array{unit: string, size: int, start: int, end: int}|null
      */
     protected function parseContentRange(): ?array
     {
@@ -611,7 +614,7 @@ abstract class Request
      *
      * Parse range request header for easy access
      *
-     * @return array|null
+     * @return array<string, mixed>|null
      */
     protected function parseRange(): ?array
     {

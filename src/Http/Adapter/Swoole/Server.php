@@ -15,6 +15,9 @@ class Server extends Adapter
     protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
     protected Container $container;
 
+    /**
+     * @param  array<string, mixed>  $settings
+     */
     public function __construct(string $host, ?string $port = null, array $settings = [], int $mode = SWOOLE_PROCESS, ?Container $container = null)
     {
         $this->server = new SwooleServer($host, (int) $port, $mode);
@@ -22,7 +25,7 @@ class Server extends Adapter
         $this->container = $container ?? new Container();
     }
 
-    public function onRequest(callable $callback)
+    public function onRequest(callable $callback): void
     {
         $this->server->on('request', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
             $requestContainer = new Container($this->container);
@@ -49,7 +52,7 @@ class Server extends Adapter
         return $this->server;
     }
 
-    public function onStart(callable $callback)
+    public function onStart(callable $callback): void
     {
         $this->server->on('start', function () use ($callback) {
             go(function () use ($callback) {
@@ -58,8 +61,8 @@ class Server extends Adapter
         });
     }
 
-    public function start()
+    public function start(): void
     {
-        return $this->server->start();
+        $this->server->start();
     }
 }
