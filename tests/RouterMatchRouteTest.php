@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
+use Utopia\Http\Adapter\FPM\Request;
 
 /**
  * Coverage for {@see Router::matchRoute()} — the coroutine-safe replacement
@@ -122,6 +123,50 @@ final class RouterMatchRouteTest extends TestCase
         $this->assertSame($route, $b->route);
         $this->assertSame('/users/1', $a->urlPath);
         $this->assertSame('/users/2', $b->urlPath);
+    }
+
+    public function testMatchRequestExtractsPathFromUri(): void
+    {
+        $route = new Route('GET', '/users/:id');
+        Router::addRoute($route);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/users/42?extra=ignored';
+
+        $match = Router::matchRequest(new Request());
+
+        $this->assertNotNull($match);
+        $this->assertSame($route, $match->route);
+        $this->assertSame('/users/42', $match->urlPath);
+    }
+
+    public function testMatchRequestDefaultsEmptyPathToSlash(): void
+    {
+        $route = new Route('GET', '/');
+        Router::addRoute($route);
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
+
+        $match = Router::matchRequest(new Request());
+
+        $this->assertNotNull($match);
+        $this->assertSame($route, $match->route);
+        $this->assertSame('/', $match->urlPath);
+    }
+
+    public function testMatchRequestNormalisesHeadToGet(): void
+    {
+        $route = new Route('GET', '/head-target');
+        Router::addRoute($route);
+
+        $_SERVER['REQUEST_METHOD'] = 'HEAD';
+        $_SERVER['REQUEST_URI'] = '/head-target';
+
+        $match = Router::matchRequest(new Request());
+
+        $this->assertNotNull($match);
+        $this->assertSame($route, $match->route, 'HEAD must resolve against the GET route.');
     }
 
     public function testLegacyShimReturnsRoute(): void

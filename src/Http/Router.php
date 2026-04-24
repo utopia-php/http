@@ -160,6 +160,26 @@ class Router
     }
 
     /**
+     * Match a {@see Request} against the router.
+     *
+     * Convenience wrapper around {@see Router::matchRoute()} that extracts
+     * the path from the request URI and normalises HEAD to GET (the
+     * HEAD method is served by the GET handler with the response payload
+     * disabled). Prefer this over hand-rolling the parse + HEAD logic at
+     * every call site.
+     */
+    public static function matchRequest(Request $request): ?RouteMatch
+    {
+        $url = \parse_url($request->getURI(), PHP_URL_PATH);
+        $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
+
+        $method = $request->getMethod();
+        $method = ($method === Http::REQUEST_METHOD_HEAD) ? Http::REQUEST_METHOD_GET : $method;
+
+        return self::matchRoute($method, $url);
+    }
+
+    /**
      * @deprecated Use {@see Router::matchRoute()} which returns a per-request
      *   {@see RouteMatch}. The old signature returned the shared Route
      *   definition; under concurrent request handling (Swoole coroutines)

@@ -531,19 +531,14 @@ class Http
     }
 
     /**
-     * @deprecated Use {@see Router::matchRoute()} which returns a per-request
-     *   {@see RouteMatch}. This shim discards the `$fresh` argument: the
-     *   previous implementation cached the match on the Http singleton,
-     *   which is not safe under concurrent request handling.
+     * @deprecated Use {@see Router::matchRequest()} which returns a
+     *   per-request {@see RouteMatch}. This shim discards the `$fresh`
+     *   argument: the previous implementation cached the match on the Http
+     *   singleton, which is not safe under concurrent request handling.
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        $url = \parse_url($request->getURI(), PHP_URL_PATH);
-        $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
-        $method = $request->getMethod();
-        $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
-
-        $match = Router::matchRoute($method, $url);
+        $match = Router::matchRequest($request);
         if ($match === null) {
             return null;
         }
