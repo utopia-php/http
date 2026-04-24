@@ -259,7 +259,7 @@ To learn more about architecture and features for this library, check out more i
 
 ## System Requirements
 
-Utopia HTTP requires PHP 8.2 or later. We recommend using the latest PHP version whenever possible.
+Utopia HTTP requires PHP 8.3 or later. We recommend using the latest PHP version whenever possible.
 
 ## More from Utopia
 
