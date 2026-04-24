@@ -8,7 +8,7 @@ export const options = {
         warmup: {
             executor: 'constant-vus',
             vus: 10,
-            duration: '5s',
+            duration: '10s',
             gracefulStop: '0s',
             tags: { phase: 'warmup' },
             exec: 'hit',
@@ -16,9 +16,9 @@ export const options = {
         load: {
             executor: 'constant-vus',
             vus: 50,
-            duration: '20s',
-            startTime: '5s',
-            gracefulStop: '2s',
+            duration: '60s',
+            startTime: '10s',
+            gracefulStop: '5s',
             tags: { phase: 'load' },
             exec: 'hit',
         },

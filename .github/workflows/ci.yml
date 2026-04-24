@@ -10,7 +10,7 @@ jobs:
     name: Checks / Format
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run Pint
         run: |
@@ -21,7 +21,7 @@ jobs:
     name: Checks / Analyze
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -36,7 +36,7 @@ jobs:
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-${{ hashFiles('composer.lock') }}
@@ -52,7 +52,7 @@ jobs:
     name: Tests / Unit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -64,7 +64,7 @@ jobs:
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-${{ hashFiles('composer.lock') }}
@@ -86,7 +86,7 @@ jobs:
           - { id: fpm, display: FPM }
           - { id: swoole, display: Swoole }
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build and wait for ${{ matrix.adapter.id }} to be healthy
         run: docker compose up -d --build --wait ${{ matrix.adapter.id }}
@@ -105,45 +105,47 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build and wait for swoole to be healthy
         run: docker compose up -d --build --wait swoole
 
-      - name: Install k6
+      - name: Setup k6
         uses: grafana/setup-k6-action@v1
 
       - name: Run k6 benchmark
-        run: |
-          set -o pipefail
-          k6 run --summary-export=summary.json tests/bench/benchmark.js 2>&1 | tee summary.txt
+        uses: grafana/run-k6-action@v1
+        with:
+          path: tests/bench/benchmark.js
+          flags: --summary-export=summary.json
         env:
           BASE_URL: http://localhost:9501
 
       - name: Render PR comment body
-        if: always()
+        if: always() && hashFiles('summary.json') != ''
         run: |
-          {
-            echo '### k6 benchmark'
-            echo
-            echo '```'
-            cat summary.txt
-            echo '```'
-          } > summary.md
+          jq -r '
+            .metrics as $m |
+            [
+              "### k6 benchmark",
+              "",
+              "| Throughput | Requests | Fail rate | p50 | p95 |",
+              "| --- | --- | --- | --- | --- |",
+              "| \(($m.http_reqs.rate // 0) | floor) req/s | \($m.http_reqs.count // 0) | \((($m.http_req_failed.value // 0) * 100) * 1000 | floor / 1000)% | \(($m.http_req_duration.med // 0) * 100 | floor / 100) ms | \(($m.http_req_duration["p(95)"] // 0) * 100 | floor / 100) ms |"
+            ] | .[]
+          ' summary.json > summary.md
 
       - name: Upload raw k6 summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: k6-summary
-          path: |
-            summary.json
-            summary.txt
+          path: summary.json
           if-no-files-found: ignore
 
       - name: Comment benchmark summary on PR
-        if: github.event_name == 'pull_request' && always()
-        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request' && always() && hashFiles('summary.md') != ''
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           header: k6-benchmark
           path: summary.md
