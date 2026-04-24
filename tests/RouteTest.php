@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Validator\Text;
 
-class RouteTest extends TestCase
+final class RouteTest extends TestCase
 {
     protected ?Route $route;
 
@@ -16,48 +18,48 @@ class RouteTest extends TestCase
 
     public function testCanGetMethod(): void
     {
-        $this->assertEquals('GET', $this->route->getMethod());
+        $this->assertSame('GET', $this->route->getMethod());
     }
 
     public function testCanGetAndSetPath(): void
     {
-        $this->assertEquals('/', $this->route->getPath());
+        $this->assertSame('/', $this->route->getPath());
 
         $this->route->path('/path');
 
-        $this->assertEquals('/path', $this->route->getPath());
+        $this->assertSame('/path', $this->route->getPath());
     }
 
     public function testCanSetAndGetDescription(): void
     {
-        $this->assertEquals('', $this->route->getDesc());
+        $this->assertSame('', $this->route->getDesc());
 
         $this->route->desc('new route');
 
-        $this->assertEquals('new route', $this->route->getDesc());
+        $this->assertSame('new route', $this->route->getDesc());
     }
 
     public function testCanSetAndGetGroups(): void
     {
-        $this->assertEquals([], $this->route->getGroups());
+        $this->assertSame([], $this->route->getGroups());
 
         $this->route->groups(['api', 'homepage']);
 
-        $this->assertEquals(['api', 'homepage'], $this->route->getGroups());
+        $this->assertSame(['api', 'homepage'], $this->route->getGroups());
     }
 
     public function testCanSetAndGetAction(): void
     {
-        $this->assertEquals(function (): void {}, $this->route->getAction());
+        $this->assertInstanceOf(\Closure::class, $this->route->getAction());
 
         $this->route->action(fn() => 'hello world');
 
-        $this->assertEquals('hello world', $this->route->getAction()());
+        $this->assertSame('hello world', $this->route->getAction()());
     }
 
     public function testCanGetAndSetParam(): void
     {
-        $this->assertEquals([], $this->route->getParams());
+        $this->assertSame([], $this->route->getParams());
 
         $this->route
             ->param('x', '', new Text(10))
@@ -68,7 +70,7 @@ class RouteTest extends TestCase
 
     public function testCanInjectResources(): void
     {
-        $this->assertEquals([], $this->route->getInjections());
+        $this->assertSame([], $this->route->getInjections());
 
         $this->route
             ->inject('user')
@@ -76,17 +78,17 @@ class RouteTest extends TestCase
             ->action(function () {});
 
         $this->assertCount(2, $this->route->getInjections());
-        $this->assertEquals('user', $this->route->getInjections()['user']['name']);
-        $this->assertEquals('time', $this->route->getInjections()['time']['name']);
+        $this->assertSame('user', $this->route->getInjections()['user']['name']);
+        $this->assertSame('time', $this->route->getInjections()['time']['name']);
     }
 
     public function testCanSetAndGetLabels(): void
     {
-        $this->assertEquals('default', $this->route->getLabel('key', 'default'));
+        $this->assertSame('default', $this->route->getLabel('key', 'default'));
 
         $this->route->label('key', 'value');
 
-        $this->assertEquals('value', $this->route->getLabel('key', 'default'));
+        $this->assertSame('value', $this->route->getLabel('key', 'default'));
     }
 
     public function testCanSetAndGetHooks(): void

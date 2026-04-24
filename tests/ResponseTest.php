@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Http;
 
 use PHPUnit\Framework\TestCase;
 use Utopia\Http\Adapter\FPM\Response;
 
-class FPMResponseTest extends TestCase
+final class FPMResponseTest extends TestCase
 {
     protected ?Response $response;
 
@@ -51,19 +53,19 @@ class FPMResponseTest extends TestCase
 
         // Assertions
         $this->assertInstanceOf('Utopia\Http\Response', $status);
-        $this->assertEquals(Response::STATUS_CODE_OK, $this->response->getStatusCode());
+        $this->assertSame(Response::STATUS_CODE_OK, $this->response->getStatusCode());
     }
 
     public function testCanAddHeader(): void
     {
         $result = $this->response->addHeader('key', 'value');
-        $this->assertEquals($this->response, $result);
+        $this->assertSame($this->response, $result);
     }
 
     public function testCanAddCookie(): void
     {
         $result = $this->response->addCookie('name', 'value');
-        $this->assertEquals($this->response, $result);
+        $this->assertSame($this->response, $result);
 
         //test cookie case insensitive
         $result = $this->response->addCookie('cookieName', 'cookieValue');
@@ -83,7 +85,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('body', $html);
+        $this->assertSame('body', $html);
     }
 
     public function testCanSendRedirect(): void
@@ -95,7 +97,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('', $html);
+        $this->assertSame('', $html);
 
         ob_start(); //Start of build
 
@@ -104,7 +106,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('', $html);
+        $this->assertSame('', $html);
     }
 
     public function testCanSendText(): void
@@ -116,8 +118,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('HELLO WORLD', $html);
-        $this->assertEquals('text/plain; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('HELLO WORLD', $html);
+        $this->assertSame('text/plain; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendHtml(): void
@@ -129,8 +131,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('<html></html>', $html);
-        $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('<html></html>', $html);
+        $this->assertSame('text/html; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendJson(): void
@@ -142,8 +144,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('{"key":"value"}', $html);
-        $this->assertEquals('application/json; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('{"key":"value"}', $html);
+        $this->assertSame('application/json; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendJsonp(): void
@@ -155,8 +157,8 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('parent.test({"key":"value"});', $html);
-        $this->assertEquals('text/javascript; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('parent.test({"key":"value"});', $html);
+        $this->assertSame('text/javascript; charset=UTF-8', $this->response->getContentType());
     }
 
     public function testCanSendIframe(): void
@@ -168,7 +170,7 @@ class FPMResponseTest extends TestCase
         $html = ob_get_contents();
         ob_end_clean(); //End of build
 
-        $this->assertEquals('<script type="text/javascript">window.parent.test({"key":"value"});</script>', $html);
-        $this->assertEquals('text/html; charset=UTF-8', $this->response->getContentType());
+        $this->assertSame('<script type="text/javascript">window.parent.test({"key":"value"});</script>', $html);
+        $this->assertSame('text/html; charset=UTF-8', $this->response->getContentType());
     }
 }
