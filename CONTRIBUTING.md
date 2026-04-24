@@ -36,13 +36,13 @@ When `TYPE` can be:
 
 For the initial start, fork the project and use git clone command to download the repository to your computer. A standard procedure for working on an issue would be to:
 
-1. `git pull`, before creating a new branch, pull the changes from upstream. Your master needs to be up to date.
+1. `git pull`, before creating a new branch, pull the changes from upstream. Your main needs to be up to date.
 
 ```
 $ git pull
 ```
 
-2. Create new branch from `master` like: `doc-548-submit-a-pull-request-section-to-contribution-guide`<br/>
+2. Create new branch from `main` like: `doc-548-submit-a-pull-request-section-to-contribution-guide`<br/>
 
 ```
 $ git checkout -b [name_of_your_new_branch]
