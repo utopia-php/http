@@ -30,8 +30,5 @@ class Server extends Adapter
         return $this->container;
     }
 
-    public function start(): void
-    {
-        return;
-    }
+    public function start(): void {}
 }

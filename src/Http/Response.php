@@ -261,25 +261,12 @@ abstract class Response
     public const COOKIE_SAMESITE_LAX = 'Lax';
 
     public const CHUNK_SIZE = 2000000; //2mb
-
-    /**
-     * @var int
-     */
     protected int $statusCode = self::STATUS_CODE_OK;
 
-    /**
-     * @var string
-     */
     protected string $contentType = '';
 
-    /**
-     * @var bool
-     */
     protected bool $disablePayload = false;
 
-    /**
-     * @var bool
-     */
     protected bool $sent = false;
 
     protected bool $headersSent = false;
@@ -294,29 +281,14 @@ abstract class Response
      */
     protected array $cookies = [];
 
-    /**
-     * @var float
-     */
     protected float $startTime = 0;
 
-    /**
-     * @var int
-     */
     protected int $size = 0;
 
-    /**
-     * @var string
-     */
     protected string $acceptEncoding = '';
 
-    /**
-     * @var int
-     */
     protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
 
-    /**
-     * @var mixed
-     */
     protected mixed $compressionSupported = [];
 
     /**
@@ -345,8 +317,6 @@ abstract class Response
      * Set accept encoding
      *
      * Set HTTP accept encoding header.
-     *
-     * @param  string  $acceptEncoding
      */
     public function setAcceptEncoding(string $acceptEncoding): static
     {
@@ -359,8 +329,6 @@ abstract class Response
      * Set min compression size
      *
      * Set minimum size for compression to be applied in bytes.
-     *
-     * @param  int  $compressionMinSize
      */
     public function setCompressionMinSize(int $compressionMinSize): static
     {
@@ -371,8 +339,6 @@ abstract class Response
 
     /**
      * Set supported compression algorithms
-     *
-     * @param mixed  $compressionSupported
      */
     public function setCompressionSupported(mixed $compressionSupported): static
     {
@@ -385,9 +351,6 @@ abstract class Response
      * Set content type
      *
      * Set HTTP content type header.
-     *
-     * @param  string  $type
-     * @param  string  $charset
      */
     public function setContentType(string $type, string $charset = ''): static
     {
@@ -400,8 +363,6 @@ abstract class Response
      * Get content type
      *
      * Get HTTP content type header.
-     *
-     * @return string
      */
     public function getContentType(): string
     {
@@ -410,8 +371,6 @@ abstract class Response
 
     /**
      * Get if response was already sent
-     *
-     * @return bool
      */
     public function isSent(): bool
     {
@@ -423,7 +382,6 @@ abstract class Response
      *
      * Set HTTP response status code between available options. if status code is unknown an exception will be thrown
      *
-     * @param  int  $code
      *
      * @throws Exception
      */
@@ -442,8 +400,6 @@ abstract class Response
      * Get status code
      *
      * Get HTTP response status code
-     *
-     * @return int
      **/
     public function getStatusCode(): int
     {
@@ -454,8 +410,6 @@ abstract class Response
      * Get Response Size
      *
      * Return output response size in bytes
-     *
-     * @return int
      */
     public function getSize(): int
     {
@@ -486,9 +440,6 @@ abstract class Response
      * Add header
      *
      * Add an HTTP response header
-     *
-     * @param  string  $key
-     * @param  string  $value
      */
     public function addHeader(string $key, string $value): static
     {
@@ -509,8 +460,6 @@ abstract class Response
      * Remove header
      *
      * Remove HTTP response header
-     *
-     * @param  string  $key
      */
     public function removeHeader(string $key): static
     {
@@ -537,15 +486,6 @@ abstract class Response
      * Add cookie
      *
      * Add an HTTP cookie to response header
-     *
-     * @param  string  $name
-     * @param  string|null  $value
-     * @param  int|null  $expire
-     * @param  string|null  $path
-     * @param  string|null  $domain
-     * @param  bool|null  $secure
-     * @param  bool|null  $httponly
-     * @param  string|null  $sameSite
      */
     public function addCookie(string $name, ?string $value = null, ?int $expire = null, ?string $path = null, ?string $domain = null, ?bool $secure = null, ?bool $httponly = null, ?string $sameSite = null): static
     {
@@ -569,14 +509,10 @@ abstract class Response
      * Remove cookie
      *
      * Remove HTTP response cookie
-     *
-     * @param  string  $name
      */
     public function removeCookie(string $name): static
     {
-        $this->cookies = array_filter($this->cookies, function ($cookie) use ($name) {
-            return $cookie['name'] !== $name;
-        });
+        $this->cookies = array_filter($this->cookies, fn($cookie) => $cookie['name'] !== $name);
 
         return $this;
     }
@@ -597,9 +533,6 @@ abstract class Response
      * Output response
      *
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
-     *
-     * @param  string  $body
-     * @return void
      */
     public function send(string $body = ''): void
     {
@@ -689,7 +622,6 @@ abstract class Response
      *
      * Send output
      *
-     * @param  string  $content
      * @return bool False if write cannot complete, such as request ended by client
      */
     abstract public function write(string $content): bool;
@@ -698,9 +630,6 @@ abstract class Response
      * End
      *
      * Send optional content and end
-     *
-     * @param  string|null  $content
-     * @return void
      */
     abstract public function end(?string $content = null): void;
 
@@ -709,10 +638,7 @@ abstract class Response
      *
      * Generate HTTP response output including the response header (+cookies) and body and prints them.
      *
-     * @param  string  $body
-     * @param bool $end
      *
-     * @return void
      */
     public function chunk(string $body = '', bool $end = false): void
     {
@@ -771,9 +697,6 @@ abstract class Response
 
     /**
      * Send Status Code
-     *
-     * @param  int  $statusCode
-     * @return void
      */
     abstract protected function sendStatus(int $statusCode): void;
 
@@ -782,9 +705,7 @@ abstract class Response
      *
      * Output Header
      *
-     * @param  string  $key
      * @param  string|array<string>  $value
-     * @return void
      */
     abstract public function sendHeader(string $key, mixed $value): void;
 
@@ -793,10 +714,7 @@ abstract class Response
      *
      * Output Cookie
      *
-     * @param  string  $name
-     * @param  string  $value
      * @param  array<string, mixed>  $options
-     * @return void
      */
     abstract protected function sendCookie(string $name, string $value, array $options): void;
 
@@ -834,15 +752,13 @@ abstract class Response
      *
      * @param  string  $url complete absolute URI for redirection as required by the internet standard RFC 2616 (HTTP 1.1)
      * @param  int  $statusCode valid HTTP status code
-     * @return void
      *
      * @throws Exception
-     *
      * @see http://tools.ietf.org/html/rfc2616
      */
     public function redirect(string $url, int $statusCode = 301): void
     {
-        if (300 == $statusCode) {
+        if (300 === $statusCode) {
             \trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
         }
 
@@ -858,9 +774,6 @@ abstract class Response
      * This helper is for sending an HTML HTTP response and sets relevant content type header ('text/html').
      *
      * @see http://en.wikipedia.org/wiki/JSON
-     *
-     * @param  string  $data
-     * @return void
      */
     public function html(string $data): void
     {
@@ -875,9 +788,6 @@ abstract class Response
      * This helper is for sending plain text HTTP response and sets relevant content type header ('text/plain').
      *
      * @see http://en.wikipedia.org/wiki/JSON
-     *
-     * @param  string  $data
-     * @return void
      */
     public function text(string $data): void
     {
@@ -895,7 +805,6 @@ abstract class Response
      * @see http://en.wikipedia.org/wiki/JSON
      *
      * @param  mixed  $data
-     * @return void
      */
     public function json($data): void
     {
@@ -916,9 +825,7 @@ abstract class Response
      *
      * @see http://en.wikipedia.org/wiki/JSONP
      *
-     * @param  string  $callback
      * @param  array<string, mixed>  $data
-     * @return void
      */
     public function jsonp(string $callback, array $data): void
     {
@@ -933,9 +840,7 @@ abstract class Response
      * This helper is for sending iframe HTTP response.
      * It sets relevant content type header ('text/html') and convert a PHP array ($data) to valid JSON using native json_encode
      *
-     * @param  string  $callback
      * @param  array<string, mixed>  $data
-     * @return void
      */
     public function iframe(string $callback, array $data): void
     {
@@ -951,8 +856,6 @@ abstract class Response
      *
      * The server has successfully fulfilled the request
      *  and that there is no additional content to send in the response payload body.
-     *
-     * @return void
      */
     public function noContent(): void
     {

@@ -11,9 +11,6 @@ class Files
      */
     protected array $loaded = [];
 
-    /**
-     * @var int
-     */
     protected int $count = 0;
 
     /**
@@ -32,9 +29,6 @@ class Files
 
     /**
      * Add MIME type.
-     *
-     * @param  string  $mimeType
-     * @return void
      */
     public function addMimeType(string $mimeType): void
     {
@@ -43,9 +37,6 @@ class Files
 
     /**
      * Remove MIME type.
-     *
-     * @param  string  $mimeType
-     * @return void
      */
     public function removeMimeType(string $mimeType): void
     {
@@ -66,8 +57,6 @@ class Files
 
     /**
      * Get Files Loaded Count
-     *
-     * @return int
      */
     public function getCount(): int
     {
@@ -77,9 +66,6 @@ class Files
     /**
      * Load directory.
      *
-     * @param  string  $directory
-     * @param  string|null  $root
-     * @return void
      *
      * @throws \Exception
      */
@@ -110,7 +96,7 @@ class Files
                 continue;
             }
 
-            if (substr($path, 0, 1) === '.') {
+            if (str_starts_with($path, '.')) {
                 continue;
             }
 
@@ -143,25 +129,16 @@ class Files
 
     /**
      * Is file loaded.
-     *
-     * @param  string  $uri
-     * @return bool
      */
     public function isFileLoaded(string $uri): bool
     {
-        if (!array_key_exists($uri, $this->loaded)) {
-            return false;
-        }
-
-        return true;
+        return array_key_exists($uri, $this->loaded);
     }
 
     /**
      * Get file contents.
      *
-     * @param  string  $uri
      * @return string
-     *
      * @throws \Exception
      */
     public function getFileContents(string $uri): mixed
@@ -176,9 +153,7 @@ class Files
     /**
      * Get file MIME type.
      *
-     * @param  string  $uri
      * @return string
-     *
      * @throws \Exception
      */
     public function getFileMimeType(string $uri): mixed
@@ -192,8 +167,6 @@ class Files
 
     /**
      * Reset.
-     *
-     * @return void
      */
     public function reset(): void
     {

@@ -319,7 +319,6 @@ class RequestTest extends TestCase
 
         $reflection = new \ReflectionClass($this->request);
         $headersProperty = $reflection->getProperty('headers');
-        $headersProperty->setAccessible(true);
 
         $headers = $headersProperty->getValue($this->request) ?? [];
         $headers['accept'] = ['application/json', 'text/html'];

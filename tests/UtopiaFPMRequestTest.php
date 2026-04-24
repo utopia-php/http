@@ -16,10 +16,9 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
      *
      * Get param by current method name
      *
-     * @param  string  $key
      * @param  mixed  $default
-     * @return mixed
      */
+    #[\Override]
     public function getParam(string $key, $default = null): mixed
     {
         if ($this::_hasParams() && \in_array($key, $this::_getParams())) {
@@ -36,6 +35,7 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
      *
      * @return array<string, mixed>
      */
+    #[\Override]
     public function getParams(): array
     {
         $paramsArray = [];
@@ -51,7 +51,6 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
      * Function to set a response filter
      *
      * @param  array<string, mixed>|null  $params
-     * @return void
      */
     public static function _setParams(?array $params): void
     {
@@ -70,8 +69,6 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
 
     /**
      * Check if a filter has been set
-     *
-     * @return bool
      */
     public static function _hasParams(): bool
     {

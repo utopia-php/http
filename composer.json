@@ -25,6 +25,8 @@
         "format": "vendor/bin/pint",
         "format:check": "vendor/bin/pint --test",
         "analyze": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
+        "refactor": "vendor/bin/rector process",
+        "refactor:check": "vendor/bin/rector process --dry-run",
         "test": "vendor/bin/phpunit --configuration phpunit.xml"
     },
     "require": {
@@ -54,6 +56,7 @@
         "laravel/pint": "1.*",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^9.5.25",
+        "rector/rector": "^2.0",
         "swoole/ide-helper": "4.8.3"
     }
 }

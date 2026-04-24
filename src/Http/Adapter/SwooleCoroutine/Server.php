@@ -17,7 +17,7 @@ class Server extends Adapter
     protected Container $container;
 
     /** @var callable|null */
-    protected $onStartCallback = null;
+    protected $onStartCallback;
 
     /**
      * @param  array<string, mixed>  $settings

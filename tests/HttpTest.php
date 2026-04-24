@@ -501,8 +501,8 @@ class HttpTest extends TestCase
     {
         // Test head requests
 
-        $method = (isset($_SERVER['REQUEST_METHOD'])) ? $_SERVER['REQUEST_METHOD'] : null;
-        $uri = (isset($_SERVER['REQUEST_URI'])) ? $_SERVER['REQUEST_URI'] : null;
+        $method = $_SERVER['REQUEST_METHOD'] ?? null;
+        $uri = $_SERVER['REQUEST_URI'] ?? null;
 
         $_SERVER['REQUEST_METHOD'] = 'HEAD';
         $_SERVER['REQUEST_URI'] = '/path';
@@ -637,9 +637,7 @@ class HttpTest extends TestCase
         $route3 = new Route('GET', '/test-callable-closure');
 
         $route3
-            ->param('generated', function () {
-                return 'generated-value';
-            }, new Text(200), 'generated param', true)
+            ->param('generated', fn() => 'generated-value', new Text(200), 'generated param', true)
             ->action(function ($generated) {
                 echo 'generated: ' . $generated;
             });

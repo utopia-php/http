@@ -44,8 +44,6 @@ class Client
      *
      * Make an API call
      *
-     * @param  string  $method
-     * @param  string  $path
      * @param  array<int, string>  $headers
      * @param  array<string, mixed>  $params
      * @return array<string, mixed>
@@ -59,10 +57,9 @@ class Client
         }
 
         usleep(50000);
-        $ch = curl_init($this->baseUrl . $path . (($method == self::METHOD_GET && !empty($params)) ? '?' . http_build_query($params) : ''));
+        $ch = curl_init($this->baseUrl . $path . (($method === self::METHOD_GET && !empty($params)) ? '?' . http_build_query($params) : ''));
         $responseHeaders = [];
         $responseStatus = -1;
-        $responseType = '';
         $responseBody = '';
 
         $cookies = [];
@@ -82,7 +79,7 @@ class Client
                 return $len;
             }
 
-            if (strtolower(trim($header[0])) == 'set-cookie') {
+            if (strtolower(trim($header[0])) === 'set-cookie') {
                 $parsed = $this->parseCookie((string) trim($header[1]));
                 $name = array_key_first($parsed);
                 $cookies[$name] = $parsed[$name];
@@ -118,7 +115,6 @@ class Client
     /**
      * Parse Cookie String
      *
-     * @param string $cookie
      * @return array<int|string, mixed>
      */
     public function parseCookie(string $cookie): array

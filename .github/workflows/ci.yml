@@ -48,6 +48,34 @@ jobs:
       - name: PHPStan
         run: composer analyze
 
+  refactor:
+    name: Checks / Refactor
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: swoole
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --ignore-platform-req=ext-opentelemetry
+
+      - name: Rector (dry run)
+        run: composer refactor:check
+
   unit:
     name: Tests / Unit / PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
