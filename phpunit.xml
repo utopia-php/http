@@ -14,4 +14,9 @@
       <file>./tests/e2e/ResponseSwooleTest.php</file>
     </testsuite>
   </testsuites>
+  <source>
+    <include>
+      <directory>./src</directory>
+    </include>
+  </source>
 </phpunit>
