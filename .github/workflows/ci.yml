@@ -7,7 +7,7 @@ on:
 
 jobs:
   format:
-    name: Format
+    name: Checks / Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
             "composer install --profile --ignore-platform-reqs --no-interaction && composer lint"
 
   analyze:
-    name: Analyze
+    name: Checks / Analyze
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,37 +76,27 @@ jobs:
       - name: Run unit tests
         run: vendor/bin/phpunit --configuration phpunit.xml --testsuite unit
 
-  e2e-fpm:
-    name: Tests / E2E / FPM
+  e2e:
+    name: Tests / E2E / ${{ matrix.adapter.display }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        adapter:
+          - { id: fpm, display: FPM }
+          - { id: swoole, display: Swoole }
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build and wait for fpm to be healthy
-        run: docker compose up -d --build --wait fpm
+      - name: Build and wait for ${{ matrix.adapter.id }} to be healthy
+        run: docker compose up -d --build --wait ${{ matrix.adapter.id }}
 
       - name: Run E2E tests
-        run: docker compose exec -T fpm vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-fpm
+        run: docker compose exec -T ${{ matrix.adapter.id }} vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-${{ matrix.adapter.id }}
 
       - name: Dump container logs on failure
         if: failure()
-        run: docker compose logs fpm
-
-  e2e-swoole:
-    name: Tests / E2E / Swoole
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build and wait for swoole to be healthy
-        run: docker compose up -d --build --wait swoole
-
-      - name: Run E2E tests
-        run: docker compose exec -T swoole vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-swoole
-
-      - name: Dump container logs on failure
-        if: failure()
-        run: docker compose logs swoole
+        run: docker compose logs ${{ matrix.adapter.id }}
 
   benchmark:
     name: Benchmark
