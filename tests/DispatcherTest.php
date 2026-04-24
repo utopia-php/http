@@ -9,6 +9,7 @@ use Utopia\DI\Container;
 use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
+use Utopia\Validator\Text;
 
 /**
  * End-to-end coverage for {@see Dispatcher} via Http::run().
@@ -218,6 +219,60 @@ final class DispatcherTest extends TestCase
 
         $this->assertSame('OPTIONS-HANDLER', $output);
         $this->assertStringNotContainsString('GET-HANDLER', $output);
+    }
+
+    public function testInitHookMutationsToRequestParamsAreVisibleToRouteAction(): void
+    {
+        // Regression: Dispatcher::execute must re-read $request->getParams()
+        // at each hook/action call site. Hoisting the array into a local
+        // before init hooks fire would cache a pre-hook snapshot, so the
+        // route action would see stale params despite an init hook having
+        // mutated them (e.g. to apply auth/filter rewrites).
+        Http::init()
+            ->inject('request')
+            ->action(function (Request $request) {
+                $request->setQueryString(['x' => 'from-init-hook']);
+            });
+
+        Http::get('/filter-me')
+            ->param('x', 'original', new Text(64), 'x param', true)
+            ->inject('response')
+            ->action(function (string $x, Response $response) {
+                $response->send($x);
+            });
+
+        $output = $this->runRequest('GET', '/filter-me');
+
+        $this->assertSame('from-init-hook', $output);
+    }
+
+    public function testShutdownHookSeesMutationsFromInitHook(): void
+    {
+        // The same guarantee for the init → shutdown path: shutdown hooks
+        // read getArguments() fresh, so an init-time mutation is visible.
+        Http::init()
+            ->inject('request')
+            ->action(function (Request $request) {
+                $request->setQueryString(['token' => 'init-token']);
+            });
+
+        Http::shutdown()
+            ->param('token', '', new Text(64), 'token param', true)
+            ->inject('response')
+            ->action(function (string $token, Response $response) {
+                echo '|shutdown:' . $token;
+            });
+
+        Http::get('/lifecycle-params')
+            ->inject('response')
+            ->action(function (Response $response) {
+                $response->send('ok');
+            });
+
+        $output = $this->runRequest('GET', '/lifecycle-params');
+
+        $this->assertStringContainsString('ok', $output);
+        $this->assertStringContainsString('|shutdown:init-token', $output);
     }
 
     public function testWildcardRouteMatchCarriesWildcardToken(): void

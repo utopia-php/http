@@ -143,13 +143,17 @@ final class Dispatcher
         $route = $match->route;
         $groups = $route->getGroups();
         $pathValues = $route->getPathValues($this->request, $match->preparedPath);
-        $requestParams = $this->request->getParams();
+
+        // Request params are re-read at each call site: init/request hooks
+        // may mutate the request (e.g. applying filters), and later hooks +
+        // the route action must see the updated view. Hoisting this into a
+        // local would cache stale params across the lifecycle.
 
         try {
             if ($route->getHook()) {
                 foreach (Hooks::$init as $hook) {
                     if (\in_array('*', $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
+                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $this->request->getParams()));
                     }
                 }
             }
@@ -157,19 +161,19 @@ final class Dispatcher
             foreach ($groups as $group) {
                 foreach (Hooks::$init as $hook) {
                     if (\in_array($group, $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
+                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $this->request->getParams()));
                     }
                 }
             }
 
             if (!$this->response->isSent()) {
-                \call_user_func_array($route->getAction(), $this->http->getArguments($route, $pathValues, $requestParams));
+                \call_user_func_array($route->getAction(), $this->http->getArguments($route, $pathValues, $this->request->getParams()));
             }
 
             foreach ($groups as $group) {
                 foreach (Hooks::$shutdown as $hook) {
                     if (\in_array($group, $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
+                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $this->request->getParams()));
                     }
                 }
             }
@@ -177,7 +181,7 @@ final class Dispatcher
             if ($route->getHook()) {
                 foreach (Hooks::$shutdown as $hook) {
                     if (\in_array('*', $hook->getGroups())) {
-                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $requestParams));
+                        \call_user_func_array($hook->getAction(), $this->http->getArguments($hook, $pathValues, $this->request->getParams()));
                     }
                 }
             }
@@ -188,7 +192,7 @@ final class Dispatcher
                 foreach (Hooks::$errors as $error) {
                     if (\in_array($group, $error->getGroups())) {
                         try {
-                            \call_user_func_array($error->getAction(), $this->http->getArguments($error, $pathValues, $requestParams));
+                            \call_user_func_array($error->getAction(), $this->http->getArguments($error, $pathValues, $this->request->getParams()));
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                         }
@@ -199,7 +203,7 @@ final class Dispatcher
             foreach (Hooks::$errors as $error) {
                 if (\in_array('*', $error->getGroups())) {
                     try {
-                        \call_user_func_array($error->getAction(), $this->http->getArguments($error, $pathValues, $requestParams));
+                        \call_user_func_array($error->getAction(), $this->http->getArguments($error, $pathValues, $this->request->getParams()));
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                     }
