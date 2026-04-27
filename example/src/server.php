@@ -2,9 +2,9 @@
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use Utopia\Http\Adapter\Swoole\Server;
 use Utopia\Http\Http;
 use Utopia\Http\Response;
-use Utopia\Http\Adapter\Swoole\Server;
 use Utopia\Validator\Text;
 
 Http::get('/')

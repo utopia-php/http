@@ -140,13 +140,13 @@ class Route extends Hook
         $parts = explode('/', ltrim($request->getURI(), '/'));
 
         if (empty($path)) {
-            $pathParams = $this->pathParams[$path] ?? \array_values($this->pathParams)[0] ?? [];
+            $pathParams = $this->pathParams[$path] ?? array_values($this->pathParams)[0] ?? [];
         } else {
             $pathParams = $this->pathParams[$path] ?? [];
         }
 
         foreach ($pathParams as $key => $index) {
-            if (array_key_exists($index, $parts)) {
+            if (\array_key_exists($index, $parts)) {
                 $pathValues[$key] = $parts[$index];
             }
         }

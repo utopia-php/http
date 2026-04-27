@@ -72,10 +72,10 @@ class Client
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0);
         curl_setopt($ch, CURLOPT_TIMEOUT, 15);
         curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($curl, $header) use (&$responseHeaders, &$cookies) {
-            $len = strlen($header);
+            $len = \strlen($header);
             $header = explode(':', $header, 2);
 
-            if (count($header) < 2) { // ignore invalid headers
+            if (\count($header) < 2) { // ignore invalid headers
                 return $len;
             }
 

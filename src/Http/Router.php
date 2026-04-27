@@ -9,8 +9,8 @@ class Router
     /**
      * Placeholder token for params in paths.
      */
-    public const PLACEHOLDER_TOKEN = ':::';
-    public const WILDCARD_TOKEN = '*';
+    public const string PLACEHOLDER_TOKEN = ':::';
+    public const string WILDCARD_TOKEN = '*';
 
     protected static bool $allowOverride = false;
 
@@ -70,11 +70,11 @@ class Router
     {
         [$path, $params] = self::preparePath($route->getPath());
 
-        if (!array_key_exists($route->getMethod(), self::$routes)) {
+        if (!\array_key_exists($route->getMethod(), self::$routes)) {
             throw new Exception("Method ({$route->getMethod()}) not supported.");
         }
 
-        if (array_key_exists($path, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
+        if (\array_key_exists($path, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$path}) already registered.");
         }
 
@@ -94,7 +94,7 @@ class Router
     {
         [$alias, $params] = self::preparePath($path);
 
-        if (array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
+        if (\array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
             throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
         }
 
@@ -110,12 +110,12 @@ class Router
      */
     public static function match(string $method, string $path): ?Route
     {
-        if (!array_key_exists($method, self::$routes)) {
+        if (!\array_key_exists($method, self::$routes)) {
             return null;
         }
 
         $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
-        $length = count($parts) - 1;
+        $length = \count($parts) - 1;
         $filteredParams = array_filter(self::$params, fn($i) => $i <= $length);
 
         foreach (self::combinations($filteredParams) as $sample) {
@@ -128,7 +128,7 @@ class Router
                 ),
             );
 
-            if (array_key_exists($match, self::$routes[$method])) {
+            if (\array_key_exists($match, self::$routes[$method])) {
                 $route = self::$routes[$method][$match];
                 $route->setMatchedPath($match);
                 return $route;
@@ -139,7 +139,7 @@ class Router
          * Match root wildcard.
          */
         $match = self::WILDCARD_TOKEN;
-        if (array_key_exists($match, self::$routes[$method])) {
+        if (\array_key_exists($match, self::$routes[$method])) {
             $route = self::$routes[$method][$match];
             $route->setMatchedPath($match);
             return $route;
@@ -151,7 +151,7 @@ class Router
         foreach ($parts as $part) {
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
-            if (array_key_exists($match, self::$routes[$method])) {
+            if (\array_key_exists($match, self::$routes[$method])) {
                 $route = self::$routes[$method][$match];
                 $route->setMatchedPath($match);
                 return $route;
@@ -202,7 +202,7 @@ class Router
             if (str_starts_with($part, ':')) {
                 $prepare .= self::PLACEHOLDER_TOKEN;
                 $params[ltrim($part, ':')] = $key;
-                if (!in_array($key, self::$params)) {
+                if (!\in_array($key, self::$params)) {
                     self::$params[] = $key;
                 }
             } else {

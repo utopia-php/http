@@ -111,7 +111,7 @@ class Request extends UtopiaRequest
      */
     public function getPort(): string
     {
-        return $this->getHeader('x-forwarded-port', (string) \parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_PORT));
+        return $this->getHeader('x-forwarded-port', (string) parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_PORT));
     }
 
     /**
@@ -121,8 +121,8 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        $hostname = \parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
-        return strtolower(strval($hostname));
+        $hostname = parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
+        return strtolower(\strval($hostname));
     }
 
     /**
@@ -291,11 +291,11 @@ class Request extends UtopiaRequest
 
             // Get content-type without the charset
             $length = strpos($contentType, ';');
-            $length = (empty($length)) ? strlen($contentType) : $length;
+            $length = (empty($length)) ? \strlen($contentType) : $length;
             $contentType = substr($contentType, 0, $length);
 
             $this->payload = match ($contentType) {
-                'application/json' => json_decode(strval($this->swoole->rawContent()), true),
+                'application/json' => json_decode(\strval($this->swoole->rawContent()), true),
                 default => $this->swoole->post,
             };
 

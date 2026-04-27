@@ -1,3 +1,26 @@
 {
-    "preset": "per"
+    "preset": "per",
+    "rules": {
+        "native_function_invocation": {
+            "include": ["@compiler_optimized"],
+            "scope": "namespaced",
+            "strict": true
+        },
+        "no_unused_imports": true,
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "no_useless_else": true,
+        "no_useless_return": true,
+        "no_empty_statement": true,
+        "no_empty_phpdoc": true,
+        "no_empty_comment": true,
+        "array_syntax": {
+            "syntax": "short"
+        },
+        "single_quote": true,
+        "trailing_comma_in_multiline": {
+            "elements": ["arrays", "arguments", "parameters"]
+        }
+    }
 }

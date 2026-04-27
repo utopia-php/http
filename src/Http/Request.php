@@ -7,23 +7,23 @@ abstract class Request
     /**
      * HTTP methods
      */
-    public const METHOD_OPTIONS = 'OPTIONS';
+    public const string METHOD_OPTIONS = 'OPTIONS';
 
-    public const METHOD_GET = 'GET';
+    public const string METHOD_GET = 'GET';
 
-    public const METHOD_HEAD = 'HEAD';
+    public const string METHOD_HEAD = 'HEAD';
 
-    public const METHOD_POST = 'POST';
+    public const string METHOD_POST = 'POST';
 
-    public const METHOD_PATCH = 'PATCH';
+    public const string METHOD_PATCH = 'PATCH';
 
-    public const METHOD_PUT = 'PUT';
+    public const string METHOD_PUT = 'PUT';
 
-    public const METHOD_DELETE = 'DELETE';
+    public const string METHOD_DELETE = 'DELETE';
 
-    public const METHOD_TRACE = 'TRACE';
+    public const string METHOD_TRACE = 'TRACE';
 
-    public const METHOD_CONNECT = 'CONNECT';
+    public const string METHOD_CONNECT = 'CONNECT';
 
     /**
      * Container for php://input parsed stream as an associative array
@@ -130,9 +130,9 @@ abstract class Request
      */
     public function setTrustedIpHeaders(array $headers): static
     {
-        $normalized = \array_map(strtolower(...), $headers);
-        $trimmed = \array_map(trim(...), $normalized);
-        $this->trustedIpHeaders = \array_filter($trimmed);
+        $normalized = array_map(strtolower(...), $headers);
+        $trimmed = array_map(trim(...), $normalized);
+        $this->trustedIpHeaders = array_filter($trimmed);
 
         return $this;
     }
@@ -287,9 +287,9 @@ abstract class Request
         $headers = $this->generateHeaders();
         $headerStrings = [];
         foreach ($headers as $key => $value) {
-            $headerStrings[] = \is_array($value) ? $key . ': ' . \implode(', ', $value) : $key . ': ' . $value;
+            $headerStrings[] = \is_array($value) ? $key . ': ' . implode(', ', $value) : $key . ': ' . $value;
         }
-        return \mb_strlen(\implode("\n", $headerStrings), '8bit') + \mb_strlen(\file_get_contents('php://input') ?: '', '8bit');
+        return mb_strlen(implode("\n", $headerStrings), '8bit') + mb_strlen(file_get_contents('php://input') ?: '', '8bit');
     }
 
     /**
@@ -436,7 +436,7 @@ abstract class Request
 
                 foreach ($_SERVER as $name => $value) {
                     if (str_starts_with($name, 'HTTP_')) {
-                        $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
+                        $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
                     }
                 }
 
@@ -473,7 +473,7 @@ abstract class Request
         $data = [];
         if (!empty($contentRange)) {
             $contentRange = explode(' ', $contentRange);
-            if (count($contentRange) !== 2) {
+            if (\count($contentRange) !== 2) {
                 return null;
             }
 
@@ -484,7 +484,7 @@ abstract class Request
             }
 
             $rangeData = explode('/', $contentRange[1]);
-            if (count($rangeData) !== 2) {
+            if (\count($rangeData) !== 2) {
                 return null;
             }
 
@@ -494,7 +494,7 @@ abstract class Request
 
             $data['size'] = (int) $rangeData[1];
             $parts = explode('-', $rangeData[0]);
-            if (count($parts) !== 2) {
+            if (\count($parts) !== 2) {
                 return null;
             }
 
@@ -530,13 +530,13 @@ abstract class Request
 
         $data = [];
         $ranges = explode('=', $rangeHeader);
-        if (count($ranges) !== 2 || empty($ranges[0]) || empty($ranges[1])) {
+        if (\count($ranges) !== 2 || empty($ranges[0]) || empty($ranges[1])) {
             return null;
         }
         $data['unit'] = $ranges[0];
 
         $ranges = explode('-', $ranges[1]);
-        if (count($ranges) !== 2 || $ranges[0] === '') {
+        if (\count($ranges) !== 2 || $ranges[0] === '') {
             return null;
         }
 

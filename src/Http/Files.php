@@ -21,7 +21,7 @@ class Files
     /**
      * @var array<string, mixed>
      */
-    public const EXTENSIONS = [
+    public const array EXTENSIONS = [
         'css' => 'text/css',
         'js' => 'text/javascript',
         'svg' => 'image/svg+xml',
@@ -79,7 +79,7 @@ class Files
 
         $root ??= $directory;
 
-        $handle = opendir(strval($directory));
+        $handle = opendir(\strval($directory));
 
         if ($handle === false) {
             throw new Exception("Failed to open directory: {$directory}");
@@ -88,11 +88,11 @@ class Files
         while ($path = readdir($handle)) {
             $extension = pathinfo($path, PATHINFO_EXTENSION);
 
-            if (in_array($path, ['.', '..'])) {
+            if (\in_array($path, ['.', '..'])) {
                 continue;
             }
 
-            if (in_array($extension, ['php', 'phtml'])) {
+            if (\in_array($extension, ['php', 'phtml'])) {
                 continue;
             }
 
@@ -103,20 +103,20 @@ class Files
             $dirPath = $directory . '/' . $path;
 
             if (is_dir($dirPath)) {
-                $this->load($dirPath, strval($root));
+                $this->load($dirPath, \strval($root));
 
                 continue;
             }
 
-            $key = substr($dirPath, strlen(strval($root)));
+            $key = substr($dirPath, \strlen(\strval($root)));
 
-            if (array_key_exists($key, $this->loaded)) {
+            if (\array_key_exists($key, $this->loaded)) {
                 continue;
             }
 
             $this->loaded[$key] = [
                 'contents' => file_get_contents($dirPath),
-                'mimeType' => (array_key_exists($extension, self::EXTENSIONS))
+                'mimeType' => (\array_key_exists($extension, self::EXTENSIONS))
                     ? self::EXTENSIONS[$extension]
                     : mime_content_type($dirPath),
             ];
@@ -132,7 +132,7 @@ class Files
      */
     public function isFileLoaded(string $uri): bool
     {
-        return array_key_exists($uri, $this->loaded);
+        return \array_key_exists($uri, $this->loaded);
     }
 
     /**
@@ -143,7 +143,7 @@ class Files
      */
     public function getFileContents(string $uri): mixed
     {
-        if (!array_key_exists($uri, $this->loaded)) {
+        if (!\array_key_exists($uri, $this->loaded)) {
             throw new Exception('File not found or not loaded: ' . $uri);
         }
 
@@ -158,7 +158,7 @@ class Files
      */
     public function getFileMimeType(string $uri): mixed
     {
-        if (!array_key_exists($uri, $this->loaded)) {
+        if (!\array_key_exists($uri, $this->loaded)) {
             throw new Exception('File not found or not loaded: ' . $uri);
         }
 

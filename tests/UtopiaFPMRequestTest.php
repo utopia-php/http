@@ -44,7 +44,7 @@ class UtopiaFPMRequestTest extends UtopiaFPMRequest
             $paramsArray = $this::_getParams();
         }
 
-        return \array_merge($paramsArray, parent::getParams());
+        return array_merge($paramsArray, parent::getParams());
     }
 
     /**
