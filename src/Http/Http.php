@@ -48,6 +48,11 @@ class Http
 
     protected Container $container;
 
+    /**
+     * @deprecated Never assigned by the framework. Per-request state lives
+     * on the adapter's container (coroutine-local under Swoole). Will be
+     * removed in a future major release.
+     */
     protected ?Container $requestContainer = null;
 
     /**
