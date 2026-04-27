@@ -106,11 +106,14 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
-     *
-     * Memory cached result for chosen route
+     * Per-request container keys for the currently matched route and
+     * the prepared-path string it was matched under. Storing these on
+     * the per-request container (which is coroutine-local in the Swoole
+     * adapters) keeps concurrent requests from clobbering each other's
+     * routing state on the shared Http singleton.
      */
-    protected ?Route $route = null;
+    private const string ROUTE_CONTEXT_KEY = '__utopia_http_route';
+    private const string MATCHED_PATH_CONTEXT_KEY = '__utopia_http_matched_path';
 
     /**
      * Wildcard route
@@ -465,17 +468,36 @@ class Http
      */
     public function getRoute(): ?Route
     {
-        return $this->route ?? null;
+        $container = $this->server->getContainer();
+
+        return $container->has(self::ROUTE_CONTEXT_KEY) ? $container->get(self::ROUTE_CONTEXT_KEY) : null;
     }
 
     /**
      * Set the current route
      */
-    public function setRoute(Route $route): self
+    public function setRoute(?Route $route): self
     {
-        $this->route = $route;
+        $this->server->getContainer()->set(self::ROUTE_CONTEXT_KEY, fn() => $route);
 
         return $this;
+    }
+
+    /**
+     * Read the prepared-path string the current request matched under.
+     * Falls back to '' so callers (e.g. tests invoking execute() directly)
+     * keep getting the legacy "first registered path-params" behavior.
+     */
+    private function getMatchedPath(): string
+    {
+        $container = $this->server->getContainer();
+
+        return $container->has(self::MATCHED_PATH_CONTEXT_KEY) ? $container->get(self::MATCHED_PATH_CONTEXT_KEY) : '';
+    }
+
+    private function setMatchedPath(string $path): void
+    {
+        $this->server->getContainer()->set(self::MATCHED_PATH_CONTEXT_KEY, fn() => $path);
     }
 
     /**
@@ -590,8 +612,11 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
+        if (!$fresh) {
+            $cached = $this->getRoute();
+            if (null !== $cached) {
+                return $cached;
+            }
         }
 
         $url = parse_url($request->getURI(), PHP_URL_PATH);
@@ -599,9 +624,18 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $matched = Router::match($method, $url);
+        if (null === $matched) {
+            $this->setRoute(null);
+            $this->setMatchedPath('');
+            return null;
+        }
 
-        return $this->route;
+        [$route, $matchedPath] = $matched;
+        $this->setRoute($route);
+        $this->setMatchedPath($matchedPath);
+
+        return $route;
     }
 
     /**
@@ -612,7 +646,7 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $preparedPath = Router::preparePath($route->getMatchedPath());
+        $preparedPath = Router::preparePath($this->getMatchedPath());
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
@@ -719,7 +753,6 @@ class Http
                 }
             }
 
-            $hook->setParamValue($key, $value);
             $arguments[$param['order']] = $value;
         }
 
@@ -747,7 +780,7 @@ class Http
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $this->getRoute()?->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -854,12 +887,14 @@ class Http
         }
 
         if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
+            // Clone so we can stamp the request URI onto $path without
+            // mutating the singleton shared across concurrent coroutines.
+            $route = clone self::$wildcardRoute;
             $path = parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
+            $this->setRoute($route);
             $this->setRequestResource('route', fn() => $route, []);
         }
         if (null !== $route) {
