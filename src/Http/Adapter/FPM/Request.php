@@ -66,11 +66,11 @@ class Request extends UtopiaRequest
             }
 
             // Leftmost IP address is the address of the originating client
-            $ips = \explode(',', $headerValue);
-            $ip = \trim($ips[0]);
+            $ips = explode(',', $headerValue);
+            $ip = trim($ips[0]);
 
             // Validate IP format (supports both IPv4 and IPv6)
-            if (\filter_var($ip, FILTER_VALIDATE_IP)) {
+            if (filter_var($ip, FILTER_VALIDATE_IP)) {
                 return $ip;
             }
         }
@@ -97,7 +97,7 @@ class Request extends UtopiaRequest
      */
     public function getPort(): string
     {
-        return (string) \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
+        return (string) parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_PORT);
     }
 
     /**
@@ -107,7 +107,7 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        $hostname = \parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
+        $hostname = parse_url($this->getProtocol() . '://' . $this->getServer('HTTP_HOST', ''), PHP_URL_HOST);
         return strtolower((string) ($hostname));
     }
 
@@ -233,7 +233,7 @@ class Request extends UtopiaRequest
 
         $value = $headers[$key];
 
-        return \is_array($value) ? \implode(', ', $value) : $value;
+        return \is_array($value) ? implode(', ', $value) : $value;
     }
 
     /**
@@ -278,14 +278,14 @@ class Request extends UtopiaRequest
             $contentType = $this->getHeader('content-type');
 
             // Get content-type without the charset
-            $length = \strpos($contentType, ';');
+            $length = strpos($contentType, ';');
             $length = (empty($length)) ? \strlen($contentType) : $length;
-            $contentType = \substr($contentType, 0, $length);
+            $contentType = substr($contentType, 0, $length);
 
-            $this->rawPayload = \file_get_contents('php://input') ?: '';
+            $this->rawPayload = file_get_contents('php://input') ?: '';
 
             $this->payload = match ($contentType) {
-                'application/json' => \json_decode($this->rawPayload, true),
+                'application/json' => json_decode($this->rawPayload, true),
                 default => $_POST,
             };
 
@@ -323,7 +323,7 @@ class Request extends UtopiaRequest
 
                 foreach ($_SERVER as $name => $value) {
                     if (str_starts_with($name, 'HTTP_')) {
-                        $headers[\str_replace(' ', '-', \strtolower(\str_replace('_', ' ', \substr($name, 5))))] = $value;
+                        $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
                     }
                 }
 

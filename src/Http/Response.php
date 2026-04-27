@@ -11,107 +11,107 @@ abstract class Response
     /**
      * HTTP content types
      */
-    public const CONTENT_TYPE_TEXT = 'text/plain';
+    public const string CONTENT_TYPE_TEXT = 'text/plain';
 
-    public const CONTENT_TYPE_HTML = 'text/html';
+    public const string CONTENT_TYPE_HTML = 'text/html';
 
-    public const CONTENT_TYPE_JSON = 'application/json';
+    public const string CONTENT_TYPE_JSON = 'application/json';
 
-    public const CONTENT_TYPE_XML = 'text/xml';
+    public const string CONTENT_TYPE_XML = 'text/xml';
 
-    public const CONTENT_TYPE_JAVASCRIPT = 'text/javascript';
+    public const string CONTENT_TYPE_JAVASCRIPT = 'text/javascript';
 
-    public const CONTENT_TYPE_IMAGE = 'image/*';
+    public const string CONTENT_TYPE_IMAGE = 'image/*';
 
-    public const CONTENT_TYPE_IMAGE_JPEG = 'image/jpeg';
+    public const string CONTENT_TYPE_IMAGE_JPEG = 'image/jpeg';
 
-    public const CONTENT_TYPE_IMAGE_PNG = 'image/png';
+    public const string CONTENT_TYPE_IMAGE_PNG = 'image/png';
 
-    public const CONTENT_TYPE_IMAGE_GIF = 'image/gif';
+    public const string CONTENT_TYPE_IMAGE_GIF = 'image/gif';
 
-    public const CONTENT_TYPE_IMAGE_SVG = 'image/svg+xml';
+    public const string CONTENT_TYPE_IMAGE_SVG = 'image/svg+xml';
 
-    public const CONTENT_TYPE_IMAGE_WEBP = 'image/webp';
+    public const string CONTENT_TYPE_IMAGE_WEBP = 'image/webp';
 
-    public const CONTENT_TYPE_IMAGE_ICON = 'image/x-icon';
+    public const string CONTENT_TYPE_IMAGE_ICON = 'image/x-icon';
 
-    public const CONTENT_TYPE_IMAGE_BMP = 'image/bmp';
+    public const string CONTENT_TYPE_IMAGE_BMP = 'image/bmp';
 
     /**
      * Chrsets
      */
-    public const CHARSET_UTF8 = 'UTF-8';
+    public const string CHARSET_UTF8 = 'UTF-8';
 
     /**
      * HTTP response status codes
      */
-    public const STATUS_CODE_CONTINUE = 100;
-    public const STATUS_CODE_SWITCHING_PROTOCOLS = 101;
-    public const STATUS_CODE_PROCESSING = 102;
-    public const STATUS_CODE_EARLY_HINTS = 103;
+    public const int STATUS_CODE_CONTINUE = 100;
+    public const int STATUS_CODE_SWITCHING_PROTOCOLS = 101;
+    public const int STATUS_CODE_PROCESSING = 102;
+    public const int STATUS_CODE_EARLY_HINTS = 103;
 
-    public const STATUS_CODE_OK = 200;
-    public const STATUS_CODE_CREATED = 201;
-    public const STATUS_CODE_ACCEPTED = 202;
-    public const STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203;
-    public const STATUS_CODE_NOCONTENT = 204;
-    public const STATUS_CODE_RESETCONTENT = 205;
-    public const STATUS_CODE_PARTIALCONTENT = 206;
-    public const STATUS_CODE_MULTI_STATUS = 207;
-    public const STATUS_CODE_ALREADY_REPORTED = 208;
-    public const STATUS_CODE_IM_USED = 226;
+    public const int STATUS_CODE_OK = 200;
+    public const int STATUS_CODE_CREATED = 201;
+    public const int STATUS_CODE_ACCEPTED = 202;
+    public const int STATUS_CODE_NON_AUTHORITATIVE_INFORMATION = 203;
+    public const int STATUS_CODE_NOCONTENT = 204;
+    public const int STATUS_CODE_RESETCONTENT = 205;
+    public const int STATUS_CODE_PARTIALCONTENT = 206;
+    public const int STATUS_CODE_MULTI_STATUS = 207;
+    public const int STATUS_CODE_ALREADY_REPORTED = 208;
+    public const int STATUS_CODE_IM_USED = 226;
 
-    public const STATUS_CODE_MULTIPLE_CHOICES = 300;
-    public const STATUS_CODE_MOVED_PERMANENTLY = 301;
-    public const STATUS_CODE_FOUND = 302;
-    public const STATUS_CODE_SEE_OTHER = 303;
-    public const STATUS_CODE_NOT_MODIFIED = 304;
-    public const STATUS_CODE_USE_PROXY = 305;
-    public const STATUS_CODE_UNUSED = 306;
-    public const STATUS_CODE_TEMPORARY_REDIRECT = 307;
-    public const STATUS_CODE_PERMANENT_REDIRECT = 308;
+    public const int STATUS_CODE_MULTIPLE_CHOICES = 300;
+    public const int STATUS_CODE_MOVED_PERMANENTLY = 301;
+    public const int STATUS_CODE_FOUND = 302;
+    public const int STATUS_CODE_SEE_OTHER = 303;
+    public const int STATUS_CODE_NOT_MODIFIED = 304;
+    public const int STATUS_CODE_USE_PROXY = 305;
+    public const int STATUS_CODE_UNUSED = 306;
+    public const int STATUS_CODE_TEMPORARY_REDIRECT = 307;
+    public const int STATUS_CODE_PERMANENT_REDIRECT = 308;
 
-    public const STATUS_CODE_BAD_REQUEST = 400;
-    public const STATUS_CODE_UNAUTHORIZED = 401;
-    public const STATUS_CODE_PAYMENT_REQUIRED = 402;
-    public const STATUS_CODE_FORBIDDEN = 403;
-    public const STATUS_CODE_NOT_FOUND = 404;
-    public const STATUS_CODE_METHOD_NOT_ALLOWED = 405;
-    public const STATUS_CODE_NOT_ACCEPTABLE = 406;
-    public const STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407;
-    public const STATUS_CODE_REQUEST_TIMEOUT = 408;
-    public const STATUS_CODE_CONFLICT = 409;
-    public const STATUS_CODE_GONE = 410;
-    public const STATUS_CODE_LENGTH_REQUIRED = 411;
-    public const STATUS_CODE_PRECONDITION_FAILED = 412;
-    public const STATUS_CODE_REQUEST_ENTITY_TOO_LARGE = 413;
-    public const STATUS_CODE_REQUEST_URI_TOO_LONG = 414;
-    public const STATUS_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
-    public const STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
-    public const STATUS_CODE_EXPECTATION_FAILED = 417;
-    public const STATUS_CODE_IM_A_TEAPOT = 418;
-    public const STATUS_CODE_MISDIRECTED_REQUEST = 421;
-    public const STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
-    public const STATUS_CODE_LOCKED = 423;
-    public const STATUS_CODE_FAILED_DEPENDENCY = 424;
-    public const STATUS_CODE_TOO_EARLY = 425;
-    public const STATUS_CODE_UPGRADE_REQUIRED = 426;
-    public const STATUS_CODE_PRECONDITION_REQUIRED = 428;
-    public const STATUS_CODE_TOO_MANY_REQUESTS = 429;
-    public const STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
-    public const STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
+    public const int STATUS_CODE_BAD_REQUEST = 400;
+    public const int STATUS_CODE_UNAUTHORIZED = 401;
+    public const int STATUS_CODE_PAYMENT_REQUIRED = 402;
+    public const int STATUS_CODE_FORBIDDEN = 403;
+    public const int STATUS_CODE_NOT_FOUND = 404;
+    public const int STATUS_CODE_METHOD_NOT_ALLOWED = 405;
+    public const int STATUS_CODE_NOT_ACCEPTABLE = 406;
+    public const int STATUS_CODE_PROXY_AUTHENTICATION_REQUIRED = 407;
+    public const int STATUS_CODE_REQUEST_TIMEOUT = 408;
+    public const int STATUS_CODE_CONFLICT = 409;
+    public const int STATUS_CODE_GONE = 410;
+    public const int STATUS_CODE_LENGTH_REQUIRED = 411;
+    public const int STATUS_CODE_PRECONDITION_FAILED = 412;
+    public const int STATUS_CODE_REQUEST_ENTITY_TOO_LARGE = 413;
+    public const int STATUS_CODE_REQUEST_URI_TOO_LONG = 414;
+    public const int STATUS_CODE_UNSUPPORTED_MEDIA_TYPE = 415;
+    public const int STATUS_CODE_REQUESTED_RANGE_NOT_SATISFIABLE = 416;
+    public const int STATUS_CODE_EXPECTATION_FAILED = 417;
+    public const int STATUS_CODE_IM_A_TEAPOT = 418;
+    public const int STATUS_CODE_MISDIRECTED_REQUEST = 421;
+    public const int STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
+    public const int STATUS_CODE_LOCKED = 423;
+    public const int STATUS_CODE_FAILED_DEPENDENCY = 424;
+    public const int STATUS_CODE_TOO_EARLY = 425;
+    public const int STATUS_CODE_UPGRADE_REQUIRED = 426;
+    public const int STATUS_CODE_PRECONDITION_REQUIRED = 428;
+    public const int STATUS_CODE_TOO_MANY_REQUESTS = 429;
+    public const int STATUS_CODE_REQUEST_HEADER_FIELDS_TOO_LARGE = 431;
+    public const int STATUS_CODE_UNAVAILABLE_FOR_LEGAL_REASONS = 451;
 
-    public const STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
-    public const STATUS_CODE_NOT_IMPLEMENTED = 501;
-    public const STATUS_CODE_BAD_GATEWAY = 502;
-    public const STATUS_CODE_SERVICE_UNAVAILABLE = 503;
-    public const STATUS_CODE_GATEWAY_TIMEOUT = 504;
-    public const STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
-    public const STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
-    public const STATUS_CODE_INSUFFICIENT_STORAGE = 507;
-    public const STATUS_CODE_LOOP_DETECTED = 508;
-    public const STATUS_CODE_NOT_EXTENDED = 510;
-    public const STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
+    public const int STATUS_CODE_INTERNAL_SERVER_ERROR = 500;
+    public const int STATUS_CODE_NOT_IMPLEMENTED = 501;
+    public const int STATUS_CODE_BAD_GATEWAY = 502;
+    public const int STATUS_CODE_SERVICE_UNAVAILABLE = 503;
+    public const int STATUS_CODE_GATEWAY_TIMEOUT = 504;
+    public const int STATUS_CODE_HTTP_VERSION_NOT_SUPPORTED = 505;
+    public const int STATUS_CODE_VARIANT_ALSO_NEGOTIATES = 506;
+    public const int STATUS_CODE_INSUFFICIENT_STORAGE = 507;
+    public const int STATUS_CODE_LOOP_DETECTED = 508;
+    public const int STATUS_CODE_NOT_EXTENDED = 510;
+    public const int STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED = 511;
 
     /**
      * @var array<int, string>
@@ -254,13 +254,13 @@ abstract class Response
         'application/javascript-binast' => true,
     ];
 
-    public const COOKIE_SAMESITE_NONE = 'None';
+    public const string COOKIE_SAMESITE_NONE = 'None';
 
-    public const COOKIE_SAMESITE_STRICT = 'Strict';
+    public const string COOKIE_SAMESITE_STRICT = 'Strict';
 
-    public const COOKIE_SAMESITE_LAX = 'Lax';
+    public const string COOKIE_SAMESITE_LAX = 'Lax';
 
-    public const CHUNK_SIZE = 2000000; //2mb
+    public const int CHUNK_SIZE = 2000000; //2mb
     protected int $statusCode = self::STATUS_CODE_OK;
 
     protected string $contentType = '';
@@ -298,7 +298,7 @@ abstract class Response
      */
     public function __construct(float $time = 0)
     {
-        $this->startTime = (!empty($time)) ? $time : \microtime(true);
+        $this->startTime = (!empty($time)) ? $time : microtime(true);
     }
 
     private function isCompressible(?string $contentType): bool
@@ -544,7 +544,7 @@ abstract class Response
 
         $hasContentEncoding = false;
         foreach ($this->headers as $name => $values) {
-            if (\strtolower($name) === 'content-encoding') {
+            if (strtolower($name) === 'content-encoding') {
                 $hasContentEncoding = true;
                 break;
             }
@@ -555,7 +555,7 @@ abstract class Response
             !$hasContentEncoding
             && !empty($this->acceptEncoding)
             && $this->isCompressible($this->contentType)
-            && strlen($body) > $this->compressionMinSize
+            && \strlen($body) > $this->compressionMinSize
         ) {
             $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
 
@@ -599,7 +599,7 @@ abstract class Response
         }
         $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
 
-        $bodyLength = strlen($body);
+        $bodyLength = \strlen($body);
         $this->size += $headersSize + $bodyLength;
 
         if ($bodyLength <= self::CHUNK_SIZE) {
@@ -759,7 +759,7 @@ abstract class Response
     public function redirect(string $url, int $statusCode = 301): void
     {
         if (300 === $statusCode) {
-            \trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
+            trigger_error('It seems webkit based browsers have problems redirecting link with 300 status codes!', E_USER_NOTICE);
         }
 
         $this
@@ -808,13 +808,13 @@ abstract class Response
      */
     public function json($data): void
     {
-        if (!is_array($data) && !$data instanceof \stdClass) {
+        if (!\is_array($data) && !$data instanceof \stdClass) {
             throw new \Exception('Invalid JSON input var');
         }
 
         $this
             ->setContentType(Response::CONTENT_TYPE_JSON, self::CHARSET_UTF8)
-            ->send(\json_encode($data, JSON_UNESCAPED_UNICODE) ?: '');
+            ->send(json_encode($data, JSON_UNESCAPED_UNICODE) ?: '');
     }
 
     /**
@@ -831,7 +831,7 @@ abstract class Response
     {
         $this
             ->setContentType(self::CONTENT_TYPE_JAVASCRIPT, self::CHARSET_UTF8)
-            ->send('parent.' . $callback . '(' . \json_encode($data) . ');');
+            ->send('parent.' . $callback . '(' . json_encode($data) . ');');
     }
 
     /**
@@ -846,7 +846,7 @@ abstract class Response
     {
         $this
             ->setContentType(self::CONTENT_TYPE_HTML, self::CHARSET_UTF8)
-            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . \json_encode($data) . ');</script>');
+            ->send('<script type="text/javascript">window.parent.' . $callback . '(' . json_encode($data) . ');</script>');
     }
 
     /**

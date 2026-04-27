@@ -7,11 +7,11 @@ namespace Utopia\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Utopia\DI\Container;
-use Utopia\Http\Tests\UtopiaFPMRequestTest;
-use Utopia\Validator\Text;
 use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
+use Utopia\Http\Tests\UtopiaFPMRequestTest;
+use Utopia\Validator\Text;
 
 final class HttpTest extends TestCase
 {
@@ -110,10 +110,10 @@ final class HttpTest extends TestCase
                 echo $x . '-' . $y;
             });
 
-        \ob_start();
+        ob_start();
         $this->http->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         // With Params
         $resource = $this->container->get('rand');
@@ -132,12 +132,12 @@ final class HttpTest extends TestCase
                 echo $x . '-', $y;
             });
 
-        \ob_start();
+        ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
         $this->http->execute($route, $request, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame($resource . '-param-x-param-y', $result);
 
@@ -152,12 +152,12 @@ final class HttpTest extends TestCase
                 echo $x . '-', $y;
             });
 
-        \ob_start();
+        ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->http->execute($route, $request, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
 
@@ -224,22 +224,22 @@ final class HttpTest extends TestCase
                 echo $x . '*', $y;
             });
 
-        \ob_start();
+        ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->http->execute($route, $request, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
         $resource = $this->container->get('rand');
-        \ob_start();
+        ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->http->execute($homepage, $request, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
@@ -266,10 +266,10 @@ final class HttpTest extends TestCase
                 echo $x;
             });
 
-        \ob_start();
+        ob_start();
         $this->http->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('(init)-x-def-(shutdown)', $result);
 
@@ -282,10 +282,10 @@ final class HttpTest extends TestCase
                 echo $x;
             });
 
-        \ob_start();
+        ob_start();
         $this->http->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('x-def', $result);
     }
@@ -350,18 +350,18 @@ final class HttpTest extends TestCase
                 echo $x;
             });
 
-        \ob_start();
+        ob_start();
         $this->http->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('error-Param "y" is not optional.', $result);
 
-        \ob_start();
+        ob_start();
         $_GET['y'] = 'y-def';
         $this->http->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
     }
@@ -512,10 +512,10 @@ final class HttpTest extends TestCase
                 $response->send('HELLO');
             });
 
-        \ob_start();
+        ob_start();
         $this->http->run(new Request(), new Response());
-        $result = \ob_get_contents() ?: '';
-        \ob_end_clean();
+        $result = ob_get_contents() ?: '';
+        ob_end_clean();
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
@@ -549,19 +549,19 @@ final class HttpTest extends TestCase
                 }
             });
 
-        \ob_start();
+        ob_start();
         @$this->http->run(new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('HELLO', $result);
 
-        \ob_start();
+        ob_start();
         $req = new Request();
         $req = $req->setMethod('OPTIONS');
         @$this->http->run($req, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('', $result);
 
@@ -583,10 +583,10 @@ final class HttpTest extends TestCase
                 $response->send('HELLO');
             });
 
-        \ob_start();
+        ob_start();
         @$this->http->run(new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $uri;
@@ -607,10 +607,10 @@ final class HttpTest extends TestCase
                 echo 'callback-value: ' . $callback;
             });
 
-        \ob_start();
+        ob_start();
         $this->http->execute($route, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('callback-value: phpinfo', $result);
 
@@ -623,12 +623,12 @@ final class HttpTest extends TestCase
                 echo 'func-value: ' . $func;
             });
 
-        \ob_start();
+        ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
         $this->http->execute($route2, $request, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('func-value: system', $result);
 
@@ -641,10 +641,10 @@ final class HttpTest extends TestCase
                 echo 'generated: ' . $generated;
             });
 
-        \ob_start();
+        ob_start();
         $this->http->execute($route3, new Request(), new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
         $this->assertSame('generated: generated-value', $result);
     }
@@ -661,20 +661,20 @@ final class HttpTest extends TestCase
             ->param('locale', 'en-default', new Text(10), 'locale param', false)
             ->inject('locale')
             ->action(function (string $localeParam, Locale $localeResource) {
-                echo \json_encode([
+                echo json_encode([
                     'localeParam' => $localeParam,
                     'localeResource' => $localeResource->name,
                 ]);
             });
 
-        \ob_start();
+        ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['locale' => 'es']);
         $this->http->execute($route, $request, new Response());
-        $result = \ob_get_contents();
-        \ob_end_clean();
+        $result = ob_get_contents();
+        ob_end_clean();
 
-        $expected = \json_encode([
+        $expected = json_encode([
             'localeParam' => 'es',
             'localeResource' => 'en',
         ]);

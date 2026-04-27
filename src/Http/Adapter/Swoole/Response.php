@@ -20,7 +20,7 @@ class Response extends UtopiaResponse
     public function __construct(SwooleResponse $response)
     {
         $this->swoole = $response;
-        parent::__construct(\microtime(true));
+        parent::__construct(microtime(true));
     }
 
     public function getSwooleResponse(): SwooleResponse

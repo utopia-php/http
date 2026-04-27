@@ -3,16 +3,16 @@
 namespace Utopia\Http\Adapter\Swoole;
 
 use Swoole\Coroutine;
-use Utopia\Http\Adapter;
-use Utopia\DI\Container;
-use Swoole\Http\Server as SwooleServer;
 use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
+use Swoole\Http\Server as SwooleServer;
+use Utopia\DI\Container;
+use Utopia\Http\Adapter;
 
 class Server extends Adapter
 {
     protected SwooleServer $server;
-    protected const REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
+    protected const string REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
     protected Container $container;
 
     /**

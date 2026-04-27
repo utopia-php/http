@@ -28,7 +28,7 @@ class Response extends UtopiaResponse
      */
     public function end(?string $content = null): void
     {
-        if (!is_null($content)) {
+        if (!\is_null($content)) {
             echo $content;
         }
     }
@@ -53,10 +53,10 @@ class Response extends UtopiaResponse
     {
         if (\is_array($value)) {
             foreach ($value as $v) {
-                \header($key . ': ' . $v, false);
+                header($key . ': ' . $v, false);
             }
         } else {
-            \header($key . ': ' . $value);
+            header($key . ': ' . $value);
         }
     }
 
@@ -74,6 +74,6 @@ class Response extends UtopiaResponse
         unset($options['expire']);
 
         // Set the cookie
-        \setcookie($name, $value, $options);
+        setcookie($name, $value, $options);
     }
 }

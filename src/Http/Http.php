@@ -14,35 +14,35 @@ use Utopia\Validator;
 
 class Http
 {
-    public const COMPRESSION_MIN_SIZE_DEFAULT = 1024;
-    public const COMPRESSION_BROTLI_LEVEL_DEFAULT = 4;
-    public const COMPRESSION_ZSTD_LEVEL_DEFAULT = 3;
+    public const int COMPRESSION_MIN_SIZE_DEFAULT = 1024;
+    public const int COMPRESSION_BROTLI_LEVEL_DEFAULT = 4;
+    public const int COMPRESSION_ZSTD_LEVEL_DEFAULT = 3;
 
     /**
      * Request method constants
      */
-    public const REQUEST_METHOD_GET = 'GET';
+    public const string REQUEST_METHOD_GET = 'GET';
 
-    public const REQUEST_METHOD_POST = 'POST';
+    public const string REQUEST_METHOD_POST = 'POST';
 
-    public const REQUEST_METHOD_PUT = 'PUT';
+    public const string REQUEST_METHOD_PUT = 'PUT';
 
-    public const REQUEST_METHOD_PATCH = 'PATCH';
+    public const string REQUEST_METHOD_PATCH = 'PATCH';
 
-    public const REQUEST_METHOD_DELETE = 'DELETE';
+    public const string REQUEST_METHOD_DELETE = 'DELETE';
 
-    public const REQUEST_METHOD_OPTIONS = 'OPTIONS';
+    public const string REQUEST_METHOD_OPTIONS = 'OPTIONS';
 
-    public const REQUEST_METHOD_HEAD = 'HEAD';
+    public const string REQUEST_METHOD_HEAD = 'HEAD';
 
     /**
      * Mode Type
      */
-    public const MODE_TYPE_DEVELOPMENT = 'development';
+    public const string MODE_TYPE_DEVELOPMENT = 'development';
 
-    public const MODE_TYPE_STAGE = 'stage';
+    public const string MODE_TYPE_STAGE = 'stage';
 
-    public const MODE_TYPE_PRODUCTION = 'production';
+    public const string MODE_TYPE_PRODUCTION = 'production';
 
     protected Files $files;
 
@@ -142,7 +142,7 @@ class Http
      */
     public function __construct(Adapter $server, string $timezone)
     {
-        \date_default_timezone_set($timezone);
+        date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
         $this->container = $server->getContainer();
@@ -375,9 +375,9 @@ class Http
             return $this->server->getContainer()->get($name);
         } catch (ContainerExceptionInterface|NotFoundExceptionInterface $e) {
             // Normalize DI container errors to the Http layer's "resource" terminology.
-            $message = \str_replace('dependency', 'resource', $e->getMessage());
+            $message = str_replace('dependency', 'resource', $e->getMessage());
 
-            if ($message === $e->getMessage() && !\str_contains($message, 'resource')) {
+            if ($message === $e->getMessage() && !str_contains($message, 'resource')) {
                 $message = 'Failed to find resource: "' . $name . '"';
             }
 
@@ -566,7 +566,7 @@ class Http
                 $this->setResource('error', fn() => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
-                    if (in_array('*', $error->getGroups())) {
+                    if (\in_array('*', $error->getGroups())) {
                         try {
                             $arguments = $this->getArguments($error, [], []);
                             \call_user_func_array($error->getAction(), $arguments);
@@ -594,7 +594,7 @@ class Http
             return $this->route;
         }
 
-        $url = \parse_url($request->getURI(), PHP_URL_PATH);
+        $url = parse_url($request->getURI(), PHP_URL_PATH);
         $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
@@ -618,7 +618,7 @@ class Http
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
-                    if (in_array('*', $hook->getGroups())) {
+                    if (\in_array('*', $hook->getGroups())) {
                         $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
@@ -705,7 +705,7 @@ class Http
 
             $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
-                $arg = \call_user_func_array($arg, \array_values($this->getResources($param['injections'])));
+                $arg = \call_user_func_array($arg, array_values($this->getResources($param['injections'])));
             }
             $value = $existsInValues ? $values[$key] : $arg;
 
@@ -806,7 +806,7 @@ class Http
             $response
                 ->setContentType($this->getFileMimeType($request->getURI()))
                 ->addHeader('Cache-Control', 'public, max-age=' . $time)
-                ->addHeader('Expires', \date('D, d M Y H:i:s', \time() + $time) . ' GMT') // 45 days cache
+                ->addHeader('Expires', date('D, d M Y H:i:s', time() + $time) . ' GMT') // 45 days cache
                 ->send($this->getFileContents($request->getURI()));
 
             return $this;
@@ -856,7 +856,7 @@ class Http
         if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
             $this->route = $route;
-            $path = \parse_url($request->getURI(), PHP_URL_PATH);
+            $path = parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
@@ -920,7 +920,7 @@ class Http
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, \array_values($this->getResources($param['injections'])));
+            $validator = \call_user_func_array($validator, array_values($this->getResources($param['injections'])));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class
