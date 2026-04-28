@@ -104,16 +104,6 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Per-request container keys for the currently matched route and
-     * the prepared-path string it was matched under. Storing these on
-     * the per-request container (which is coroutine-local in the Swoole
-     * adapters) keeps concurrent requests from clobbering each other's
-     * routing state on the shared Http singleton.
-     */
-    private const string ROUTE_CONTEXT_KEY = '__utopia_http_route';
-    private const string MATCHED_PATH_CONTEXT_KEY = '__utopia_http_matched_path';
-
-    /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
      */
@@ -468,7 +458,7 @@ class Http
     {
         $container = $this->server->getContainer();
 
-        return $container->has(self::ROUTE_CONTEXT_KEY) ? $container->get(self::ROUTE_CONTEXT_KEY) : null;
+        return $container->has('route') ? $container->get('route') : null;
     }
 
     /**
@@ -476,7 +466,7 @@ class Http
      */
     public function setRoute(?Route $route): self
     {
-        $this->server->getContainer()->set(self::ROUTE_CONTEXT_KEY, fn() => $route);
+        $this->server->getContainer()->set('route', fn() => $route);
 
         return $this;
     }
@@ -490,12 +480,12 @@ class Http
     {
         $container = $this->server->getContainer();
 
-        return $container->has(self::MATCHED_PATH_CONTEXT_KEY) ? $container->get(self::MATCHED_PATH_CONTEXT_KEY) : '';
+        return $container->has('matchedPath') ? $container->get('matchedPath') : '';
     }
 
     private function setMatchedPath(string $path): void
     {
-        $this->server->getContainer()->set(self::MATCHED_PATH_CONTEXT_KEY, fn() => $path);
+        $this->server->getContainer()->set('matchedPath', fn() => $path);
     }
 
     /**
