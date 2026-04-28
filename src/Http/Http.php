@@ -461,14 +461,9 @@ class Http
         return $container->has('route') ? $container->get('route') : null;
     }
 
-    /**
-     * Set the current route
-     */
-    public function setRoute(?Route $route): self
+    private function setRoute(?Route $route): void
     {
         $this->server->getContainer()->set('route', fn() => $route);
-
-        return $this;
     }
 
     /**
