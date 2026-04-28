@@ -395,37 +395,6 @@ final class HttpTest extends TestCase
         $this->assertSame('action:abc123,200|shutdown:fileId=abc123,width=200', $result);
     }
 
-    public function testInitHookSeesPathValuesInMatchArguments(): void
-    {
-        $_SERVER['REQUEST_METHOD'] = 'GET';
-        $_SERVER['REQUEST_URI'] = '/databases/db_1/collections/col_2';
-
-        Http::get('/databases/:databaseId/collections/:collectionId')
-            ->param('databaseId', '', new Text(64), 'database id', false)
-            ->param('collectionId', '', new Text(64), 'collection id', false)
-            ->inject('response')
-            ->action(function ($databaseId, $collectionId, $response) {
-                $response->send('action:' . $databaseId . '/' . $collectionId);
-            });
-
-        $seen = new \stdClass();
-
-        Http::init()
-            ->inject('match')
-            ->action(function (?RouteMatch $match) use ($seen) {
-                $seen->arguments = $match?->arguments;
-            });
-
-        ob_start();
-        $this->http->run(new Request(), new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
-
-        $this->assertSame('action:db_1/col_2', $result);
-        $this->assertSame('db_1', $seen->arguments['databaseId'] ?? null);
-        $this->assertSame('col_2', $seen->arguments['collectionId'] ?? null);
-    }
-
     public function testMatchIsNullDuringEarlyErrorBeforeRouting(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'GET';

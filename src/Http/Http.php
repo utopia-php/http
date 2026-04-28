@@ -584,14 +584,6 @@ class Http
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
         $match = Router::match($method, $url);
-        if ($match !== null) {
-            // Seed arguments with path values right away so init hooks
-            // can read URI segments (e.g. {databaseId}, {fileId}) via
-            // $match->arguments. execute() replaces this with the full
-            // resolved+validated set right before the action runs.
-            $pathValues = $match->route->getPathValues($request, $match->path);
-            $match = new RouteMatch($match->route, $match->path, $pathValues);
-        }
         $context->set('match', fn() => $match);
 
         return $match?->route;
@@ -611,9 +603,7 @@ class Http
             // execute() called directly (e.g. from a test) without a prior
             // match() — synthesize a RouteMatch so shutdown / error hooks
             // injecting 'match' still see the route they're running under.
-            // Seed arguments with path values for the same reason match()
-            // does: init hooks need URI segments before the action runs.
-            $match = new RouteMatch($route, '', $route->getPathValues($request, ''));
+            $match = new RouteMatch($route, '');
             $context->set('match', fn() => $match);
         }
         $preparedPath = Router::preparePath($match->path);
