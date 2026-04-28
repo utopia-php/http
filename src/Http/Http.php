@@ -650,8 +650,7 @@ class Http
                 foreach ($route->getParams() as $name => $param) {
                     $resolved[$name] = $arguments[$param['order']] ?? null;
                 }
-                $match = new RouteMatch($match->route, $match->path, $resolved);
-                $this->setContext('match', fn() => $match);
+                $match->arguments = $resolved;
 
                 \call_user_func_array($route->getAction(), $arguments);
             }

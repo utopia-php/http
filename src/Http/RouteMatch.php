@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace Utopia\Http;
 
 /**
- * Immutable bundle of everything the framework knows about how the current
- * request was routed: the matched Route, the prepared-path key it was
- * matched under (`$path`, with placeholders like ":::") and — once the
- * action has resolved its parameters — the name-keyed map of resolved +
- * validated argument values.
+ * Bundle of everything the framework knows about how the current request
+ * was routed: the matched Route, the prepared-path key it was matched
+ * under (`$path`, with placeholders like ":::") and the name-keyed map
+ * of argument values for the current phase.
  *
- * Lives on the per-request context container (coroutine-local under the
- * Swoole adapters) under the key `'match'`. Inject it into a hook or
- * action with `->inject('match')`.
+ * `$route` and `$path` are immutable. `$arguments` is filled in two
+ * passes during a request — path values at match-time so init hooks can
+ * read them, then the full resolved+validated set right before the
+ * action runs — and is therefore mutable. Safe because the RouteMatch
+ * lives on the per-request context container (coroutine-local under
+ * the Swoole adapters), so only the request's own coroutine touches it.
+ *
+ * Inject it into a hook or action with `->inject('match')`.
  */
 final class RouteMatch
 {
@@ -23,6 +27,6 @@ final class RouteMatch
     public function __construct(
         public readonly Route $route,
         public readonly string $path,
-        public readonly array $arguments = [],
+        public array $arguments = [],
     ) {}
 }
