@@ -406,11 +406,17 @@ class Http
     }
 
     /**
-     * Set a request-scoped resource on the current request's container.
+     * Set a request-scoped value on the current request's context container.
+     *
+     * The framework convention is: `setResource()` registers singletons on
+     * the global container; `setContext()` registers per-request values on
+     * the adapter's request container, which is coroutine-local under the
+     * Swoole adapters. `getResource()` reads from the request container
+     * with parent-fallback to the global one, so either kind resolves.
      *
      * @param list<string> $injections
      */
-    protected function setRequestResource(string $name, callable $callback, array $injections = []): void
+    protected function setContext(string $name, callable $callback, array $injections = []): void
     {
         $this->server->getContainer()->set($name, $callback, $injections);
     }
@@ -674,7 +680,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->setContext('error', fn() => $e, []);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -793,8 +799,8 @@ class Http
             $response->setCompressionSupported($this->compressionSupported);
         }
 
-        $this->setRequestResource('request', fn() => $request);
-        $this->setRequestResource('response', fn() => $response);
+        $this->setContext('request', fn() => $request);
+        $this->setContext('response', fn() => $response);
 
         try {
             foreach (self::$requestHooks as $hook) {
@@ -802,7 +808,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->setContext('error', fn() => $e, []);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
@@ -832,7 +838,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setRequestResource('route', fn() => $route, []);
+        $this->setContext('route', fn() => $route, []);
 
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -860,7 +866,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->setContext('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -878,7 +884,7 @@ class Http
             $route->path($path);
 
             $this->setRoute($route);
-            $this->setRequestResource('route', fn() => $route, []);
+            $this->setContext('route', fn() => $route, []);
         }
         if (null !== $route) {
             return $this->execute($route, $request, $response);
@@ -902,7 +908,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->setContext('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -910,7 +916,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
-                    $this->setRequestResource('error', fn() => new Exception('Not Found', 404), []);
+                    $this->setContext('error', fn() => new Exception('Not Found', 404), []);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }
