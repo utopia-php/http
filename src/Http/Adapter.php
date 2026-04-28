@@ -13,16 +13,9 @@ abstract class Adapter
     abstract public function start(): void;
 
     /**
-     * Return the container for the current execution context:
-     *
-     * - Inside a request, the per-request container (coroutine-local
-     *   under the Swoole adapters), with parent-chain fallback to the
-     *   global container — so singleton lookups still resolve.
-     * - Outside a request (boot, onStart hooks), the global container
-     *   directly.
-     *
-     * Callers don't need to know which "scope" they're in; they get
-     * the right container for where they are.
+     * Container for the current execution context: the per-request
+     * container inside a request (coroutine-local under Swoole, with
+     * parent-chain fallback to global), the global container otherwise.
      */
     abstract public function getContext(): Container;
 }

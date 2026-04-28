@@ -136,11 +136,7 @@ class Http
         date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
-        // Capture the global container at construction. INVARIANT: `Http`
-        // is constructed at boot, never inside a request. With no
-        // coroutine active, getContext() returns the global container
-        // directly — so this capture is stable for the lifetime of the
-        // Http instance.
+        // Captures the global container; assumes Http is constructed at boot, not inside a request.
         $this->container = $server->getContext();
         $this->setTelemetry(new NoTelemetry());
     }
@@ -411,13 +407,8 @@ class Http
     }
 
     /**
-     * Set a request-scoped value on the current request's context container.
-     *
-     * The framework convention is: `setResource()` registers singletons on
-     * the global container; `setContext()` registers per-request values on
-     * the adapter's request container, which is coroutine-local under the
-     * Swoole adapters. `getResource()` reads from the request container
-     * with parent-fallback to the global one, so either kind resolves.
+     * Register a per-request value on the context container.
+     * Counterpart to setResource() for global singletons.
      *
      * @param list<string> $injections
      */
@@ -605,9 +596,7 @@ class Http
         $context = $this->server->getContext();
         $match = $context->has('match') ? $context->get('match') : null;
         if (!$match instanceof RouteMatch || $match->route !== $route) {
-            // execute() called directly (e.g. from a test) without a prior
-            // match() — synthesize a RouteMatch so shutdown / error hooks
-            // injecting 'match' still see the route they're running under.
+            // execute() called directly without a prior match().
             $match = new RouteMatch($route, '');
             $context->set('match', fn() => $match);
         }
@@ -636,11 +625,6 @@ class Http
             if (!$response->isSent()) {
                 $arguments = $this->getArguments($route, $pathValues, $request->getParams());
 
-                // Update the per-request RouteMatch with the resolved+
-                // validated argument map so shutdown / error hooks can
-                // read the same values the action saw — e.g. for label
-                // substitution like {request.fileId}. Race-free because
-                // the context container is per-request.
                 $resolved = [];
                 foreach ($route->getParams() as $name => $param) {
                     $resolved[$name] = $arguments[$param['order']] ?? null;
@@ -791,10 +775,6 @@ class Http
 
         $this->setContext('request', fn() => $request);
         $this->setContext('response', fn() => $response);
-        // Seed 'match' to null up front so requestHooks, the global error
-        // path, and any pre-routing code can read it without tripping the
-        // "Failed to find resource" error from getResource('match'). It
-        // gets overwritten with the real RouteMatch once match() runs.
         $this->setContext('match', fn() => null);
 
         try {
@@ -869,8 +849,7 @@ class Http
         }
 
         if (null === $route && null !== self::$wildcardRoute) {
-            // Clone so we can stamp the request URI onto $path without
-            // mutating the singleton shared across concurrent coroutines.
+            // Clone before stamping $path so concurrent coroutines don't fight over the singleton.
             $route = clone self::$wildcardRoute;
             $path = parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
