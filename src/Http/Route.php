@@ -38,36 +38,12 @@ class Route extends Hook
      */
     protected int $order;
 
-    protected string $matchedPath = '';
-
     public function __construct(string $method, string $path)
     {
         parent::__construct();
         $this->path($path);
         $this->method = $method;
         $this->order = ++self::$counter;
-    }
-
-    /**
-     * @deprecated No longer used by the framework. The matched-path string
-     * is returned alongside the Route from Router::match() instead, so the
-     * shared Route singleton is not mutated per request. Will be removed
-     * in a future major release.
-     */
-    public function setMatchedPath(string $path): self
-    {
-        $this->matchedPath = $path;
-        return $this;
-    }
-
-    /**
-     * @deprecated No longer populated by Router::match(). Read the matched
-     * path from the second element of Router::match()'s return tuple
-     * instead. Will be removed in a future major release.
-     */
-    public function getMatchedPath(): string
-    {
-        return $this->matchedPath;
     }
 
     /**
