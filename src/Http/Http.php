@@ -363,7 +363,7 @@ class Http
     public function getResource(string $name): mixed
     {
         try {
-            return $this->server->getContainer()->get($name);
+            return $this->server->getContext()->get($name);
         } catch (ContainerExceptionInterface|NotFoundExceptionInterface $e) {
             // Normalize DI container errors to the Http layer's "resource" terminology.
             $message = str_replace('dependency', 'resource', $e->getMessage());
@@ -418,7 +418,7 @@ class Http
      */
     protected function setContext(string $name, callable $callback, array $injections = []): void
     {
-        $this->server->getContainer()->set($name, $callback, $injections);
+        $this->server->getContext()->set($name, $callback, $injections);
     }
 
     /**
@@ -569,7 +569,7 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        $context = $this->server->getContainer();
+        $context = $this->server->getContext();
 
         if (!$fresh && $context->has('route')) {
             $cached = $context->get('route');
@@ -605,7 +605,7 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $context = $this->server->getContainer();
+        $context = $this->server->getContext();
         $matchedPath = $context->has('matchedPath') ? $context->get('matchedPath') : '';
         $preparedPath = Router::preparePath($matchedPath);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
@@ -738,7 +738,7 @@ class Http
         $result = $this->runInternal($request, $response);
 
         $requestDuration = microtime(true) - $start;
-        $context = $this->server->getContainer();
+        $context = $this->server->getContext();
         $route = $context->has('route') ? $context->get('route') : null;
         $attributes = [
             'url.scheme' => $request->getProtocol(),

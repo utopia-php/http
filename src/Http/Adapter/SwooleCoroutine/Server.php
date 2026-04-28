@@ -52,6 +52,11 @@ class Server extends Adapter
 
     public function getContainer(): Container
     {
+        return $this->container;
+    }
+
+    public function getContext(): Container
+    {
         return Coroutine::getContext()[self::CONTEXT_KEY] ?? $this->container;
     }
 
