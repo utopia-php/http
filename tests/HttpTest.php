@@ -413,7 +413,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $url;
 
         $this->assertSame($expected, $this->http->match(new Request()));
-        $this->assertSame($expected, $this->http->getResource("route"));
+        $this->assertSame($expected, $this->http->getResource('route'));
     }
 
     public function testNoMismatchRoute(): void
@@ -442,7 +442,7 @@ final class HttpTest extends TestCase
             $route = $this->http->match(new Request(), fresh: true);
 
             $this->assertNull($route);
-            $this->assertNull($this->http->getResource("route"));
+            $this->assertNull($this->http->getResource('route'));
         }
     }
 
@@ -457,7 +457,7 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
             $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getResource("route"));
+            $this->assertSame($route1, $this->http->getResource('route'));
 
             // Second request match returns cached route
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
@@ -465,12 +465,12 @@ final class HttpTest extends TestCase
             $request2 = new Request();
             $matched = $this->http->match($request2, fresh: false);
             $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getResource("route"));
+            $this->assertSame($route1, $this->http->getResource('route'));
 
             // Fresh match returns new route
             $matched = $this->http->match($request2, fresh: true);
             $this->assertSame($route2, $matched);
-            $this->assertSame($route2, $this->http->getResource("route"));
+            $this->assertSame($route2, $this->http->getResource('route'));
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
@@ -484,7 +484,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
 
         $this->assertSame($route, $this->http->match(new Request()));
-        $this->assertSame($route, $this->http->getResource("route"));
+        $this->assertSame($route, $this->http->getResource('route'));
     }
 
     public function testCanRunRequest(): void
