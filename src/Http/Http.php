@@ -458,38 +458,6 @@ class Http
     }
 
     /**
-     * Get the current route
-     */
-    public function getRoute(): ?Route
-    {
-        $container = $this->server->getContainer();
-
-        return $container->has('route') ? $container->get('route') : null;
-    }
-
-    private function setRoute(?Route $route): void
-    {
-        $this->server->getContainer()->set('route', fn() => $route);
-    }
-
-    /**
-     * Read the prepared-path string the current request matched under.
-     * Falls back to '' so callers (e.g. tests invoking execute() directly)
-     * keep getting the legacy "first registered path-params" behavior.
-     */
-    private function getMatchedPath(): string
-    {
-        $container = $this->server->getContainer();
-
-        return $container->has('matchedPath') ? $container->get('matchedPath') : '';
-    }
-
-    private function setMatchedPath(string $path): void
-    {
-        $this->server->getContainer()->set('matchedPath', fn() => $path);
-    }
-
-    /**
      * Add Route
      *
      * Add routing route method, path and callback
@@ -601,8 +569,10 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (!$fresh) {
-            $cached = $this->getRoute();
+        $context = $this->server->getContainer();
+
+        if (!$fresh && $context->has('route')) {
+            $cached = $context->get('route');
             if (null !== $cached) {
                 return $cached;
             }
@@ -615,14 +585,14 @@ class Http
 
         $matched = Router::match($method, $url);
         if (null === $matched) {
-            $this->setRoute(null);
-            $this->setMatchedPath('');
+            $context->set('route', fn() => null);
+            $context->set('matchedPath', fn() => '');
             return null;
         }
 
         [$route, $matchedPath] = $matched;
-        $this->setRoute($route);
-        $this->setMatchedPath($matchedPath);
+        $context->set('route', fn() => $route);
+        $context->set('matchedPath', fn() => $matchedPath);
 
         return $route;
     }
@@ -635,7 +605,9 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $preparedPath = Router::preparePath($this->getMatchedPath());
+        $context = $this->server->getContainer();
+        $matchedPath = $context->has('matchedPath') ? $context->get('matchedPath') : '';
+        $preparedPath = Router::preparePath($matchedPath);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
@@ -766,10 +738,12 @@ class Http
         $result = $this->runInternal($request, $response);
 
         $requestDuration = microtime(true) - $start;
+        $context = $this->server->getContainer();
+        $route = $context->has('route') ? $context->get('route') : null;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->getRoute()?->getPath(),
+            'http.route' => $route?->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -883,8 +857,7 @@ class Http
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
-            $this->setRoute($route);
-            $this->setContext('route', fn() => $route, []);
+            $this->setContext('route', fn() => $route);
         }
         if (null !== $route) {
             return $this->execute($route, $request, $response);
