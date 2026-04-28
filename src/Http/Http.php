@@ -136,7 +136,12 @@ class Http
         date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
-        $this->container = $server->getContainer();
+        // Capture the global container at construction. INVARIANT: `Http`
+        // is constructed at boot, never inside a request. With no
+        // coroutine active, getContext() returns the global container
+        // directly — so this capture is stable for the lifetime of the
+        // Http instance.
+        $this->container = $server->getContext();
         $this->setTelemetry(new NoTelemetry());
     }
 
@@ -416,7 +421,7 @@ class Http
      *
      * @param list<string> $injections
      */
-    protected function setContext(string $name, callable $callback, array $injections = []): void
+    public function setContext(string $name, callable $callback, array $injections = []): void
     {
         $this->server->getContext()->set($name, $callback, $injections);
     }

@@ -38,11 +38,6 @@ class Server extends Adapter
         });
     }
 
-    public function getContainer(): Container
-    {
-        return $this->container;
-    }
-
     public function getContext(): Container
     {
         if (Coroutine::getCid() !== -1) {
