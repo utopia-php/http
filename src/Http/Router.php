@@ -106,15 +106,14 @@ class Router
     }
 
     /**
-     * Match route against the method and path.
+     * Match a request against the registered routes.
      *
-     * Returns the matched Route together with the prepared-path key it was
-     * found under, so callers can resolve path params without mutating the
-     * shared Route singleton.
-     *
-     * @return array{0: Route, 1: string}|null
+     * Returns a RouteMatch holding the matched Route and the prepared-path
+     * key it was found under (placeholders replaced with `:::`), so callers
+     * can resolve path params without mutating the shared Route singleton.
+     * Returns null when no route matches.
      */
-    public static function match(string $method, string $path): ?array
+    public static function match(string $method, string $path): ?RouteMatch
     {
         if (!\array_key_exists($method, self::$routes)) {
             return null;
@@ -135,7 +134,7 @@ class Router
             );
 
             if (\array_key_exists($match, self::$routes[$method])) {
-                return [self::$routes[$method][$match], $match];
+                return new RouteMatch(self::$routes[$method][$match], $match);
             }
         }
 
@@ -144,7 +143,7 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (\array_key_exists($match, self::$routes[$method])) {
-            return [self::$routes[$method][$match], $match];
+            return new RouteMatch(self::$routes[$method][$match], $match);
         }
 
         /**
@@ -154,7 +153,7 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (\array_key_exists($match, self::$routes[$method])) {
-                return [self::$routes[$method][$match], $match];
+                return new RouteMatch(self::$routes[$method][$match], $match);
             }
         }
 

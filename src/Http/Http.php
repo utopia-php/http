@@ -571,10 +571,10 @@ class Http
     {
         $context = $this->server->getContext();
 
-        if (!$fresh && $context->has('route')) {
-            $cached = $context->get('route');
-            if (null !== $cached) {
-                return $cached;
+        if (!$fresh && $context->has('match')) {
+            $cached = $context->get('match');
+            if ($cached instanceof RouteMatch) {
+                return $cached->route;
             }
         }
 
@@ -583,18 +583,10 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $matched = Router::match($method, $url);
-        if (null === $matched) {
-            $context->set('route', fn() => null);
-            $context->set('matchedPath', fn() => '');
-            return null;
-        }
+        $match = Router::match($method, $url);
+        $context->set('match', fn() => $match);
 
-        [$route, $matchedPath] = $matched;
-        $context->set('route', fn() => $route);
-        $context->set('matchedPath', fn() => $matchedPath);
-
-        return $route;
+        return $match?->route;
     }
 
     /**
@@ -606,8 +598,15 @@ class Http
         $groups = $route->getGroups();
 
         $context = $this->server->getContext();
-        $matchedPath = $context->has('matchedPath') ? $context->get('matchedPath') : '';
-        $preparedPath = Router::preparePath($matchedPath);
+        $match = $context->has('match') ? $context->get('match') : null;
+        if (!$match instanceof RouteMatch || $match->route !== $route) {
+            // execute() called directly (e.g. from a test) without a prior
+            // match() — synthesize a RouteMatch so shutdown / error hooks
+            // injecting 'match' still see the route they're running under.
+            $match = new RouteMatch($route, '');
+            $context->set('match', fn() => $match);
+        }
+        $preparedPath = Router::preparePath($match->matchedPath);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
@@ -632,16 +631,17 @@ class Http
             if (!$response->isSent()) {
                 $arguments = $this->getArguments($route, $pathValues, $request->getParams());
 
-                // Stash a name-keyed map of the route's resolved+validated
-                // params on the context so shutdown / error hooks can read
-                // the same values the action saw — e.g. for label
+                // Update the per-request RouteMatch with the resolved+
+                // validated argument map so shutdown / error hooks can
+                // read the same values the action saw — e.g. for label
                 // substitution like {request.fileId}. Race-free because
                 // the context container is per-request.
                 $resolved = [];
                 foreach ($route->getParams() as $name => $param) {
                     $resolved[$name] = $arguments[$param['order']] ?? null;
                 }
-                $this->setContext('arguments', fn() => $resolved);
+                $match = $match->withArguments($resolved);
+                $this->setContext('match', fn() => $match);
 
                 \call_user_func_array($route->getAction(), $arguments);
             }
@@ -751,11 +751,11 @@ class Http
 
         $requestDuration = microtime(true) - $start;
         $context = $this->server->getContext();
-        $route = $context->has('route') ? $context->get('route') : null;
+        $match = $context->has('match') ? $context->get('match') : null;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $route?->getPath(),
+            'http.route' => $match instanceof RouteMatch ? $match->route->getPath() : null,
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -824,8 +824,6 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setContext('route', fn() => $route, []);
-
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
@@ -869,7 +867,8 @@ class Http
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
-            $this->setContext('route', fn() => $route);
+            $match = new RouteMatch($route, '');
+            $this->setContext('match', fn() => $match);
         }
         if (null !== $route) {
             return $this->execute($route, $request, $response);
