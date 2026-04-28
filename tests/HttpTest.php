@@ -395,6 +395,38 @@ final class HttpTest extends TestCase
         $this->assertSame('action:abc123,200|shutdown:fileId=abc123,width=200', $result);
     }
 
+    public function testErrorHookSeesPartialMatchArgumentsWhenValidationFails(): void
+    {
+        $route = new Route('GET', '/files/:fileId/things/:thingId');
+        $route
+            ->param('fileId', '', new Text(64), 'file id', false)
+            ->param('thingId', '', new Text(1, min: 0), 'thing id', false)
+            ->action(function ($fileId, $thingId) {
+                echo 'never';
+            });
+
+        $seen = new \stdClass();
+
+        $this->http
+            ->error()
+            ->inject('match')
+            ->action(function (?RouteMatch $match) use ($seen) {
+                $seen->arguments = $match?->arguments;
+            });
+
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['fileId' => 'abc123', 'thingId' => 'too-long-for-the-validator']);
+
+        ob_start();
+        $this->http->execute($route, $request, new Response());
+        ob_end_clean();
+
+        // fileId resolved fine; thingId failed validation.
+        // Error hook should see fileId (and the candidate thingId value).
+        $this->assertSame('abc123', $seen->arguments['fileId'] ?? null);
+        $this->assertSame('too-long-for-the-validator', $seen->arguments['thingId'] ?? null);
+    }
+
     public function testMatchIsNullDuringEarlyErrorBeforeRouting(): void
     {
         $_SERVER['REQUEST_METHOD'] = 'GET';

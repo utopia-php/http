@@ -15,12 +15,17 @@ namespace Utopia\Http;
  */
 final class RouteMatch
 {
+    /** @var array<string, mixed> */
+    public array $arguments;
+
     /**
      * @param array<string, mixed> $arguments
      */
     public function __construct(
         public readonly Route $route,
         public readonly string $path,
-        public array $arguments = [],
-    ) {}
+        array $arguments = [],
+    ) {
+        $this->arguments = $arguments;
+    }
 }

@@ -623,14 +623,7 @@ class Http
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
-
-                $resolved = [];
-                foreach ($route->getParams() as $name => $param) {
-                    $resolved[$name] = $arguments[$param['order']] ?? null;
-                }
-                $match->arguments = $resolved;
-
+                $arguments = $this->getArguments($route, $pathValues, $request->getParams(), $match->arguments);
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
@@ -683,17 +676,17 @@ class Http
     }
 
     /**
-     * Get Arguments
-     *
      * @param  array<string, mixed>  $values
      * @param  array<string, mixed>  $requestParams
+     * @param  array<string, mixed>  $resolved
+     * @param-out array<string, mixed> $resolved
      * @return array<int, mixed>
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, array $values, array $requestParams, array &$resolved = []): array
     {
         $arguments = [];
-        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
+        foreach ($hook->getParams() as $key => $param) {
             $existsInRequest = \array_key_exists($key, $requestParams);
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
@@ -703,6 +696,8 @@ class Http
                 $arg = \call_user_func_array($arg, array_values($this->getResources($param['injections'])));
             }
             $value = $existsInValues ? $values[$key] : $arg;
+
+            $resolved[(string) $key] = $value;
 
             if (!$param['skipValidation']) {
                 if (!$paramExists && !$param['optional']) {
