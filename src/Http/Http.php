@@ -606,7 +606,7 @@ class Http
             $match = new RouteMatch($route, '');
             $context->set('match', fn() => $match);
         }
-        $preparedPath = Router::preparePath($match->matchedPath);
+        $preparedPath = Router::preparePath($match->path);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
