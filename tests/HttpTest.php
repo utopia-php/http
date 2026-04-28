@@ -395,6 +395,35 @@ final class HttpTest extends TestCase
         $this->assertSame('action:abc123,200|shutdown:fileId=abc123,width=200', $result);
     }
 
+    public function testMatchIsNullDuringEarlyErrorBeforeRouting(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/whatever';
+
+        Http::onRequest()
+            ->action(function (): void {
+                throw new \RuntimeException('boom');
+            });
+
+        $seen = new \stdClass();
+        $seen->matchWasSet = false;
+        $seen->matchValue = 'sentinel';
+
+        Http::error()
+            ->inject('match')
+            ->action(function (?RouteMatch $match) use ($seen): void {
+                $seen->matchWasSet = true;
+                $seen->matchValue = $match;
+            });
+
+        ob_start();
+        @$this->http->run(new Request(), new Response());
+        ob_end_clean();
+
+        $this->assertTrue($seen->matchWasSet, 'global error hook should have run');
+        $this->assertNull($seen->matchValue, "'match' should be null on the context before routing");
+    }
+
     /**
      * @return \Iterator<string, array<int, string>>
      */

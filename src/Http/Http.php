@@ -787,6 +787,11 @@ class Http
 
         $this->setContext('request', fn() => $request);
         $this->setContext('response', fn() => $response);
+        // Seed 'match' to null up front so requestHooks, the global error
+        // path, and any pre-routing code can read it without tripping the
+        // "Failed to find resource" error from getResource('match'). It
+        // gets overwritten with the real RouteMatch once match() runs.
+        $this->setContext('match', fn() => null);
 
         try {
             foreach (self::$requestHooks as $hook) {
