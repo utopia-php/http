@@ -631,6 +631,18 @@ class Http
 
             if (!$response->isSent()) {
                 $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+
+                // Stash a name-keyed map of the route's resolved+validated
+                // params on the context so shutdown / error hooks can read
+                // the same values the action saw — e.g. for label
+                // substitution like {request.fileId}. Race-free because
+                // the context container is per-request.
+                $resolved = [];
+                foreach ($route->getParams() as $name => $param) {
+                    $resolved[$name] = $arguments[$param['order']] ?? null;
+                }
+                $this->setContext('arguments', fn() => $resolved);
+
                 \call_user_func_array($route->getAction(), $arguments);
             }
 

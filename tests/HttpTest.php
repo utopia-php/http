@@ -366,6 +366,35 @@ final class HttpTest extends TestCase
         $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
     }
 
+    public function testShutdownHookCanInjectResolvedArguments(): void
+    {
+        $route = new Route('GET', '/files/:fileId');
+        $route
+            ->param('fileId', '', new Text(64), 'file id', false)
+            ->param('width', 0, new Text(8), 'width', true)
+            ->action(function ($fileId, $width) {
+                echo 'action:' . $fileId . ',' . $width;
+            });
+
+        $this->http
+            ->shutdown()
+            ->inject('arguments')
+            ->action(function (array $arguments) {
+                echo '|shutdown:fileId=' . $arguments['fileId'] . ',width=' . $arguments['width'];
+            });
+
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['fileId' => 'abc123', 'width' => '200']);
+        $_SERVER['REQUEST_URI'] = '/files/abc123';
+
+        ob_start();
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('action:abc123,200|shutdown:fileId=abc123,width=200', $result);
+    }
+
     /**
      * @return \Iterator<string, array<int, string>>
      */
