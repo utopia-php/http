@@ -11,7 +11,7 @@ use Utopia\Http\Adapter;
 
 class Server extends Adapter
 {
-    protected const string REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
+    protected const string CONTEXT_KEY = '__utopia_http_context';
 
     protected SwooleServer $server;
     protected Container $container;
@@ -36,23 +36,28 @@ class Server extends Adapter
     public function onRequest(callable $callback): void
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            $requestContainer = new Container($this->container);
-            $requestContainer->set('swooleRequest', fn() => $request);
-            $requestContainer->set('swooleResponse', fn() => $response);
+            $context = new Container($this->container);
+            $context->set('swooleRequest', fn() => $request);
+            $context->set('swooleResponse', fn() => $response);
 
-            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+            Coroutine::getContext()[self::CONTEXT_KEY] = $context;
 
             try {
                 \call_user_func($callback, new Request($request), new Response($response));
             } finally {
-                unset(Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY]);
+                unset(Coroutine::getContext()[self::CONTEXT_KEY]);
             }
         });
     }
 
     public function getContainer(): Container
     {
-        return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
+        return $this->container;
+    }
+
+    public function getContext(): Container
+    {
+        return Coroutine::getContext()[self::CONTEXT_KEY] ?? $this->container;
     }
 
     public function getServer(): SwooleServer

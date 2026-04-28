@@ -30,5 +30,10 @@ class Server extends Adapter
         return $this->container;
     }
 
+    public function getContext(): Container
+    {
+        return $this->container;
+    }
+
     public function start(): void {}
 }
