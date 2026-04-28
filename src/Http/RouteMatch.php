@@ -25,17 +25,4 @@ final class RouteMatch
         public readonly string $path,
         public readonly array $arguments = [],
     ) {}
-
-    /**
-     * Return a copy of this match with the resolved-argument map replaced.
-     * Used by the framework once the action's parameters have been
-     * validated, so subsequent shutdown / error hooks can read the same
-     * values the action received.
-     *
-     * @param array<string, mixed> $arguments
-     */
-    public function withArguments(array $arguments): self
-    {
-        return new self($this->route, $this->path, $arguments);
-    }
 }
