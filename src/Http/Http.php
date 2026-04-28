@@ -48,8 +48,6 @@ class Http
 
     protected Container $container;
 
-    protected ?Container $requestContainer = null;
-
     /**
      * Current running mode
      */
@@ -106,13 +104,6 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     */
-    protected ?Route $route = null;
-
-    /**
      * Wildcard route
      * If set, this get's executed if no other route is matched
      */
@@ -145,7 +136,8 @@ class Http
         date_default_timezone_set($timezone);
         $this->files = new Files();
         $this->server = $server;
-        $this->container = $server->getContainer();
+        // Captures the global container; assumes Http is constructed at boot, not inside a request.
+        $this->container = $server->getContext();
         $this->setTelemetry(new NoTelemetry());
     }
 
@@ -372,7 +364,7 @@ class Http
     public function getResource(string $name): mixed
     {
         try {
-            return $this->server->getContainer()->get($name);
+            return $this->server->getContext()->get($name);
         } catch (ContainerExceptionInterface|NotFoundExceptionInterface $e) {
             // Normalize DI container errors to the Http layer's "resource" terminology.
             $message = str_replace('dependency', 'resource', $e->getMessage());
@@ -415,13 +407,14 @@ class Http
     }
 
     /**
-     * Set a request-scoped resource on the current request's container.
+     * Register a per-request value on the context container.
+     * Counterpart to setResource() for global singletons.
      *
      * @param list<string> $injections
      */
-    protected function setRequestResource(string $name, callable $callback, array $injections = []): void
+    public function setContext(string $name, callable $callback, array $injections = []): void
     {
-        $this->server->getContainer()->set($name, $callback, $injections);
+        $this->server->getContext()->set($name, $callback, $injections);
     }
 
     /**
@@ -458,24 +451,6 @@ class Http
     public static function getRoutes(): array
     {
         return Router::getRoutes();
-    }
-
-    /**
-     * Get the current route
-     */
-    public function getRoute(): ?Route
-    {
-        return $this->route ?? null;
-    }
-
-    /**
-     * Set the current route
-     */
-    public function setRoute(Route $route): self
-    {
-        $this->route = $route;
-
-        return $this;
     }
 
     /**
@@ -590,8 +565,13 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
+        $context = $this->server->getContext();
+
+        if (!$fresh && $context->has('match')) {
+            $cached = $context->get('match');
+            if ($cached instanceof RouteMatch) {
+                return $cached->route;
+            }
         }
 
         $url = parse_url($request->getURI(), PHP_URL_PATH);
@@ -599,9 +579,10 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $match = Router::match($method, $url);
+        $context->set('match', fn() => $match);
 
-        return $this->route;
+        return $match?->route;
     }
 
     /**
@@ -612,7 +593,14 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $preparedPath = Router::preparePath($route->getMatchedPath());
+        $context = $this->server->getContext();
+        $match = $context->has('match') ? $context->get('match') : null;
+        if (!$match instanceof RouteMatch || $match->route !== $route) {
+            // execute() called directly without a prior match().
+            $match = new RouteMatch($route, '');
+            $context->set('match', fn() => $match);
+        }
+        $preparedPath = Router::preparePath($match->path);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
@@ -635,7 +623,7 @@ class Http
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+                $arguments = $this->getArguments($route, $pathValues, $request->getParams(), $match->arguments);
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
@@ -657,7 +645,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->setContext('error', fn() => $e, []);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -688,17 +676,17 @@ class Http
     }
 
     /**
-     * Get Arguments
-     *
      * @param  array<string, mixed>  $values
      * @param  array<string, mixed>  $requestParams
+     * @param  array<string, mixed>  $resolved
+     * @param-out array<string, mixed> $resolved
      * @return array<int, mixed>
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, array $values, array $requestParams, array &$resolved = []): array
     {
         $arguments = [];
-        foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
+        foreach ($hook->getParams() as $key => $param) {
             $existsInRequest = \array_key_exists($key, $requestParams);
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
@@ -708,6 +696,8 @@ class Http
                 $arg = \call_user_func_array($arg, array_values($this->getResources($param['injections'])));
             }
             $value = $existsInValues ? $values[$key] : $arg;
+
+            $resolved[(string) $key] = $value;
 
             if (!$param['skipValidation']) {
                 if (!$paramExists && !$param['optional']) {
@@ -719,7 +709,6 @@ class Http
                 }
             }
 
-            $hook->setParamValue($key, $value);
             $arguments[$param['order']] = $value;
         }
 
@@ -744,10 +733,12 @@ class Http
         $result = $this->runInternal($request, $response);
 
         $requestDuration = microtime(true) - $start;
+        $context = $this->server->getContext();
+        $match = $context->has('match') ? $context->get('match') : null;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $match instanceof RouteMatch ? $match->route->getPath() : null,
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -777,8 +768,9 @@ class Http
             $response->setCompressionSupported($this->compressionSupported);
         }
 
-        $this->setRequestResource('request', fn() => $request);
-        $this->setRequestResource('response', fn() => $response);
+        $this->setContext('request', fn() => $request);
+        $this->setContext('response', fn() => $response);
+        $this->setContext('match', fn() => null);
 
         try {
             foreach (self::$requestHooks as $hook) {
@@ -786,7 +778,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->setContext('error', fn() => $e, []);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
@@ -816,8 +808,6 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setRequestResource('route', fn() => $route, []);
-
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
             $response->disablePayload();
@@ -844,7 +834,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->setContext('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -854,13 +844,14 @@ class Http
         }
 
         if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
+            // Clone before stamping $path so concurrent coroutines don't fight over the singleton.
+            $route = clone self::$wildcardRoute;
             $path = parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
-            $this->setRequestResource('route', fn() => $route, []);
+            $match = new RouteMatch($route, '');
+            $this->setContext('match', fn() => $match);
         }
         if (null !== $route) {
             return $this->execute($route, $request, $response);
@@ -884,7 +875,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->setContext('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -892,7 +883,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
-                    $this->setRequestResource('error', fn() => new Exception('Not Found', 404), []);
+                    $this->setContext('error', fn() => new Exception('Not Found', 404), []);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }

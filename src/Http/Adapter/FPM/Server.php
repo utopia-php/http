@@ -25,7 +25,7 @@ class Server extends Adapter
         \call_user_func($callback, $this);
     }
 
-    public function getContainer(): Container
+    public function getContext(): Container
     {
         return $this->container;
     }

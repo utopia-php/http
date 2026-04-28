@@ -366,13 +366,94 @@ final class HttpTest extends TestCase
         $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
     }
 
-    public function testCanSetRoute(): void
+    public function testShutdownHookCanInjectResolvedArguments(): void
     {
-        $route = new Route('GET', '/path');
+        $route = new Route('GET', '/files/:fileId');
+        $route
+            ->param('fileId', '', new Text(64), 'file id', false)
+            ->param('width', 0, new Text(8), 'width', true)
+            ->action(function ($fileId, $width) {
+                echo 'action:' . $fileId . ',' . $width;
+            });
 
-        $this->assertNull($this->http->getRoute());
-        $this->http->setRoute($route);
-        $this->assertSame($route, $this->http->getRoute());
+        $this->http
+            ->shutdown()
+            ->inject('match')
+            ->action(function (RouteMatch $match) {
+                echo '|shutdown:fileId=' . $match->arguments['fileId'] . ',width=' . $match->arguments['width'];
+            });
+
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['fileId' => 'abc123', 'width' => '200']);
+        $_SERVER['REQUEST_URI'] = '/files/abc123';
+
+        ob_start();
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('action:abc123,200|shutdown:fileId=abc123,width=200', $result);
+    }
+
+    public function testErrorHookSeesPartialMatchArgumentsWhenValidationFails(): void
+    {
+        $route = new Route('GET', '/files/:fileId/things/:thingId');
+        $route
+            ->param('fileId', '', new Text(64), 'file id', false)
+            ->param('thingId', '', new Text(1, min: 0), 'thing id', false)
+            ->action(function ($fileId, $thingId) {
+                echo 'never';
+            });
+
+        $seen = new \stdClass();
+
+        $this->http
+            ->error()
+            ->inject('match')
+            ->action(function (?RouteMatch $match) use ($seen) {
+                $seen->arguments = $match?->arguments;
+            });
+
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['fileId' => 'abc123', 'thingId' => 'too-long-for-the-validator']);
+
+        ob_start();
+        $this->http->execute($route, $request, new Response());
+        ob_end_clean();
+
+        // fileId resolved fine; thingId failed validation.
+        // Error hook should see fileId (and the candidate thingId value).
+        $this->assertSame('abc123', $seen->arguments['fileId'] ?? null);
+        $this->assertSame('too-long-for-the-validator', $seen->arguments['thingId'] ?? null);
+    }
+
+    public function testMatchIsNullDuringEarlyErrorBeforeRouting(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/whatever';
+
+        Http::onRequest()
+            ->action(function (): void {
+                throw new \RuntimeException('boom');
+            });
+
+        $seen = new \stdClass();
+        $seen->matchWasSet = false;
+        $seen->matchValue = 'sentinel';
+
+        Http::error()
+            ->inject('match')
+            ->action(function (?RouteMatch $match) use ($seen): void {
+                $seen->matchWasSet = true;
+                $seen->matchValue = $match;
+            });
+
+        ob_start();
+        @$this->http->run(new Request(), new Response());
+        ob_end_clean();
+
+        $this->assertTrue($seen->matchWasSet, 'global error hook should have run');
+        $this->assertNull($seen->matchValue, "'match' should be null on the context before routing");
     }
 
     /**
@@ -422,7 +503,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $url;
 
         $this->assertSame($expected, $this->http->match(new Request()));
-        $this->assertSame($expected, $this->http->getRoute());
+        $this->assertSame($expected, $this->http->getResource('match')?->route);
     }
 
     public function testNoMismatchRoute(): void
@@ -451,7 +532,7 @@ final class HttpTest extends TestCase
             $route = $this->http->match(new Request(), fresh: true);
 
             $this->assertNull($route);
-            $this->assertNull($this->http->getRoute());
+            $this->assertNull($this->http->getResource('match')?->route);
         }
     }
 
@@ -466,7 +547,7 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
             $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getRoute());
+            $this->assertSame($route1, $this->http->getResource('match')?->route);
 
             // Second request match returns cached route
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
@@ -474,12 +555,12 @@ final class HttpTest extends TestCase
             $request2 = new Request();
             $matched = $this->http->match($request2, fresh: false);
             $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getRoute());
+            $this->assertSame($route1, $this->http->getResource('match')?->route);
 
             // Fresh match returns new route
             $matched = $this->http->match($request2, fresh: true);
             $this->assertSame($route2, $matched);
-            $this->assertSame($route2, $this->http->getRoute());
+            $this->assertSame($route2, $this->http->getResource('match')?->route);
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
@@ -493,7 +574,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
 
         $this->assertSame($route, $this->http->match(new Request()));
-        $this->assertSame($route, $this->http->getRoute());
+        $this->assertSame($route, $this->http->getResource('match')?->route);
     }
 
     public function testCanRunRequest(): void
@@ -532,9 +613,9 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         Http::init()
-            ->action(function () {
-                $route = $this->http->getRoute();
-                $this->container->set('myRoute', fn() => $route);
+            ->inject('match')
+            ->action(function (RouteMatch $match) {
+                $this->container->set('myRoute', fn() => $match->route);
             });
 
 
