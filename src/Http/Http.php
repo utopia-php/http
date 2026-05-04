@@ -699,25 +699,35 @@ class Http
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $actualKey = $key;
+            $requestKey = $key;
             if (!\array_key_exists($key, $requestParams) && !empty($param['aliases'])) {
                 foreach ($param['aliases'] as $alias) {
                     if (\array_key_exists($alias, $requestParams)) {
-                        $actualKey = $alias;
+                        $requestKey = $alias;
                         break;
                     }
                 }
             }
 
-            $existsInRequest = \array_key_exists($actualKey, $requestParams);
-            $existsInValues = \array_key_exists($key, $values);
+            $valuesKey = $key;
+            if (!\array_key_exists($key, $values) && !empty($param['aliases'])) {
+                foreach ($param['aliases'] as $alias) {
+                    if (\array_key_exists($alias, $values)) {
+                        $valuesKey = $alias;
+                        break;
+                    }
+                }
+            }
+
+            $existsInRequest = \array_key_exists($requestKey, $requestParams);
+            $existsInValues = \array_key_exists($valuesKey, $values);
             $paramExists = $existsInRequest || $existsInValues;
 
-            $arg = $existsInRequest ? $requestParams[$actualKey] : $param['default'];
+            $arg = $existsInRequest ? $requestParams[$requestKey] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
                 $arg = \call_user_func_array($arg, array_values($this->getResources($param['injections'])));
             }
-            $value = $existsInValues ? $values[$key] : $arg;
+            $value = $existsInValues ? $values[$valuesKey] : $arg;
 
             if (!$param['skipValidation']) {
                 if (!$paramExists && !$param['optional']) {

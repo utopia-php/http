@@ -425,6 +425,48 @@ final class HttpTest extends TestCase
             ob_end_clean();
 
             $this->assertSame('posted-alias', $result);
+
+            // URL path: alias resolves the placeholder name to the canonical param key
+            $_GET = [];
+            $_POST = [];
+            $_SERVER['REQUEST_METHOD'] = 'GET';
+            $_SERVER['REQUEST_URI'] = '/users/abc-123';
+
+            $route = Http::get('/users/:userId')
+                ->param('user_id', '', new Text(200), 'user id', false, aliases: ['userId'])
+                ->action(function ($user_id) {
+                    echo $user_id;
+                });
+
+            $matched = $this->http->match(new Request());
+            $this->assertSame($route, $matched);
+
+            ob_start();
+            $this->http->execute($matched, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
+
+            $this->assertSame('abc-123', $result);
+
+            // URL path value beats request param when both are present (path-level override)
+            $_GET = ['user_id' => 'from-query'];
+            $_SERVER['REQUEST_URI'] = '/users-2/from-path';
+
+            $route = Http::get('/users-2/:userId')
+                ->param('user_id', '', new Text(200), 'user id', false, aliases: ['userId'])
+                ->action(function ($user_id) {
+                    echo $user_id;
+                });
+
+            $matched = $this->http->match(new Request());
+            $this->assertSame($route, $matched);
+
+            ob_start();
+            $this->http->execute($matched, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
+
+            $this->assertSame('from-path', $result);
         } finally {
             $_GET = $savedGet;
             $_POST = $savedPost;
