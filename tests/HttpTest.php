@@ -299,107 +299,141 @@ final class HttpTest extends TestCase
                 echo 'error-' . $error->getMessage();
             });
 
-        // Alias resolves when canonical key is absent
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias', 'xLegacy'])
-            ->action(function ($x) {
-                echo $x;
-            });
+        $savedGet = $_GET;
+        $savedPost = $_POST;
+        $savedMethod = $_SERVER['REQUEST_METHOD'] ?? null;
 
-        ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['xAlias' => 'from-alias']);
-        $this->http->execute($route, $request, new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
+        try {
+            // GET request: alias resolves from $_GET when canonical key is absent
+            $_GET = ['xAlias' => 'from-alias'];
+            $_SERVER['REQUEST_METHOD'] = 'GET';
 
-        $this->assertSame('from-alias', $result);
+            $route = new Route('GET', '/path');
+            $route
+                ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias', 'xLegacy'])
+                ->action(function ($x) {
+                    echo $x;
+                });
 
-        // Canonical key wins when both are present
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
-            ->action(function ($x) {
-                echo $x;
-            });
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
 
-        ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'canonical', 'xAlias' => 'aliased']);
-        $this->http->execute($route, $request, new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
+            $this->assertSame('from-alias', $result);
 
-        $this->assertSame('canonical', $result);
+            // GET request: canonical key wins when both are present in $_GET
+            $_GET = ['x' => 'canonical', 'xAlias' => 'aliased'];
 
-        // First matching alias wins when multiple are present
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias1', 'xAlias2'])
-            ->action(function ($x) {
-                echo $x;
-            });
+            $route = new Route('GET', '/path');
+            $route
+                ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
+                ->action(function ($x) {
+                    echo $x;
+                });
 
-        ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['xAlias2' => 'second', 'xAlias1' => 'first']);
-        $this->http->execute($route, $request, new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
 
-        $this->assertSame('first', $result);
+            $this->assertSame('canonical', $result);
 
-        // Falls back to default when neither canonical nor any alias is present
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
-            ->action(function ($x) {
-                echo $x;
-            });
+            // GET request: first matching alias wins when multiple are present in $_GET
+            $_GET = ['xAlias2' => 'second', 'xAlias1' => 'first'];
 
-        ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['unrelated' => 'value']);
-        $this->http->execute($route, $request, new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
+            $route = new Route('GET', '/path');
+            $route
+                ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias1', 'xAlias2'])
+                ->action(function ($x) {
+                    echo $x;
+                });
 
-        $this->assertSame('x-def', $result);
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
 
-        // Required param throws when neither canonical nor any alias is present
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', '', new Text(200), 'x param', false, aliases: ['xAlias'])
-            ->action(function ($x) {
-                echo $x;
-            });
+            $this->assertSame('first', $result);
 
-        ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['unrelated' => 'value']);
-        $this->http->execute($route, $request, new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
+            // GET request: falls back to default when neither canonical nor any alias is in $_GET
+            $_GET = ['unrelated' => 'value'];
 
-        $this->assertSame('error-Param "x" is not optional.', $result);
+            $route = new Route('GET', '/path');
+            $route
+                ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
+                ->action(function ($x) {
+                    echo $x;
+                });
 
-        // Validation runs against the aliased value and reports the canonical key
-        $route = new Route('GET', '/path');
-        $route
-            ->param('x', '', new Text(1, min: 0), 'x param', false, aliases: ['xAlias'])
-            ->action(function ($x) {
-                echo $x;
-            });
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
 
-        ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['xAlias' => 'too-long']);
-        $this->http->execute($route, $request, new Response());
-        $result = ob_get_contents();
-        ob_end_clean();
+            $this->assertSame('x-def', $result);
 
-        $this->assertSame('error-Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
+            // GET request: required param throws when neither canonical nor any alias is in $_GET
+            $_GET = ['unrelated' => 'value'];
+
+            $route = new Route('GET', '/path');
+            $route
+                ->param('x', '', new Text(200), 'x param', false, aliases: ['xAlias'])
+                ->action(function ($x) {
+                    echo $x;
+                });
+
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
+
+            $this->assertSame('error-Param "x" is not optional.', $result);
+
+            // GET request: validation runs against the aliased value and reports the canonical key
+            $_GET = ['xAlias' => 'too-long'];
+
+            $route = new Route('GET', '/path');
+            $route
+                ->param('x', '', new Text(1, min: 0), 'x param', false, aliases: ['xAlias'])
+                ->action(function ($x) {
+                    echo $x;
+                });
+
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
+
+            $this->assertSame('error-Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
+
+            // POST request: alias resolves from $_POST body
+            $_GET = [];
+            $_POST = ['xAlias' => 'posted-alias'];
+            $_SERVER['REQUEST_METHOD'] = 'POST';
+
+            $route = new Route('POST', '/path');
+            $route
+                ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
+                ->action(function ($x) {
+                    echo $x;
+                });
+
+            ob_start();
+            $this->http->execute($route, new Request(), new Response());
+            $result = ob_get_contents();
+            ob_end_clean();
+
+            $this->assertSame('posted-alias', $result);
+        } finally {
+            $_GET = $savedGet;
+            $_POST = $savedPost;
+            if ($savedMethod === null) {
+                unset($_SERVER['REQUEST_METHOD']);
+            } else {
+                $_SERVER['REQUEST_METHOD'] = $savedMethod;
+            }
+        }
     }
 
     public function testAllowRouteOverrides(): void
