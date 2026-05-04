@@ -11,6 +11,7 @@ use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
+use Utopia\Servers\Hook;
 use Utopia\Validator\Text;
 
 final class HttpTest extends TestCase
@@ -288,6 +289,135 @@ final class HttpTest extends TestCase
         ob_end_clean();
 
         $this->assertSame('x-def', $result);
+    }
+
+    public function testCanResolveParamAliases(): void
+    {
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) {
+                echo 'error-' . $error->getMessage();
+            });
+
+        // Alias resolves when canonical key is absent
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->action(function ($x) {
+                echo $x;
+            });
+        $this->setParamAliases($route, 'x', ['xAlias', 'xLegacy']);
+
+        ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['xAlias' => 'from-alias']);
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('from-alias', $result);
+
+        // Canonical key wins when both are present
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->action(function ($x) {
+                echo $x;
+            });
+        $this->setParamAliases($route, 'x', ['xAlias']);
+
+        ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['x' => 'canonical', 'xAlias' => 'aliased']);
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('canonical', $result);
+
+        // First matching alias wins when multiple are present
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->action(function ($x) {
+                echo $x;
+            });
+        $this->setParamAliases($route, 'x', ['xAlias1', 'xAlias2']);
+
+        ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['xAlias2' => 'second', 'xAlias1' => 'first']);
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('first', $result);
+
+        // Falls back to default when neither canonical nor any alias is present
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->action(function ($x) {
+                echo $x;
+            });
+        $this->setParamAliases($route, 'x', ['xAlias']);
+
+        ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['unrelated' => 'value']);
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('x-def', $result);
+
+        // Required param throws when neither canonical nor any alias is present
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', '', new Text(200), 'x param', false)
+            ->action(function ($x) {
+                echo $x;
+            });
+        $this->setParamAliases($route, 'x', ['xAlias']);
+
+        ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['unrelated' => 'value']);
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('error-Param "x" is not optional.', $result);
+
+        // Validation runs against the aliased value and reports the canonical key
+        $route = new Route('GET', '/path');
+        $route
+            ->param('x', '', new Text(1, min: 0), 'x param', false)
+            ->action(function ($x) {
+                echo $x;
+            });
+        $this->setParamAliases($route, 'x', ['xAlias']);
+
+        ob_start();
+        $request = new UtopiaFPMRequestTest();
+        $request::_setParams(['xAlias' => 'too-long']);
+        $this->http->execute($route, $request, new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('error-Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
+    }
+
+    /**
+     * @param  array<int, string>  $aliases
+     */
+    private function setParamAliases(Hook $hook, string $key, array $aliases): void
+    {
+        $reflection = new \ReflectionProperty(Hook::class, 'params');
+        $params = $reflection->getValue($hook);
+        $params[$key]['aliases'] = $aliases;
+        $reflection->setValue($hook, $params);
     }
 
     public function testAllowRouteOverrides(): void

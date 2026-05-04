@@ -699,11 +699,21 @@ class Http
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
-            $existsInRequest = \array_key_exists($key, $requestParams);
+            $actualKey = $key;
+            if (!\array_key_exists($key, $requestParams) && !empty($param['aliases'])) {
+                foreach ($param['aliases'] as $alias) {
+                    if (\array_key_exists($alias, $requestParams)) {
+                        $actualKey = $alias;
+                        break;
+                    }
+                }
+            }
+
+            $existsInRequest = \array_key_exists($actualKey, $requestParams);
             $existsInValues = \array_key_exists($key, $values);
             $paramExists = $existsInRequest || $existsInValues;
 
-            $arg = $existsInRequest ? $requestParams[$key] : $param['default'];
+            $arg = $existsInRequest ? $requestParams[$actualKey] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
                 $arg = \call_user_func_array($arg, array_values($this->getResources($param['injections'])));
             }
