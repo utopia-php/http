@@ -11,7 +11,6 @@ use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
 use Utopia\Http\Tests\UtopiaFPMRequestTest;
-use Utopia\Servers\Hook;
 use Utopia\Validator\Text;
 
 final class HttpTest extends TestCase
@@ -303,11 +302,10 @@ final class HttpTest extends TestCase
         // Alias resolves when canonical key is absent
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias', 'xLegacy'])
             ->action(function ($x) {
                 echo $x;
             });
-        $this->setParamAliases($route, 'x', ['xAlias', 'xLegacy']);
 
         ob_start();
         $request = new UtopiaFPMRequestTest();
@@ -321,11 +319,10 @@ final class HttpTest extends TestCase
         // Canonical key wins when both are present
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
             ->action(function ($x) {
                 echo $x;
             });
-        $this->setParamAliases($route, 'x', ['xAlias']);
 
         ob_start();
         $request = new UtopiaFPMRequestTest();
@@ -339,11 +336,10 @@ final class HttpTest extends TestCase
         // First matching alias wins when multiple are present
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias1', 'xAlias2'])
             ->action(function ($x) {
                 echo $x;
             });
-        $this->setParamAliases($route, 'x', ['xAlias1', 'xAlias2']);
 
         ob_start();
         $request = new UtopiaFPMRequestTest();
@@ -357,11 +353,10 @@ final class HttpTest extends TestCase
         // Falls back to default when neither canonical nor any alias is present
         $route = new Route('GET', '/path');
         $route
-            ->param('x', 'x-def', new Text(200), 'x param', true)
+            ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
             ->action(function ($x) {
                 echo $x;
             });
-        $this->setParamAliases($route, 'x', ['xAlias']);
 
         ob_start();
         $request = new UtopiaFPMRequestTest();
@@ -375,11 +370,10 @@ final class HttpTest extends TestCase
         // Required param throws when neither canonical nor any alias is present
         $route = new Route('GET', '/path');
         $route
-            ->param('x', '', new Text(200), 'x param', false)
+            ->param('x', '', new Text(200), 'x param', false, aliases: ['xAlias'])
             ->action(function ($x) {
                 echo $x;
             });
-        $this->setParamAliases($route, 'x', ['xAlias']);
 
         ob_start();
         $request = new UtopiaFPMRequestTest();
@@ -393,11 +387,10 @@ final class HttpTest extends TestCase
         // Validation runs against the aliased value and reports the canonical key
         $route = new Route('GET', '/path');
         $route
-            ->param('x', '', new Text(1, min: 0), 'x param', false)
+            ->param('x', '', new Text(1, min: 0), 'x param', false, aliases: ['xAlias'])
             ->action(function ($x) {
                 echo $x;
             });
-        $this->setParamAliases($route, 'x', ['xAlias']);
 
         ob_start();
         $request = new UtopiaFPMRequestTest();
@@ -407,17 +400,6 @@ final class HttpTest extends TestCase
         ob_end_clean();
 
         $this->assertSame('error-Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
-    }
-
-    /**
-     * @param  array<int, string>  $aliases
-     */
-    private function setParamAliases(Hook $hook, string $key, array $aliases): void
-    {
-        $reflection = new \ReflectionProperty(Hook::class, 'params');
-        $params = $reflection->getValue($hook);
-        $params[$key]['aliases'] = $aliases;
-        $reflection->setValue($hook, $params);
     }
 
     public function testAllowRouteOverrides(): void

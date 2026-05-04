@@ -32,7 +32,7 @@
     "require": {
         "php": ">=8.3",
         "utopia-php/di": "0.3.*",
-        "utopia-php/servers": "0.3.*",
+        "utopia-php/servers": "dev-feat-param-aliases as 0.3.x-dev",
         "utopia-php/compression": "0.1.*",
         "utopia-php/telemetry": "0.2.*",
         "utopia-php/validators": "0.2.*"
