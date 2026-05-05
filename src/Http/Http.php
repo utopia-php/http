@@ -99,19 +99,6 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     */
-    protected ?Route $route = null;
-
-    /**
-     * Wildcard route
-     * If set, this get's executed if no other route is matched
-     */
-    protected static ?Route $wildcardRoute = null;
-
-    /**
      * Compression
      */
     protected bool $compression = false;
@@ -242,9 +229,10 @@ class Http
      */
     public static function wildcard(): Route
     {
-        self::$wildcardRoute = new Route('', '');
+        $route = new Route('', '');
+        Router::setWildcard($route);
 
-        return self::$wildcardRoute;
+        return $route;
     }
 
     /**
@@ -417,24 +405,6 @@ class Http
     }
 
     /**
-     * Get the current route
-     */
-    public function getRoute(): ?Route
-    {
-        return $this->route ?? null;
-    }
-
-    /**
-     * Set the current route
-     */
-    public function setRoute(Route $route): self
-    {
-        $this->route = $route;
-
-        return $this;
-    }
-
-    /**
      * Add Route
      *
      * Add routing route method, path and callback
@@ -538,44 +508,94 @@ class Http
     }
 
     /**
-     * Match
-     *
-     * Find matching route given current user request
-     *
-     * @param  bool  $fresh If true, will not match any cached route
+     * Find the route registered for the given request, or null if none match.
      */
-    public function match(Request $request, bool $fresh = true): ?Route
+    public function match(Request $request): ?RouteMatch
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
-        }
-
         $url = parse_url($request->getURI(), PHP_URL_PATH);
         $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
-
-        return $this->route;
+        return Router::match($method, $url);
     }
 
     /**
-     * Execute a given route with middlewares and error handling
+     * Match a request and run its route's handler and hooks.
+     *
+     * HEAD runs as GET with the response body suppressed. OPTIONS fires
+     * options hooks and returns without dispatching. An unmatched request
+     * fires global error hooks with a 404.
+     *
+     * This is a re-entrant dispatch primitive — safe to call from inside
+     * another handler with a synthesized Request/Response (e.g. a GraphQL
+     * resolver invoking an API route). It does not run request-level setup
+     * (compression, request hooks, telemetry); those belong to {@see run()},
+     * which is the entry point for top-level requests from the server.
      */
-    public function execute(Route $route, Request $request, Response $response): static
+    public function execute(Request $request, Response $response): static
     {
+        $method = $request->getMethod();
+
+        if (self::REQUEST_METHOD_HEAD === $method) {
+            $method = self::REQUEST_METHOD_GET;
+            $response->disablePayload();
+        }
+
+        $match = $this->match($request);
+
+        if (self::REQUEST_METHOD_OPTIONS === $method) {
+            $groups = $match?->route->getGroups() ?? [];
+
+            try {
+                foreach ($groups as $group) {
+                    foreach (self::$options as $option) { // Group options hooks
+                        /** @var Hook $option */
+                        if (\in_array($group, $option->getGroups())) {
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match->route));
+                        }
+                    }
+                }
+
+                foreach (self::$options as $option) { // Global options hooks
+                    /** @var Hook $option */
+                    if (\in_array('*', $option->getGroups())) {
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match?->route));
+                    }
+                }
+            } catch (\Throwable $e) {
+                foreach (self::$errors as $error) { // Global error hooks
+                    /** @var Hook $error */
+                    if (\in_array('*', $error->getGroups())) {
+                        $this->context()->set('error', fn() => $e, []);
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams(), $match?->route));
+                    }
+                }
+            }
+
+            return $this;
+        }
+
+        if ($match === null) {
+            foreach (self::$errors as $error) {
+                if (\in_array('*', $error->getGroups())) {
+                    $this->context()->set('error', fn() => new Exception('Not Found', 404), []);
+                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                }
+            }
+
+            return $this;
+        }
+
+        $route = $match->route;
         $arguments = [];
         $groups = $route->getGroups();
-
-        $preparedPath = Router::preparePath($route->getMatchedPath());
-        $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -584,21 +604,21 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+                $arguments = $this->getArguments($route, $match->params, $request->getParams(), $route);
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -607,7 +627,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -619,7 +639,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (\in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $pathValues, $request->getParams());
+                            $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -631,7 +651,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -651,7 +671,7 @@ class Http
      * @return array<int, mixed>
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, array $values, array $requestParams, ?Route $route = null): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
@@ -701,6 +721,13 @@ class Http
         }
 
         foreach ($hook->getInjections() as $injection) {
+            // 'route' is frame-local: pass the dispatch frame's matched Route
+            // through directly instead of routing through shared context.
+            if ($injection['name'] === 'route') {
+                $arguments[$injection['order']] = $route;
+                continue;
+            }
+
             $arguments[$injection['order']] = $this->adapter->context()->get($injection['name']);
         }
 
@@ -708,7 +735,17 @@ class Http
     }
 
     /**
-     * Run: wrapper function to record telemetry. All domain logic should happen in `runInternal`.
+     * Handle a top-level HTTP request.
+     *
+     * This is the entry point wired into the server adapter for each
+     * incoming request. It runs the full request lifecycle: compression
+     * setup, request hooks, static-file serving, route match, dispatch,
+     * and telemetry.
+     *
+     * For dispatching a sub-request from inside a handler (e.g. a
+     * GraphQL resolver invoking another API route with a synthesized
+     * Request/Response), use {@see execute()} instead — it skips the
+     * outer-request setup that has already run.
      */
     public function run(Request $request, Response $response): static
     {
@@ -724,7 +761,7 @@ class Http
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $this->match($request)?->route->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -789,93 +826,7 @@ class Http
             return $this;
         }
 
-        $method = $request->getMethod();
-        $route = $this->match($request);
-        $groups = ($route instanceof Route) ? $route->getGroups() : [];
-
-        $this->context()->set('route', fn() => $route, []);
-
-        if (self::REQUEST_METHOD_HEAD === $method) {
-            $method = self::REQUEST_METHOD_GET;
-            $response->disablePayload();
-        }
-
-        if (self::REQUEST_METHOD_OPTIONS === $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        /** @var Hook $option */
-                        if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    /** @var Hook $option */
-                    if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    /** @var Hook $error */
-                    if (\in_array('*', $error->getGroups())) {
-                        $this->context()->set('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                    }
-                }
-            }
-
-            return $this;
-        }
-
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
-            $path = parse_url($request->getURI(), PHP_URL_PATH);
-            $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
-            $route->path($path);
-
-            $this->context()->set('route', fn() => $route, []);
-        }
-        if (null !== $route) {
-            return $this->execute($route, $request, $response);
-        }
-
-        if (self::REQUEST_METHOD_OPTIONS === $method) {
-            try {
-                foreach ($groups as $group) {
-                    foreach (self::$options as $option) { // Group options hooks
-                        if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                        }
-                    }
-                }
-
-                foreach (self::$options as $option) { // Global options hooks
-                    if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
-                    }
-                }
-            } catch (\Throwable $e) {
-                foreach (self::$errors as $error) { // Global error hooks
-                    if (\in_array('*', $error->getGroups())) {
-                        $this->context()->set('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                    }
-                }
-            }
-        } else {
-            foreach (self::$errors as $error) { // Global error hooks
-                if (\in_array('*', $error->getGroups())) {
-                    $this->context()->set('error', fn() => new Exception('Not Found', 404), []);
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
-                }
-            }
-        }
-
-        return $this;
+        return $this->execute($request, $response);
     }
 
 
@@ -923,6 +874,5 @@ class Http
         self::$options = [];
         self::$startHooks = [];
         self::$requestHooks = [];
-        self::$wildcardRoute = null;
     }
 }

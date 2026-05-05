@@ -38,25 +38,12 @@ class Route extends Hook
      */
     protected int $order;
 
-    protected string $matchedPath = '';
-
     public function __construct(string $method, string $path)
     {
         parent::__construct();
         $this->path($path);
         $this->method = $method;
         $this->order = ++self::$counter;
-    }
-
-    public function setMatchedPath(string $path): self
-    {
-        $this->matchedPath = $path;
-        return $this;
-    }
-
-    public function getMatchedPath(): string
-    {
-        return $this->matchedPath;
     }
 
     /**
@@ -130,19 +117,19 @@ class Route extends Hook
     }
 
     /**
-     * Get path params.
+     * Extract this route's path params from a request URL.
      *
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
-    public function getPathValues(Request $request, string $path = ''): array
+    public function resolveParams(string $url, string $matchedTemplate = ''): array
     {
         $pathValues = [];
-        $parts = explode('/', ltrim($request->getURI(), '/'));
+        $parts = explode('/', ltrim($url, '/'));
 
-        if (empty($path)) {
-            $pathParams = $this->pathParams[$path] ?? array_values($this->pathParams)[0] ?? [];
+        if (empty($matchedTemplate)) {
+            $pathParams = $this->pathParams[$matchedTemplate] ?? array_values($this->pathParams)[0] ?? [];
         } else {
-            $pathParams = $this->pathParams[$path] ?? [];
+            $pathParams = $this->pathParams[$matchedTemplate] ?? [];
         }
 
         foreach ($pathParams as $key => $index) {

@@ -90,6 +90,10 @@ final class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
+        Http::setAllowOverride(true);
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/path';
+
         $this->resources->set('rand', fn() => rand());
         $resource = $this->resources->get('rand');
 
@@ -101,7 +105,7 @@ final class HttpTest extends TestCase
             });
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
 
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
@@ -111,13 +115,13 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
         // With Params
         $resource = $this->resources->get('rand');
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
 
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
@@ -135,7 +139,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -143,7 +147,7 @@ final class HttpTest extends TestCase
 
         // With Error
         $resource = $this->resources->get('rand');
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
 
         $route
             ->param('x', 'x-def', new Text(1, min: 0), 'x param', false)
@@ -155,7 +159,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -204,7 +208,7 @@ final class HttpTest extends TestCase
                 echo '-(shutdown-homepage)';
             });
 
-        $route = new Route('GET', '/path');
+        $route = Http::get('/api');
 
         $route
             ->groups(['api'])
@@ -214,7 +218,7 @@ final class HttpTest extends TestCase
                 echo $x . '-', $y;
             });
 
-        $homepage = new Route('GET', '/path');
+        $homepage = Http::get('/homepage');
 
         $homepage
             ->groups(['homepage'])
@@ -227,7 +231,8 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, new Response());
+        $_SERVER['REQUEST_URI'] = '/api';
+        $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -237,7 +242,8 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request, new Response());
+        $_SERVER['REQUEST_URI'] = '/homepage';
+        $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -246,6 +252,10 @@ final class HttpTest extends TestCase
 
     public function testCanAddAndExecuteHooks(): void
     {
+        Http::setAllowOverride(true);
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/path';
+
         $this->http
             ->init()
             ->action(function () {
@@ -259,7 +269,7 @@ final class HttpTest extends TestCase
             });
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->action(function ($x) {
@@ -267,14 +277,14 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
         $this->assertSame('(init)-x-def-(shutdown)', $result);
 
         // Default Params
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->hook(false)
@@ -283,7 +293,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -292,6 +302,8 @@ final class HttpTest extends TestCase
 
     public function testCanResolveParamAliases(): void
     {
+        Http::setAllowOverride(true);
+
         $this->http
             ->error()
             ->inject('error')
@@ -302,13 +314,15 @@ final class HttpTest extends TestCase
         $savedGet = $_GET;
         $savedPost = $_POST;
         $savedMethod = $_SERVER['REQUEST_METHOD'] ?? null;
+        $savedUri = $_SERVER['REQUEST_URI'] ?? null;
 
         try {
             // GET request: alias resolves from $_GET when canonical key is absent
             $_GET = ['xAlias' => 'from-alias'];
             $_SERVER['REQUEST_METHOD'] = 'GET';
+            $_SERVER['REQUEST_URI'] = '/path';
 
-            $route = new Route('GET', '/path');
+            $route = Http::get('/path');
             $route
                 ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias', 'xLegacy'])
                 ->action(function ($x) {
@@ -316,7 +330,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -325,7 +339,7 @@ final class HttpTest extends TestCase
             // GET request: canonical key wins when both are present in $_GET
             $_GET = ['x' => 'canonical', 'xAlias' => 'aliased'];
 
-            $route = new Route('GET', '/path');
+            $route = Http::get('/path');
             $route
                 ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
                 ->action(function ($x) {
@@ -333,7 +347,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -342,7 +356,7 @@ final class HttpTest extends TestCase
             // GET request: first matching alias wins when multiple are present in $_GET
             $_GET = ['xAlias2' => 'second', 'xAlias1' => 'first'];
 
-            $route = new Route('GET', '/path');
+            $route = Http::get('/path');
             $route
                 ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias1', 'xAlias2'])
                 ->action(function ($x) {
@@ -350,7 +364,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -359,7 +373,7 @@ final class HttpTest extends TestCase
             // GET request: falls back to default when neither canonical nor any alias is in $_GET
             $_GET = ['unrelated' => 'value'];
 
-            $route = new Route('GET', '/path');
+            $route = Http::get('/path');
             $route
                 ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
                 ->action(function ($x) {
@@ -367,7 +381,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -376,7 +390,7 @@ final class HttpTest extends TestCase
             // GET request: required param throws when neither canonical nor any alias is in $_GET
             $_GET = ['unrelated' => 'value'];
 
-            $route = new Route('GET', '/path');
+            $route = Http::get('/path');
             $route
                 ->param('x', '', new Text(200), 'x param', false, aliases: ['xAlias'])
                 ->action(function ($x) {
@@ -384,7 +398,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -393,7 +407,7 @@ final class HttpTest extends TestCase
             // GET request: validation runs against the aliased value and reports the canonical key
             $_GET = ['xAlias' => 'too-long'];
 
-            $route = new Route('GET', '/path');
+            $route = Http::get('/path');
             $route
                 ->param('x', '', new Text(1, min: 0), 'x param', false, aliases: ['xAlias'])
                 ->action(function ($x) {
@@ -401,7 +415,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -412,7 +426,7 @@ final class HttpTest extends TestCase
             $_POST = ['xAlias' => 'posted-alias'];
             $_SERVER['REQUEST_METHOD'] = 'POST';
 
-            $route = new Route('POST', '/path');
+            $route = Http::post('/path');
             $route
                 ->param('x', 'x-def', new Text(200), 'x param', true, aliases: ['xAlias'])
                 ->action(function ($x) {
@@ -420,7 +434,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -439,10 +453,10 @@ final class HttpTest extends TestCase
                 });
 
             $matched = $this->http->match(new Request());
-            $this->assertSame($route, $matched);
+            $this->assertSame($route, $matched?->route);
 
             ob_start();
-            $this->http->execute($matched, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -459,10 +473,10 @@ final class HttpTest extends TestCase
                 });
 
             $matched = $this->http->match(new Request());
-            $this->assertSame($route, $matched);
+            $this->assertSame($route, $matched?->route);
 
             ob_start();
-            $this->http->execute($matched, new Request(), new Response());
+            $this->http->execute(new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -474,6 +488,11 @@ final class HttpTest extends TestCase
                 unset($_SERVER['REQUEST_METHOD']);
             } else {
                 $_SERVER['REQUEST_METHOD'] = $savedMethod;
+            }
+            if ($savedUri === null) {
+                unset($_SERVER['REQUEST_URI']);
+            } else {
+                $_SERVER['REQUEST_URI'] = $savedUri;
             }
         }
     }
@@ -510,6 +529,9 @@ final class HttpTest extends TestCase
 
     public function testCanHookThrowExceptions(): void
     {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/path';
+
         $this->http
             ->init()
             ->param('y', '', new Text(5), 'y param', false)
@@ -531,7 +553,7 @@ final class HttpTest extends TestCase
             });
 
         // param not provided for init
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
         $route
             ->param('x', 'x-def', new Text(200), 'x param', true)
             ->action(function ($x) {
@@ -539,7 +561,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -547,20 +569,11 @@ final class HttpTest extends TestCase
 
         ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
         $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
-    }
-
-    public function testCanSetRoute(): void
-    {
-        $route = new Route('GET', '/path');
-
-        $this->assertNull($this->http->getRoute());
-        $this->http->setRoute($route);
-        $this->assertSame($route, $this->http->getRoute());
     }
 
     /**
@@ -609,8 +622,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $url;
 
-        $this->assertSame($expected, $this->http->match(new Request()));
-        $this->assertSame($expected, $this->http->getRoute());
+        $this->assertSame($expected, $this->http->match(new Request())?->route);
     }
 
     public function testNoMismatchRoute(): void
@@ -636,38 +648,26 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
             $_SERVER['REQUEST_URI'] = $request['url'];
 
-            $route = $this->http->match(new Request(), fresh: true);
+            $route = $this->http->match(new Request());
 
             $this->assertNull($route);
-            $this->assertNull($this->http->getRoute());
         }
     }
 
-    public function testCanMatchFreshRoute(): void
+    public function testMatchReflectsCurrentRequest(): void
     {
         $route1 = Http::get('/path1');
         $route2 = Http::get('/path2');
 
         try {
-            // Match first request
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
-            $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getRoute());
+            $this->assertSame($route1, $matched?->route);
 
-            // Second request match returns cached route
-            $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path2';
-            $request2 = new Request();
-            $matched = $this->http->match($request2, fresh: false);
-            $this->assertSame($route1, $matched);
-            $this->assertSame($route1, $this->http->getRoute());
-
-            // Fresh match returns new route
-            $matched = $this->http->match($request2, fresh: true);
-            $this->assertSame($route2, $matched);
-            $this->assertSame($route2, $this->http->getRoute());
+            $matched = $this->http->match(new Request());
+            $this->assertSame($route2, $matched?->route);
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
@@ -680,8 +680,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
         $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
 
-        $this->assertSame($route, $this->http->match(new Request()));
-        $this->assertSame($route, $this->http->getRoute());
+        $this->assertSame($route, $this->http->match(new Request())?->route);
     }
 
     public function testCanRunRequest(): void
@@ -711,6 +710,37 @@ final class HttpTest extends TestCase
         $this->assertStringNotContainsString('HELLO', $result);
     }
 
+    public function testSubrequestRestoresOuterRoute(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        $captured = [];
+
+        Http::shutdown()
+            ->inject('route')
+            ->action(function (Route $route) use (&$captured) {
+                $captured[] = $route->getPath();
+            });
+
+        Http::get('/inner')->action(function () {
+            // no-op handler — only here so the inner dispatch matches
+        });
+
+        Http::get('/outer')->action(function () {
+            $inner = new Request();
+            $inner->setMethod('GET');
+            $inner->setURI('/inner');
+            $this->http->execute($inner, new Response());
+        });
+
+        $_SERVER['REQUEST_URI'] = '/outer';
+        $this->http->execute(new Request(), new Response());
+
+        // Inner's shutdown fires first (with inner route), then outer's
+        // shutdown — which must see the outer route, not the inner one.
+        $this->assertEquals(['/inner', '/outer'], $captured);
+    }
+
     public function testWildcardRoute(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? null;
@@ -720,8 +750,8 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         Http::init()
-            ->action(function () {
-                $route = $this->http->getRoute();
+            ->inject('route')
+            ->action(function (?Route $route) {
                 $this->resources->set('myRoute', fn() => $route);
             });
 
@@ -784,8 +814,11 @@ final class HttpTest extends TestCase
 
     public function testCallableStringParametersNotExecuted(): void
     {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
         // Test that callable strings (like function names) are not executed
-        $route = new Route('GET', '/test-callable-string');
+        $_SERVER['REQUEST_URI'] = '/test-callable-string';
+        $route = Http::get('/test-callable-string');
 
         $route
             ->param('callback', 'phpinfo', new Text(200), 'callback param', true)
@@ -796,14 +829,15 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
         $this->assertSame('callback-value: phpinfo', $result);
 
         // Test with request parameter that is a callable string
-        $route2 = new Route('GET', '/test-callable-string-param');
+        $_SERVER['REQUEST_URI'] = '/test-callable-string-param';
+        $route2 = Http::get('/test-callable-string-param');
 
         $route2
             ->param('func', 'default', new Text(200), 'func param', false)
@@ -814,14 +848,15 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
-        $this->http->execute($route2, $request, new Response());
+        $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
         $this->assertSame('func-value: system', $result);
 
         // Test callable closure still works
-        $route3 = new Route('GET', '/test-callable-closure');
+        $_SERVER['REQUEST_URI'] = '/test-callable-closure';
+        $route3 = Http::get('/test-callable-closure');
 
         $route3
             ->param('generated', fn() => 'generated-value', new Text(200), 'generated param', true)
@@ -830,7 +865,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route3, new Request(), new Response());
+        $this->http->execute(new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -839,11 +874,14 @@ final class HttpTest extends TestCase
 
     public function testCanInjectResourceAndParamWithSameName(): void
     {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/path';
+
         // Register a 'locale' resource returning a Locale instance whose
         // `name` statically resolves to "en".
         $this->resources->set('locale', fn() => new Locale());
 
-        $route = new Route('GET', '/path');
+        $route = Http::get('/path');
 
         $route
             ->param('locale', 'en-default', new Text(10), 'locale param', false)
@@ -858,7 +896,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['locale' => 'es']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
