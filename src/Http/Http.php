@@ -2,8 +2,6 @@
 
 namespace Utopia\Http;
 
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Utopia\DI\Container;
 use Utopia\Servers\Hook;
 use Utopia\Telemetry\Adapter as Telemetry;
@@ -14,10 +12,6 @@ use Utopia\Validator;
 
 class Http
 {
-    public const int COMPRESSION_MIN_SIZE_DEFAULT = 1024;
-    public const int COMPRESSION_BROTLI_LEVEL_DEFAULT = 4;
-    public const int COMPRESSION_ZSTD_LEVEL_DEFAULT = 3;
-
     /**
      * Request method constants
      */
@@ -48,8 +42,6 @@ class Http
 
     protected Container $container;
 
-    protected ?Container $requestContainer = null;
-
     /**
      * Current running mode
      */
@@ -58,7 +50,7 @@ class Http
     /**
      * Errors
      *
-     * Errors callbacks
+     * Errors hooks
      *
      * @var Hook[]
      */
@@ -71,7 +63,7 @@ class Http
      *
      * @var Hook[]
      */
-    protected static array $init = [];
+    protected static array $on = [];
 
     /**
      * Shutdown
@@ -96,7 +88,7 @@ class Http
      *
      * @var Hook[]
      */
-    protected static array $startHooks = [];
+    protected static array $ = [];
 
     /**
      * Request hooks
@@ -106,26 +98,8 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
-     *
-     * Memory cached result for chosen route
-     */
-    protected ?Route $route = null;
-
-    /**
-     * Wildcard route
-     * If set, this get's executed if no other route is matched
-     */
-    protected static ?Route $wildcardRoute = null;
-
-    /**
      * Compression
      */
-    protected bool $compression = false;
-
-    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
-
-    protected mixed $compressionSupported = [];
 
     private Histogram $requestDuration;
 
@@ -135,17 +109,17 @@ class Http
 
     private Histogram $responseBodySize;
 
-    protected Adapter $server;
-
     /**
      * Http
      */
-    public function __construct(Adapter $server, string $timezone)
+    public function __construct(
+        private readonly Adapter $server,
+        private readonly string $timezone,
+        private readonly ?Compression $compression = null,
+    )
     {
         date_default_timezone_set($timezone);
         $this->files = new Files();
-        $this->server = $server;
-        $this->container = $server->getContainer();
         $this->setTelemetry(new NoTelemetry());
     }
 
@@ -168,30 +142,6 @@ class Http
         $this->requestBodySize = $telemetry->createHistogram('http.server.request.body.size', 'By');
         // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverresponsebodysize
         $this->responseBodySize = $telemetry->createHistogram('http.server.response.body.size', 'By');
-    }
-
-    /**
-     * Set Compression
-     */
-    public function setCompression(bool $compression): void
-    {
-        $this->compression = $compression;
-    }
-
-    /**
-     * Set minimum compression size
-     */
-    public function setCompressionMinSize(int $compressionMinSize): void
-    {
-        $this->compressionMinSize = $compressionMinSize;
-    }
-
-    /**
-     * Set supported compression algorithms
-     */
-    public function setCompressionSupported(mixed $compressionSupported): void
-    {
-        $this->compressionSupported = $compressionSupported;
     }
 
     /**
@@ -365,66 +315,6 @@ class Http
     }
 
     /**
-     * Get a single resource from the given scope.
-     *
-     * @throws Exception
-     */
-    public function getResource(string $name): mixed
-    {
-        try {
-            return $this->server->getContainer()->get($name);
-        } catch (ContainerExceptionInterface|NotFoundExceptionInterface $e) {
-            // Normalize DI container errors to the Http layer's "resource" terminology.
-            $message = str_replace('dependency', 'resource', $e->getMessage());
-
-            if ($message === $e->getMessage() && !str_contains($message, 'resource')) {
-                $message = 'Failed to find resource: "' . $name . '"';
-            }
-
-            throw new Exception($message, 500, $e);
-        }
-    }
-
-    /**
-     * Get multiple resources from the given scope.
-     *
-     * @param string[] $list
-     * @return array<string, mixed>
-     *
-     * @throws Exception
-     */
-    public function getResources(array $list): array
-    {
-        $resources = [];
-
-        foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name);
-        }
-
-        return $resources;
-    }
-
-    /**
-     * Set a resource on the given scope.
-     *
-     * @param list<string> $injections
-     */
-    public function setResource(string $name, callable $callback, array $injections = []): void
-    {
-        $this->container->set($name, $callback, $injections);
-    }
-
-    /**
-     * Set a request-scoped resource on the current request's container.
-     *
-     * @param list<string> $injections
-     */
-    protected function setRequestResource(string $name, callable $callback, array $injections = []): void
-    {
-        $this->server->getContainer()->set($name, $callback, $injections);
-    }
-
-    /**
      * Is http in production mode?
      */
     public static function isProduction(): bool
@@ -458,24 +348,6 @@ class Http
     public static function getRoutes(): array
     {
         return Router::getRoutes();
-    }
-
-    /**
-     * Get the current route
-     */
-    public function getRoute(): ?Route
-    {
-        return $this->route ?? null;
-    }
-
-    /**
-     * Set the current route
-     */
-    public function setRoute(Route $route): self
-    {
-        $this->route = $route;
-
-        return $this;
     }
 
     /**
@@ -555,7 +427,7 @@ class Http
         );
 
         $this->server->onStart(function ($server) {
-            $this->setResource('server', fn() => $server);
+            $this->resources->set('server', fn() => $server);
             try {
 
                 foreach (self::$startHooks as $hook) {
@@ -590,18 +462,22 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        if (null !== $this->route && !$fresh) {
-            return $this->route;
+        $route = $this->server->getContext()->get('route');
+        if ($route !== null && !$fresh) {
+            return $route;
         }
 
         $url = parse_url($request->getURI(), PHP_URL_PATH);
         $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
-        $method = $request->getMethod();
-        $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $method = (self::REQUEST_METHOD_HEAD === $request->getMethod())
+            ? self::REQUEST_METHOD_GET
+            : $request->getMethod();
 
-        return $this->route;
+        $route = Router::match($method, $url);
+        $this->server->getContext()->set('route', fn() => $route);
+
+        return $route;
     }
 
     /**
@@ -657,7 +533,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->server->getContext()->set('error', fn() => $e, []);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -771,14 +647,14 @@ class Http
      */
     private function runInternal(Request $request, Response $response): static
     {
+        $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
+
         if ($this->compression) {
-            $response->setAcceptEncoding($request->getHeader('accept-encoding', ''));
-            $response->setCompressionMinSize($this->compressionMinSize);
-            $response->setCompressionSupported($this->compressionSupported);
+            $response->setCompression($this->compression);
         }
 
-        $this->setRequestResource('request', fn() => $request);
-        $this->setRequestResource('response', fn() => $response);
+        $this->server->getContext()->set('request', fn() => $request);
+        $this->server->getContext()->set('response', fn() => $response);
 
         try {
             foreach (self::$requestHooks as $hook) {
@@ -786,7 +662,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->server->getContext()->set('error', fn() => $e, []);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
@@ -816,7 +692,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setRequestResource('route', fn() => $route, []);
+        $this->server->getContext()->set('route', fn() => $route, []);
 
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -844,7 +720,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->server->getContext()->set('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -855,12 +731,11 @@ class Http
 
         if (null === $route && null !== self::$wildcardRoute) {
             $route = self::$wildcardRoute;
-            $this->route = $route;
             $path = parse_url($request->getURI(), PHP_URL_PATH);
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
-            $this->setRequestResource('route', fn() => $route, []);
+            $this->server->getContext()->set('route', fn() => $route, []);
         }
         if (null !== $route) {
             return $this->execute($route, $request, $response);
@@ -884,7 +759,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->server->getContext()->set('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -892,7 +767,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
-                    $this->setRequestResource('error', fn() => new Exception('Not Found', 404), []);
+                    $this->server->getContext()->set('error', fn() => new Exception('Not Found', 404), []);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }
@@ -945,6 +820,8 @@ class Http
         self::$options = [];
         self::$startHooks = [];
         self::$requestHooks = [];
+
+
         self::$wildcardRoute = null;
     }
 }

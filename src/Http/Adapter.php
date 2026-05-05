@@ -11,5 +11,5 @@ abstract class Adapter
     abstract public function onStart(callable $callback): void;
     abstract public function onRequest(callable $callback): void;
     abstract public function start(): void;
-    abstract public function getContainer(): Container;
+    abstract public function getContext(): Container;
 }

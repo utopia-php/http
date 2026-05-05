@@ -5,6 +5,7 @@ namespace Utopia\Http;
 use Utopia\Compression\Algorithms\Brotli;
 use Utopia\Compression\Algorithms\Zstd;
 use Utopia\Compression\Compression;
+use Utopia\Http\Compression as CompressionConfiguration;
 
 abstract class Response
 {
@@ -182,78 +183,6 @@ abstract class Response
         self::STATUS_CODE_NETWORK_AUTHENTICATION_REQUIRED => 'Network Authentication Required',
     ];
 
-    /**
-     * Mime Types with compression support
-     *
-     * @var array<string, bool>
-     */
-    private static $compressible = [
-        // Text
-        'text/html' => true,
-        'text/richtext' => true,
-        'text/plain' => true,
-        'text/css' => true,
-        'text/x-script' => true,
-        'text/x-component' => true,
-        'text/x-java-source' => true,
-        'text/x-markdown' => true,
-
-        // JavaScript
-        'application/javascript' => true,
-        'application/x-javascript' => true,
-        'text/javascript' => true,
-        'text/js' => true,
-
-        // Icons
-        'image/x-icon' => true,
-        'image/vnd.microsoft.icon' => true,
-
-        // Scripts
-        'application/x-perl' => true,
-        'application/x-httpd-cgi' => true,
-
-        // XML and JSON
-        'text/xml' => true,
-        'application/xml' => true,
-        'application/rss+xml' => true,
-        'application/vnd.api+json' => true,
-        'application/x-protobuf' => true,
-        'application/json' => true,
-        'application/manifest+json' => true,
-        'application/ld+json' => true,
-        'application/graphql+json' => true,
-        'application/geo+json' => true,
-
-        // Multipart
-        'multipart/bag' => true,
-        'multipart/mixed' => true,
-
-        // XHTML
-        'application/xhtml+xml' => true,
-
-        // Fonts
-        'font/ttf' => true,
-        'font/otf' => true,
-        'font/x-woff' => true,
-        'image/svg+xml' => true,
-        'application/vnd.ms-fontobject' => true,
-        'application/ttf' => true,
-        'application/x-ttf' => true,
-        'application/otf' => true,
-        'application/x-otf' => true,
-        'application/truetype' => true,
-        'application/opentype' => true,
-        'application/x-opentype' => true,
-        'application/font-woff' => true,
-        'application/eot' => true,
-        'application/font' => true,
-        'application/font-sfnt' => true,
-
-        // WebAssembly
-        'application/wasm' => true,
-        'application/javascript-binast' => true,
-    ];
-
     public const string COOKIE_SAMESITE_NONE = 'None';
 
     public const string COOKIE_SAMESITE_STRICT = 'Strict';
@@ -287,9 +216,7 @@ abstract class Response
 
     protected string $acceptEncoding = '';
 
-    protected int $compressionMinSize = Http::COMPRESSION_MIN_SIZE_DEFAULT;
-
-    protected mixed $compressionSupported = [];
+    protected ?CompressionConfiguration $compression = null;
 
     /**
      * Response constructor.
@@ -326,23 +253,11 @@ abstract class Response
     }
 
     /**
-     * Set min compression size
-     *
-     * Set minimum size for compression to be applied in bytes.
+     * Set compression configuration
      */
-    public function setCompressionMinSize(int $compressionMinSize): static
+    public function setCompression(?CompressionConfiguration $configuration): static
     {
-        $this->compressionMinSize = $compressionMinSize;
-
-        return $this;
-    }
-
-    /**
-     * Set supported compression algorithms
-     */
-    public function setCompressionSupported(mixed $compressionSupported): static
-    {
-        $this->compressionSupported = $compressionSupported;
+        $this->compression = $configuration;
 
         return $this;
     }
@@ -552,18 +467,18 @@ abstract class Response
 
         // Compress body only if all conditions are met:
         if (
-            !$hasContentEncoding
+            $this->compression
+            && !$hasContentEncoding
             && !empty($this->acceptEncoding)
-            && $this->isCompressible($this->contentType)
-            && \strlen($body) > $this->compressionMinSize
+            && $this->compression->isCompressible(self);
         ) {
-            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compressionSupported);
+            $algorithm = Compression::fromAcceptEncoding($this->acceptEncoding, $this->compression->algorithms);
 
             if ($algorithm) {
                 if ($algorithm instanceof Brotli) {
-                    $algorithm->setLevel(Http::COMPRESSION_BROTLI_LEVEL_DEFAULT);
+                    $algorithm->setLevel($this->compression->brotliLevel);
                 } elseif ($algorithm instanceof Zstd) {
-                    $algorithm->setLevel(Http::COMPRESSION_ZSTD_LEVEL_DEFAULT);
+                    $algorithm->setLevel($this->compression->zstdLevel);
                 }
 
                 $body = $algorithm->compress($body);
