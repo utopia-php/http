@@ -11,10 +11,9 @@ use Utopia\Http\Adapter;
 
 class Server extends Adapter
 {
-    protected const string REQUEST_CONTAINER_CONTEXT_KEY = '__utopia_http_request_container';
+    protected const string CONTEXT_KEY = '__utopia__';
 
     protected SwooleServer $server;
-    protected Container $container;
 
     /** @var callable|null */
     protected $onStartCallback;
@@ -26,33 +25,37 @@ class Server extends Adapter
         string $host,
         ?string $port = null,
         array $settings = [],
-        ?Container $container = null,
+        protected Container $resources = new Container(),
     ) {
         $this->server = new SwooleServer($host, $port, false, true);
         $this->server->set($settings);
-        $this->container = $container ?? new Container();
     }
 
     public function onRequest(callable $callback): void
     {
         $this->server->handle('/', function (SwooleRequest $request, SwooleResponse $response) use ($callback) {
-            $requestContainer = new Container($this->container);
-            $requestContainer->set('swooleRequest', fn() => $request);
-            $requestContainer->set('swooleResponse', fn() => $response);
+            $context = new Container($this->resources);
+            $context->set('swooleRequest', fn() => $request);
+            $context->set('swooleResponse', fn() => $response);
 
-            Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] = $requestContainer;
+            Coroutine::getContext()[self::CONTEXT_KEY] = $context;
 
             try {
                 \call_user_func($callback, new Request($request), new Response($response));
             } finally {
-                unset(Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY]);
+                unset(Coroutine::getContext()[self::CONTEXT_KEY]);
             }
         });
     }
 
-    public function getContainer(): Container
+    public function resources(): Container
     {
-        return Coroutine::getContext()[self::REQUEST_CONTAINER_CONTEXT_KEY] ?? $this->container;
+        return $this->resources;
+    }
+
+    public function context(): Container
+    {
+        return Coroutine::getContext()[self::CONTEXT_KEY] ?? $this->resources;
     }
 
     public function getServer(): SwooleServer
