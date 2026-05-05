@@ -405,7 +405,8 @@ class Http
     }
 
     /**
-     * Get the current route
+     * Get the route matched for the current request, or null if none matched
+     * yet (or no match was found). Populated by {@see Http::match()}.
      */
     public function getRoute(): ?Route
     {
@@ -416,16 +417,6 @@ class Http
 
         $route = $context->get('route');
         return $route instanceof Route ? $route : null;
-    }
-
-    /**
-     * Set the current route
-     */
-    public function setRoute(Route $route): self
-    {
-        $this->context()->set('route', fn() => $route, []);
-
-        return $this;
     }
 
     /**

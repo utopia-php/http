@@ -576,15 +576,6 @@ final class HttpTest extends TestCase
         $this->assertSame('(init)-y-def-x-def-(shutdown)', $result);
     }
 
-    public function testCanSetRoute(): void
-    {
-        $route = Http::get('/path');
-
-        $this->assertNull($this->http->getRoute());
-        $this->http->setRoute($route);
-        $this->assertSame($route, $this->http->getRoute());
-    }
-
     /**
      * @return \Iterator<string, array<int, string>>
      */
