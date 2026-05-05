@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Utopia\Http;
 
 /**
@@ -18,6 +20,5 @@ final readonly class RouteMatch
          * @var array<string, string>
          */
         public array $params,
-    ) {
-    }
+    ) {}
 }
