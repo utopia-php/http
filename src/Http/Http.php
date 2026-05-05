@@ -99,18 +99,14 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Route
+     * Per-request context keys for the matched route + matched template key.
      *
-     * Memory cached result for chosen route
+     * The match result lives in the request-scoped context() container rather
+     * than on $this so it does not race when the Http instance is shared
+     * across coroutines.
      */
-    protected ?Route $route = null;
-
-    /**
-     * Matched route key (template after placeholder substitution).
-     *
-     * Cached alongside $route for $fresh=false re-matches.
-     */
-    protected string $matchedPath = '';
+    private const string CONTEXT_ROUTE = 'route';
+    private const string CONTEXT_MATCHED_PATH = 'matchedPath';
 
     /**
      * Compression
@@ -423,7 +419,13 @@ class Http
      */
     public function getRoute(): ?Route
     {
-        return $this->route ?? null;
+        $context = $this->context();
+        if (!$context->has(self::CONTEXT_ROUTE)) {
+            return null;
+        }
+
+        $route = $context->get(self::CONTEXT_ROUTE);
+        return $route instanceof Route ? $route : null;
     }
 
     /**
@@ -431,7 +433,7 @@ class Http
      */
     public function setRoute(Route $route): self
     {
-        $this->route = $route;
+        $this->context()->set(self::CONTEXT_ROUTE, fn() => $route, []);
 
         return $this;
     }
@@ -556,12 +558,23 @@ class Http
      * matched against. Returning the matched key separately avoids mutating
      * the shared Route instance, which would race under coroutines.
      *
+     * Caches the result in the per-request context so re-matches with
+     * $fresh=false hit memory without re-running Router::match.
+     *
      * @return array{0: Route, 1: string}|null
      */
     private function matchInternal(Request $request, bool $fresh = true): ?array
     {
-        if (null !== $this->route && !$fresh) {
-            return [$this->route, $this->matchedPath];
+        $context = $this->context();
+
+        if (!$fresh && $context->has(self::CONTEXT_ROUTE)) {
+            $route = $context->get(self::CONTEXT_ROUTE);
+            if ($route instanceof Route) {
+                $matchedPath = $context->has(self::CONTEXT_MATCHED_PATH)
+                    ? (string) $context->get(self::CONTEXT_MATCHED_PATH)
+                    : '';
+                return [$route, $matchedPath];
+            }
         }
 
         $url = parse_url($request->getURI(), PHP_URL_PATH);
@@ -572,12 +585,12 @@ class Http
         $match = Router::match($method, $url);
 
         if ($match === null) {
-            $this->route = null;
-            $this->matchedPath = '';
             return null;
         }
 
-        [$this->route, $this->matchedPath] = $match;
+        [$route, $matchedPath] = $match;
+        $context->set(self::CONTEXT_ROUTE, fn() => $route, []);
+        $context->set(self::CONTEXT_MATCHED_PATH, fn() => $matchedPath, []);
 
         return $match;
     }
@@ -746,11 +759,14 @@ class Http
         $start = microtime(true);
         $result = $this->runInternal($request, $response);
 
+        $context = $this->context();
+        $matchedRoute = $context->has(self::CONTEXT_ROUTE) ? $context->get(self::CONTEXT_ROUTE) : null;
+
         $requestDuration = microtime(true) - $start;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $this->route?->getPath(),
+            'http.route' => $matchedRoute instanceof Route ? $matchedRoute->getPath() : null,
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
@@ -820,8 +836,6 @@ class Http
         $route = $match[0] ?? null;
         $matchedPath = $match[1] ?? '';
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
-
-        $this->context()->set('route', fn() => $route, []);
 
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
