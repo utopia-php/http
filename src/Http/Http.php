@@ -552,7 +552,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match->route));
                         }
                     }
                 }
@@ -560,7 +560,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams()));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match?->route));
                     }
                 }
             } catch (\Throwable $e) {
@@ -568,7 +568,7 @@ class Http
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
                         $this->context()->set('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams(), $match?->route));
                     }
                 }
             }
@@ -591,15 +591,11 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $context = $this->context();
-        $priorRoute = $context->has('route') ? $context->get('route') : null;
-        $context->set('route', fn() => $route, []);
-
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -608,21 +604,21 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $match->params, $request->getParams());
+                $arguments = $this->getArguments($route, $match->params, $request->getParams(), $route);
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -631,7 +627,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -643,7 +639,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (\in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $match->params, $request->getParams());
+                            $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -655,15 +651,13 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $match->params, $request->getParams());
+                        $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
                     }
                 }
             }
-        } finally {
-            $context->set('route', fn() => $priorRoute, []);
         }
 
         return $this;
@@ -677,7 +671,7 @@ class Http
      * @return array<int, mixed>
      * @throws Exception
      */
-    protected function getArguments(Hook $hook, array $values, array $requestParams): array
+    protected function getArguments(Hook $hook, array $values, array $requestParams, ?Route $route = null): array
     {
         $arguments = [];
         foreach ($hook->getParams() as $key => $param) { // Get value from route or request object
@@ -727,6 +721,13 @@ class Http
         }
 
         foreach ($hook->getInjections() as $injection) {
+            // 'route' is frame-local: pass the dispatch frame's matched Route
+            // through directly instead of routing through shared context.
+            if ($injection['name'] === 'route') {
+                $arguments[$injection['order']] = $route;
+                continue;
+            }
+
             $arguments[$injection['order']] = $this->adapter->context()->get($injection['name']);
         }
 
@@ -756,13 +757,11 @@ class Http
         $start = microtime(true);
         $result = $this->runInternal($request, $response);
 
-        $route = $this->context()->has('route') ? $this->context()->get('route') : null;
-
         $requestDuration = microtime(true) - $start;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $route instanceof Route ? $route->getPath() : null,
+            'http.route' => $this->match($request)?->route->getPath(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
