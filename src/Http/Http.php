@@ -598,8 +598,7 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $preparedPath = Router::preparePath($matchedPath);
-        $pathValues = $route->getPathValues($request, $preparedPath[0]);
+        $pathValues = $route->getPathValues($request, $matchedPath);
 
         try {
             if ($route->getHook()) {
