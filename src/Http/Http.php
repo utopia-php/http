@@ -99,16 +99,6 @@ class Http
     protected static array $requestHooks = [];
 
     /**
-     * Per-request context keys for the matched route + matched template key.
-     *
-     * The match result lives in the request-scoped context() container rather
-     * than on $this so it does not race when the Http instance is shared
-     * across coroutines.
-     */
-    private const string CONTEXT_ROUTE = 'route';
-    private const string CONTEXT_MATCHED_PATH = 'matchedPath';
-
-    /**
      * Compression
      */
     protected bool $compression = false;
@@ -420,11 +410,11 @@ class Http
     public function getRoute(): ?Route
     {
         $context = $this->context();
-        if (!$context->has(self::CONTEXT_ROUTE)) {
+        if (!$context->has('route')) {
             return null;
         }
 
-        $route = $context->get(self::CONTEXT_ROUTE);
+        $route = $context->get('route');
         return $route instanceof Route ? $route : null;
     }
 
@@ -433,7 +423,7 @@ class Http
      */
     public function setRoute(Route $route): self
     {
-        $this->context()->set(self::CONTEXT_ROUTE, fn() => $route, []);
+        $this->context()->set('route', fn() => $route, []);
 
         return $this;
     }
@@ -567,11 +557,11 @@ class Http
     {
         $context = $this->context();
 
-        if (!$fresh && $context->has(self::CONTEXT_ROUTE)) {
-            $route = $context->get(self::CONTEXT_ROUTE);
+        if (!$fresh && $context->has('route')) {
+            $route = $context->get('route');
             if ($route instanceof Route) {
-                $matchedPath = $context->has(self::CONTEXT_MATCHED_PATH)
-                    ? (string) $context->get(self::CONTEXT_MATCHED_PATH)
+                $matchedPath = $context->has('matchedPath')
+                    ? (string) $context->get('matchedPath')
                     : '';
                 return [$route, $matchedPath];
             }
@@ -589,8 +579,8 @@ class Http
         }
 
         [$route, $matchedPath] = $match;
-        $context->set(self::CONTEXT_ROUTE, fn() => $route, []);
-        $context->set(self::CONTEXT_MATCHED_PATH, fn() => $matchedPath, []);
+        $context->set('route', fn() => $route, []);
+        $context->set('matchedPath', fn() => $matchedPath, []);
 
         return $match;
     }
@@ -760,7 +750,7 @@ class Http
         $result = $this->runInternal($request, $response);
 
         $context = $this->context();
-        $matchedRoute = $context->has(self::CONTEXT_ROUTE) ? $context->get(self::CONTEXT_ROUTE) : null;
+        $matchedRoute = $context->has('route') ? $context->get('route') : null;
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
