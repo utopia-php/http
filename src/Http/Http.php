@@ -682,7 +682,7 @@ class Http
             $arg = $existsInRequest ? $requestParams[$requestKey] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
                 $context = $this->adapter->context();
-                $arg = \call_user_func_array($arg, array_map(fn($name) => $context->get($name), $param['injections']));
+                $arg = \call_user_func_array($arg, array_map($context->get(...), $param['injections']));
             }
             $value = $existsInValues ? $values[$valuesKey] : $arg;
 
@@ -898,7 +898,7 @@ class Http
 
         if (\is_callable($validator)) {
             $context = $this->adapter->context();
-            $validator = \call_user_func_array($validator, array_map(fn($name) => $context->get($name), $param['injections']));
+            $validator = \call_user_func_array($validator, array_map($context->get(...), $param['injections']));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class

@@ -7,6 +7,8 @@ use Utopia\Http\Adapter;
 
 class Server extends Adapter
 {
+    private ?Container $context = null;
+
     public function __construct(private Container $resources) {}
 
     public function onRequest(callable $callback): void
@@ -14,10 +16,15 @@ class Server extends Adapter
         $request = new Request();
         $response = new Response();
 
-        $this->resources->set('fpmRequest', fn() => $request);
-        $this->resources->set('fpmResponse', fn() => $response);
+        $this->context = new Container($this->resources);
+        $this->context->set('fpmRequest', fn() => $request);
+        $this->context->set('fpmResponse', fn() => $response);
 
-        \call_user_func($callback, $request, $response);
+        try {
+            \call_user_func($callback, $request, $response);
+        } finally {
+            $this->context = null;
+        }
     }
 
     public function onStart(callable $callback): void
@@ -32,7 +39,7 @@ class Server extends Adapter
 
     public function context(): Container
     {
-        return $this->resources;
+        return $this->context ?? $this->resources;
     }
 
     public function start(): void {}
