@@ -600,13 +600,11 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $pathValues = $match->params;
-
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -615,21 +613,21 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $pathValues, $request->getParams());
+                $arguments = $this->getArguments($route, $match->params, $request->getParams());
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -638,7 +636,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams());
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -650,7 +648,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (\in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $pathValues, $request->getParams());
+                            $arguments = $this->getArguments($error, $match->params, $request->getParams());
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -662,7 +660,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $pathValues, $request->getParams());
+                        $arguments = $this->getArguments($error, $match->params, $request->getParams());
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
