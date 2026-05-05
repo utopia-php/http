@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "41a79801cc0c3c9b6e6fb58087c23e41",
+    "content-hash": "288cea8b8a10ec454331ba22f82753fa",
     "packages": [
         {
             "name": "brick/math",
@@ -1966,16 +1966,16 @@
         },
         {
             "name": "utopia-php/servers",
-            "version": "dev-feat-param-aliases",
+            "version": "0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "2cec9c78859b3efc696ca58dfe530144e9d20269"
+                "reference": "7db346ef377503efe0acafe0791085270cd9ed70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/2cec9c78859b3efc696ca58dfe530144e9d20269",
-                "reference": "2cec9c78859b3efc696ca58dfe530144e9d20269",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/7db346ef377503efe0acafe0791085270cd9ed70",
+                "reference": "7db346ef377503efe0acafe0791085270cd9ed70",
                 "shasum": ""
             },
             "require": {
@@ -2014,9 +2014,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utopia-php/servers/issues",
-                "source": "https://github.com/utopia-php/servers/tree/feat-param-aliases"
+                "source": "https://github.com/utopia-php/servers/tree/0.4.0"
             },
-            "time": "2026-05-04T11:39:00+00:00"
+            "time": "2026-05-05T04:08:30+00:00"
         },
         {
             "name": "utopia-php/telemetry",
@@ -4084,18 +4084,9 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "utopia-php/servers",
-            "version": "dev-feat-param-aliases",
-            "alias": "0.3.x-dev",
-            "alias_normalized": "0.3.9999999.9999999-dev"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "utopia-php/servers": 20
-    },
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
