@@ -623,7 +623,6 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $url;
 
         $this->assertSame($expected, $this->http->match(new Request())?->route);
-        $this->assertSame($expected, $this->http->getRoute());
     }
 
     public function testNoMismatchRoute(): void
@@ -652,7 +651,6 @@ final class HttpTest extends TestCase
             $route = $this->http->match(new Request());
 
             $this->assertNull($route);
-            $this->assertNull($this->http->getRoute());
         }
     }
 
@@ -666,12 +664,10 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
             $this->assertSame($route1, $matched?->route);
-            $this->assertSame($route1, $this->http->getRoute());
 
             $_SERVER['REQUEST_URI'] = '/path2';
             $matched = $this->http->match(new Request());
             $this->assertSame($route2, $matched?->route);
-            $this->assertSame($route2, $this->http->getRoute());
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
         }
@@ -685,7 +681,6 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
 
         $this->assertSame($route, $this->http->match(new Request())?->route);
-        $this->assertSame($route, $this->http->getRoute());
     }
 
     public function testCanRunRequest(): void
@@ -724,8 +719,8 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/unknown_path';
 
         Http::init()
-            ->action(function () {
-                $route = $this->http->getRoute();
+            ->inject('route')
+            ->action(function (?Route $route) {
                 $this->resources->set('myRoute', fn() => $route);
             });
 

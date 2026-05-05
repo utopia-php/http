@@ -405,21 +405,6 @@ class Http
     }
 
     /**
-     * Get the route matched for the current request, or null if none matched
-     * yet (or no match was found). Populated by {@see Http::match()}.
-     */
-    public function getRoute(): ?Route
-    {
-        $context = $this->context();
-        if (!$context->has('route')) {
-            return null;
-        }
-
-        $route = $context->get('route');
-        return $route instanceof Route ? $route : null;
-    }
-
-    /**
      * Add Route
      *
      * Add routing route method, path and callback
