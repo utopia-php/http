@@ -517,16 +517,7 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $match = Router::match($method, $url);
-
-        if ($match === null) {
-            return null;
-        }
-
-        $route = $match->route;
-        $this->context()->set('route', fn() => $route, []);
-
-        return $match;
+        return Router::match($method, $url);
     }
 
     /**
@@ -600,6 +591,10 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
+        $context = $this->context();
+        $priorRoute = $context->has('route') ? $context->get('route') : null;
+        $context->set('route', fn() => $route, []);
+
         try {
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
@@ -667,6 +662,8 @@ class Http
                     }
                 }
             }
+        } finally {
+            $context->set('route', fn() => $priorRoute, []);
         }
 
         return $this;

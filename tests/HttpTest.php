@@ -710,6 +710,37 @@ final class HttpTest extends TestCase
         $this->assertStringNotContainsString('HELLO', $result);
     }
 
+    public function testSubrequestRestoresOuterRoute(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+
+        $captured = [];
+
+        Http::shutdown()
+            ->inject('route')
+            ->action(function (Route $route) use (&$captured) {
+                $captured[] = $route->getPath();
+            });
+
+        Http::get('/inner')->action(function () {
+            // no-op handler — only here so the inner dispatch matches
+        });
+
+        Http::get('/outer')->action(function () {
+            $inner = new Request();
+            $inner->setMethod('GET');
+            $inner->setURI('/inner');
+            $this->http->execute($inner, new Response());
+        });
+
+        $_SERVER['REQUEST_URI'] = '/outer';
+        $this->http->execute(new Request(), new Response());
+
+        // Inner's shutdown fires first (with inner route), then outer's
+        // shutdown — which must see the outer route, not the inner one.
+        $this->assertEquals(['/inner', '/outer'], $captured);
+    }
+
     public function testWildcardRoute(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? null;
