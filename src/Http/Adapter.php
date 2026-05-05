@@ -11,5 +11,26 @@ abstract class Adapter
     abstract public function onStart(callable $callback): void;
     abstract public function onRequest(callable $callback): void;
     abstract public function start(): void;
-    abstract public function getContainer(): Container;
+
+    /**
+     * Static resources container.
+     *
+     * Long-lived, shared across every request for the lifetime of the server.
+     * Use this for things wired up at boot (config, clients, services) that
+     * should be reused across requests. Available before any request begins,
+     * inside server start hooks, and as the parent of every request context.
+     */
+    abstract public function resources(): Container;
+
+    /**
+     * Per-request context container.
+     *
+     * A fresh child container created for each incoming request and disposed
+     * when the request ends. Use it to register or read request-scoped values
+     * (request, response, route, error, ...). Lookups fall through to
+     * {@see self::resources()}, so static resources remain reachable from
+     * within request handlers. Outside of a request, this returns the static
+     * resources container.
+     */
+    abstract public function context(): Container;
 }

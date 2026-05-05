@@ -2,8 +2,6 @@
 
 namespace Utopia\Http;
 
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
 use Utopia\DI\Container;
 use Utopia\Servers\Hook;
 use Utopia\Telemetry\Adapter as Telemetry;
@@ -44,11 +42,6 @@ class Http
 
     public const string MODE_TYPE_PRODUCTION = 'production';
 
-    protected Files $files;
-
-    protected Container $container;
-
-    protected ?Container $requestContainer = null;
 
     /**
      * Current running mode
@@ -135,17 +128,15 @@ class Http
 
     private Histogram $responseBodySize;
 
-    protected Adapter $server;
-
     /**
      * Http
      */
-    public function __construct(Adapter $server, string $timezone)
-    {
+    public function __construct(
+        protected Adapter $adapter,
+        string $timezone,
+        protected Files $files = new Files(),
+    ) {
         date_default_timezone_set($timezone);
-        $this->files = new Files();
-        $this->server = $server;
-        $this->container = $server->getContainer();
         $this->setTelemetry(new NoTelemetry());
     }
 
@@ -365,63 +356,28 @@ class Http
     }
 
     /**
-     * Get a single resource from the given scope.
+     * Static resources container.
      *
-     * @throws Exception
+     * Shortcut for the underlying adapter's {@see Adapter::resources()}. Use
+     * `$http->resources()->set(...)` to register app-wide services that are
+     * shared across every request for the lifetime of the server.
      */
-    public function getResource(string $name): mixed
+    public function resources(): Container
     {
-        try {
-            return $this->server->getContainer()->get($name);
-        } catch (ContainerExceptionInterface|NotFoundExceptionInterface $e) {
-            // Normalize DI container errors to the Http layer's "resource" terminology.
-            $message = str_replace('dependency', 'resource', $e->getMessage());
-
-            if ($message === $e->getMessage() && !str_contains($message, 'resource')) {
-                $message = 'Failed to find resource: "' . $name . '"';
-            }
-
-            throw new Exception($message, 500, $e);
-        }
+        return $this->adapter->resources();
     }
 
     /**
-     * Get multiple resources from the given scope.
+     * Per-request context container.
      *
-     * @param string[] $list
-     * @return array<string, mixed>
-     *
-     * @throws Exception
+     * Shortcut for the underlying adapter's {@see Adapter::context()}. Use
+     * `$http->context()->set(...)` to register request-scoped resources and
+     * `$http->context()->get(...)` to read them. Lookups fall through to the
+     * static resources container, so app-wide services remain accessible.
      */
-    public function getResources(array $list): array
+    public function context(): Container
     {
-        $resources = [];
-
-        foreach ($list as $name) {
-            $resources[$name] = $this->getResource($name);
-        }
-
-        return $resources;
-    }
-
-    /**
-     * Set a resource on the given scope.
-     *
-     * @param list<string> $injections
-     */
-    public function setResource(string $name, callable $callback, array $injections = []): void
-    {
-        $this->container->set($name, $callback, $injections);
-    }
-
-    /**
-     * Set a request-scoped resource on the current request's container.
-     *
-     * @param list<string> $injections
-     */
-    protected function setRequestResource(string $name, callable $callback, array $injections = []): void
-    {
-        $this->server->getContainer()->set($name, $callback, $injections);
+        return $this->adapter->context();
     }
 
     /**
@@ -550,12 +506,12 @@ class Http
     public function start(): void
     {
 
-        $this->server->onRequest(
+        $this->adapter->onRequest(
             fn(Request $request, Response $response) => $this->run($request, $response),
         );
 
-        $this->server->onStart(function ($server) {
-            $this->setResource('server', fn() => $server);
+        $this->adapter->onStart(function ($server) {
+            $this->resources()->set('server', fn() => $server);
             try {
 
                 foreach (self::$startHooks as $hook) {
@@ -563,7 +519,7 @@ class Http
                     \call_user_func_array($hook->getAction(), $arguments);
                 }
             } catch (\Exception $e) {
-                $this->setResource('error', fn() => $e);
+                $this->resources()->set('error', fn() => $e);
 
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
@@ -578,7 +534,7 @@ class Http
             }
         });
 
-        $this->server->start();
+        $this->adapter->start();
     }
 
     /**
@@ -657,7 +613,7 @@ class Http
                 }
             }
         } catch (\Throwable $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->context()->set('error', fn() => $e, []);
 
             foreach ($groups as $group) {
                 foreach (self::$errors as $error) { // Group error hooks
@@ -725,7 +681,8 @@ class Http
 
             $arg = $existsInRequest ? $requestParams[$requestKey] : $param['default'];
             if (\is_callable($arg) && !\is_string($arg)) {
-                $arg = \call_user_func_array($arg, array_values($this->getResources($param['injections'])));
+                $context = $this->adapter->context();
+                $arg = \call_user_func_array($arg, array_map($context->get(...), $param['injections']));
             }
             $value = $existsInValues ? $values[$valuesKey] : $arg;
 
@@ -744,7 +701,7 @@ class Http
         }
 
         foreach ($hook->getInjections() as $injection) {
-            $arguments[$injection['order']] = $this->getResource($injection['name']);
+            $arguments[$injection['order']] = $this->adapter->context()->get($injection['name']);
         }
 
         return $arguments;
@@ -797,8 +754,8 @@ class Http
             $response->setCompressionSupported($this->compressionSupported);
         }
 
-        $this->setRequestResource('request', fn() => $request);
-        $this->setRequestResource('response', fn() => $response);
+        $this->context()->set('request', fn() => $request);
+        $this->context()->set('response', fn() => $response);
 
         try {
             foreach (self::$requestHooks as $hook) {
@@ -806,7 +763,7 @@ class Http
                 \call_user_func_array($hook->getAction(), $arguments);
             }
         } catch (\Exception $e) {
-            $this->setRequestResource('error', fn() => $e, []);
+            $this->context()->set('error', fn() => $e, []);
 
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
@@ -836,7 +793,7 @@ class Http
         $route = $this->match($request);
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
-        $this->setRequestResource('route', fn() => $route, []);
+        $this->context()->set('route', fn() => $route, []);
 
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -864,7 +821,7 @@ class Http
                 foreach (self::$errors as $error) { // Global error hooks
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->context()->set('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -880,7 +837,7 @@ class Http
             $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
             $route->path($path);
 
-            $this->setRequestResource('route', fn() => $route, []);
+            $this->context()->set('route', fn() => $route, []);
         }
         if (null !== $route) {
             return $this->execute($route, $request, $response);
@@ -904,7 +861,7 @@ class Http
             } catch (\Throwable $e) {
                 foreach (self::$errors as $error) { // Global error hooks
                     if (\in_array('*', $error->getGroups())) {
-                        $this->setRequestResource('error', fn() => $e, []);
+                        $this->context()->set('error', fn() => $e, []);
                         \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                     }
                 }
@@ -912,7 +869,7 @@ class Http
         } else {
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
-                    $this->setRequestResource('error', fn() => new Exception('Not Found', 404), []);
+                    $this->context()->set('error', fn() => new Exception('Not Found', 404), []);
                     \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
                 }
             }
@@ -940,7 +897,8 @@ class Http
         $validator = $param['validator']; // checking whether the class exists
 
         if (\is_callable($validator)) {
-            $validator = \call_user_func_array($validator, array_values($this->getResources($param['injections'])));
+            $context = $this->adapter->context();
+            $validator = \call_user_func_array($validator, array_map($context->get(...), $param['injections']));
         }
 
         if (!$validator instanceof Validator) { // is the validator object an instance of the Validator class

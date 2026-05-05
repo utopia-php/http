@@ -29,7 +29,7 @@ use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
-$container = new Container();
+$resources = new Container();
 
 Http::get('/hello-world') // Define Route
     ->inject('request')
@@ -46,7 +46,7 @@ Http::get('/hello-world') // Define Route
 
 Http::setMode(Http::MODE_TYPE_PRODUCTION);
 
-$http = new Http(new Server(), 'America/New_York', $container);
+$http = new Http(new Server($resources), 'America/New_York');
 $http->start();
 ```
 
@@ -74,7 +74,7 @@ use Utopia\Http\Http;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
 
-$container = new Container();
+$resources = new Container();
 
 Http::get('/')
     ->inject('response')
@@ -84,7 +84,7 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server(), 'America/New_York', $container);
+$http = new Http(new Server($resources), 'America/New_York');
 $http->start();
 ```
 
@@ -99,7 +99,7 @@ use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
 
-$container = new Container();
+$resources = new Container();
 
 Http::get('/')
     ->inject('request')
@@ -110,7 +110,7 @@ Http::get('/')
         }
     );
 
-$http = new Http(new Server('0.0.0.0', '80'), 'America/New_York', $container);
+$http = new Http(new Server('0.0.0.0', '80', resources: $resources), 'America/New_York');
 $http->start();
 ```
 
@@ -217,12 +217,12 @@ Groups are designed to be actions that run during the lifecycle of requests to e
 
 ### Resources
 
-Resources allow you to prepare dependencies for requests such as database connections or shared services. Register application dependencies on the DI container with `set()`. Runtime values such as `request`, `response`, `route`, `error`, and `context` are scoped by `Http` for each request.
+Resources allow you to prepare dependencies for requests such as database connections or shared services. Register application dependencies on the resources container with `set()`. Runtime values such as `request`, `response`, `route`, and `error` are registered on the per-request `context` container by `Http` for each request.
 
-Define a dependency on the DI container:
+Define a dependency on the resources container:
 
 ```php
-$container->set('bootTime', function () {
+$resources->set('bootTime', function () {
     return \microtime(true);
 });
 ```
@@ -230,7 +230,7 @@ $container->set('bootTime', function () {
 Inject resource into endpoint action:
 
 ```php
-$http = new Http(new Server(), 'America/New_York', $container);
+$http = new Http(new Server($resources), 'America/New_York');
 
 Http::get('/')
     ->inject('bootTime')

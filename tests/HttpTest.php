@@ -17,7 +17,7 @@ final class HttpTest extends TestCase
 {
     protected ?Http $http;
 
-    protected ?Container $container;
+    protected ?Container $resources;
 
     protected ?string $method;
 
@@ -26,15 +26,15 @@ final class HttpTest extends TestCase
     public function setUp(): void
     {
         Http::reset();
-        $this->container = new Container();
-        $this->http = new Http(new Server($this->container), 'Asia/Tel_Aviv');
+        $this->resources = new Container();
+        $this->http = new Http(new Server($this->resources), 'Asia/Tel_Aviv');
         $this->saveRequest();
     }
 
     public function tearDown(): void
     {
         $this->http = null;
-        $this->container = null;
+        $this->resources = null;
         $this->restoreRequest();
     }
 
@@ -90,8 +90,8 @@ final class HttpTest extends TestCase
 
     public function testCanExecuteRoute(): void
     {
-        $this->container->set('rand', fn() => rand());
-        $resource = $this->container->get('rand');
+        $this->resources->set('rand', fn() => rand());
+        $resource = $this->resources->get('rand');
 
         $this->http
             ->error()
@@ -116,7 +116,7 @@ final class HttpTest extends TestCase
         ob_end_clean();
 
         // With Params
-        $resource = $this->container->get('rand');
+        $resource = $this->resources->get('rand');
         $route = new Route('GET', '/path');
 
         $route
@@ -142,7 +142,7 @@ final class HttpTest extends TestCase
         $this->assertSame($resource . '-param-x-param-y', $result);
 
         // With Error
-        $resource = $this->container->get('rand');
+        $resource = $this->resources->get('rand');
         $route = new Route('GET', '/path');
 
         $route
@@ -162,7 +162,7 @@ final class HttpTest extends TestCase
         $this->assertSame('error: Invalid `x` param: Value must be a valid string and no longer than 1 chars', $result);
 
         // With Hooks
-        $resource = $this->container->get('rand');
+        $resource = $this->resources->get('rand');
         $this->http
             ->init()
             ->inject('rand')
@@ -233,7 +233,7 @@ final class HttpTest extends TestCase
 
         $this->assertSame('init-' . $resource . '-(init-api)-param-x-param-y-(shutdown-api)-shutdown', $result);
 
-        $resource = $this->container->get('rand');
+        $resource = $this->resources->get('rand');
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
@@ -722,7 +722,7 @@ final class HttpTest extends TestCase
         Http::init()
             ->action(function () {
                 $route = $this->http->getRoute();
-                $this->container->set('myRoute', fn() => $route);
+                $this->resources->set('myRoute', fn() => $route);
             });
 
 
@@ -841,7 +841,7 @@ final class HttpTest extends TestCase
     {
         // Register a 'locale' resource returning a Locale instance whose
         // `name` statically resolves to "en".
-        $this->container->set('locale', fn() => new Locale());
+        $this->resources->set('locale', fn() => new Locale());
 
         $route = new Route('GET', '/path');
 
