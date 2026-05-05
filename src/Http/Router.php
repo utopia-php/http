@@ -121,16 +121,15 @@ class Router
     /**
      * Match route against the method and path.
      *
-     * Returns a {@see RouteMatch} carrying the matched Route together with the
-     * route key it matched against (the registered template after placeholder
-     * substitution, '*' for a wildcard, or '' for the method-agnostic
-     * wildcard). Returning the key separately avoids mutating the shared
-     * Route instance, which would race under coroutines.
+     * Returns a {@see RouteMatch} carrying the matched Route and the path
+     * params resolved from the request URL against the matched template.
+     * Resolving params at match time (rather than mutating the shared Route)
+     * keeps the Route immutable across coroutines.
      */
     public static function match(string $method, string $path): ?RouteMatch
     {
         if (!\array_key_exists($method, self::$routes)) {
-            return self::$wildcard !== null ? new RouteMatch(self::$wildcard, '') : null;
+            return self::$wildcard !== null ? new RouteMatch(self::$wildcard, []) : null;
         }
 
         $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
@@ -139,7 +138,7 @@ class Router
 
         foreach (self::combinations($filteredParams) as $sample) {
             $sample = array_filter($sample, fn(int $i) => $i <= $length);
-            $match = implode(
+            $template = implode(
                 '/',
                 array_replace(
                     $parts,
@@ -147,17 +146,18 @@ class Router
                 ),
             );
 
-            if (\array_key_exists($match, self::$routes[$method])) {
-                return new RouteMatch(self::$routes[$method][$match], $match);
+            if (\array_key_exists($template, self::$routes[$method])) {
+                $route = self::$routes[$method][$template];
+                return new RouteMatch($route, $route->resolveParams($path, $template));
             }
         }
 
         /**
          * Match root wildcard.
          */
-        $match = self::WILDCARD_TOKEN;
-        if (\array_key_exists($match, self::$routes[$method])) {
-            return new RouteMatch(self::$routes[$method][$match], $match);
+        $template = self::WILDCARD_TOKEN;
+        if (\array_key_exists($template, self::$routes[$method])) {
+            return new RouteMatch(self::$routes[$method][$template], []);
         }
 
         /**
@@ -165,14 +165,14 @@ class Router
          */
         foreach ($parts as $part) {
             $current = ($current ?? '') . "{$part}/";
-            $match = $current . self::WILDCARD_TOKEN;
-            if (\array_key_exists($match, self::$routes[$method])) {
-                return new RouteMatch(self::$routes[$method][$match], $match);
+            $template = $current . self::WILDCARD_TOKEN;
+            if (\array_key_exists($template, self::$routes[$method])) {
+                return new RouteMatch(self::$routes[$method][$template], []);
             }
         }
 
         if (self::$wildcard !== null) {
-            return new RouteMatch(self::$wildcard, '');
+            return new RouteMatch(self::$wildcard, []);
         }
 
         return null;

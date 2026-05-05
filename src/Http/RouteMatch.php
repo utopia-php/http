@@ -18,28 +18,13 @@ final readonly class RouteMatch
          */
         public Route $route,
         /**
-         * The route key this request matched against: the registered template
-         * after placeholder substitution (e.g. `users/:::` for `/users/:id`),
-         * `*` for a method-specific wildcard, or `''` for the method-agnostic
-         * wildcard set via {@see Router::setWildcard()}.
+         * Path params resolved from the request URL against the matched
+         * template (e.g. `['id' => 'abc-123']` for `/users/:id` matching
+         * `/users/abc-123`). Empty for static routes and wildcards.
          *
-         * Used as the key into {@see Route::getPathValues()} to resolve path
-         * params for the matched template (a single Route can be registered
-         * under multiple templates via aliases).
+         * @var array<string, string>
          */
-        public string $path,
+        public array $params,
     ) {
-    }
-
-    /**
-     * Wrap a Route with no matched template — for invoking a Route's handler
-     * outside the routing pipeline (e.g. in tests). Path-param resolution
-     * falls back to the Route's first registered template, which is correct
-     * iff the Route has no aliases. Routed callers should construct a full
-     * RouteMatch via {@see Router::match()} to pick up the right template.
-     */
-    public static function for(Route $route): self
-    {
-        return new self($route, '');
     }
 }

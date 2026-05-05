@@ -117,19 +117,22 @@ class Route extends Hook
     }
 
     /**
-     * Get path params.
+     * Resolve path params for the given request URL against a registered
+     * template. Pass `''` to fall back to the route's first registered
+     * template (correct only when there are no aliases with differing
+     * placeholder positions).
      *
-     * @return array<string, mixed>
+     * @return array<string, string>
      */
-    public function getPathValues(Request $request, string $path = ''): array
+    public function resolveParams(string $url, string $matchedTemplate = ''): array
     {
         $pathValues = [];
-        $parts = explode('/', ltrim($request->getURI(), '/'));
+        $parts = explode('/', ltrim($url, '/'));
 
-        if (empty($path)) {
-            $pathParams = $this->pathParams[$path] ?? array_values($this->pathParams)[0] ?? [];
+        if (empty($matchedTemplate)) {
+            $pathParams = $this->pathParams[$matchedTemplate] ?? array_values($this->pathParams)[0] ?? [];
         } else {
-            $pathParams = $this->pathParams[$path] ?? [];
+            $pathParams = $this->pathParams[$matchedTemplate] ?? [];
         }
 
         foreach ($pathParams as $key => $index) {

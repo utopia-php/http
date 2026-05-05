@@ -621,7 +621,7 @@ class Http
         $arguments = [];
         $groups = $route->getGroups();
 
-        $pathValues = $route->getPathValues($request, $match->path);
+        $pathValues = $match->params;
 
         try {
             if ($route->getHook()) {
