@@ -3,6 +3,7 @@
 namespace Utopia\Http;
 
 use Exception;
+use Utopia\Http\Router\Result;
 
 class Router
 {
@@ -121,17 +122,16 @@ class Router
     /**
      * Match route against the method and path.
      *
-     * Returns the matched Route together with the route key it matched against
-     * (the registered template after placeholder substitution, or '*' for a
-     * wildcard, or '' for the method-agnostic wildcard). Returning the matched key avoids
-     * mutating the shared Route instance, which would race under coroutines.
-     *
-     * @return array{0: Route, 1: string}|null
+     * Returns a {@see Result} carrying the matched Route together with the
+     * route key it matched against (the registered template after placeholder
+     * substitution, '*' for a wildcard, or '' for the method-agnostic
+     * wildcard). Returning the key separately avoids mutating the shared
+     * Route instance, which would race under coroutines.
      */
-    public static function match(string $method, string $path): ?array
+    public static function match(string $method, string $path): ?Result
     {
         if (!\array_key_exists($method, self::$routes)) {
-            return self::$wildcard !== null ? [self::$wildcard, ''] : null;
+            return self::$wildcard !== null ? new Result(self::$wildcard, '') : null;
         }
 
         $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
@@ -149,7 +149,7 @@ class Router
             );
 
             if (\array_key_exists($match, self::$routes[$method])) {
-                return [self::$routes[$method][$match], $match];
+                return new Result(self::$routes[$method][$match], $match);
             }
         }
 
@@ -158,7 +158,7 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (\array_key_exists($match, self::$routes[$method])) {
-            return [self::$routes[$method][$match], $match];
+            return new Result(self::$routes[$method][$match], $match);
         }
 
         /**
@@ -168,12 +168,12 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (\array_key_exists($match, self::$routes[$method])) {
-                return [self::$routes[$method][$match], $match];
+                return new Result(self::$routes[$method][$match], $match);
             }
         }
 
         if (self::$wildcard !== null) {
-            return [self::$wildcard, ''];
+            return new Result(self::$wildcard, '');
         }
 
         return null;

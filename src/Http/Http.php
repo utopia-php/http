@@ -3,6 +3,7 @@
 namespace Utopia\Http;
 
 use Utopia\DI\Container;
+use Utopia\Http\Router\Result as RouterResult;
 use Utopia\Servers\Hook;
 use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
@@ -540,20 +541,19 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
-        return $this->matchInternal($request, $fresh)[0] ?? null;
+        return $this->matchInternal($request, $fresh)?->route;
     }
 
     /**
-     * Match a request and return both the matched Route and the route key it
-     * matched against. Returning the matched key separately avoids mutating
-     * the shared Route instance, which would race under coroutines.
+     * Match a request and return the {@see RouterResult} carrying both the
+     * Route and the route key it matched against. Returning the matched key
+     * via the Result avoids mutating the shared Route instance, which would
+     * race under coroutines.
      *
      * Caches the result in the per-request context so re-matches with
      * $fresh=false hit memory without re-running Router::match.
-     *
-     * @return array{0: Route, 1: string}|null
      */
-    private function matchInternal(Request $request, bool $fresh = true): ?array
+    private function matchInternal(Request $request, bool $fresh = true): ?RouterResult
     {
         $context = $this->context();
 
@@ -563,7 +563,7 @@ class Http
                 $matchedPath = $context->has('matchedPath')
                     ? (string) $context->get('matchedPath')
                     : '';
-                return [$route, $matchedPath];
+                return new RouterResult($route, $matchedPath);
             }
         }
 
@@ -572,17 +572,18 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $match = Router::match($method, $url);
+        $result = Router::match($method, $url);
 
-        if ($match === null) {
+        if ($result === null) {
             return null;
         }
 
-        [$route, $matchedPath] = $match;
+        $route = $result->route;
+        $matchedPath = $result->matchedPath;
         $context->set('route', fn() => $route, []);
         $context->set('matchedPath', fn() => $matchedPath, []);
 
-        return $match;
+        return $result;
     }
 
     /**
@@ -823,8 +824,8 @@ class Http
 
         $method = $request->getMethod();
         $match = $this->matchInternal($request);
-        $route = $match[0] ?? null;
-        $matchedPath = $match[1] ?? '';
+        $route = $match?->route;
+        $matchedPath = $match->matchedPath ?? '';
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
         if (self::REQUEST_METHOD_HEAD === $method) {
