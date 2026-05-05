@@ -508,10 +508,7 @@ class Http
     }
 
     /**
-     * Find the matching route for a request, or null if none match.
-     *
-     * Stateless: re-runs the lookup every call, so callers always see a
-     * result reflecting the request they passed in.
+     * Find the route registered for the given request, or null if none match.
      */
     public function match(Request $request): ?RouteMatch
     {
@@ -533,11 +530,11 @@ class Http
     }
 
     /**
-     * Match the request to a registered route, then run its handler and hooks.
+     * Match the request, then run the route's handler and hooks.
      *
-     * Handles OPTIONS preflight (fires options hooks, returns) and HEAD
-     * (matches as GET, suppresses the response body). If no route matches and
-     * the method isn't OPTIONS, fires global error hooks with a 404 Exception.
+     * HEAD requests run as GET with the response body suppressed.
+     * OPTIONS requests fire options hooks and return without dispatching.
+     * Unmatched requests fire global error hooks with a 404.
      */
     public function execute(Request $request, Response $response): static
     {

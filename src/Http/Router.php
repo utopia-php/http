@@ -111,7 +111,7 @@ class Router
     }
 
     /**
-     * Set the method-agnostic wildcard route used when nothing else matches.
+     * Register a method-agnostic catch-all route, used when nothing else matches.
      */
     public static function setWildcard(?Route $route): void
     {
@@ -119,12 +119,7 @@ class Router
     }
 
     /**
-     * Match route against the method and path.
-     *
-     * Returns a {@see RouteMatch} carrying the matched Route and the path
-     * params resolved from the request URL against the matched template.
-     * Resolving params at match time (rather than mutating the shared Route)
-     * keeps the Route immutable across coroutines.
+     * Find the route registered for a request's method and path.
      */
     public static function match(string $method, string $path): ?RouteMatch
     {

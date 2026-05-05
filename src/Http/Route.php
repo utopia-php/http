@@ -117,10 +117,7 @@ class Route extends Hook
     }
 
     /**
-     * Resolve path params for the given request URL against a registered
-     * template. Pass `''` to fall back to the route's first registered
-     * template (correct only when there are no aliases with differing
-     * placeholder positions).
+     * Extract this route's path params from a request URL.
      *
      * @return array<string, string>
      */
