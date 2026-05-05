@@ -530,11 +530,17 @@ class Http
     }
 
     /**
-     * Match the request, then run the route's handler and hooks.
+     * Match a request and run its route's handler and hooks.
      *
-     * HEAD requests run as GET with the response body suppressed.
-     * OPTIONS requests fire options hooks and return without dispatching.
-     * Unmatched requests fire global error hooks with a 404.
+     * HEAD runs as GET with the response body suppressed. OPTIONS fires
+     * options hooks and returns without dispatching. An unmatched request
+     * fires global error hooks with a 404.
+     *
+     * This is a re-entrant dispatch primitive — safe to call from inside
+     * another handler with a synthesized Request/Response (e.g. a GraphQL
+     * resolver invoking an API route). It does not run request-level setup
+     * (compression, request hooks, telemetry); those belong to {@see run()},
+     * which is the entry point for top-level requests from the server.
      */
     public function execute(Request $request, Response $response): static
     {
@@ -733,7 +739,17 @@ class Http
     }
 
     /**
-     * Run: wrapper function to record telemetry. All domain logic should happen in `runInternal`.
+     * Handle a top-level HTTP request.
+     *
+     * This is the entry point wired into the server adapter for each
+     * incoming request. It runs the full request lifecycle: compression
+     * setup, request hooks, static-file serving, route match, dispatch,
+     * and telemetry.
+     *
+     * For dispatching a sub-request from inside a handler (e.g. a
+     * GraphQL resolver invoking another API route with a synthesized
+     * Request/Response), use {@see execute()} instead — it skips the
+     * outer-request setup that has already run.
      */
     public function run(Request $request, Response $response): static
     {
