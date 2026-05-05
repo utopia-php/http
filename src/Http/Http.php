@@ -3,7 +3,6 @@
 namespace Utopia\Http;
 
 use Utopia\DI\Container;
-use Utopia\Http\Router\Result as RouterResult;
 use Utopia\Servers\Hook;
 use Utopia\Telemetry\Adapter as Telemetry;
 use Utopia\Telemetry\Adapter\None as NoTelemetry;
@@ -539,31 +538,14 @@ class Http
      *
      * @param  bool  $fresh If true, will not match any cached route
      */
-    public function match(Request $request, bool $fresh = true): ?Route
-    {
-        return $this->matchInternal($request, $fresh)?->route;
-    }
-
-    /**
-     * Match a request and return the {@see RouterResult} carrying both the
-     * Route and the route key it matched against. Returning the matched key
-     * via the Result avoids mutating the shared Route instance, which would
-     * race under coroutines.
-     *
-     * Caches the result in the per-request context so re-matches with
-     * $fresh=false hit memory without re-running Router::match.
-     */
-    private function matchInternal(Request $request, bool $fresh = true): ?RouterResult
+    public function match(Request $request, bool $fresh = true): ?RouteMatch
     {
         $context = $this->context();
 
-        if (!$fresh && $context->has('route')) {
-            $route = $context->get('route');
-            if ($route instanceof Route) {
-                $matchedPath = $context->has('matchedPath')
-                    ? (string) $context->get('matchedPath')
-                    : '';
-                return new RouterResult($route, $matchedPath);
+        if (!$fresh && $context->has('match')) {
+            $cached = $context->get('match');
+            if ($cached instanceof RouteMatch) {
+                return $cached;
             }
         }
 
@@ -572,33 +554,29 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $result = Router::match($method, $url);
+        $match = Router::match($method, $url);
 
-        if ($result === null) {
+        if ($match === null) {
             return null;
         }
 
-        $route = $result->route;
-        $matchedPath = $result->matchedPath;
+        $context->set('match', fn() => $match, []);
+        $route = $match->route;
         $context->set('route', fn() => $route, []);
-        $context->set('matchedPath', fn() => $matchedPath, []);
 
-        return $result;
+        return $match;
     }
 
     /**
-     * Execute a given route with middlewares and error handling.
-     *
-     * $matchedPath is the route key this request matched against (the
-     * registered template after placeholder substitution). Pass '' for the
-     * wildcard route or when path params aren't relevant.
+     * Execute a matched route with middlewares and error handling.
      */
-    public function execute(Route $route, Request $request, Response $response, string $matchedPath = ''): static
+    public function execute(RouteMatch $match, Request $request, Response $response): static
     {
+        $route = $match->route;
         $arguments = [];
         $groups = $route->getGroups();
 
-        $pathValues = $route->getPathValues($request, $matchedPath);
+        $pathValues = $route->getPathValues($request, $match->path);
 
         try {
             if ($route->getHook()) {
@@ -822,10 +800,8 @@ class Http
         }
 
         $method = $request->getMethod();
-        $match = $this->matchInternal($request);
-        $route = $match?->route;
-        $matchedPath = $match->matchedPath ?? '';
-        $groups = ($route instanceof Route) ? $route->getGroups() : [];
+        $match = $this->match($request);
+        $groups = $match instanceof RouteMatch ? $match->route->getGroups() : [];
 
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -862,8 +838,8 @@ class Http
             return $this;
         }
 
-        if (null !== $route) {
-            return $this->execute($route, $request, $response, $matchedPath);
+        if ($match instanceof RouteMatch) {
+            return $this->execute($match, $request, $response);
         }
 
         if (self::REQUEST_METHOD_OPTIONS === $method) {

@@ -111,7 +111,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -135,7 +135,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute(new RouteMatch($route, ""), $request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -155,7 +155,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute(new RouteMatch($route, ""), $request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -227,7 +227,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute(new RouteMatch($route, ""), $request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -237,7 +237,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
-        $this->http->execute($homepage, $request, new Response());
+        $this->http->execute(new RouteMatch($homepage, ""), $request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -267,7 +267,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -283,7 +283,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -316,7 +316,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -333,7 +333,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -350,7 +350,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -367,7 +367,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -384,7 +384,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -401,7 +401,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -420,7 +420,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute($route, new Request(), new Response());
+            $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -439,7 +439,7 @@ final class HttpTest extends TestCase
                 });
 
             $matched = $this->http->match(new Request());
-            $this->assertSame($route, $matched);
+            $this->assertSame($route, $matched?->route);
 
             ob_start();
             $this->http->execute($matched, new Request(), new Response());
@@ -459,7 +459,7 @@ final class HttpTest extends TestCase
                 });
 
             $matched = $this->http->match(new Request());
-            $this->assertSame($route, $matched);
+            $this->assertSame($route, $matched?->route);
 
             ob_start();
             $this->http->execute($matched, new Request(), new Response());
@@ -539,7 +539,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -547,7 +547,7 @@ final class HttpTest extends TestCase
 
         ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -609,7 +609,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $url;
 
-        $this->assertSame($expected, $this->http->match(new Request()));
+        $this->assertSame($expected, $this->http->match(new Request())?->route);
         $this->assertSame($expected, $this->http->getRoute());
     }
 
@@ -653,7 +653,7 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path1';
             $matched = $this->http->match(new Request());
-            $this->assertSame($route1, $matched);
+            $this->assertSame($route1, $matched?->route);
             $this->assertSame($route1, $this->http->getRoute());
 
             // Second request match returns cached route
@@ -661,12 +661,12 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_URI'] = '/path2';
             $request2 = new Request();
             $matched = $this->http->match($request2, fresh: false);
-            $this->assertSame($route1, $matched);
+            $this->assertSame($route1, $matched?->route);
             $this->assertSame($route1, $this->http->getRoute());
 
             // Fresh match returns new route
             $matched = $this->http->match($request2, fresh: true);
-            $this->assertSame($route2, $matched);
+            $this->assertSame($route2, $matched?->route);
             $this->assertSame($route2, $this->http->getRoute());
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
@@ -680,7 +680,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
         $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
 
-        $this->assertSame($route, $this->http->match(new Request()));
+        $this->assertSame($route, $this->http->match(new Request())?->route);
         $this->assertSame($route, $this->http->getRoute());
     }
 
@@ -796,7 +796,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -814,7 +814,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['func' => 'system']);
-        $this->http->execute($route2, $request, new Response());
+        $this->http->execute(new RouteMatch($route2, ""), $request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -830,7 +830,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute($route3, new Request(), new Response());
+        $this->http->execute(new RouteMatch($route3, ""), new Request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -858,7 +858,7 @@ final class HttpTest extends TestCase
         ob_start();
         $request = new UtopiaFPMRequestTest();
         $request::_setParams(['locale' => 'es']);
-        $this->http->execute($route, $request, new Response());
+        $this->http->execute(new RouteMatch($route, ""), $request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
