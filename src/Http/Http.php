@@ -106,10 +106,11 @@ class Http
     protected ?Route $route = null;
 
     /**
-     * Wildcard route
-     * If set, this get's executed if no other route is matched
+     * Matched route key (template after placeholder substitution).
+     *
+     * Cached alongside $route for $fresh=false re-matches.
      */
-    protected static ?Route $wildcardRoute = null;
+    protected string $matchedPath = '';
 
     /**
      * Compression
@@ -242,9 +243,10 @@ class Http
      */
     public static function wildcard(): Route
     {
-        self::$wildcardRoute = new Route('', '');
+        $route = new Route('', '');
+        Router::setFallback($route);
 
-        return self::$wildcardRoute;
+        return $route;
     }
 
     /**
@@ -546,8 +548,20 @@ class Http
      */
     public function match(Request $request, bool $fresh = true): ?Route
     {
+        return $this->matchInternal($request, $fresh)[0] ?? null;
+    }
+
+    /**
+     * Match a request and return both the matched Route and the route key it
+     * matched against. Returning the matched key separately avoids mutating
+     * the shared Route instance, which would race under coroutines.
+     *
+     * @return array{0: Route, 1: string}|null
+     */
+    private function matchInternal(Request $request, bool $fresh = true): ?array
+    {
         if (null !== $this->route && !$fresh) {
-            return $this->route;
+            return [$this->route, $this->matchedPath];
         }
 
         $url = parse_url($request->getURI(), PHP_URL_PATH);
@@ -555,20 +569,32 @@ class Http
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
-        $this->route = Router::match($method, $url);
+        $match = Router::match($method, $url);
 
-        return $this->route;
+        if ($match === null) {
+            $this->route = null;
+            $this->matchedPath = '';
+            return null;
+        }
+
+        [$this->route, $this->matchedPath] = $match;
+
+        return $match;
     }
 
     /**
-     * Execute a given route with middlewares and error handling
+     * Execute a given route with middlewares and error handling.
+     *
+     * $matchedPath is the route key this request matched against (the
+     * registered template after placeholder substitution). Pass '' for the
+     * fallback route or when path params aren't relevant.
      */
-    public function execute(Route $route, Request $request, Response $response): static
+    public function execute(Route $route, Request $request, Response $response, string $matchedPath = ''): static
     {
         $arguments = [];
         $groups = $route->getGroups();
 
-        $preparedPath = Router::preparePath($route->getMatchedPath());
+        $preparedPath = Router::preparePath($matchedPath);
         $pathValues = $route->getPathValues($request, $preparedPath[0]);
 
         try {
@@ -790,7 +816,9 @@ class Http
         }
 
         $method = $request->getMethod();
-        $route = $this->match($request);
+        $match = $this->matchInternal($request);
+        $route = $match[0] ?? null;
+        $matchedPath = $match[1] ?? '';
         $groups = ($route instanceof Route) ? $route->getGroups() : [];
 
         $this->context()->set('route', fn() => $route, []);
@@ -830,17 +858,8 @@ class Http
             return $this;
         }
 
-        if (null === $route && null !== self::$wildcardRoute) {
-            $route = self::$wildcardRoute;
-            $this->route = $route;
-            $path = parse_url($request->getURI(), PHP_URL_PATH);
-            $path = \is_string($path) ? ($path === '' ? '/' : $path) : '/';
-            $route->path($path);
-
-            $this->context()->set('route', fn() => $route, []);
-        }
         if (null !== $route) {
-            return $this->execute($route, $request, $response);
+            return $this->execute($route, $request, $response, $matchedPath);
         }
 
         if (self::REQUEST_METHOD_OPTIONS === $method) {
@@ -923,6 +942,5 @@ class Http
         self::$options = [];
         self::$startHooks = [];
         self::$requestHooks = [];
-        self::$wildcardRoute = null;
     }
 }

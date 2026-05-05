@@ -15,6 +15,11 @@ class Router
     protected static bool $allowOverride = false;
 
     /**
+     * Fallback route used when no method-specific route matches. Method-agnostic.
+     */
+    protected static ?Route $fallback = null;
+
+    /**
      * @var array<string,Route[]>
      */
     protected static array $routes = [
@@ -106,12 +111,27 @@ class Router
     }
 
     /**
-     * Match route against the method and path.
+     * Set the method-agnostic fallback route used when nothing else matches.
      */
-    public static function match(string $method, string $path): ?Route
+    public static function setFallback(?Route $route): void
+    {
+        self::$fallback = $route;
+    }
+
+    /**
+     * Match route against the method and path.
+     *
+     * Returns the matched Route together with the route key it matched against
+     * (the registered template after placeholder substitution, or '*' for a
+     * wildcard, or '' for the fallback). Returning the matched key avoids
+     * mutating the shared Route instance, which would race under coroutines.
+     *
+     * @return array{0: Route, 1: string}|null
+     */
+    public static function match(string $method, string $path): ?array
     {
         if (!\array_key_exists($method, self::$routes)) {
-            return null;
+            return self::$fallback !== null ? [self::$fallback, ''] : null;
         }
 
         $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
@@ -129,9 +149,7 @@ class Router
             );
 
             if (\array_key_exists($match, self::$routes[$method])) {
-                $route = self::$routes[$method][$match];
-                $route->setMatchedPath($match);
-                return $route;
+                return [self::$routes[$method][$match], $match];
             }
         }
 
@@ -140,9 +158,7 @@ class Router
          */
         $match = self::WILDCARD_TOKEN;
         if (\array_key_exists($match, self::$routes[$method])) {
-            $route = self::$routes[$method][$match];
-            $route->setMatchedPath($match);
-            return $route;
+            return [self::$routes[$method][$match], $match];
         }
 
         /**
@@ -152,10 +168,12 @@ class Router
             $current = ($current ?? '') . "{$part}/";
             $match = $current . self::WILDCARD_TOKEN;
             if (\array_key_exists($match, self::$routes[$method])) {
-                $route = self::$routes[$method][$match];
-                $route->setMatchedPath($match);
-                return $route;
+                return [self::$routes[$method][$match], $match];
             }
+        }
+
+        if (self::$fallback !== null) {
+            return [self::$fallback, ''];
         }
 
         return null;
@@ -219,6 +237,7 @@ class Router
     public static function reset(): void
     {
         self::$params = [];
+        self::$fallback = null;
         self::$routes = [
             Http::REQUEST_METHOD_GET => [],
             Http::REQUEST_METHOD_POST => [],
