@@ -15,9 +15,9 @@ class Router
     protected static bool $allowOverride = false;
 
     /**
-     * Fallback route used when no method-specific route matches. Method-agnostic.
+     * Method-agnostic wildcard route used when no method-specific route matches.
      */
-    protected static ?Route $fallback = null;
+    protected static ?Route $wildcard = null;
 
     /**
      * @var array<string,Route[]>
@@ -111,11 +111,11 @@ class Router
     }
 
     /**
-     * Set the method-agnostic fallback route used when nothing else matches.
+     * Set the method-agnostic wildcard route used when nothing else matches.
      */
-    public static function setFallback(?Route $route): void
+    public static function setWildcard(?Route $route): void
     {
-        self::$fallback = $route;
+        self::$wildcard = $route;
     }
 
     /**
@@ -123,7 +123,7 @@ class Router
      *
      * Returns the matched Route together with the route key it matched against
      * (the registered template after placeholder substitution, or '*' for a
-     * wildcard, or '' for the fallback). Returning the matched key avoids
+     * wildcard, or '' for the method-agnostic wildcard). Returning the matched key avoids
      * mutating the shared Route instance, which would race under coroutines.
      *
      * @return array{0: Route, 1: string}|null
@@ -131,7 +131,7 @@ class Router
     public static function match(string $method, string $path): ?array
     {
         if (!\array_key_exists($method, self::$routes)) {
-            return self::$fallback !== null ? [self::$fallback, ''] : null;
+            return self::$wildcard !== null ? [self::$wildcard, ''] : null;
         }
 
         $parts = array_values(array_filter(explode('/', $path), fn($segment) => $segment !== ''));
@@ -172,8 +172,8 @@ class Router
             }
         }
 
-        if (self::$fallback !== null) {
-            return [self::$fallback, ''];
+        if (self::$wildcard !== null) {
+            return [self::$wildcard, ''];
         }
 
         return null;
@@ -237,7 +237,7 @@ class Router
     public static function reset(): void
     {
         self::$params = [];
-        self::$fallback = null;
+        self::$wildcard = null;
         self::$routes = [
             Http::REQUEST_METHOD_GET => [],
             Http::REQUEST_METHOD_POST => [],

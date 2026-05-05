@@ -230,7 +230,7 @@ class Http
     public static function wildcard(): Route
     {
         $route = new Route('', '');
-        Router::setFallback($route);
+        Router::setWildcard($route);
 
         return $route;
     }
@@ -590,7 +590,7 @@ class Http
      *
      * $matchedPath is the route key this request matched against (the
      * registered template after placeholder substitution). Pass '' for the
-     * fallback route or when path params aren't relevant.
+     * wildcard route or when path params aren't relevant.
      */
     public function execute(Route $route, Request $request, Response $response, string $matchedPath = ''): static
     {
