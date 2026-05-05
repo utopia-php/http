@@ -30,4 +30,16 @@ final readonly class RouteMatch
         public string $path,
     ) {
     }
+
+    /**
+     * Wrap a Route with no matched template — for invoking a Route's handler
+     * outside the routing pipeline (e.g. in tests). Path-param resolution
+     * falls back to the Route's first registered template, which is correct
+     * iff the Route has no aliases. Routed callers should construct a full
+     * RouteMatch via {@see Router::match()} to pick up the right template.
+     */
+    public static function for(Route $route): self
+    {
+        return new self($route, '');
+    }
 }
