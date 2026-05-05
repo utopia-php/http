@@ -759,14 +759,13 @@ class Http
         $start = microtime(true);
         $result = $this->runInternal($request, $response);
 
-        $context = $this->context();
-        $matchedRoute = $context->has('route') ? $context->get('route') : null;
+        $route = $this->context()->has('route') ? $this->context()->get('route') : null;
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
             'url.scheme' => $request->getProtocol(),
             'http.request.method' => $request->getMethod(),
-            'http.route' => $matchedRoute instanceof Route ? $matchedRoute->getPath() : null,
+            'http.route' => $route instanceof Route ? $route->getPath() : null,
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
