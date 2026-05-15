@@ -3,7 +3,6 @@
 namespace Utopia\Http;
 
 use Exception;
-use Utopia\Servers\Hook;
 
 class Router
 {
@@ -16,9 +15,9 @@ class Router
     protected static bool $allowOverride = false;
 
     /**
-     * Method-agnostic fallback handler used when no route matches.
+     * Method-agnostic wildcard route used when no method-specific route matches.
      */
-    protected static ?Hook $wildcard = null;
+    protected static ?Route $wildcard = null;
 
     /**
      * @var array<string,Route[]>
@@ -112,11 +111,11 @@ class Router
     }
 
     /**
-     * Register a method-agnostic fallback handler used when no route matches.
+     * Register a method-agnostic catch-all route, used when nothing else matches.
      */
-    public static function setWildcard(?Hook $hook): void
+    public static function setWildcard(?Route $route): void
     {
-        self::$wildcard = $hook;
+        self::$wildcard = $route;
     }
 
     /**
