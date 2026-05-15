@@ -738,7 +738,7 @@ final class HttpTest extends TestCase
 
         // Inner's shutdown fires first (with inner route), then outer's
         // shutdown — which must see the outer route, not the inner one.
-        $this->assertEquals(['/inner', '/outer'], $captured);
+        $this->assertSame(['/inner', '/outer'], $captured);
     }
 
     public function testWildcardRoute(): void
