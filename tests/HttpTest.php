@@ -760,10 +760,12 @@ final class HttpTest extends TestCase
             ->inject('myRoute')
             ->inject('response')
             ->action(function (mixed $myRoute, $response) {
-                if ($myRoute == null) {
-                    $response->send('ROUTE IS NULL!');
+                // Wildcard matches don't carry a Route — they're a method-
+                // agnostic fallback. inject('route') is null here.
+                if ($myRoute === null) {
+                    $response->send('NO ROUTE');
                 } else {
-                    $response->send('HELLO');
+                    $response->send('UNEXPECTED ROUTE');
                 }
             });
 
@@ -772,7 +774,7 @@ final class HttpTest extends TestCase
         $result = ob_get_contents();
         ob_end_clean();
 
-        $this->assertSame('HELLO', $result);
+        $this->assertSame('NO ROUTE', $result);
 
         ob_start();
         $req = new Request();

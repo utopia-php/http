@@ -223,16 +223,20 @@ class Http
     }
 
     /**
-     * Wildcard
+     * Register a method-agnostic fallback handler used when no route matches.
      *
-     * Add Wildcard route
+     * Use this for catch-all behavior: rendering a custom 404, proxying
+     * unmatched paths, serving a SPA, etc. The returned {@see Hook} accepts
+     * the usual `param()`, `inject()`, `action()` configuration but has no
+     * method or path of its own.
      */
-    public static function wildcard(): Route
+    public static function wildcard(): Hook
     {
-        $route = new Route('', '');
-        Router::setWildcard($route);
+        $hook = new Hook();
+        $hook->groups(['*']);
+        Router::setWildcard($hook);
 
-        return $route;
+        return $hook;
     }
 
     /**
@@ -545,14 +549,15 @@ class Http
         $match = $this->match($request);
 
         if (self::REQUEST_METHOD_OPTIONS === $method) {
-            $groups = $match?->route->getGroups() ?? [];
+            $matchedRoute = $match?->route instanceof Route ? $match->route : null;
+            $groups = $matchedRoute?->getGroups() ?? [];
 
             try {
                 foreach ($groups as $group) {
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match->route));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $matchedRoute));
                         }
                     }
                 }
@@ -560,7 +565,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match?->route));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $matchedRoute));
                     }
                 }
             } catch (\Throwable $e) {
@@ -568,7 +573,7 @@ class Http
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
                         $this->context()->set('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams(), $match?->route));
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams(), $matchedRoute));
                     }
                 }
             }
@@ -590,12 +595,14 @@ class Http
         $route = $match->route;
         $arguments = [];
         $groups = $route->getGroups();
+        $injectedRoute = $route instanceof Route ? $route : null;
+        $runGlobalHooks = !($route instanceof Route) || $route->getHook();
 
         try {
-            if ($route->getHook()) {
+            if ($runGlobalHooks) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $injectedRoute);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -604,30 +611,30 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $injectedRoute);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $match->params, $request->getParams(), $route);
+                $arguments = $this->getArguments($route, $match->params, $request->getParams(), $injectedRoute);
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $injectedRoute);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
-            if ($route->getHook()) {
-                foreach (self::$shutdown as $hook) { // Group shutdown hooks
+            if ($runGlobalHooks) {
+                foreach (self::$shutdown as $hook) { // Global shutdown hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $injectedRoute);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -639,7 +646,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (\in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
+                            $arguments = $this->getArguments($error, $match->params, $request->getParams(), $injectedRoute);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -651,7 +658,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($error, $match->params, $request->getParams(), $injectedRoute);
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -763,7 +770,10 @@ class Http
             'http.request.method' => $request->getMethod(),
             // OTel semantics: http.route is the matched route template, or
             // unset when no template applies (wildcard / no match).
-            'http.route' => ($this->match($request)?->route->getPath() ?: null),
+            'http.route' => (function () use ($request) {
+                $matched = $this->match($request)?->route;
+                return $matched instanceof Route ? $matched->getPath() : null;
+            })(),
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
