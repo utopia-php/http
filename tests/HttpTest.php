@@ -741,6 +741,42 @@ final class HttpTest extends TestCase
         $this->assertSame(['/inner', '/outer'], $captured);
     }
 
+    public function testParamsInjection(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/users/abc-123/posts/42';
+
+        $captured = null;
+
+        Http::get('/users/:id/posts/:postId')
+            ->inject('params')
+            ->action(function (array $params) use (&$captured) {
+                $captured = $params;
+            });
+
+        $this->http->execute(new Request(), new Response());
+
+        $this->assertSame(['id' => 'abc-123', 'postId' => '42'], $captured);
+    }
+
+    public function testParamsInjectionEmptyForStaticRoute(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/static';
+
+        $captured = null;
+
+        Http::get('/static')
+            ->inject('params')
+            ->action(function (array $params) use (&$captured) {
+                $captured = $params;
+            });
+
+        $this->http->execute(new Request(), new Response());
+
+        $this->assertSame([], $captured);
+    }
+
     public function testWildcardRoute(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? null;

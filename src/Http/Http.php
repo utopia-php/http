@@ -720,15 +720,18 @@ class Http
             $arguments[$param['order']] = $value;
         }
 
-        foreach ($hook->getInjections() as $injection) {
-            // 'route' is frame-local: pass the dispatch frame's matched Route
-            // through directly instead of routing through shared context.
-            if ($injection['name'] === 'route') {
-                $arguments[$injection['order']] = $route;
-                continue;
-            }
+        // Frame-local injections come from the dispatch frame, not the
+        // per-request context. Writing them to context would leak across
+        // nested execute() calls (e.g. sub-request dispatch).
+        $frameLocals = [
+            'route' => $route,
+            'params' => $values,
+        ];
 
-            $arguments[$injection['order']] = $this->adapter->context()->get($injection['name']);
+        foreach ($hook->getInjections() as $injection) {
+            $arguments[$injection['order']] = \array_key_exists($injection['name'], $frameLocals)
+                ? $frameLocals[$injection['name']]
+                : $this->adapter->context()->get($injection['name']);
         }
 
         return $arguments;
