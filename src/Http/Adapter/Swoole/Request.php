@@ -64,7 +64,7 @@ class Request extends UtopiaRequest
         $remoteAddr = $this->getServer('remote_addr') ?? '0.0.0.0';
 
         foreach ($this->trustedIpHeaders as $header) {
-            $headerValue = $this->getHeader($header);
+            $headerValue = $this->getHeaderLine($header);
 
             if (empty($headerValue)) {
                 continue;
@@ -92,7 +92,7 @@ class Request extends UtopiaRequest
      */
     public function getProtocol(): string
     {
-        $protocol = $this->getHeader('x-forwarded-proto', $this->getServer('server_protocol') ?? 'https');
+        $protocol = $this->getHeaderLine('x-forwarded-proto', $this->getServer('server_protocol') ?? 'https');
 
         if ($protocol === 'HTTP/1.1') {
             return 'http';
@@ -111,7 +111,7 @@ class Request extends UtopiaRequest
      */
     public function getPort(): string
     {
-        return $this->getHeader('x-forwarded-port', (string) parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_PORT));
+        return $this->getHeaderLine('x-forwarded-port', (string) parse_url($this->getProtocol() . '://' . $this->getHeaderLine('x-forwarded-host', $this->getHeaderLine('host')), PHP_URL_PORT));
     }
 
     /**
@@ -121,7 +121,7 @@ class Request extends UtopiaRequest
      */
     public function getHostname(): string
     {
-        $hostname = parse_url($this->getProtocol() . '://' . $this->getHeader('x-forwarded-host', $this->getHeader('host')), PHP_URL_HOST);
+        $hostname = parse_url($this->getProtocol() . '://' . $this->getHeaderLine('x-forwarded-host', $this->getHeaderLine('host')), PHP_URL_HOST);
         return strtolower(\strval($hostname));
     }
 
@@ -177,7 +177,7 @@ class Request extends UtopiaRequest
      */
     public function getReferer(string $default = ''): string
     {
-        return $this->getHeader('referer', '');
+        return $this->getHeaderLine('referer', $default);
     }
 
     /**
@@ -187,7 +187,7 @@ class Request extends UtopiaRequest
      */
     public function getOrigin(string $default = ''): string
     {
-        return $this->getHeader('origin', $default);
+        return $this->getHeaderLine('origin', $default);
     }
 
     /**
@@ -197,7 +197,7 @@ class Request extends UtopiaRequest
      */
     public function getUserAgent(string $default = ''): string
     {
-        return $this->getHeader('user-agent', $default);
+        return $this->getHeaderLine('user-agent', $default);
     }
 
     /**
@@ -207,7 +207,7 @@ class Request extends UtopiaRequest
      */
     public function getAccept(string $default = ''): string
     {
-        return $this->getHeader('accept', $default);
+        return $this->getHeaderLine('accept', $default);
     }
 
     /**
@@ -226,47 +226,19 @@ class Request extends UtopiaRequest
     }
 
     /**
-     * Get cookie
+     * Generate cookies
      *
-     * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
-     */
-    public function getCookie(string $key, string $default = ''): string
-    {
-        $key = strtolower($key);
-
-        return $this->swoole->cookie[$key] ?? $default;
-    }
-
-    /**
-     * Get header
+     * Parse request cookies into an associative array of cookie name to value.
      *
-     * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
+     * @return array<string, string>
      */
-    public function getHeader(string $key, string $default = ''): string
+    protected function generateCookies(): array
     {
-        return $this->swoole->header[$key] ?? $default;
-    }
-
-    /**
-     * Method for adding HTTP header parameters.
-     */
-    public function addHeader(string $key, string $value): static
-    {
-        $this->swoole->header[$key] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Method for removing HTTP header parameters.
-     */
-    public function removeHeader(string $key): static
-    {
-        if (isset($this->swoole->header[$key])) {
-            unset($this->swoole->header[$key]);
+        if (null === $this->cookies) {
+            $this->cookies = $this->swoole->cookie ?? [];
         }
 
-        return $this;
+        return $this->cookies;
     }
 
     public function getSwooleRequest(): SwooleRequest
@@ -287,7 +259,7 @@ class Request extends UtopiaRequest
             $this->queryString = $this->swoole->get ?? [];
         }
         if (null === $this->payload) {
-            $contentType = $this->getHeader('content-type');
+            $contentType = $this->getHeaderLine('content-type');
 
             // Get content-type without the charset
             $length = strpos($contentType, ';');
@@ -316,13 +288,26 @@ class Request extends UtopiaRequest
     /**
      * Generate headers
      *
-     * Parse request headers as an array for easy querying using the getHeader method
+     * Parse Swoole request headers into a PSR-7 style map of lowercased header name
+     * to a list of string values for easy querying using the getHeader method.
      *
-     * @return array<string, mixed>
+     * @return array<string, array<int, string>>
      */
     #[\Override]
     protected function generateHeaders(): array
     {
-        return $this->swoole->header;
+        if (null === $this->headers) {
+            $headers = [];
+
+            foreach ($this->swoole->header ?? [] as $name => $value) {
+                $headers[strtolower($name)] = \is_array($value)
+                    ? array_values(array_map(strval(...), $value))
+                    : [(string) $value];
+            }
+
+            $this->headers = $headers;
+        }
+
+        return $this->headers;
     }
 }

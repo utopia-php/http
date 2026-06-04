@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use Utopia\Http\Http;
@@ -31,7 +33,7 @@ Http::get('/cookies')
     ->inject('request')
     ->inject('response')
     ->action(function (Request $request, Response $response) {
-        $response->send($request->getHeaders()['cookie'] ?? '');
+        $response->send($request->getHeaderLine('cookie'));
     });
 
 Http::get('/cookie/:key')
