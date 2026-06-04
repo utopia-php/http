@@ -88,6 +88,22 @@ final class FPMResponseTest extends TestCase
         $this->assertSame('body', $html);
     }
 
+    public function testCanSendMinimalCookie(): void
+    {
+        ob_start(); //Start of build
+
+        // A cookie with only a name (null value, no SameSite/secure/etc.) must
+        // not trigger a TypeError when proxied to setcookie()/Swoole's cookie().
+        @$this->response
+            ->addCookie('name')
+            ->send('body');
+
+        $html = ob_get_contents();
+        ob_end_clean(); //End of build
+
+        $this->assertSame('body', $html);
+    }
+
     public function testCanSendRedirect(): void
     {
         ob_start(); //Start of build

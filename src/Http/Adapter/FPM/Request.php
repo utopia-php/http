@@ -59,7 +59,7 @@ class Request extends UtopiaRequest
         $remoteAddr = $this->getServer('REMOTE_ADDR') ?? '0.0.0.0';
 
         foreach ($this->trustedIpHeaders as $header) {
-            $headerValue = $this->getHeader($header);
+            $headerValue = $this->getHeaderLine($header);
 
             if (empty($headerValue)) {
                 continue;
@@ -209,57 +209,19 @@ class Request extends UtopiaRequest
     }
 
     /**
-     * Get cookie
+     * Generate cookies
      *
-     * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
-     */
-    public function getCookie(string $key, string $default = ''): string
-    {
-        return $_COOKIE[$key] ?? $default;
-    }
-
-    /**
-     * Get header
+     * Parse request cookies into an associative array of cookie name to value.
      *
-     * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
+     * @return array<string, string>
      */
-    public function getHeader(string $key, string $default = ''): string
+    protected function generateCookies(): array
     {
-        $headers = $this->generateHeaders();
-
-        if (!isset($headers[$key])) {
-            return $default;
+        if (null === $this->cookies) {
+            $this->cookies = $_COOKIE;
         }
 
-        $value = $headers[$key];
-
-        return \is_array($value) ? implode(', ', $value) : $value;
-    }
-
-    /**
-     * Set header
-     *
-     * Method for adding HTTP header parameters.
-     */
-    public function addHeader(string $key, string $value): static
-    {
-        $this->headers[$key] = $value;
-
-        return $this;
-    }
-
-    /**
-     * Remvoe header
-     *
-     * Method for removing HTTP header parameters.
-     */
-    public function removeHeader(string $key): static
-    {
-        if (isset($this->headers[$key])) {
-            unset($this->headers[$key]);
-        }
-
-        return $this;
+        return $this->cookies;
     }
 
     /**
@@ -275,7 +237,7 @@ class Request extends UtopiaRequest
             $this->queryString = $_GET;
         }
         if (null === $this->payload) {
-            $contentType = $this->getHeader('content-type');
+            $contentType = $this->getHeaderLine('content-type');
 
             // Get content-type without the charset
             $length = strpos($contentType, ';');
@@ -301,40 +263,5 @@ class Request extends UtopiaRequest
             self::METHOD_DELETE => $this->payload,
             default => $this->queryString,
         };
-    }
-
-    /**
-     * Generate headers
-     *
-     * Parse request headers as an array for easy querying using the getHeader method
-     *
-     * @return array<string, string|array<int, string>>
-     */
-    #[\Override]
-    protected function generateHeaders(): array
-    {
-        if (null === $this->headers) {
-            /**
-             * Fallback for older PHP versions
-             * that do not support generateHeaders
-             */
-            if (!\function_exists('getallheaders')) {
-                $headers = [];
-
-                foreach ($_SERVER as $name => $value) {
-                    if (str_starts_with($name, 'HTTP_')) {
-                        $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
-                    }
-                }
-
-                $this->headers = $headers;
-
-                return $this->headers;
-            }
-
-            $this->headers = array_change_key_case(getallheaders());
-        }
-
-        return $this->headers;
     }
 }

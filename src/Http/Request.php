@@ -42,9 +42,19 @@ abstract class Request
     /**
      * Container for parsed headers
      *
-     * @var array<string, string|array<int, string>>|null
+     * Each header is stored under its lowercased name and maps to a list of
+     * one or more string values, following the PSR-7 header representation.
+     *
+     * @var array<string, array<int, string>>|null
      */
-    protected $headers;
+    protected ?array $headers = null;
+
+    /**
+     * Container for parsed cookies
+     *
+     * @var array<string, string>|null
+     */
+    protected ?array $cookies = null;
 
     /**
      * @var array<int, string>
@@ -240,23 +250,93 @@ abstract class Request
     /**
      * Get cookie
      *
-     * Method for querying HTTP cookie parameters. If $key is not found $default value will be returned.
+     * Method for querying a single HTTP cookie. If $key is not found $default value will be returned.
      */
-    abstract public function getCookie(string $key, string $default = ''): string;
+    public function getCookie(string $key, string $default = ''): string
+    {
+        $cookies = $this->generateCookies();
+
+        return $cookies[$key] ?? $default;
+    }
+
+    /**
+     * Get cookie params
+     *
+     * Method for getting all HTTP cookies as an associative array, following PSR-7.
+     *
+     * @return array<string, string>
+     */
+    public function getCookieParams(): array
+    {
+        return $this->generateCookies();
+    }
+
+    /**
+     * Set cookie params
+     *
+     * Replace the request cookies with the given associative array, following PSR-7.
+     *
+     * @param  array<string, string>  $cookies
+     */
+    public function setCookieParams(array $cookies): static
+    {
+        $this->cookies = $cookies;
+
+        return $this;
+    }
+
+    /**
+     * Has header
+     *
+     * Checks if a header exists by the given case-insensitive name, following PSR-7.
+     */
+    public function hasHeader(string $key): bool
+    {
+        $headers = $this->generateHeaders();
+
+        return isset($headers[strtolower($key)]);
+    }
 
     /**
      * Get header
      *
-     * Method for querying HTTP header parameters. If $key is not found $default value will be returned.
+     * Method for querying all values of a single HTTP header by its case-insensitive
+     * name, following PSR-7. Returns a list of strings, or $default when not found.
+     *
+     * @param  array<int, string>  $default
+     * @return array<int, string>
      */
-    abstract public function getHeader(string $key, string $default = ''): string;
+    public function getHeader(string $key, array $default = []): array
+    {
+        $headers = $this->generateHeaders();
+
+        return $headers[strtolower($key)] ?? $default;
+    }
+
+    /**
+     * Get header line
+     *
+     * Returns all values for the given case-insensitive header name concatenated
+     * using a comma, following PSR-7. Returns $default when the header is not found.
+     */
+    public function getHeaderLine(string $key, string $default = ''): string
+    {
+        $values = $this->getHeader($key);
+
+        if ($values === []) {
+            return $default;
+        }
+
+        return implode(', ', $values);
+    }
 
     /**
      * Get headers
      *
-     * Method for getting all HTTP header parameters.
+     * Method for getting all HTTP headers as an associative array of header name
+     * to a list of string values, following PSR-7.
      *
-     * @return array<string,mixed>
+     * @return array<string, array<int, string>>
      */
     public function getHeaders(): array
     {
@@ -266,16 +346,43 @@ abstract class Request
     /**
      * Set header
      *
-     * Method for adding HTTP header parameters.
+     * Replace any existing values for the given header with a single value,
+     * mirroring PSR-7's withHeader.
      */
-    abstract public function addHeader(string $key, string $value): static;
+    public function setHeader(string $key, string $value): static
+    {
+        $this->generateHeaders();
+        $this->headers[strtolower($key)] = [$value];
+
+        return $this;
+    }
 
     /**
-     * Remvoe header
+     * Add header
      *
-     * Method for removing HTTP header parameters.
+     * Append a value to an existing header, or create it if it does not exist,
+     * mirroring PSR-7's withAddedHeader.
      */
-    abstract public function removeHeader(string $key): static;
+    public function addHeader(string $key, string $value): static
+    {
+        $this->generateHeaders();
+        $this->headers[strtolower($key)][] = $value;
+
+        return $this;
+    }
+
+    /**
+     * Remove header
+     *
+     * Method for removing an HTTP header by its case-insensitive name.
+     */
+    public function removeHeader(string $key): static
+    {
+        $this->generateHeaders();
+        unset($this->headers[strtolower($key)]);
+
+        return $this;
+    }
 
     /**
      * Get Request Size
@@ -286,8 +393,8 @@ abstract class Request
     {
         $headers = $this->generateHeaders();
         $headerStrings = [];
-        foreach ($headers as $key => $value) {
-            $headerStrings[] = \is_array($value) ? $key . ': ' . implode(', ', $value) : $key . ': ' . $value;
+        foreach ($headers as $key => $values) {
+            $headerStrings[] = $key . ': ' . implode(', ', $values);
         }
         return mb_strlen(implode("\n", $headerStrings), '8bit') + mb_strlen(file_get_contents('php://input') ?: '', '8bit');
     }
@@ -420,36 +527,47 @@ abstract class Request
     /**
      * Generate headers
      *
-     * Parse request headers as an array for easy querying using the getHeader method
+     * Parse request headers into a PSR-7 style map of lowercased header name to a
+     * list of string values for easy querying using the getHeader method.
      *
-     * @return array<string, string|array<int, string>>
+     * @return array<string, array<int, string>>
      */
     protected function generateHeaders(): array
     {
         if (null === $this->headers) {
+            $headers = [];
+
             /**
-             * Fallback for older PHP versions
-             * that do not support generateHeaders
+             * Fallback for environments
+             * that do not support getallheaders
              */
             if (!\function_exists('getallheaders')) {
-                $headers = [];
-
                 foreach ($_SERVER as $name => $value) {
                     if (str_starts_with($name, 'HTTP_')) {
-                        $headers[str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))))] = $value;
+                        $key = str_replace(' ', '-', strtolower(str_replace('_', ' ', substr($name, 5))));
+                        $headers[$key] = [(string) $value];
                     }
                 }
-
-                $this->headers = $headers;
-
-                return $this->headers;
+            } else {
+                foreach (getallheaders() as $name => $value) {
+                    $headers[strtolower($name)] = [(string) $value];
+                }
             }
 
-            $this->headers = array_change_key_case(getallheaders());
+            $this->headers = $headers;
         }
 
         return $this->headers;
     }
+
+    /**
+     * Generate cookies
+     *
+     * Parse request cookies into an associative array of cookie name to value.
+     *
+     * @return array<string, string>
+     */
+    abstract protected function generateCookies(): array;
 
     /**
      * Generate input
@@ -469,7 +587,7 @@ abstract class Request
      */
     protected function parseContentRange(): ?array
     {
-        $contentRange = $this->getHeader('content-range', '');
+        $contentRange = $this->getHeaderLine('content-range', '');
         $data = [];
         if (!empty($contentRange)) {
             $contentRange = explode(' ', $contentRange);
@@ -523,7 +641,7 @@ abstract class Request
      */
     protected function parseRange(): ?array
     {
-        $rangeHeader = $this->getHeader('range', '');
+        $rangeHeader = $this->getHeaderLine('range', '');
         if (empty($rangeHeader)) {
             return null;
         }

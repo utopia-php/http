@@ -272,7 +272,10 @@ abstract class Response
     protected bool $headersSent = false;
 
     /**
-     * @var array<string, string|array<string>>
+     * Response headers, stored under their lowercased name and mapping to a list of
+     * one or more string values, following the PSR-7 header representation.
+     *
+     * @var array<string, array<int, string>>
      */
     protected array $headers = [];
 
@@ -437,21 +440,27 @@ abstract class Response
     }
 
     /**
+     * Set header
+     *
+     * Replace any existing values for the given header with a single value,
+     * mirroring PSR-7's withHeader.
+     */
+    public function setHeader(string $key, string $value): static
+    {
+        $this->headers[strtolower($key)] = [$value];
+
+        return $this;
+    }
+
+    /**
      * Add header
      *
-     * Add an HTTP response header
+     * Append a value to an existing response header, or create it if it does not
+     * exist, mirroring PSR-7's withAddedHeader.
      */
     public function addHeader(string $key, string $value): static
     {
-        if (\array_key_exists($key, $this->headers)) {
-            if (\is_array($this->headers[$key])) {
-                $this->headers[$key][] = $value;
-            } else {
-                $this->headers[$key] = [$this->headers[$key], $value];
-            }
-        } else {
-            $this->headers[$key] = $value;
-        }
+        $this->headers[strtolower($key)][] = $value;
 
         return $this;
     }
@@ -459,23 +468,63 @@ abstract class Response
     /**
      * Remove header
      *
-     * Remove HTTP response header
+     * Remove an HTTP response header by its case-insensitive name.
      */
     public function removeHeader(string $key): static
     {
-        if (isset($this->headers[$key])) {
-            unset($this->headers[$key]);
-        }
+        unset($this->headers[strtolower($key)]);
 
         return $this;
     }
 
     /**
+     * Has header
+     *
+     * Checks if a response header exists by the given case-insensitive name, following PSR-7.
+     */
+    public function hasHeader(string $key): bool
+    {
+        return isset($this->headers[strtolower($key)]);
+    }
+
+    /**
+     * Get header
+     *
+     * Return all values of a single response header by its case-insensitive name,
+     * following PSR-7. Returns a list of strings, or $default when not found.
+     *
+     * @param  array<int, string>  $default
+     * @return array<int, string>
+     */
+    public function getHeader(string $key, array $default = []): array
+    {
+        return $this->headers[strtolower($key)] ?? $default;
+    }
+
+    /**
+     * Get header line
+     *
+     * Return all values for the given case-insensitive header name concatenated
+     * using a comma, following PSR-7. Returns $default when the header is not found.
+     */
+    public function getHeaderLine(string $key, string $default = ''): string
+    {
+        $values = $this->getHeader($key);
+
+        if ($values === []) {
+            return $default;
+        }
+
+        return implode(', ', $values);
+    }
+
+    /**
      * Get Headers
      *
-     * Return array of all response headers
+     * Return array of all response headers, each mapping to a list of string values,
+     * following PSR-7.
      *
-     * @return array<string, string|array<string>>
+     * @return array<string, array<int, string>>
      */
     public function getHeaders(): array
     {
@@ -542,17 +591,9 @@ abstract class Response
 
         $this->appendCookies();
 
-        $hasContentEncoding = false;
-        foreach ($this->headers as $name => $values) {
-            if (strtolower($name) === 'content-encoding') {
-                $hasContentEncoding = true;
-                break;
-            }
-        }
-
         // Compress body only if all conditions are met:
         if (
-            !$hasContentEncoding
+            !$this->hasHeader('Content-Encoding')
             && !empty($this->acceptEncoding)
             && $this->isCompressible($this->contentType)
             && \strlen($body) > $this->compressionMinSize
@@ -588,14 +629,10 @@ abstract class Response
 
         $headersSize = 0;
         foreach ($this->headers as $name => $values) {
-            if (\is_array($values)) {
-                foreach ($values as $value) {
-                    $headersSize += \strlen($name . ': ' . $value);
-                }
-                $headersSize += (\count($values) - 1) * 2; // linebreaks
-            } else {
-                $headersSize += \strlen($name . ': ' . $values);
+            foreach ($values as $value) {
+                $headersSize += \strlen($name . ': ' . $value);
             }
+            $headersSize += (\count($values) - 1) * 2; // linebreaks
         }
         $headersSize += (\count($this->headers) - 1) * 2; // linebreaks
 
@@ -684,12 +721,12 @@ abstract class Response
 
         // Send content type header
         if (!empty($this->contentType)) {
-            $this->addHeader('Content-Type', $this->contentType);
+            $this->setHeader('Content-Type', $this->contentType);
         }
 
         // Set application headers
-        foreach ($this->headers as $key => $value) {
-            $this->sendHeader($key, $value);
+        foreach ($this->headers as $key => $values) {
+            $this->sendHeader($key, $values);
         }
 
         return $this;
@@ -705,9 +742,9 @@ abstract class Response
      *
      * Output Header
      *
-     * @param  string|array<string>  $value
+     * @param  array<int, string>  $value
      */
-    abstract public function sendHeader(string $key, mixed $value): void;
+    abstract public function sendHeader(string $key, array $value): void;
 
     /**
      * Send Cookie
@@ -726,7 +763,9 @@ abstract class Response
     protected function appendCookies(): static
     {
         foreach ($this->cookies as $cookie) {
-            $this->sendCookie($cookie['name'], $cookie['value'], [
+            // A cookie may be registered without a value; send an empty string
+            // rather than passing null to the non-nullable $value parameter.
+            $this->sendCookie($cookie['name'], $cookie['value'] ?? '', [
                 'expire' => $cookie['expire'],
                 'path' => $cookie['path'],
                 'domain' => $cookie['domain'],

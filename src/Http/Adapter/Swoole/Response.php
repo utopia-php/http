@@ -57,9 +57,9 @@ class Response extends UtopiaResponse
     /**
      * Send Header
      *
-     * @param  string|array<string>  $value
+     * @param  array<int, string>  $value
      */
-    public function sendHeader(string $key, mixed $value): void
+    public function sendHeader(string $key, array $value): void
     {
         $this->swoole->header($key, $value);
     }
@@ -73,6 +73,8 @@ class Response extends UtopiaResponse
      */
     protected function sendCookie(string $name, string $value, array $options): void
     {
+        // Coalesce nulls to the types Swoole's cookie() expects: the SameSite
+        // argument is parsed as a string (Z_PARAM_STR), so it must not be a bool.
         $this->swoole->cookie(
             $name,
             $value,
@@ -81,7 +83,7 @@ class Response extends UtopiaResponse
             $options['domain'] ?? '',
             $options['secure'] ?? false,
             $options['httponly'] ?? false,
-            $options['samesite'] ?? false,
+            $options['samesite'] ?? '',
         );
     }
 }

@@ -13,6 +13,17 @@ final class RequestTest extends TestCase
 
     public function setUp(): void
     {
+        // Reset request-related superglobals so each test starts from a clean state.
+        foreach (array_keys($_SERVER) as $key) {
+            if (str_starts_with($key, 'HTTP_')) {
+                unset($_SERVER[$key]);
+            }
+        }
+        unset($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $_SERVER['REQUEST_SCHEME'], $_SERVER['key']);
+        $_GET = [];
+        $_POST = [];
+        $_COOKIE = [];
+
         $this->request = new Request();
     }
 
@@ -26,13 +37,25 @@ final class RequestTest extends TestCase
         $_SERVER['HTTP_CUSTOM'] = 'value1';
         $_SERVER['HTTP_CUSTOM_NEW'] = 'value2';
 
-        $this->assertSame('value1', $this->request->getHeader('custom'));
-        $this->assertSame('value2', $this->request->getHeader('custom-new'));
+        // Header lookups are case-insensitive and return a list of values (PSR-7).
+        $this->assertSame(['value1'], $this->request->getHeader('custom'));
+        $this->assertSame(['value2'], $this->request->getHeader('Custom-New'));
+
+        // getHeaderLine concatenates the values into a single string.
+        $this->assertSame('value1', $this->request->getHeaderLine('custom'));
+
+        // hasHeader reports presence case-insensitively.
+        $this->assertTrue($this->request->hasHeader('CUSTOM'));
+        $this->assertFalse($this->request->hasHeader('missing'));
+
+        // Missing headers fall back to the provided default.
+        $this->assertSame([], $this->request->getHeader('missing'));
+        $this->assertSame('fallback', $this->request->getHeaderLine('missing', 'fallback'));
 
         $headers = $this->request->getHeaders();
         $this->assertCount(2, $headers);
-        $this->assertSame('value1', $headers['custom']);
-        $this->assertSame('value2', $headers['custom-new']);
+        $this->assertSame(['value1'], $headers['custom']);
+        $this->assertSame(['value2'], $headers['custom-new']);
     }
 
     public function testCanAddHeaders(): void
@@ -40,8 +63,17 @@ final class RequestTest extends TestCase
         $this->request->addHeader('custom', 'value1');
         $this->request->addHeader('custom-new', 'value2');
 
-        $this->assertSame('value1', $this->request->getHeader('custom'));
-        $this->assertSame('value2', $this->request->getHeader('custom-new'));
+        $this->assertSame(['value1'], $this->request->getHeader('custom'));
+        $this->assertSame(['value2'], $this->request->getHeader('custom-new'));
+
+        // addHeader appends additional values, mirroring PSR-7's withAddedHeader.
+        $this->request->addHeader('Custom', 'value3');
+        $this->assertSame(['value1', 'value3'], $this->request->getHeader('custom'));
+        $this->assertSame('value1, value3', $this->request->getHeaderLine('custom'));
+
+        // setHeader replaces all existing values, mirroring PSR-7's withHeader.
+        $this->request->setHeader('custom', 'only');
+        $this->assertSame(['only'], $this->request->getHeader('custom'));
     }
 
     public function testCanRemoveHeaders(): void
@@ -49,13 +81,14 @@ final class RequestTest extends TestCase
         $this->request->addHeader('custom', 'value1');
         $this->request->addHeader('custom-new', 'value2');
 
-        $this->assertSame('value1', $this->request->getHeader('custom'));
-        $this->assertSame('value2', $this->request->getHeader('custom-new'));
+        $this->assertSame(['value1'], $this->request->getHeader('custom'));
+        $this->assertSame(['value2'], $this->request->getHeader('custom-new'));
 
-        $this->request->removeHeader('custom');
+        $this->request->removeHeader('Custom');
 
-        $this->assertSame('', $this->request->getHeader('custom'));
-        $this->assertSame('value2', $this->request->getHeader('custom-new'));
+        $this->assertFalse($this->request->hasHeader('custom'));
+        $this->assertSame([], $this->request->getHeader('custom'));
+        $this->assertSame(['value2'], $this->request->getHeader('custom-new'));
     }
 
     public function testCanGetQueryParameter(): void
@@ -112,6 +145,23 @@ final class RequestTest extends TestCase
     {
         $_COOKIE['key'] = 'value';
 
+        $this->assertSame('value', $this->request->getCookie('key'));
+        $this->assertSame('test', $this->request->getCookie('unknown', 'test'));
+    }
+
+    public function testCanGetCookieParams(): void
+    {
+        $_COOKIE['key'] = 'value';
+        $_COOKIE['other'] = 'second';
+
+        $this->assertSame(['key' => 'value', 'other' => 'second'], $this->request->getCookieParams());
+    }
+
+    public function testCanSetCookieParams(): void
+    {
+        $this->request->setCookieParams(['key' => 'value']);
+
+        $this->assertSame(['key' => 'value'], $this->request->getCookieParams());
         $this->assertSame('value', $this->request->getCookie('key'));
         $this->assertSame('test', $this->request->getCookie('unknown', 'test'));
     }
