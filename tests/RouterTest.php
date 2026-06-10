@@ -180,6 +180,19 @@ final class RouterTest extends TestCase
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/a')?->route);
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/a-old')?->route);
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/a-old')?->route);
+
+        $routePOST = Http::routes(Http::REQUEST_METHOD_POST, '/b')->alias('/b-old');
+        $routeGETPOST = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/c');
+
+        try {
+            $routeGETPOST->alias('/b-old');
+            $this->fail('Expected duplicate route alias exception.');
+        } catch (\Exception $exception) {
+            $this->assertSame('Route for (POST:b-old) already registered.', $exception->getMessage());
+        }
+
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_GET, '/b-old'));
+        $this->assertEquals($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/b-old')?->route);
     }
 
     public function testCannotRegisterDuplicateRouteMethod(): void

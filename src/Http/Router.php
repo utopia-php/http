@@ -109,6 +109,28 @@ class Router
     }
 
     /**
+     * Validate that a route alias can be registered for every supplied method.
+     *
+     * @param array<int, string> $methods
+     *
+     * @throws Exception
+     */
+    public static function validateRouteAlias(string $path, array $methods): void
+    {
+        [$alias] = self::preparePath($path);
+
+        foreach ($methods as $method) {
+            if (!\array_key_exists($method, self::$routes)) {
+                throw new Exception("Method ({$method}) not supported.");
+            }
+
+            if (\array_key_exists($alias, self::$routes[$method]) && !self::$allowOverride) {
+                throw new Exception("Route for ({$method}:{$alias}) already registered.");
+            }
+        }
+    }
+
+    /**
      * Add route to router.
      *
      * @throws \Exception
