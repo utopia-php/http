@@ -8,6 +8,11 @@ use PHPUnit\Framework\TestCase;
 
 final class RouterTest extends TestCase
 {
+    public function setUp(): void
+    {
+        Router::setAllowOverride(false);
+    }
+
     public function tearDown(): void
     {
         Router::reset();
@@ -135,6 +140,104 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console/lorem/ipsum/dolor')?->route);
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/auth/lorem/ipsum')?->route);
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/register/lorem/ipsum')?->route);
+    }
+
+    public function testCanMatchMethodAlias(): void
+    {
+        $route = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
+        $route->aliasMethod(Http::REQUEST_METHOD_POST);
+
+        Router::addRoute($route);
+
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_PUT, '/userinfo'));
+
+        $this->assertSame(Http::REQUEST_METHOD_GET, $route->getMethod());
+        $this->assertSame([Http::REQUEST_METHOD_POST], $route->getAliasMethods());
+    }
+
+    public function testCanMatchMethodAliasWithPlaceholder(): void
+    {
+        $route = new Route(Http::REQUEST_METHOD_GET, '/users/:id');
+        $route->aliasMethod(Http::REQUEST_METHOD_POST);
+
+        Router::addRoute($route);
+
+        $match = Router::match(Http::REQUEST_METHOD_POST, '/users/abc-123');
+
+        $this->assertEquals($route, $match?->route);
+        $this->assertSame(['id' => 'abc-123'], $match?->params);
+    }
+
+    public function testMethodAliasCrossesPathAliasesRegardlessOfOrder(): void
+    {
+        $routeA = new Route(Http::REQUEST_METHOD_GET, '/a');
+        $routeA
+            ->alias('/a-old')
+            ->aliasMethod(Http::REQUEST_METHOD_POST);
+
+        Router::addRoute($routeA);
+
+        $routeB = new Route(Http::REQUEST_METHOD_GET, '/b');
+        $routeB
+            ->aliasMethod(Http::REQUEST_METHOD_POST)
+            ->alias('/b-old');
+
+        Router::addRoute($routeB);
+
+        $this->assertEquals($routeA, Router::match(Http::REQUEST_METHOD_POST, '/a')?->route);
+        $this->assertEquals($routeA, Router::match(Http::REQUEST_METHOD_POST, '/a-old')?->route);
+        $this->assertEquals($routeB, Router::match(Http::REQUEST_METHOD_POST, '/b')?->route);
+        $this->assertEquals($routeB, Router::match(Http::REQUEST_METHOD_POST, '/b-old')?->route);
+    }
+
+    public function testCannotRegisterDuplicateMethodAlias(): void
+    {
+        $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
+        Router::addRoute($routePOST);
+
+        $routeGET = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Route for (POST:userinfo) already registered.');
+        $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
+    }
+
+    public function testCanOverrideMethodAlias(): void
+    {
+        Router::setAllowOverride(true);
+
+        try {
+            $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
+            Router::addRoute($routePOST);
+
+            $routeGET = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
+            Router::addRoute($routeGET);
+            $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
+
+            $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+        } finally {
+            Router::setAllowOverride(false);
+        }
+    }
+
+    public function testCannotRegisterMethodAliasForUnknownMethod(): void
+    {
+        $route = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Method (TRACE) not supported.');
+        $route->aliasMethod('TRACE');
+    }
+
+    public function testCannotRegisterMethodAliasOnWildcardRoute(): void
+    {
+        $route = new Route('', '');
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Method aliases are not supported for the wildcard route.');
+        $route->aliasMethod(Http::REQUEST_METHOD_POST);
     }
 
     public function testCanMatchFilename(): void

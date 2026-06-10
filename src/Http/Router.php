@@ -95,19 +95,53 @@ class Router
      *
      * @throws \Exception
      */
-    public static function addRouteAlias(string $path, Route $route): void
+    public static function addRouteAlias(string $path, Route $route, ?string $method = null): void
     {
+        $method ??= $route->getMethod();
+
+        if (!\array_key_exists($method, self::$routes)) {
+            throw new Exception("Method ({$method}) not supported.");
+        }
+
         [$alias, $params] = self::preparePath($path);
 
-        if (\array_key_exists($alias, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
-            throw new Exception("Route for ({$route->getMethod()}:{$alias}) already registered.");
+        if (\array_key_exists($alias, self::$routes[$method]) && !self::$allowOverride) {
+            throw new Exception("Route for ({$method}:{$alias}) already registered.");
         }
 
         foreach ($params as $key => $index) {
             $route->setPathParam($key, $index, $alias);
         }
 
-        self::$routes[$route->getMethod()][$alias] = $route;
+        self::$routes[$method][$alias] = $route;
+    }
+
+    /**
+     * Register a route under an additional HTTP method, using its own path.
+     *
+     * @throws \Exception
+     */
+    public static function addRouteMethodAlias(string $method, Route $route): void
+    {
+        if (!\array_key_exists($method, self::$routes)) {
+            throw new Exception("Method ({$method}) not supported.");
+        }
+
+        if ($route->getPath() === '') {
+            throw new Exception('Method aliases are not supported for the wildcard route.');
+        }
+
+        [$path, $params] = self::preparePath($route->getPath());
+
+        if (\array_key_exists($path, self::$routes[$method]) && !self::$allowOverride) {
+            throw new Exception("Route for ({$method}:{$path}) already registered.");
+        }
+
+        foreach ($params as $key => $index) {
+            $route->setPathParam($key, $index, $path);
+        }
+
+        self::$routes[$method][$path] = $route;
     }
 
     /**

@@ -143,6 +143,37 @@ curl http://localhost:8000/hello-world?name=Appwrite
 
 It's always recommended to use params instead of getting params or body directly from the request resource. If you do that intentionally, always make sure to run validation right after fetching such a raw input.
 
+### Aliases
+
+A route can be registered under additional paths and HTTP methods using aliases. All aliases dispatch to the same route, so the action, params, and hooks are defined only once.
+
+Use `alias()` to serve the same route under another path, for example to keep a legacy URL working:
+
+```php
+Http::get('/users/:id')
+    ->alias('/members/:id')
+    ->param('id', '', new Text(256), 'User ID')
+    ->inject('response')
+    ->action(function(string $id, Response $response) {
+        $response->json(['id' => $id]);
+    });
+```
+
+Use `aliasMethod()` to serve the same route under another HTTP method. For example, the OpenID Connect UserInfo endpoint must support both GET and POST:
+
+```php
+Http::get('/oauth/userinfo')
+    ->aliasMethod(Http::REQUEST_METHOD_POST)
+    ->inject('request')
+    ->inject('response')
+    ->action(function(Request $request, Response $response) {
+        // $request->getMethod() tells how the request arrived (GET or POST)
+        $response->json(['sub' => 'user-id']);
+    });
+```
+
+Path and method aliases combine: a route with both responds on every method under every path. Note that `getMethod()` on the route keeps returning the primary method it was defined with; use the request resource to tell how a request arrived.
+
 ### Hooks
 
 There are three types of hooks:

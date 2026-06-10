@@ -250,6 +250,32 @@ final class HttpTest extends TestCase
         $this->assertSame('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
+    public function testCanExecuteRouteWithMethodAlias(): void
+    {
+        $route = Http::get('/v1/oauth/userinfo');
+
+        $route
+            ->aliasMethod(Http::REQUEST_METHOD_POST)
+            ->inject('request')
+            ->action(function ($request) {
+                echo 'userinfo:' . $request->getMethod();
+            });
+
+        $_SERVER['REQUEST_URI'] = '/v1/oauth/userinfo';
+
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        ob_start();
+        $this->http->run(new Request(), new Response());
+        $result = ob_get_clean();
+        $this->assertSame('userinfo:GET', $result);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        ob_start();
+        $this->http->run(new Request(), new Response());
+        $result = ob_get_clean();
+        $this->assertSame('userinfo:POST', $result);
+    }
+
     public function testCanAddAndExecuteHooks(): void
     {
         Http::setAllowOverride(true);

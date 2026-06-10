@@ -29,6 +29,20 @@ class Route extends Hook
     protected array $pathParams = [];
 
     /**
+     * Alias paths this route is also registered under.
+     *
+     * @var array<string>
+     */
+    protected array $aliasPaths = [];
+
+    /**
+     * Alias HTTP methods this route is also registered under.
+     *
+     * @var array<string>
+     */
+    protected array $aliasMethods = [];
+
+    /**
      * Internal counter.
      */
     protected static int $counter = 0;
@@ -71,6 +85,31 @@ class Route extends Hook
     {
         Router::addRouteAlias($path, $this);
 
+        foreach ($this->aliasMethods as $method) {
+            Router::addRouteAlias($path, $this, $method);
+        }
+
+        $this->aliasPaths[] = $path;
+
+        return $this;
+    }
+
+    /**
+     * Register this route under an additional HTTP method.
+     *
+     * The route keeps reporting its primary method via getMethod();
+     * use the request's method to tell how a request arrived.
+     */
+    public function aliasMethod(string $method): self
+    {
+        Router::addRouteMethodAlias($method, $this);
+
+        foreach ($this->aliasPaths as $path) {
+            Router::addRouteAlias($path, $this, $method);
+        }
+
+        $this->aliasMethods[] = $method;
+
         return $this;
     }
 
@@ -106,6 +145,26 @@ class Route extends Hook
     public function getHook(): bool
     {
         return $this->hook;
+    }
+
+    /**
+     * Get alias paths.
+     *
+     * @return array<string>
+     */
+    public function getAliasPaths(): array
+    {
+        return $this->aliasPaths;
+    }
+
+    /**
+     * Get alias methods.
+     *
+     * @return array<string>
+     */
+    public function getAliasMethods(): array
+    {
+        return $this->aliasMethods;
     }
 
     /**
