@@ -7,9 +7,11 @@ use Utopia\Servers\Hook;
 class Route extends Hook
 {
     /**
-     * HTTP Method
+     * HTTP Methods
+     *
+     * @var array<string>
      */
-    protected string $method = '';
+    protected array $methods = [];
 
     /**
      * Whether to use hook
@@ -29,6 +31,13 @@ class Route extends Hook
     protected array $pathParams = [];
 
     /**
+     * Alias paths this route is also registered under.
+     *
+     * @var array<string>
+     */
+    protected array $aliasPaths = [];
+
+    /**
      * Internal counter.
      */
     protected static int $counter = 0;
@@ -38,11 +47,14 @@ class Route extends Hook
      */
     protected int $order;
 
-    public function __construct(string $method, string $path)
+    /**
+     * @param string|array<int, string> $methods
+     */
+    public function __construct(string|array $methods, string $path)
     {
         parent::__construct();
         $this->path($path);
-        $this->method = $method;
+        $this->methods = \is_array($methods) ? array_values(array_unique($methods)) : [$methods];
         $this->order = ++self::$counter;
     }
 
@@ -71,6 +83,10 @@ class Route extends Hook
     {
         Router::addRouteAlias($path, $this);
 
+        if (!\in_array($path, $this->aliasPaths, true)) {
+            $this->aliasPaths[] = $path;
+        }
+
         return $this;
     }
 
@@ -85,11 +101,13 @@ class Route extends Hook
     }
 
     /**
-     * Get HTTP Method
+     * Get primary HTTP method.
+     *
+     * @deprecated Use getMethods() instead.
      */
     public function getMethod(): string
     {
-        return $this->method;
+        return $this->methods[0] ?? '';
     }
 
     /**
@@ -106,6 +124,16 @@ class Route extends Hook
     public function getHook(): bool
     {
         return $this->hook;
+    }
+
+    /**
+     * Get HTTP methods this route is registered under.
+     *
+     * @return array<string>
+     */
+    public function getMethods(): array
+    {
+        return $this->methods;
     }
 
     /**

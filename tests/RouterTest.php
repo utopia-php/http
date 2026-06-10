@@ -8,6 +8,11 @@ use PHPUnit\Framework\TestCase;
 
 final class RouterTest extends TestCase
 {
+    public function setUp(): void
+    {
+        Router::setAllowOverride(false);
+    }
+
     public function tearDown(): void
     {
         Router::reset();
@@ -135,6 +140,132 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/console/lorem/ipsum/dolor')?->route);
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/auth/lorem/ipsum')?->route);
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/register/lorem/ipsum')?->route);
+    }
+
+    public function testCanMatchRouteWithMultipleMethods(): void
+    {
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
+
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_PUT, '/userinfo'));
+
+        $this->assertSame([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], $route->getMethods());
+    }
+
+    public function testCanMatchRouteWithStringMethod(): void
+    {
+        $route = Http::routes(Http::REQUEST_METHOD_GET, '/userinfo');
+
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_POST, '/userinfo'));
+    }
+
+    public function testCanMatchRouteWithMultipleMethodsAndPlaceholder(): void
+    {
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/users/:id');
+
+        $match = Router::match(Http::REQUEST_METHOD_POST, '/users/abc-123');
+
+        $this->assertEquals($route, $match?->route);
+        $this->assertSame(['id' => 'abc-123'], $match?->params);
+    }
+
+    public function testRoutesCrossPathAliases(): void
+    {
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/a')
+            ->alias('/a-old');
+
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/a')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/a')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/a-old')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/a-old')?->route);
+
+        $routePOST = Http::routes(Http::REQUEST_METHOD_POST, '/b')->alias('/b-old');
+        $routeGETPOST = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/c');
+
+        try {
+            $routeGETPOST->alias('/b-old');
+            $this->fail('Expected duplicate route alias exception.');
+        } catch (\Exception $exception) {
+            $this->assertSame('Route for (POST:b-old) already registered.', $exception->getMessage());
+        }
+
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_GET, '/b-old'));
+        $this->assertEquals($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/b-old')?->route);
+    }
+
+    public function testCannotRegisterDuplicateRouteMethod(): void
+    {
+        $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
+        Router::addRoute($routePOST);
+
+        try {
+            Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
+            $this->fail('Expected duplicate route exception.');
+        } catch (\Exception $exception) {
+            $this->assertSame('Route for (POST:userinfo) already registered.', $exception->getMessage());
+        }
+
+        $routes = Router::getRoutes();
+        $this->assertArrayNotHasKey('userinfo', $routes[Http::REQUEST_METHOD_GET]);
+
+        $routeGET = Http::routes(Http::REQUEST_METHOD_GET, '/userinfo');
+
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertEquals($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+    }
+
+    public function testCanOverrideRouteMethod(): void
+    {
+        Router::setAllowOverride(true);
+
+        try {
+            $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
+            Router::addRoute($routePOST);
+
+            $routeGET = Http::routes([
+                Http::REQUEST_METHOD_GET,
+                Http::REQUEST_METHOD_POST,
+                Http::REQUEST_METHOD_POST,
+            ], '/userinfo');
+
+            $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+        } finally {
+            Router::setAllowOverride(false);
+        }
+    }
+
+    public function testCannotRegisterRouteForUnknownMethod(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Method (TRACE) not supported.');
+        Http::routes([Http::REQUEST_METHOD_GET, 'TRACE'], '/userinfo');
+    }
+
+    public function testUnknownMethodDoesNotPartiallyRegisterRoute(): void
+    {
+        try {
+            Http::routes([Http::REQUEST_METHOD_GET, 'TRACE'], '/userinfo');
+            $this->fail('Expected unknown method exception.');
+        } catch (\Exception $exception) {
+            $this->assertSame('Method (TRACE) not supported.', $exception->getMessage());
+        }
+
+        $routes = Router::getRoutes();
+        $this->assertArrayNotHasKey('userinfo', $routes[Http::REQUEST_METHOD_GET]);
+
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
+
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+    }
+
+    public function testCannotRegisterRouteWithoutMethods(): void
+    {
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('At least one HTTP method is required.');
+        Http::routes([], '/userinfo');
     }
 
     public function testCanMatchFilename(): void

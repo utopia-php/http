@@ -179,7 +179,7 @@ class Http
      */
     public static function get(string $url): Route
     {
-        return self::addRoute(self::REQUEST_METHOD_GET, $url);
+        return self::routes(self::REQUEST_METHOD_GET, $url);
     }
 
     /**
@@ -189,7 +189,7 @@ class Http
      */
     public static function post(string $url): Route
     {
-        return self::addRoute(self::REQUEST_METHOD_POST, $url);
+        return self::routes(self::REQUEST_METHOD_POST, $url);
     }
 
     /**
@@ -199,7 +199,7 @@ class Http
      */
     public static function put(string $url): Route
     {
-        return self::addRoute(self::REQUEST_METHOD_PUT, $url);
+        return self::routes(self::REQUEST_METHOD_PUT, $url);
     }
 
     /**
@@ -209,7 +209,7 @@ class Http
      */
     public static function patch(string $url): Route
     {
-        return self::addRoute(self::REQUEST_METHOD_PATCH, $url);
+        return self::routes(self::REQUEST_METHOD_PATCH, $url);
     }
 
     /**
@@ -219,7 +219,37 @@ class Http
      */
     public static function delete(string $url): Route
     {
-        return self::addRoute(self::REQUEST_METHOD_DELETE, $url);
+        return self::routes(self::REQUEST_METHOD_DELETE, $url);
+    }
+
+    /**
+     * ROUTES
+     *
+     * Add one route under one or more request methods
+     *
+     * @param string|array<int, string> $methods
+     */
+    public static function routes(string|array $methods, string $url): Route
+    {
+        $methods = \is_array($methods) ? $methods : [$methods];
+        $methods = array_values(array_unique($methods));
+
+        if (empty($methods)) {
+            throw new \Exception('At least one HTTP method is required.');
+        }
+
+        $routes = Router::getRoutes();
+
+        foreach ($methods as $method) {
+            if (!\array_key_exists($method, $routes)) {
+                throw new \Exception("Method ({$method}) not supported.");
+            }
+        }
+
+        $route = new Route($methods, $url);
+        Router::addRoute($route);
+
+        return $route;
     }
 
     /**
