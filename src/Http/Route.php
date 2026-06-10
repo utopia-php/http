@@ -7,9 +7,11 @@ use Utopia\Servers\Hook;
 class Route extends Hook
 {
     /**
-     * HTTP Method
+     * HTTP Methods
+     *
+     * @var array<string>
      */
-    protected string $method = '';
+    protected array $methods = [];
 
     /**
      * Whether to use hook
@@ -36,13 +38,6 @@ class Route extends Hook
     protected array $aliasPaths = [];
 
     /**
-     * Additional HTTP methods this route is also registered under.
-     *
-     * @var array<string>
-     */
-    protected array $additionalMethods = [];
-
-    /**
      * Internal counter.
      */
     protected static int $counter = 0;
@@ -53,14 +48,13 @@ class Route extends Hook
     protected int $order;
 
     /**
-     * @param array<int, string> $additionalMethods
+     * @param string|array<int, string> $methods
      */
-    public function __construct(string $method, string $path, array $additionalMethods = [])
+    public function __construct(string|array $methods, string $path)
     {
         parent::__construct();
         $this->path($path);
-        $this->method = $method;
-        $this->additionalMethods = $additionalMethods;
+        $this->methods = \is_array($methods) ? array_values(array_unique($methods)) : [$methods];
         $this->order = ++self::$counter;
     }
 
@@ -87,11 +81,11 @@ class Route extends Hook
      */
     public function alias(string $path): self
     {
-        Router::validateRouteAlias($path, [$this->method, ...$this->additionalMethods]);
+        Router::validateRouteAlias($path, $this->methods);
 
         Router::addRouteAlias($path, $this);
 
-        foreach ($this->additionalMethods as $method) {
+        foreach (\array_slice($this->methods, 1) as $method) {
             Router::addRouteAlias($path, $this, $method);
         }
 
@@ -113,11 +107,13 @@ class Route extends Hook
     }
 
     /**
-     * Get HTTP Method
+     * Get primary HTTP method.
+     *
+     * @deprecated Use getMethods() instead.
      */
     public function getMethod(): string
     {
-        return $this->method;
+        return $this->methods[0] ?? '';
     }
 
     /**
@@ -137,13 +133,13 @@ class Route extends Hook
     }
 
     /**
-     * Get additional methods this route is registered under.
+     * Get HTTP methods this route is registered under.
      *
      * @return array<string>
      */
-    public function getAdditionalMethods(): array
+    public function getMethods(): array
     {
-        return $this->additionalMethods;
+        return $this->methods;
     }
 
     /**

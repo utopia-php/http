@@ -246,7 +246,7 @@ class Http
             }
         }
 
-        $route = new Route($methods[0], $url, \array_slice($methods, 1));
+        $route = new Route($methods, $url);
         Router::addRoute($route);
 
         return $route;

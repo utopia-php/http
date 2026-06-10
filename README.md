@@ -171,7 +171,7 @@ Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/oauth/user
     });
 ```
 
-Path aliases and multiple methods combine: a route with both responds on every method under every path. Note that `getMethod()` on the route returns the first method it was defined with; use the request resource to tell how a request arrived.
+Path aliases and multiple methods combine: a route with both responds on every method under every path. Use `getMethods()` to inspect the methods a route was registered with, and use the request resource to tell how a request arrived.
 
 ### Hooks
 

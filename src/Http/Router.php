@@ -74,26 +74,29 @@ class Router
     public static function addRoute(Route $route): void
     {
         [$path, $params] = self::preparePath($route->getPath());
+        $methods = $route->getMethods();
+        $method = $methods[0] ?? '';
+        $additionalMethods = \array_slice($methods, 1);
 
-        if (!\array_key_exists($route->getMethod(), self::$routes)) {
-            throw new Exception("Method ({$route->getMethod()}) not supported.");
+        if (!\array_key_exists($method, self::$routes)) {
+            throw new Exception("Method ({$method}) not supported.");
         }
 
-        if (\array_key_exists($path, self::$routes[$route->getMethod()]) && !self::$allowOverride) {
-            throw new Exception("Route for ({$route->getMethod()}:{$path}) already registered.");
+        if (\array_key_exists($path, self::$routes[$method]) && !self::$allowOverride) {
+            throw new Exception("Route for ({$method}:{$path}) already registered.");
         }
 
-        foreach ($route->getAdditionalMethods() as $method) {
-            if (!\array_key_exists($method, self::$routes)) {
-                throw new Exception("Method ({$method}) not supported.");
+        foreach ($additionalMethods as $additionalMethod) {
+            if (!\array_key_exists($additionalMethod, self::$routes)) {
+                throw new Exception("Method ({$additionalMethod}) not supported.");
             }
 
             if ($route->getPath() === '') {
                 throw new Exception('Additional route methods are not supported for the wildcard route.');
             }
 
-            if (\array_key_exists($path, self::$routes[$method]) && !self::$allowOverride) {
-                throw new Exception("Route for ({$method}:{$path}) already registered.");
+            if (\array_key_exists($path, self::$routes[$additionalMethod]) && !self::$allowOverride) {
+                throw new Exception("Route for ({$additionalMethod}:{$path}) already registered.");
             }
         }
 
@@ -101,10 +104,10 @@ class Router
             $route->setPathParam($key, $index, $path);
         }
 
-        self::$routes[$route->getMethod()][$path] = $route;
+        self::$routes[$method][$path] = $route;
 
-        foreach ($route->getAdditionalMethods() as $method) {
-            self::$routes[$method][$path] = $route;
+        foreach ($additionalMethods as $additionalMethod) {
+            self::$routes[$additionalMethod][$path] = $route;
         }
     }
 
@@ -137,7 +140,7 @@ class Router
      */
     public static function addRouteAlias(string $path, Route $route, ?string $method = null): void
     {
-        $method ??= $route->getMethod();
+        $method ??= $route->getMethods()[0] ?? '';
 
         if (!\array_key_exists($method, self::$routes)) {
             throw new Exception("Method ({$method}) not supported.");

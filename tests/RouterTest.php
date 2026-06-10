@@ -150,7 +150,7 @@ final class RouterTest extends TestCase
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
         $this->assertNull(Router::match(Http::REQUEST_METHOD_PUT, '/userinfo'));
 
-        $this->assertSame(Http::REQUEST_METHOD_GET, $route->getMethod());
+        $this->assertSame([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], $route->getMethods());
     }
 
     public function testCanMatchRouteWithStringMethod(): void
