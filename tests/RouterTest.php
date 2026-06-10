@@ -187,9 +187,20 @@ final class RouterTest extends TestCase
         $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
         Router::addRoute($routePOST);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Route for (POST:userinfo) already registered.');
-        Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
+        try {
+            Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
+            $this->fail('Expected duplicate route exception.');
+        } catch (\Exception $exception) {
+            $this->assertSame('Route for (POST:userinfo) already registered.', $exception->getMessage());
+        }
+
+        $routes = Router::getRoutes();
+        $this->assertArrayNotHasKey('userinfo', $routes[Http::REQUEST_METHOD_GET]);
+
+        $routeGET = Http::routes(Http::REQUEST_METHOD_GET, '/userinfo');
+
+        $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertEquals($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
     }
 
     public function testCanOverrideRouteMethod(): void

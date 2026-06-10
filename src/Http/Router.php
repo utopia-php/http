@@ -83,12 +83,6 @@ class Router
             throw new Exception("Route for ({$route->getMethod()}:{$path}) already registered.");
         }
 
-        foreach ($params as $key => $index) {
-            $route->setPathParam($key, $index, $path);
-        }
-
-        self::$routes[$route->getMethod()][$path] = $route;
-
         foreach ($route->getAdditionalMethods() as $method) {
             if (!\array_key_exists($method, self::$routes)) {
                 throw new Exception("Method ({$method}) not supported.");
@@ -101,7 +95,15 @@ class Router
             if (\array_key_exists($path, self::$routes[$method]) && !self::$allowOverride) {
                 throw new Exception("Route for ({$method}:{$path}) already registered.");
             }
+        }
 
+        foreach ($params as $key => $index) {
+            $route->setPathParam($key, $index, $path);
+        }
+
+        self::$routes[$route->getMethod()][$path] = $route;
+
+        foreach ($route->getAdditionalMethods() as $method) {
             self::$routes[$method][$path] = $route;
         }
     }
