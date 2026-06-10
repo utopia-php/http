@@ -238,6 +238,14 @@ class Http
             throw new \Exception('At least one HTTP method is required.');
         }
 
+        $routes = Router::getRoutes();
+
+        foreach ($methods as $method) {
+            if (!\array_key_exists($method, $routes)) {
+                throw new \Exception("Method ({$method}) not supported.");
+            }
+        }
+
         $route = new Route($methods[0], $url, \array_slice($methods, 1));
         Router::addRoute($route);
 

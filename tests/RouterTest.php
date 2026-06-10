@@ -219,6 +219,24 @@ final class RouterTest extends TestCase
         Http::routes([Http::REQUEST_METHOD_GET, 'TRACE'], '/userinfo');
     }
 
+    public function testUnknownMethodDoesNotPartiallyRegisterRoute(): void
+    {
+        try {
+            Http::routes([Http::REQUEST_METHOD_GET, 'TRACE'], '/userinfo');
+            $this->fail('Expected unknown method exception.');
+        } catch (\Exception $exception) {
+            $this->assertSame('Method (TRACE) not supported.', $exception->getMessage());
+        }
+
+        $routes = Router::getRoutes();
+        $this->assertArrayNotHasKey('userinfo', $routes[Http::REQUEST_METHOD_GET]);
+
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
+
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+    }
+
     public function testCannotRegisterRouteWithoutMethods(): void
     {
         $this->expectException(\Exception::class);
