@@ -143,7 +143,7 @@ curl http://localhost:8000/hello-world?name=Appwrite
 
 It's always recommended to use params instead of getting params or body directly from the request resource. If you do that intentionally, always make sure to run validation right after fetching such a raw input.
 
-### Aliases and Multiple Methods
+### Multiple Methods
 
 A route can be registered under additional paths and multiple HTTP methods. All matching paths and methods dispatch to the same route, so the action, params, and hooks are defined only once.
 
