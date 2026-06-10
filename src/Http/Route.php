@@ -135,23 +135,13 @@ class Route extends Hook
     }
 
     /**
-     * Get alias paths.
+     * Get additional methods this route is registered under.
      *
      * @return array<string>
      */
-    public function getAliasPaths(): array
+    public function getAdditionalMethods(): array
     {
-        return $this->aliasPaths;
-    }
-
-    /**
-     * Get methods this route is registered under.
-     *
-     * @return array<string>
-     */
-    public function getMethods(): array
-    {
-        return array_merge([$this->method], $this->additionalMethods);
+        return $this->additionalMethods;
     }
 
     /**

@@ -89,7 +89,7 @@ class Router
 
         self::$routes[$route->getMethod()][$path] = $route;
 
-        foreach (\array_slice($route->getMethods(), 1) as $method) {
+        foreach ($route->getAdditionalMethods() as $method) {
             self::addRouteMethod($method, $route);
         }
     }

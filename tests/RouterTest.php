@@ -151,7 +151,6 @@ final class RouterTest extends TestCase
         $this->assertNull(Router::match(Http::REQUEST_METHOD_PUT, '/userinfo'));
 
         $this->assertSame(Http::REQUEST_METHOD_GET, $route->getMethod());
-        $this->assertSame([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], $route->getMethods());
     }
 
     public function testCanMatchRouteWithStringMethod(): void
@@ -160,7 +159,6 @@ final class RouterTest extends TestCase
 
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
         $this->assertNull(Router::match(Http::REQUEST_METHOD_POST, '/userinfo'));
-        $this->assertSame([Http::REQUEST_METHOD_GET], $route->getMethods());
     }
 
     public function testCanMatchRouteWithMultipleMethodsAndPlaceholder(): void
@@ -209,7 +207,6 @@ final class RouterTest extends TestCase
             ], '/userinfo');
 
             $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
-            $this->assertSame([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], $routeGET->getMethods());
         } finally {
             Router::setAllowOverride(false);
         }
