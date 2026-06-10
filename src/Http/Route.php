@@ -89,7 +89,9 @@ class Route extends Hook
             Router::addRouteAlias($path, $this, $method);
         }
 
-        $this->aliasPaths[] = $path;
+        if (!\in_array($path, $this->aliasPaths, true)) {
+            $this->aliasPaths[] = $path;
+        }
 
         return $this;
     }
@@ -108,7 +110,9 @@ class Route extends Hook
             Router::addRouteAlias($path, $this, $method);
         }
 
-        $this->aliasMethods[] = $method;
+        if (!\in_array($method, $this->aliasMethods, true)) {
+            $this->aliasMethods[] = $method;
+        }
 
         return $this;
     }

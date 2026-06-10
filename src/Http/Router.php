@@ -266,6 +266,7 @@ class Router
     {
         self::$params = [];
         self::$wildcard = null;
+        self::$allowOverride = false;
         self::$routes = [
             Http::REQUEST_METHOD_GET => [],
             Http::REQUEST_METHOD_POST => [],

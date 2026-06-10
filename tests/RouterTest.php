@@ -215,8 +215,10 @@ final class RouterTest extends TestCase
             $routeGET = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
             Router::addRoute($routeGET);
             $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
+            $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
 
             $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
+            $this->assertSame([Http::REQUEST_METHOD_POST], $routeGET->getAliasMethods());
         } finally {
             Router::setAllowOverride(false);
         }
