@@ -112,15 +112,14 @@ class Router
     }
 
     /**
-     * Validate that a route alias can be registered for every supplied method.
+     * Add route to router.
      *
-     * @param array<int, string> $methods
-     *
-     * @throws Exception
+     * @throws \Exception
      */
-    public static function validateRouteAlias(string $path, array $methods): void
+    public static function addRouteAlias(string $path, Route $route): void
     {
-        [$alias] = self::preparePath($path);
+        $methods = $route->getMethods();
+        [$alias, $params] = self::preparePath($path);
 
         foreach ($methods as $method) {
             if (!\array_key_exists($method, self::$routes)) {
@@ -131,32 +130,14 @@ class Router
                 throw new Exception("Route for ({$method}:{$alias}) already registered.");
             }
         }
-    }
-
-    /**
-     * Add route to router.
-     *
-     * @throws \Exception
-     */
-    public static function addRouteAlias(string $path, Route $route, ?string $method = null): void
-    {
-        $method ??= $route->getMethods()[0] ?? '';
-
-        if (!\array_key_exists($method, self::$routes)) {
-            throw new Exception("Method ({$method}) not supported.");
-        }
-
-        [$alias, $params] = self::preparePath($path);
-
-        if (\array_key_exists($alias, self::$routes[$method]) && !self::$allowOverride) {
-            throw new Exception("Route for ({$method}:{$alias}) already registered.");
-        }
 
         foreach ($params as $key => $index) {
             $route->setPathParam($key, $index, $alias);
         }
 
-        self::$routes[$method][$alias] = $route;
+        foreach ($methods as $method) {
+            self::$routes[$method][$alias] = $route;
+        }
     }
 
     /**

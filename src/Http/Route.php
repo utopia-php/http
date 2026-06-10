@@ -81,13 +81,7 @@ class Route extends Hook
      */
     public function alias(string $path): self
     {
-        Router::validateRouteAlias($path, $this->methods);
-
         Router::addRouteAlias($path, $this);
-
-        foreach (\array_slice($this->methods, 1) as $method) {
-            Router::addRouteAlias($path, $this, $method);
-        }
 
         if (!\in_array($path, $this->aliasPaths, true)) {
             $this->aliasPaths[] = $path;
