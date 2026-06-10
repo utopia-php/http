@@ -10,23 +10,18 @@
     ],
     "license": "MIT",
     "minimum-stability": "stable",
-    "autoload": {                                                                                                                                  
-        "psr-4": {                                                                                                                                 
-            "Utopia\\": "src/"                                                                                                                     
-        }                                                                                                                                          
-    },                                                                                                                                             
+    "autoload": {
+        "psr-4": {
+            "Utopia\\": "src/"
+        }
+    },
     "autoload-dev": {
         "psr-4": {
             "Utopia\\Http\\Tests\\": "tests/",
             "Tests\\E2E\\": "tests/e2e"
         }
-    },   
+    },
     "scripts": {
-        "format": "vendor/bin/pint",
-        "format:check": "vendor/bin/pint --test",
-        "analyze": "vendor/bin/phpstan analyse -c phpstan.neon --memory-limit 512M",
-        "refactor": "vendor/bin/rector process",
-        "refactor:check": "vendor/bin/rector process --dry-run",
         "test": "vendor/bin/phpunit --configuration phpunit.xml --testsuite unit",
         "test:e2e": "vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-fpm,e2e-swoole"
     },
@@ -54,10 +49,7 @@
     },
     "require-dev": {
         "doctrine/instantiator": "^1.5",
-        "laravel/pint": "1.*",
-        "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^12.0",
-        "rector/rector": "^2.4",
         "swoole/ide-helper": "4.8.3"
     }
 }
