@@ -36,11 +36,11 @@ class Route extends Hook
     protected array $aliasPaths = [];
 
     /**
-     * Alias HTTP methods this route is also registered under.
+     * Additional HTTP methods this route is also registered under.
      *
      * @var array<string>
      */
-    protected array $aliasMethods = [];
+    protected array $additionalMethods = [];
 
     /**
      * Internal counter.
@@ -52,11 +52,15 @@ class Route extends Hook
      */
     protected int $order;
 
-    public function __construct(string $method, string $path)
+    /**
+     * @param array<int, string> $additionalMethods
+     */
+    public function __construct(string $method, string $path, array $additionalMethods = [])
     {
         parent::__construct();
         $this->path($path);
         $this->method = $method;
+        $this->additionalMethods = $additionalMethods;
         $this->order = ++self::$counter;
     }
 
@@ -85,33 +89,12 @@ class Route extends Hook
     {
         Router::addRouteAlias($path, $this);
 
-        foreach ($this->aliasMethods as $method) {
+        foreach ($this->additionalMethods as $method) {
             Router::addRouteAlias($path, $this, $method);
         }
 
         if (!\in_array($path, $this->aliasPaths, true)) {
             $this->aliasPaths[] = $path;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Register this route under an additional HTTP method.
-     *
-     * The route keeps reporting its primary method via getMethod();
-     * use the request's method to tell how a request arrived.
-     */
-    public function aliasMethod(string $method): self
-    {
-        Router::addRouteMethodAlias($method, $this);
-
-        foreach ($this->aliasPaths as $path) {
-            Router::addRouteAlias($path, $this, $method);
-        }
-
-        if (!\in_array($method, $this->aliasMethods, true)) {
-            $this->aliasMethods[] = $method;
         }
 
         return $this;
@@ -162,13 +145,13 @@ class Route extends Hook
     }
 
     /**
-     * Get alias methods.
+     * Get methods this route is registered under.
      *
      * @return array<string>
      */
-    public function getAliasMethods(): array
+    public function getMethods(): array
     {
-        return $this->aliasMethods;
+        return array_merge([$this->method], $this->additionalMethods);
     }
 
     /**

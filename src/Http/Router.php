@@ -88,6 +88,10 @@ class Router
         }
 
         self::$routes[$route->getMethod()][$path] = $route;
+
+        foreach (\array_slice($route->getMethods(), 1) as $method) {
+            self::addRouteMethod($method, $route);
+        }
     }
 
     /**
@@ -121,14 +125,14 @@ class Router
      *
      * @throws \Exception
      */
-    public static function addRouteMethodAlias(string $method, Route $route): void
+    public static function addRouteMethod(string $method, Route $route): void
     {
         if (!\array_key_exists($method, self::$routes)) {
             throw new Exception("Method ({$method}) not supported.");
         }
 
         if ($route->getPath() === '') {
-            throw new Exception('Method aliases are not supported for the wildcard route.');
+            throw new Exception('Additional route methods are not supported for the wildcard route.');
         }
 
         [$path, $params] = self::preparePath($route->getPath());

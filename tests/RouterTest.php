@@ -142,27 +142,30 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/register/lorem/ipsum')?->route);
     }
 
-    public function testCanMatchMethodAlias(): void
+    public function testCanMatchRouteWithMultipleMethods(): void
     {
-        $route = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
-        $route->aliasMethod(Http::REQUEST_METHOD_POST);
-
-        Router::addRoute($route);
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
 
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
         $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
         $this->assertNull(Router::match(Http::REQUEST_METHOD_PUT, '/userinfo'));
 
         $this->assertSame(Http::REQUEST_METHOD_GET, $route->getMethod());
-        $this->assertSame([Http::REQUEST_METHOD_POST], $route->getAliasMethods());
+        $this->assertSame([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], $route->getMethods());
     }
 
-    public function testCanMatchMethodAliasWithPlaceholder(): void
+    public function testCanMatchRouteWithStringMethod(): void
     {
-        $route = new Route(Http::REQUEST_METHOD_GET, '/users/:id');
-        $route->aliasMethod(Http::REQUEST_METHOD_POST);
+        $route = Http::routes(Http::REQUEST_METHOD_GET, '/userinfo');
 
-        Router::addRoute($route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/userinfo')?->route);
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_POST, '/userinfo'));
+        $this->assertSame([Http::REQUEST_METHOD_GET], $route->getMethods());
+    }
+
+    public function testCanMatchRouteWithMultipleMethodsAndPlaceholder(): void
+    {
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/users/:id');
 
         $match = Router::match(Http::REQUEST_METHOD_POST, '/users/abc-123');
 
@@ -170,41 +173,28 @@ final class RouterTest extends TestCase
         $this->assertSame(['id' => 'abc-123'], $match?->params);
     }
 
-    public function testMethodAliasCrossesPathAliasesRegardlessOfOrder(): void
+    public function testRoutesCrossPathAliases(): void
     {
-        $routeA = new Route(Http::REQUEST_METHOD_GET, '/a');
-        $routeA
-            ->alias('/a-old')
-            ->aliasMethod(Http::REQUEST_METHOD_POST);
+        $route = Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/a')
+            ->alias('/a-old');
 
-        Router::addRoute($routeA);
-
-        $routeB = new Route(Http::REQUEST_METHOD_GET, '/b');
-        $routeB
-            ->aliasMethod(Http::REQUEST_METHOD_POST)
-            ->alias('/b-old');
-
-        Router::addRoute($routeB);
-
-        $this->assertEquals($routeA, Router::match(Http::REQUEST_METHOD_POST, '/a')?->route);
-        $this->assertEquals($routeA, Router::match(Http::REQUEST_METHOD_POST, '/a-old')?->route);
-        $this->assertEquals($routeB, Router::match(Http::REQUEST_METHOD_POST, '/b')?->route);
-        $this->assertEquals($routeB, Router::match(Http::REQUEST_METHOD_POST, '/b-old')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/a')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/a')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_GET, '/a-old')?->route);
+        $this->assertEquals($route, Router::match(Http::REQUEST_METHOD_POST, '/a-old')?->route);
     }
 
-    public function testCannotRegisterDuplicateMethodAlias(): void
+    public function testCannotRegisterDuplicateRouteMethod(): void
     {
         $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
         Router::addRoute($routePOST);
 
-        $routeGET = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
-
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Route for (POST:userinfo) already registered.');
-        $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
+        Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/userinfo');
     }
 
-    public function testCanOverrideMethodAlias(): void
+    public function testCanOverrideRouteMethod(): void
     {
         Router::setAllowOverride(true);
 
@@ -212,34 +202,31 @@ final class RouterTest extends TestCase
             $routePOST = new Route(Http::REQUEST_METHOD_POST, '/userinfo');
             Router::addRoute($routePOST);
 
-            $routeGET = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
-            Router::addRoute($routeGET);
-            $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
-            $routeGET->aliasMethod(Http::REQUEST_METHOD_POST);
+            $routeGET = Http::routes([
+                Http::REQUEST_METHOD_GET,
+                Http::REQUEST_METHOD_POST,
+                Http::REQUEST_METHOD_POST,
+            ], '/userinfo');
 
             $this->assertEquals($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/userinfo')?->route);
-            $this->assertSame([Http::REQUEST_METHOD_POST], $routeGET->getAliasMethods());
+            $this->assertSame([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], $routeGET->getMethods());
         } finally {
             Router::setAllowOverride(false);
         }
     }
 
-    public function testCannotRegisterMethodAliasForUnknownMethod(): void
+    public function testCannotRegisterRouteForUnknownMethod(): void
     {
-        $route = new Route(Http::REQUEST_METHOD_GET, '/userinfo');
-
         $this->expectException(\Exception::class);
         $this->expectExceptionMessage('Method (TRACE) not supported.');
-        $route->aliasMethod('TRACE');
+        Http::routes([Http::REQUEST_METHOD_GET, 'TRACE'], '/userinfo');
     }
 
-    public function testCannotRegisterMethodAliasOnWildcardRoute(): void
+    public function testCannotRegisterRouteWithoutMethods(): void
     {
-        $route = new Route('', '');
-
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Method aliases are not supported for the wildcard route.');
-        $route->aliasMethod(Http::REQUEST_METHOD_POST);
+        $this->expectExceptionMessage('At least one HTTP method is required.');
+        Http::routes([], '/userinfo');
     }
 
     public function testCanMatchFilename(): void

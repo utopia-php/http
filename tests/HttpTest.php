@@ -250,12 +250,9 @@ final class HttpTest extends TestCase
         $this->assertSame('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
-    public function testCanExecuteRouteWithMethodAlias(): void
+    public function testCanExecuteRouteWithMultipleMethods(): void
     {
-        $route = Http::get('/v1/oauth/userinfo');
-
-        $route
-            ->aliasMethod(Http::REQUEST_METHOD_POST)
+        Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/v1/oauth/userinfo')
             ->inject('request')
             ->action(function ($request) {
                 echo 'userinfo:' . $request->getMethod();

@@ -143,9 +143,9 @@ curl http://localhost:8000/hello-world?name=Appwrite
 
 It's always recommended to use params instead of getting params or body directly from the request resource. If you do that intentionally, always make sure to run validation right after fetching such a raw input.
 
-### Aliases
+### Aliases and Multiple Methods
 
-A route can be registered under additional paths and HTTP methods using aliases. All aliases dispatch to the same route, so the action, params, and hooks are defined only once.
+A route can be registered under additional paths and multiple HTTP methods. All matching paths and methods dispatch to the same route, so the action, params, and hooks are defined only once.
 
 Use `alias()` to serve the same route under another path, for example to keep a legacy URL working:
 
@@ -159,11 +159,10 @@ Http::get('/users/:id')
     });
 ```
 
-Use `aliasMethod()` to serve the same route under another HTTP method. For example, the OpenID Connect UserInfo endpoint must support both GET and POST:
+Use `routes()` to serve the same route under multiple HTTP methods. For example, the OpenID Connect UserInfo endpoint must support both GET and POST:
 
 ```php
-Http::get('/oauth/userinfo')
-    ->aliasMethod(Http::REQUEST_METHOD_POST)
+Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/oauth/userinfo')
     ->inject('request')
     ->inject('response')
     ->action(function(Request $request, Response $response) {
@@ -172,7 +171,7 @@ Http::get('/oauth/userinfo')
     });
 ```
 
-Path and method aliases combine: a route with both responds on every method under every path. Note that `getMethod()` on the route keeps returning the primary method it was defined with; use the request resource to tell how a request arrived.
+Path aliases and multiple methods combine: a route with both responds on every method under every path. Note that `getMethod()` on the route returns the first method it was defined with; use the request resource to tell how a request arrived.
 
 ### Hooks
 
