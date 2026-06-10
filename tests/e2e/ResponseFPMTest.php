@@ -14,7 +14,7 @@ final class ResponseFPMTest extends TestCase
 
     public function setUp(): void
     {
-        $this->client = new Client();
+        $this->client = new Client(getenv('HTTP_E2E_FPM_URL') ?: 'http://localhost:19020');
     }
 
     public function testCookie(): void

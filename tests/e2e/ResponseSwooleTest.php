@@ -14,7 +14,7 @@ final class ResponseSwooleTest extends TestCase
 
     public function setUp(): void
     {
-        $this->client = new Client('http://swoole');
+        $this->client = new Client(getenv('HTTP_E2E_SWOOLE_URL') ?: 'http://localhost:19501');
     }
 
     public function testCookie(): void

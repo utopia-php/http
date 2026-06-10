@@ -4,7 +4,7 @@ services:
             context: .
             dockerfile: Dockerfile.fpm
         ports:
-            - "9020:80"
+            - "19020:80"
         volumes:
             - ./src:/usr/share/nginx/html/src
             - ./tests:/usr/share/nginx/html/tests
@@ -21,7 +21,7 @@ services:
             context: .
             dockerfile: Dockerfile.swoole
         ports:
-            - "9501:80"
+            - "19501:80"
         volumes:
             - ./src:/usr/src/code/src
             - ./tests:/usr/src/code/tests

@@ -24,7 +24,7 @@ COPY --from=composer:2.7 /usr/bin/composer /usr/local/bin/composer
 COPY ./src /usr/src/code/src
 COPY ./tests /usr/src/code/tests
 COPY ./phpunit.xml /usr/src/code/phpunit.xml
-COPY ./composer.json ./composer.lock ./phpstan.neon ./pint.json /usr/src/code/
+COPY ./composer.json ./composer.lock ./phpstan.neon /usr/src/code/
 COPY --from=step0 /usr/local/src/vendor /usr/src/code/vendor
 
 EXPOSE 80
