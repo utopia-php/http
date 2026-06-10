@@ -22,8 +22,8 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit --configuration phpunit.xml --testsuite unit",
-        "test:e2e": "vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-fpm,e2e-swoole"
+        "test": "phpunit --configuration phpunit.xml --testsuite unit",
+        "test:e2e": "phpunit --configuration phpunit.xml --testsuite e2e-fpm,e2e-swoole"
     },
     "require": {
         "php": ">=8.3",
@@ -48,8 +48,6 @@
         }
     },
     "require-dev": {
-        "doctrine/instantiator": "^1.5",
-        "phpunit/phpunit": "^12.0",
         "swoole/ide-helper": "4.8.3"
     }
 }

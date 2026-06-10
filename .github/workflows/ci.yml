@@ -20,6 +20,7 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: swoole
+          tools: phpunit
           coverage: ${{ matrix.php == '8.3' && 'pcov' || 'none' }}
 
       - name: Get composer cache directory
@@ -37,11 +38,11 @@ jobs:
 
       - name: Run unit tests
         if: matrix.php != '8.3'
-        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite unit
+        run: phpunit --configuration phpunit.xml --testsuite unit
 
       - name: Run unit tests with coverage
         if: matrix.php == '8.3'
-        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite unit --coverage-text --coverage-clover coverage.xml
+        run: phpunit --configuration phpunit.xml --testsuite unit --coverage-text --coverage-clover coverage.xml
 
       - name: Upload coverage artifact
         if: matrix.php == '8.3' && always()
@@ -67,6 +68,7 @@ jobs:
         with:
           php-version: '8.4'
           extensions: swoole
+          tools: phpunit
           coverage: none
 
       - name: Install dependencies
@@ -76,7 +78,7 @@ jobs:
         run: docker compose up -d --build --wait ${{ matrix.adapter.id }}
 
       - name: Run E2E tests
-        run: vendor/bin/phpunit --configuration phpunit.xml --testsuite e2e-${{ matrix.adapter.id }}
+        run: phpunit --configuration phpunit.xml --testsuite e2e-${{ matrix.adapter.id }}
 
       - name: Dump container logs on failure
         if: failure()
