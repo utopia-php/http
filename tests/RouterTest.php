@@ -80,8 +80,8 @@ final class RouterTest extends TestCase
         $this->assertSame($routeGET, Router::match(Http::REQUEST_METHOD_GET, '/')?->route);
         $this->assertSame($routePOST, Router::match(Http::REQUEST_METHOD_POST, '/')?->route);
 
-        $this->assertNotSame($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/')?->route);
-        $this->assertNotSame($routePOST, Router::match(Http::REQUEST_METHOD_GET, '/')?->route);
+        $this->assertNotSame($routeGET, Router::match(Http::REQUEST_METHOD_POST, '/')->route);
+        $this->assertNotSame($routePOST, Router::match(Http::REQUEST_METHOD_GET, '/')->route);
     }
 
     public function testCanMatchAlias(): void
