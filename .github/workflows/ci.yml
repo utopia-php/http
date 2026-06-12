@@ -14,9 +14,9 @@ jobs:
       matrix:
         php: ['8.3', '8.4', '8.5']
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # ratchet:actions/checkout@v6
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # ratchet:shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
           extensions: swoole
@@ -27,7 +27,7 @@ jobs:
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # ratchet:actions/cache@v5
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-${{ matrix.php }}-${{ hashFiles('composer.lock') }}
@@ -46,7 +46,7 @@ jobs:
 
       - name: Upload coverage artifact
         if: matrix.php == '8.3' && always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # ratchet:actions/upload-artifact@v7
         with:
           name: coverage-clover
           path: coverage.xml
@@ -59,12 +59,12 @@ jobs:
       fail-fast: false
       matrix:
         adapter:
-          - { id: fpm, display: FPM }
-          - { id: swoole, display: Swoole }
+          - {id: fpm, display: FPM}
+          - {id: swoole, display: Swoole}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # ratchet:actions/checkout@v6
 
-      - uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # ratchet:shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: swoole
@@ -91,16 +91,16 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # ratchet:actions/checkout@v6
 
       - name: Build and wait for swoole to be healthy
         run: docker compose up -d --build --wait swoole
 
       - name: Setup k6
-        uses: grafana/setup-k6-action@v1
+        uses: grafana/setup-k6-action@db07bd9765aac508ef18982e52ab937fe633a065 # ratchet:grafana/setup-k6-action@v1
 
       - name: Run k6 benchmark
-        uses: grafana/run-k6-action@v1
+        uses: grafana/run-k6-action@de51a7390bdf0ac85a3bef493691bd71d4c7c158 # ratchet:grafana/run-k6-action@v1
         with:
           path: tests/bench/benchmark.js
           flags: --summary-export=summary.json
@@ -123,7 +123,7 @@ jobs:
 
       - name: Upload raw k6 summary
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # ratchet:actions/upload-artifact@v7
         with:
           name: k6-summary
           path: summary.json
@@ -131,7 +131,7 @@ jobs:
 
       - name: Comment benchmark summary on PR
         if: github.event_name == 'pull_request' && always() && hashFiles('summary.md') != ''
-        uses: marocchino/sticky-pull-request-comment@v3
+        uses: marocchino/sticky-pull-request-comment@d4d6b0936434b21bc8345ad45a440c5f7d2c40ff # ratchet:marocchino/sticky-pull-request-comment@v3
         with:
           header: k6-benchmark
           path: summary.md
