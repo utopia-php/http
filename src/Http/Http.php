@@ -132,6 +132,10 @@ class Http
      */
     public function setTelemetry(Telemetry $telemetry): void
     {
+        // Let the adapter publish its own runtime metrics (e.g. Swoole worker
+        // stats); a no-op for adapters without them.
+        $this->adapter->setTelemetry($telemetry);
+
         // https://opentelemetry.io/docs/specs/semconv/http/http-metrics/#metric-httpserverrequestduration
         $this->requestDuration = $telemetry->createHistogram(
             'http.server.request.duration',
