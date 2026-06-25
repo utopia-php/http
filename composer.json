@@ -23,7 +23,8 @@
     },
     "scripts": {
         "test": "phpunit --configuration phpunit.xml --testsuite unit",
-        "test:e2e": "phpunit --configuration phpunit.xml --testsuite e2e-fpm,e2e-swoole"
+        "test:e2e": "phpunit --configuration phpunit.xml --testsuite e2e-fpm,e2e-swoole",
+        "bench": "bash tests/bench/run.sh"
     },
     "require": {
         "php": ">=8.3",
@@ -31,7 +32,8 @@
         "utopia-php/servers": "^0.4",
         "utopia-php/compression": "^0.1",
         "utopia-php/telemetry": "^0.4",
-        "utopia-php/validators": "^0.2"
+        "utopia-php/validators": "^0.2",
+        "utopia-php/system": "^0.10"
     },
     "suggest": {
         "ext-swoole": "Required to use the Swoole server adapter (\\Utopia\\Http\\Adapter\\Swoole\\Server)."

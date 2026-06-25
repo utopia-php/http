@@ -15,17 +15,23 @@ class Server extends Adapter
     protected const string CONTEXT_KEY = '__utopia__';
 
     /**
-     * @param  array<string, mixed>  $settings
+     * Request context for non-coroutine modes, where a worker handles
+     * one request at a time and there is no coroutine context to hang it on.
+     */
+    protected ?Container $context = null;
+
+    /**
+     * @param  Mode|array<string, mixed>  $settings
      */
     public function __construct(
         string $host,
         ?string $port = null,
-        array $settings = [],
+        Mode|array $settings = [],
         int $mode = SWOOLE_PROCESS,
         protected Container $resources = new Container(),
     ) {
         $this->server = new SwooleServer($host, (int) $port, $mode);
-        $this->server->set($settings);
+        $this->server->set($settings instanceof Mode ? $settings->settings() : $settings);
     }
 
     public function onRequest(callable $callback): void
@@ -35,9 +41,23 @@ class Server extends Adapter
             $context->set('swooleRequest', fn() => $request);
             $context->set('swooleResponse', fn() => $response);
 
-            Coroutine::getContext()[self::CONTEXT_KEY] = $context;
+            $cid = Coroutine::getCid();
+            if ($cid !== -1) {
+                Coroutine::getContext()[self::CONTEXT_KEY] = $context;
+            } else {
+                $this->context = $context;
+            }
 
-            \call_user_func($callback, new Request($request), new Response($response));
+            try {
+                \call_user_func($callback, new Request($request), new Response($response));
+            } finally {
+                // Coroutine mode discards its context slot when the coroutine
+                // ends; the non-coroutine slot is shared across requests, so
+                // clear it to keep the "no context between requests" invariant.
+                if ($cid === -1) {
+                    $this->context = null;
+                }
+            }
         });
     }
 
@@ -52,7 +72,7 @@ class Server extends Adapter
             return Coroutine::getContext()[self::CONTEXT_KEY] ?? $this->resources;
         }
 
-        return $this->resources;
+        return $this->context ?? $this->resources;
     }
 
     public function getServer(): SwooleServer
