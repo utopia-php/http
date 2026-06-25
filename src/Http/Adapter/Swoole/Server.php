@@ -10,6 +10,7 @@ use Swoole\Timer;
 use Utopia\DI\Container;
 use Utopia\Http\Adapter;
 use Utopia\Telemetry\Adapter as Telemetry;
+use Utopia\Telemetry\Adapter\None;
 
 class Server extends Adapter
 {
@@ -82,14 +83,7 @@ class Server extends Adapter
      */
     protected ?Container $context = null;
 
-    /**
-     * Worker-start callbacks, multiplexed onto Swoole's single workerStart
-     * handler so telemetry and application init can coexist.
-     *
-     * @var list<callable(int): void>
-     */
-    private array $workerStartCallbacks = [];
-
+    /** The telemetry adapter whose gauges have been registered, if any. */
     private ?Telemetry $telemetry = null;
 
     /**
@@ -152,54 +146,35 @@ class Server extends Adapter
         return $this->server;
     }
 
-    public function onWorkerStart(callable $callback): void
-    {
-        if ($this->workerStartCallbacks === []) {
-            $this->server->on('workerStart', function (SwooleServer $server, int $workerId): void {
-                foreach ($this->workerStartCallbacks as $cb) {
-                    $cb($workerId);
-                }
-            });
-        }
-        $this->workerStartCallbacks[] = $callback;
-    }
-
     /**
      * Publish Swoole's own server/coroutine/runtime metrics through the given
-     * telemetry adapter. Observable gauges are registered on each worker start
-     * and read live state lazily, so the application's normal
-     * `$telemetry->collect()` drives them — no extra timers. Metrics are emitted
-     * under the `swoole.*` namespace:
+     * telemetry adapter. Observable gauges read live state lazily, so the
+     * application's normal `$telemetry->collect()` drives them — no extra
+     * timers. Metrics are emitted under the `swoole.*` namespace:
      *
-     *  - per-worker stats from {@see self::PER_WORKER_STATS_KEYS} (every worker)
-     *  - global server stats + the reactor/coroutine config ceilings (worker 0)
+     *  - per-worker stats (every worker) and the per-worker coroutine ceiling
+     *  - server-wide stats + reactor-thread ceiling (worker 0)
      *  - coroutine creations, AIO backlog, reactor events, signal listeners,
      *    active timers, memory, and event-loop scheduler lag
+     *
+     * Safe to call repeatedly (e.g. from a per-request Http): the no-op adapter
+     * is ignored and registration runs once per distinct real adapter, so
+     * observe callbacks don't stack.
      */
     public function setTelemetry(Telemetry $telemetry): void
     {
-        // Wire the worker-start hook once; later calls just swap the adapter
-        // the single registration reads at collection time.
-        $register = $this->telemetry === null;
-        $this->telemetry = $telemetry;
-        if ($register) {
-            $this->onWorkerStart(function (int $workerId): void {
-                if ($this->telemetry !== null) {
-                    $this->registerTelemetryGauges($this->telemetry, $workerId);
-                }
-            });
+        if ($telemetry instanceof None || $this->telemetry === $telemetry) {
+            return;
         }
-    }
+        $this->telemetry = $telemetry;
 
-    private function registerTelemetryGauges(Telemetry $telemetry, int $workerId): void
-    {
         $server = $this->server;
         // Server::setting only holds values passed to the constructor; absent
         // keys fall back to Swoole's built-in defaults.
         $settings = $server->setting ?? [];
 
         // Register an observable gauge whose value is read on each collect().
-        // A null reading is skipped so absent keys don't emit a 0 series.
+        // A null reading is skipped so absent keys don't emit a series.
         $observe = function (string $name, callable $value) use ($telemetry): void {
             $telemetry->createObservableGauge($name)->observe(function (callable $observer) use ($value): void {
                 $reading = $value();
@@ -209,7 +184,7 @@ class Server extends Adapter
             });
         };
 
-        // Per-worker stats: registered on every worker so a sum across
+        // Per-worker stats: emitted from every worker so a sum across
         // service.instance.id is accurate. max_coroutine is a per-worker ceiling
         // (PHPCoroutine::config is thread-local), so it pairs with coroutine_num.
         foreach (self::WORKER_STATS as $key => $name) {
@@ -238,15 +213,15 @@ class Server extends Adapter
             $observer(max(0.0, (hrtime(true) - $startNs) / 1_000_000 - 10), []);
         });
 
-        // Server-wide stats are master-tracked, so emit them from worker 0 only
-        // to avoid every worker reporting the same numbers. reactor threads run
-        // in the master (SWOOLE_PROCESS mode) too.
-        if ($workerId === 0) {
-            foreach (self::SERVER_STATS as $key => $name) {
-                $observe($name, fn() => $server->stats()[$key] ?? null);
-            }
-            $observe(self::METRIC_REACTOR_THREADS, fn() => $settings['reactor_num'] ?? swoole_cpu_num());
+        // Server-wide stats are master-tracked, so only worker 0 emits them to
+        // avoid every worker reporting the same numbers. The worker is checked
+        // at collect time, so registration needs no worker id. reactor threads
+        // run in the master (SWOOLE_PROCESS mode) too.
+        $onWorker0 = fn(callable $read) => fn() => $server->getWorkerId() === 0 ? $read() : null;
+        foreach (self::SERVER_STATS as $key => $name) {
+            $observe($name, $onWorker0(fn() => $server->stats()[$key] ?? null));
         }
+        $observe(self::METRIC_REACTOR_THREADS, $onWorker0(fn() => $settings['reactor_num'] ?? swoole_cpu_num()));
     }
 
     public function onStart(callable $callback): void

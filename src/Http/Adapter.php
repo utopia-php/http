@@ -14,14 +14,6 @@ abstract class Adapter
     abstract public function start(): void;
 
     /**
-     * Register a callback to run on each worker start, receiving the worker id.
-     * No-op for adapters without a worker lifecycle (FPM, coroutine server).
-     *
-     * @param callable(int): void $callback
-     */
-    public function onWorkerStart(callable $callback): void {}
-
-    /**
      * Receive the telemetry adapter so the server can publish its own runtime
      * metrics. No-op unless the adapter exposes runtime stats (see the Swoole
      * worker server).
