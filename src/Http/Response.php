@@ -466,6 +466,25 @@ abstract class Response
     }
 
     /**
+     * Set Accept-Query header
+     *
+     * Advertise the media types accepted as QUERY request content (RFC 10008
+     * Section 3). Media types are serialized as an RFC 9651 Structured Field
+     * list of strings, e.g. `Accept-Query: "application/sql", "application/jsonpath"`.
+     *
+     * @param  array<int, string>  $mediaTypes
+     */
+    public function setAcceptQuery(array $mediaTypes): static
+    {
+        $items = array_map(
+            fn(string $type) => '"' . addcslashes($type, '"\\') . '"',
+            $mediaTypes,
+        );
+
+        return $this->setHeader('Accept-Query', implode(', ', $items));
+    }
+
+    /**
      * Remove header
      *
      * Remove an HTTP response header by its case-insensitive name.

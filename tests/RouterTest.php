@@ -33,6 +33,16 @@ final class RouterTest extends TestCase
         $this->assertEquals($routeAboutMe, Router::match(Http::REQUEST_METHOD_GET, '/about/me')?->route);
     }
 
+    public function testCanMatchQueryMethod(): void
+    {
+        $routeSearch = new Route(Http::REQUEST_METHOD_QUERY, '/documents/search');
+
+        Router::addRoute($routeSearch);
+
+        $this->assertEquals($routeSearch, Router::match(Http::REQUEST_METHOD_QUERY, '/documents/search')?->route);
+        $this->assertNull(Router::match(Http::REQUEST_METHOD_GET, '/documents/search'));
+    }
+
     public function testCanMatchUrlWithPlaceholder(): void
     {
         $routeBlog = new Route(Http::REQUEST_METHOD_GET, '/blog');

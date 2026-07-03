@@ -120,6 +120,17 @@ final class RequestTest extends TestCase
         $this->assertSame('test', $this->request->getPayload('unknown', 'test'));
     }
 
+    public function testQueryMethodParamsComeFromPayload(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'QUERY';
+        $_GET['ignored'] = 'query-string-value';
+
+        $this->request->setPayload(['q' => 'find-me']);
+
+        $this->assertSame(['q' => 'find-me'], $this->request->getParams());
+        $this->assertSame('find-me', $this->request->getParam('q'));
+    }
+
     public function testCanGetRawPayload(): void
     {
         $this->assertSame('', $this->request->getRawPayload());

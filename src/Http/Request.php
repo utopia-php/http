@@ -21,6 +21,8 @@ abstract class Request
 
     public const string METHOD_DELETE = 'DELETE';
 
+    public const string METHOD_QUERY = 'QUERY';
+
     public const string METHOD_TRACE = 'TRACE';
 
     public const string METHOD_CONNECT = 'CONNECT';

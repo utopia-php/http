@@ -29,6 +29,8 @@ class Http
 
     public const string REQUEST_METHOD_DELETE = 'DELETE';
 
+    public const string REQUEST_METHOD_QUERY = 'QUERY';
+
     public const string REQUEST_METHOD_OPTIONS = 'OPTIONS';
 
     public const string REQUEST_METHOD_HEAD = 'HEAD';
@@ -224,6 +226,18 @@ class Http
     public static function delete(string $url): Route
     {
         return self::routes(self::REQUEST_METHOD_DELETE, $url);
+    }
+
+    /**
+     * QUERY
+     *
+     * Add QUERY request route (RFC 10008). QUERY is a safe, idempotent
+     * method whose request content describes the query to evaluate against
+     * the target resource.
+     */
+    public static function query(string $url): Route
+    {
+        return self::routes(self::REQUEST_METHOD_QUERY, $url);
     }
 
     /**
@@ -626,6 +640,12 @@ class Http
         $groups = $route->getGroups();
 
         try {
+            // RFC 10008 Section 2: servers MUST fail a QUERY request whose
+            // Content-Type field is missing.
+            if (self::REQUEST_METHOD_QUERY === $method && $request->getHeaderLine('content-type') === '') {
+                throw new Exception('Content-Type header is required for QUERY requests', 400);
+            }
+
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (\in_array('*', $hook->getGroups())) {

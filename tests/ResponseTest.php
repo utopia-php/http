@@ -29,6 +29,16 @@ final class FPMResponseTest extends TestCase
         $this->assertInstanceOf('Utopia\Http\Response', $contentType);
     }
 
+    public function testCanSetAcceptQuery(): void
+    {
+        $this->response->setAcceptQuery(['application/sql', 'application/jsonpath']);
+
+        $this->assertSame(
+            '"application/sql", "application/jsonpath"',
+            $this->response->getHeaderLine('Accept-Query'),
+        );
+    }
+
     public function testCanSetStatus(): void
     {
         $status = $this->response->setStatusCode(Response::STATUS_CODE_OK);

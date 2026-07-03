@@ -280,7 +280,8 @@ class Request extends UtopiaRequest
             self::METHOD_POST,
             self::METHOD_PUT,
             self::METHOD_PATCH,
-            self::METHOD_DELETE => $this->payload,
+            self::METHOD_DELETE,
+            self::METHOD_QUERY => $this->payload,
             default => $this->queryString,
         };
     }

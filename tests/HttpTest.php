@@ -250,6 +250,52 @@ final class HttpTest extends TestCase
         $this->assertSame('init-' . $resource . '-(init-homepage)-param-x*param-y-(shutdown-homepage)-shutdown', $result);
     }
 
+    public function testCanExecuteQueryRoute(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'QUERY';
+        $_SERVER['REQUEST_URI'] = '/search';
+
+        Http::query('/search')
+            ->param('q', '', new Text(200), 'query expression', true)
+            ->action(function ($q) {
+                echo 'results:' . $q;
+            });
+
+        $request = new Request();
+        $request->setHeader('content-type', 'application/json');
+        $request->setPayload(['q' => 'find-me']);
+
+        ob_start();
+        $this->http->execute($request, new Response());
+        $result = ob_get_clean();
+
+        $this->assertSame('results:find-me', $result);
+    }
+
+    public function testQueryRouteRequiresContentType(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'QUERY';
+        $_SERVER['REQUEST_URI'] = '/search';
+        unset($_SERVER['HTTP_CONTENT_TYPE'], $_SERVER['CONTENT_TYPE']);
+
+        $this->http
+            ->error()
+            ->inject('error')
+            ->action(function ($error) {
+                echo 'error-' . $error->getCode() . ':' . $error->getMessage();
+            });
+
+        Http::query('/search')->action(function () {
+            echo 'should-not-run';
+        });
+
+        ob_start();
+        $this->http->execute(new Request(), new Response());
+        $result = ob_get_clean();
+
+        $this->assertSame('error-400:Content-Type header is required for QUERY requests', $result);
+    }
+
     public function testCanExecuteRouteWithMultipleMethods(): void
     {
         Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/v1/oauth/userinfo')

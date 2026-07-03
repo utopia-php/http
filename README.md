@@ -176,6 +176,27 @@ Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/oauth/user
 
 Path aliases and multiple methods combine: a route with both responds on every method under every path. Use `getMethods()` to inspect the methods a route was registered with, and use the request resource to tell how a request arrived.
 
+### The QUERY Method
+
+The `QUERY` method ([RFC 10008](https://www.rfc-editor.org/rfc/rfc10008)) is a safe, idempotent request method that carries the query as request content — useful when query parameters are too large or too sensitive for the URL. Register QUERY routes with `Http::query()`; the request body is parsed the same way as for POST, so JSON payloads map to params:
+
+```php
+Http::query('/documents/search')
+    ->param('filter', '', new Text(2048), 'Filter expression')
+    ->inject('response')
+    ->action(function(string $filter, Response $response) {
+        $response->json(['results' => []]);
+    });
+```
+
+Per the RFC, a QUERY request without a `Content-Type` header is rejected with a 400 error before the route action runs. To advertise the query formats a resource accepts, use `Response::setAcceptQuery()`, which serializes the `Accept-Query` header as an RFC 9651 structured field:
+
+```php
+$response->setAcceptQuery(['application/json', 'application/sql']);
+```
+
+Note: serving QUERY requires the underlying server to accept the method — PHP-FPM passes any method through, while Swoole support depends on the Swoole version's HTTP parser recognizing `QUERY`.
+
 ### Hooks
 
 There are three types of hooks:

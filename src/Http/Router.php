@@ -28,6 +28,7 @@ class Router
         Http::REQUEST_METHOD_PUT => [],
         Http::REQUEST_METHOD_PATCH => [],
         Http::REQUEST_METHOD_DELETE => [],
+        Http::REQUEST_METHOD_QUERY => [],
     ];
 
     /**
@@ -269,6 +270,7 @@ class Router
             Http::REQUEST_METHOD_PUT => [],
             Http::REQUEST_METHOD_PATCH => [],
             Http::REQUEST_METHOD_DELETE => [],
+            Http::REQUEST_METHOD_QUERY => [],
         ];
     }
 }
