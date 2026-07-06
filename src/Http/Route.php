@@ -102,9 +102,8 @@ class Route extends Hook
 
     /**
      * Get primary HTTP method.
-     *
-     * @deprecated Use getMethods() instead.
      */
+    #[\Deprecated(message: 'Use getMethods() instead.')]
     public function getMethod(): string
     {
         return $this->methods[0] ?? '';

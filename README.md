@@ -28,9 +28,9 @@ require_once __DIR__.'/../vendor/autoload.php';
 
 use Utopia\DI\Container;
 use Utopia\Http\Http;
-use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\FPM\Server;
+use Psr\Http\Message\ServerRequestInterface;
 
 $resources = new Container();
 
@@ -38,7 +38,7 @@ Http::get('/hello-world') // Define Route
     ->inject('request')
     ->inject('response')
     ->action(
-        function(Request $request, Response $response) {
+        function(ServerRequestInterface $request, Response $response) {
             $response
               ->addHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
               ->addHeader('Expires', '0')
@@ -98,9 +98,9 @@ $http->start();
 ```php
 use Utopia\DI\Container;
 use Utopia\Http\Http;
-use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
+use Psr\Http\Message\ServerRequestInterface;
 
 $resources = new Container();
 
@@ -108,7 +108,7 @@ Http::get('/')
     ->inject('request')
     ->inject('response')
     ->action(
-        function(Request $request, Response $response) {
+        function(ServerRequestInterface $request, Response $response) {
             $response->send('Hello from Swoole');
         }
     );
@@ -168,7 +168,7 @@ Use `routes()` to serve the same route under multiple HTTP methods. For example,
 Http::routes([Http::REQUEST_METHOD_GET, Http::REQUEST_METHOD_POST], '/oauth/userinfo')
     ->inject('request')
     ->inject('response')
-    ->action(function(Request $request, Response $response) {
+    ->action(function(ServerRequestInterface $request, Response $response) {
         // $request->getMethod() tells how the request arrived (GET or POST)
         $response->json(['sub' => 'user-id']);
     });
@@ -189,8 +189,8 @@ You can provide multiple hooks for each stage. If you do not assign groups to th
 ```php
 Http::init()
     ->inject('request')
-    ->action(function(Request $request) {
-        \var_dump("Recieved: " . $request->getMethod() . ' ' . $request->getURI());
+    ->action(function(ServerRequestInterface $request) {
+        \var_dump("Received: " . $request->getMethod() . ' ' . $request->getUri());
     });
 
 Http::shutdown()
@@ -235,8 +235,8 @@ Http::init()
     ->groups(['api'])
     ->inject('request')
     ->inject('response')
-    ->action(function(Request $request, Response $response) {
-        $apiKey = $request->getHeader('x-api-key', '');
+    ->action(function(ServerRequestInterface $request, Response $response) {
+        $apiKey = $request->getHeaderLine('x-api-key');
 
         if(empty($apiKey)) {
             $response

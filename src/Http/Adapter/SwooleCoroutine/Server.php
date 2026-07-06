@@ -8,6 +8,7 @@ use Swoole\Http\Request as SwooleRequest;
 use Swoole\Http\Response as SwooleResponse;
 use Utopia\DI\Container;
 use Utopia\Http\Adapter;
+use Utopia\Http\Adapter\Swoole\RequestFactory;
 
 class Server extends Adapter
 {
@@ -17,6 +18,8 @@ class Server extends Adapter
 
     /** @var callable|null */
     protected $onStartCallback;
+
+    private RequestFactory $requestFactory;
 
     /**
      * @param  array<string, mixed>  $settings
@@ -29,6 +32,7 @@ class Server extends Adapter
     ) {
         $this->server = new SwooleServer($host, $port, false, true);
         $this->server->set($settings);
+        $this->requestFactory = new RequestFactory();
     }
 
     public function onRequest(callable $callback): void
@@ -41,7 +45,7 @@ class Server extends Adapter
             Coroutine::getContext()[self::CONTEXT_KEY] = $context;
 
             try {
-                \call_user_func($callback, new Request($request), new Response($response));
+                \call_user_func($callback, $this->requestFactory->create($request), new Response($response));
             } finally {
                 unset(Coroutine::getContext()[self::CONTEXT_KEY]);
             }

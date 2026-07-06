@@ -91,8 +91,6 @@ class View
 
     /**
      * Return a View instance of the parent view containing this view
-     *
-     * @return self|null
      */
     public function getParent(): ?self
     {

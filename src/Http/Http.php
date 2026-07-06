@@ -2,6 +2,7 @@
 
 namespace Utopia\Http;
 
+use Psr\Http\Message\ServerRequestInterface;
 use Utopia\DI\Container;
 use Utopia\Servers\Hook;
 use Utopia\Telemetry\Adapter as Telemetry;
@@ -511,7 +512,7 @@ class Http
     {
 
         $this->adapter->onRequest(
-            fn(Request $request, Response $response) => $this->run($request, $response),
+            fn(ServerRequestInterface $request, Response $response) => $this->run($request, $response),
         );
 
         $this->adapter->onStart(function ($server) {
@@ -544,10 +545,10 @@ class Http
     /**
      * Find the route registered for the given request, or null if none match.
      */
-    public function match(Request $request): ?RouteMatch
+    public function match(ServerRequestInterface $request): ?RouteMatch
     {
-        $url = parse_url($request->getURI(), PHP_URL_PATH);
-        $url = \is_string($url) ? ($url === '' ? '/' : $url) : '/';
+        $url = $request->getUri()->getPath();
+        $url = $url === '' ? '/' : $url;
         $method = $request->getMethod();
         $method = (self::REQUEST_METHOD_HEAD === $method) ? self::REQUEST_METHOD_GET : $method;
 
@@ -567,9 +568,10 @@ class Http
      * (compression, request hooks, telemetry); those belong to {@see run()},
      * which is the entry point for top-level requests from the server.
      */
-    public function execute(Request $request, Response $response): static
+    public function execute(ServerRequestInterface $request, Response $response): static
     {
         $method = $request->getMethod();
+        $requestParams = $this->requestParams($request);
 
         if (self::REQUEST_METHOD_HEAD === $method) {
             $method = self::REQUEST_METHOD_GET;
@@ -586,7 +588,7 @@ class Http
                     foreach (self::$options as $option) { // Group options hooks
                         /** @var Hook $option */
                         if (\in_array($group, $option->getGroups())) {
-                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match->route));
+                            \call_user_func_array($option->getAction(), $this->getArguments($option, [], $requestParams, $match->route));
                         }
                     }
                 }
@@ -594,7 +596,7 @@ class Http
                 foreach (self::$options as $option) { // Global options hooks
                     /** @var Hook $option */
                     if (\in_array('*', $option->getGroups())) {
-                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $request->getParams(), $match?->route));
+                        \call_user_func_array($option->getAction(), $this->getArguments($option, [], $requestParams, $match?->route));
                     }
                 }
             } catch (\Throwable $e) {
@@ -602,7 +604,7 @@ class Http
                     /** @var Hook $error */
                     if (\in_array('*', $error->getGroups())) {
                         $this->context()->set('error', fn() => $e, []);
-                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams(), $match?->route));
+                        \call_user_func_array($error->getAction(), $this->getArguments($error, [], $requestParams, $match?->route));
                     }
                 }
             }
@@ -614,7 +616,7 @@ class Http
             foreach (self::$errors as $error) {
                 if (\in_array('*', $error->getGroups())) {
                     $this->context()->set('error', fn() => new Exception('Not Found', 404), []);
-                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $request->getParams()));
+                    \call_user_func_array($error->getAction(), $this->getArguments($error, [], $requestParams));
                 }
             }
 
@@ -629,7 +631,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$init as $hook) { // Global init hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $requestParams, $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -638,21 +640,21 @@ class Http
             foreach ($groups as $group) {
                 foreach (self::$init as $hook) { // Group init hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $requestParams, $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
             }
 
             if (!$response->isSent()) {
-                $arguments = $this->getArguments($route, $match->params, $request->getParams(), $route);
+                $arguments = $this->getArguments($route, $match->params, $requestParams, $route);
                 \call_user_func_array($route->getAction(), $arguments);
             }
 
             foreach ($groups as $group) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array($group, $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $requestParams, $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -661,7 +663,7 @@ class Http
             if ($route->getHook()) {
                 foreach (self::$shutdown as $hook) { // Group shutdown hooks
                     if (\in_array('*', $hook->getGroups())) {
-                        $arguments = $this->getArguments($hook, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($hook, $match->params, $requestParams, $route);
                         \call_user_func_array($hook->getAction(), $arguments);
                     }
                 }
@@ -673,7 +675,7 @@ class Http
                 foreach (self::$errors as $error) { // Group error hooks
                     if (\in_array($group, $error->getGroups())) {
                         try {
-                            $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
+                            $arguments = $this->getArguments($error, $match->params, $requestParams, $route);
                             \call_user_func_array($error->getAction(), $arguments);
                         } catch (\Throwable $e) {
                             throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -685,7 +687,7 @@ class Http
             foreach (self::$errors as $error) { // Global error hooks
                 if (\in_array('*', $error->getGroups())) {
                     try {
-                        $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
+                        $arguments = $this->getArguments($error, $match->params, $requestParams, $route);
                         \call_user_func_array($error->getAction(), $arguments);
                     } catch (\Throwable $e) {
                         throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
@@ -784,11 +786,11 @@ class Http
      * Request/Response), use {@see execute()} instead — it skips the
      * outer-request setup that has already run.
      */
-    public function run(Request $request, Response $response): static
+    public function run(ServerRequestInterface $request, Response $response): static
     {
         $this->activeRequests->add(1, [
             'http.request.method' => $request->getMethod(),
-            'url.scheme' => $request->getProtocol(),
+            'url.scheme' => $this->requestScheme($request),
         ]);
 
         $start = microtime(true);
@@ -796,7 +798,7 @@ class Http
 
         $requestDuration = microtime(true) - $start;
         $attributes = [
-            'url.scheme' => $request->getProtocol(),
+            'url.scheme' => $this->requestScheme($request),
             'http.request.method' => $request->getMethod(),
             // OTel semantics: http.route is the matched route template, or
             // unset when no template applies (wildcard / no match).
@@ -804,11 +806,11 @@ class Http
             'http.response.status_code' => $response->getStatusCode(),
         ];
         $this->requestDuration->record($requestDuration, $attributes);
-        $this->requestBodySize->record($request->getSize(), $attributes);
+        $this->requestBodySize->record($this->requestSize($request), $attributes);
         $this->responseBodySize->record($response->getSize(), $attributes);
         $this->activeRequests->add(-1, [
             'http.request.method' => $request->getMethod(),
-            'url.scheme' => $request->getProtocol(),
+            'url.scheme' => $this->requestScheme($request),
         ]);
 
         return $result;
@@ -822,10 +824,10 @@ class Http
      *
      * @param Response $response;
      */
-    private function runInternal(Request $request, Response $response): static
+    private function runInternal(ServerRequestInterface $request, Response $response): static
     {
         if ($this->compression) {
-            $response->setAcceptEncoding($request->getHeaderLine('accept-encoding', ''));
+            $response->setAcceptEncoding($request->getHeaderLine('accept-encoding'));
             $response->setCompressionMinSize($this->compressionMinSize);
             $response->setCompressionSupported($this->compressionSupported);
         }
@@ -853,19 +855,74 @@ class Http
             }
         }
 
-        if ($this->isFileLoaded($request->getURI())) {
+        $path = $request->getUri()->getPath() === '' ? '/' : $request->getUri()->getPath();
+
+        if ($this->isFileLoaded($path)) {
             $time = (60 * 60 * 24 * 365 * 2); // 45 days cache
 
             $response
-                ->setContentType($this->getFileMimeType($request->getURI()))
+                ->setContentType($this->getFileMimeType($path))
                 ->addHeader('Cache-Control', 'public, max-age=' . $time)
                 ->addHeader('Expires', date('D, d M Y H:i:s', time() + $time) . ' GMT') // 45 days cache
-                ->send($this->getFileContents($request->getURI()));
+                ->send($this->getFileContents($path));
 
             return $this;
         }
 
         return $this->execute($request, $response);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function requestParams(ServerRequestInterface $request): array
+    {
+        if (\in_array($request->getMethod(), [
+            self::REQUEST_METHOD_POST,
+            self::REQUEST_METHOD_PUT,
+            self::REQUEST_METHOD_PATCH,
+            self::REQUEST_METHOD_DELETE,
+        ], true)) {
+            $body = $request->getParsedBody();
+
+            if (\is_array($body)) {
+                return $body;
+            }
+
+            if (\is_object($body)) {
+                return get_object_vars($body);
+            }
+
+            return [];
+        }
+
+        return $request->getQueryParams();
+    }
+
+    private function requestScheme(ServerRequestInterface $request): string
+    {
+        if ($request->hasHeader('x-forwarded-proto')) {
+            $scheme = $request->getHeaderLine('x-forwarded-proto');
+
+            if ($scheme !== '') {
+                return $scheme;
+            }
+        }
+
+        $scheme = $request->getUri()->getScheme();
+
+        return $scheme === '' ? 'http' : $scheme;
+    }
+
+    private function requestSize(ServerRequestInterface $request): int
+    {
+        $headerSize = 0;
+
+        foreach ($request->getHeaders() as $name => $values) {
+            $headerSize += mb_strlen($name . ': ' . implode(', ', $values), '8bit');
+        }
+
+        return $headerSize + mb_strlen((string) $request->getBody(), '8bit');
     }
 
 

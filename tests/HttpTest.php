@@ -7,10 +7,10 @@ namespace Utopia\Http;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Utopia\DI\Container;
-use Utopia\Http\Adapter\FPM\Request;
 use Utopia\Http\Adapter\FPM\Response;
 use Utopia\Http\Adapter\FPM\Server;
-use Utopia\Http\Tests\UtopiaFPMRequestTest;
+use Utopia\Psr7\ServerRequest;
+use Utopia\Psr7\Uri;
 use Utopia\Validator\Text;
 
 final class HttpTest extends TestCase
@@ -48,6 +48,16 @@ final class HttpTest extends TestCase
     {
         $_SERVER['REQUEST_METHOD'] = $this->method;
         $_SERVER['REQUEST_URI'] = $this->uri;
+    }
+
+    private function request(): ServerRequest
+    {
+        return new ServerRequest(
+            $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
+            Uri::parse($_SERVER['REQUEST_URI'] ?? '/'),
+            queryParams: $_GET,
+            parsedBody: $_POST,
+        );
     }
 
     public function testCanGetDifferentModes(): void
@@ -115,7 +125,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -137,8 +147,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
+        $request = ($this->request())->withQueryParams(['x' => 'param-x', 'y' => 'param-y', 'z' => 'param-z']);
         $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
@@ -157,8 +166,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
+        $request = ($this->request())->withQueryParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
@@ -229,9 +237,8 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $_SERVER['REQUEST_URI'] = '/api';
+        $request = ($this->request())->withQueryParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
@@ -240,9 +247,8 @@ final class HttpTest extends TestCase
 
         $resource = $this->resources->get('rand');
         ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['x' => 'param-x', 'y' => 'param-y']);
         $_SERVER['REQUEST_URI'] = '/homepage';
+        $request = ($this->request())->withQueryParams(['x' => 'param-x', 'y' => 'param-y']);
         $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
@@ -262,13 +268,13 @@ final class HttpTest extends TestCase
 
         $_SERVER['REQUEST_METHOD'] = 'GET';
         ob_start();
-        $this->http->run(new Request(), new Response());
+        $this->http->run($this->request(), new Response());
         $result = ob_get_clean();
         $this->assertSame('userinfo:GET', $result);
 
         $_SERVER['REQUEST_METHOD'] = 'POST';
         ob_start();
-        $this->http->run(new Request(), new Response());
+        $this->http->run($this->request(), new Response());
         $result = ob_get_clean();
         $this->assertSame('userinfo:POST', $result);
     }
@@ -300,7 +306,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -316,7 +322,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -353,7 +359,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -370,7 +376,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -387,7 +393,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -404,7 +410,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -421,7 +427,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -438,7 +444,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -457,7 +463,7 @@ final class HttpTest extends TestCase
                 });
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -475,11 +481,11 @@ final class HttpTest extends TestCase
                     echo $user_id;
                 });
 
-            $matched = $this->http->match(new Request());
+            $matched = $this->http->match($this->request());
             $this->assertSame($route, $matched?->route);
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -495,11 +501,11 @@ final class HttpTest extends TestCase
                     echo $user_id;
                 });
 
-            $matched = $this->http->match(new Request());
+            $matched = $this->http->match($this->request());
             $this->assertSame($route, $matched?->route);
 
             ob_start();
-            $this->http->execute(new Request(), new Response());
+            $this->http->execute($this->request(), new Response());
             $result = ob_get_contents();
             ob_end_clean();
 
@@ -584,7 +590,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -592,7 +598,7 @@ final class HttpTest extends TestCase
 
         ob_start();
         $_GET['y'] = 'y-def';
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -645,7 +651,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = $method;
         $_SERVER['REQUEST_URI'] = $url;
 
-        $this->assertSame($expected, $this->http->match(new Request())?->route);
+        $this->assertSame($expected, $this->http->match($this->request())?->route);
     }
 
     public function testNoMismatchRoute(): void
@@ -671,7 +677,7 @@ final class HttpTest extends TestCase
             $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
             $_SERVER['REQUEST_URI'] = $request['url'];
 
-            $route = $this->http->match(new Request());
+            $route = $this->http->match($this->request());
 
             $this->assertNull($route);
         }
@@ -685,11 +691,11 @@ final class HttpTest extends TestCase
         try {
             $_SERVER['REQUEST_METHOD'] = 'HEAD';
             $_SERVER['REQUEST_URI'] = '/path1';
-            $matched = $this->http->match(new Request());
+            $matched = $this->http->match($this->request());
             $this->assertSame($route1, $matched?->route);
 
             $_SERVER['REQUEST_URI'] = '/path2';
-            $matched = $this->http->match(new Request());
+            $matched = $this->http->match($this->request());
             $this->assertSame($route2, $matched?->route);
         } catch (\Exception $e) {
             $this->fail($e->getMessage());
@@ -703,7 +709,7 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = Http::REQUEST_METHOD_GET;
         $_SERVER['REQUEST_URI'] = 'https://example.com?x=1';
 
-        $this->assertSame($route, $this->http->match(new Request())?->route);
+        $this->assertSame($route, $this->http->match($this->request())?->route);
     }
 
     public function testCanRunRequest(): void
@@ -723,7 +729,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->run(new Request(), new Response());
+        $this->http->run($this->request(), new Response());
         $result = ob_get_contents() ?: '';
         ob_end_clean();
 
@@ -750,14 +756,14 @@ final class HttpTest extends TestCase
         });
 
         Http::get('/outer')->action(function () {
-            $inner = new Request();
-            $inner->setMethod('GET');
-            $inner->setURI('/inner');
+            $inner = ($this->request())
+                ->withMethod('GET')
+                ->withUri(Uri::parse('/inner'));
             $this->http->execute($inner, new Response());
         });
 
         $_SERVER['REQUEST_URI'] = '/outer';
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
 
         // Inner's shutdown fires first (with inner route), then outer's
         // shutdown — which must see the outer route, not the inner one.
@@ -777,7 +783,7 @@ final class HttpTest extends TestCase
                 $captured = $params;
             });
 
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
 
         $this->assertSame(['id' => 'abc-123', 'postId' => '42'], $captured);
     }
@@ -795,7 +801,7 @@ final class HttpTest extends TestCase
                 $captured = $params;
             });
 
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
 
         $this->assertSame([], $captured);
     }
@@ -827,15 +833,14 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        @$this->http->run(new Request(), new Response());
+        @$this->http->run($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
         $this->assertSame('HELLO', $result);
 
         ob_start();
-        $req = new Request();
-        $req = $req->setMethod('OPTIONS');
+        $req = ($this->request())->withMethod('OPTIONS');
         @$this->http->run($req, new Response());
         $result = ob_get_contents();
         ob_end_clean();
@@ -861,7 +866,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        @$this->http->run(new Request(), new Response());
+        @$this->http->run($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -888,7 +893,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -905,8 +910,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['func' => 'system']);
+        $request = ($this->request())->withQueryParams(['func' => 'system']);
         $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
@@ -924,7 +928,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $this->http->execute(new Request(), new Response());
+        $this->http->execute($this->request(), new Response());
         $result = ob_get_contents();
         ob_end_clean();
 
@@ -953,8 +957,7 @@ final class HttpTest extends TestCase
             });
 
         ob_start();
-        $request = new UtopiaFPMRequestTest();
-        $request::_setParams(['locale' => 'es']);
+        $request = ($this->request())->withQueryParams(['locale' => 'es']);
         $this->http->execute($request, new Response());
         $result = ob_get_contents();
         ob_end_clean();
