@@ -1,18 +1,3 @@
-FROM composer:2.7 AS step0
-
-
-ARG TESTING=true
-
-ENV TESTING=$TESTING
-
-WORKDIR /usr/local/src/
-
-COPY composer.* /usr/local/src/
-
-RUN composer install --ignore-platform-reqs --optimize-autoloader \
-    --no-plugins --no-scripts --prefer-dist \
-    `if [ "$TESTING" != "true" ]; then echo "--no-dev"; fi`
-
 FROM php:8.3-fpm-alpine AS final
 LABEL maintainer="team@appwrite.io"
 
@@ -42,7 +27,7 @@ COPY ./src /usr/share/nginx/html/src
 COPY ./tests /usr/share/nginx/html/tests
 COPY ./phpunit.xml /usr/share/nginx/html/phpunit.xml
 COPY ./composer.json ./composer.lock ./phpstan.neon /usr/share/nginx/html/
-COPY --from=step0 /usr/local/src/vendor /usr/share/nginx/html/vendor
+COPY ./vendor /usr/share/nginx/html/vendor
 
 # Supervisord Conf
 COPY ./tests/docker/supervisord.conf /etc/supervisord.conf
