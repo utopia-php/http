@@ -10,15 +10,15 @@ If you’re new to Utopia, let’s get started by looking at an example of a bas
 
 ```php
 use Utopia\Http\Http;
+use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Http\Adapter\Swoole\Server;
-use Psr\Http\Message\ServerRequestInterface;
 
 Http::get('/')
    ->inject('request')
    ->inject('response')
    ->action(
-       function(ServerRequestInterface $request, Response $response) {
+       function(Request $request, Response $response) {
            // Return raw HTML
            $response->send("<div> Hello World! </div>");
        }

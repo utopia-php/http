@@ -28,7 +28,6 @@
     },
     "require": {
         "php": ">=8.5",
-        "psr/http-message": "^1.1 || ^2.0",
         "utopia-php/di": "^0.3",
         "utopia-php/servers": "^0.4",
         "utopia-php/compression": "^0.1",

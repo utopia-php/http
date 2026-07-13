@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 
-use Psr\Http\Message\ServerRequestInterface;
 use Utopia\Http\Http;
+use Utopia\Http\Request;
 use Utopia\Http\Response;
 use Utopia\Validator\Text;
 
@@ -32,7 +32,7 @@ Http::get('/value/:value')
 Http::get('/cookies')
     ->inject('request')
     ->inject('response')
-    ->action(function (ServerRequestInterface $request, Response $response) {
+    ->action(function (Request $request, Response $response) {
         $response->send($request->getHeaderLine('cookie'));
     });
 
@@ -40,15 +40,14 @@ Http::get('/cookie/:key')
     ->param('key', '', new Text(64))
     ->inject('request')
     ->inject('response')
-    ->action(function (string $key, ServerRequestInterface $request, Response $response) {
-        $cookies = $request->getCookieParams();
-        $response->send($cookies[$key] ?? '');
+    ->action(function (string $key, Request $request, Response $response) {
+        $response->send($request->getCookie($key, ''));
     });
 
 Http::get('/set-cookie')
     ->inject('request')
     ->inject('response')
-    ->action(function (ServerRequestInterface $request, Response $response) {
+    ->action(function (Request $request, Response $response) {
         $response->addHeader('Set-Cookie', 'key1=value1');
         $response->addHeader('Set-Cookie', 'key2=value2');
         $response->send('OK');

@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace Utopia\Http\Adapter\FPM;
 
 use Utopia\DI\Container;
@@ -11,16 +9,11 @@ class Server extends Adapter
 {
     private ?Container $context = null;
 
-    private RequestFactory $requestFactory;
-
-    public function __construct(private Container $resources)
-    {
-        $this->requestFactory = new RequestFactory();
-    }
+    public function __construct(private Container $resources) {}
 
     public function onRequest(callable $callback): void
     {
-        $request = $this->requestFactory->create();
+        $request = new Request();
         $response = new Response();
 
         $this->context = new Container($this->resources);

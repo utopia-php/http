@@ -86,8 +86,6 @@ class Server extends Adapter
     /** The telemetry adapter whose gauges have been registered, if any. */
     private ?Telemetry $telemetry = null;
 
-    private RequestFactory $requestFactory;
-
     /**
      * @param  Mode|array<string, mixed>  $settings
      */
@@ -100,7 +98,6 @@ class Server extends Adapter
     ) {
         $this->server = new SwooleServer($host, (int) $port, $mode);
         $this->server->set($settings instanceof Mode ? $settings->settings() : $settings);
-        $this->requestFactory = new RequestFactory();
     }
 
     public function onRequest(callable $callback): void
@@ -118,7 +115,7 @@ class Server extends Adapter
             }
 
             try {
-                \call_user_func($callback, $this->requestFactory->create($request), new Response($response));
+                \call_user_func($callback, new Request($request), new Response($response));
             } finally {
                 // Coroutine mode discards its context slot when the coroutine
                 // ends; the non-coroutine slot is shared across requests, so

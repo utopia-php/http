@@ -16,8 +16,9 @@ final class RouteTest extends TestCase
         $this->route = new Route('GET', '/');
     }
 
-    public function testCanGetMethods(): void
+    public function testCanGetMethod(): void
     {
+        $this->assertSame('GET', $this->route->getMethod());
         $this->assertSame(['GET'], $this->route->getMethods());
     }
 

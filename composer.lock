@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ebb4f79855f9f176af9cfcddb9440972",
+    "content-hash": "088fbe9fa6197de55ec1da0487c4767a",
     "packages": [
         {
             "name": "brick/math",
@@ -2019,22 +2019,22 @@
         },
         {
             "name": "utopia-php/servers",
-            "version": "0.4.2",
+            "version": "0.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/utopia-php/servers.git",
-                "reference": "235b425aa1a011a9c716d05ccdda2b077a9a2108"
+                "reference": "036c4da1c8b9a5bba1a973270158ba745a5944c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/utopia-php/servers/zipball/235b425aa1a011a9c716d05ccdda2b077a9a2108",
-                "reference": "235b425aa1a011a9c716d05ccdda2b077a9a2108",
+                "url": "https://api.github.com/repos/utopia-php/servers/zipball/036c4da1c8b9a5bba1a973270158ba745a5944c9",
+                "reference": "036c4da1c8b9a5bba1a973270158ba745a5944c9",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.2",
-                "utopia-php/di": "0.3.*",
-                "utopia-php/validators": "0.*"
+                "php": ">=8.5",
+                "utopia-php/di": "^0.3",
+                "utopia-php/validators": "0.3.*"
             },
             "type": "library",
             "autoload": {
@@ -2062,9 +2062,9 @@
             ],
             "support": {
                 "issues": "https://github.com/utopia-php/servers/issues",
-                "source": "https://github.com/utopia-php/servers/tree/0.4.2"
+                "source": "https://github.com/utopia-php/servers/tree/0.4.6"
             },
-            "time": "2026-06-10T14:17:05+00:00"
+            "time": "2026-07-13T11:15:40+00:00"
         },
         {
             "name": "utopia-php/system",
@@ -2259,11 +2259,11 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.4"
+        "php": ">=8.5"
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.4",
+        "php": "8.5",
         "ext-opentelemetry": "1.0.0",
         "ext-protobuf": "4.26.1"
     },
