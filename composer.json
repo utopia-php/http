@@ -27,14 +27,14 @@
         "bench": "bash tests/bench/run.sh"
     },
     "require": {
-        "php": ">=8.4",
+        "php": ">=8.5",
         "psr/http-message": "^1.1 || ^2.0",
         "utopia-php/di": "^0.3",
         "utopia-php/servers": "^0.4",
         "utopia-php/compression": "^0.1",
         "utopia-php/psr7": "^0.2.0",
         "utopia-php/telemetry": "^0.4",
-        "utopia-php/validators": "^0.2",
+        "utopia-php/validators": "0.3.*",
         "utopia-php/system": "^0.10"
     },
     "suggest": {
@@ -42,7 +42,7 @@
     },
     "config": {
         "platform": {
-            "php": "8.4",
+            "php": "8.5",
             "ext-opentelemetry": "1.0.0",
             "ext-protobuf": "4.26.1"
         },
