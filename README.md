@@ -306,9 +306,9 @@ You can find all libraries in [GitHub Utopia organization](https://github.com/ut
 
 All code contributions - including those of people having commit access - must go through a pull request and approved by a core developer before being merged. This is to ensure proper review of all the code.
 
-Fork the project, create a feature branch, and send us a pull request.
+Fork the [utopia-php monorepo](https://github.com/utopia-php/monorepo), create a feature branch, and send us a pull request.
 
-You can refer to the [Contributing Guide](https://github.com/utopia-php/http/blob/main/CONTRIBUTING.md) for more info.
+You can refer to the [Contributing Guide](https://github.com/utopia-php/monorepo/blob/main/CONTRIBUTING.md) for more info.
 
 For security issues, please email security@appwrite.io instead of posting a public issue in GitHub.
 
