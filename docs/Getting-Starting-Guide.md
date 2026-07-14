@@ -6,7 +6,7 @@ Utopia HTTP is an easy-to-use PHP MVC based framework with minimal must-have fea
 # Defining Routes
 If you’re new to Utopia, let’s get started by looking at an example of a basic GET route for an application that you can create using Utopia. We'll be using a [Swoole server](https://github.com/swoole/swoole-src) in this example, but you should be able to extend it to any HTTP server.
 
-## Basic GET Route
+## Basic GET route
 
 ```php
 use Utopia\Http\Http;
@@ -31,7 +31,7 @@ $http->start();
 
 Any route in Utopia would require you to `inject` the dependencies ( `$request` and `$response` in this case ) and define the controller by passing a callback to the `action` function. As you might have already guessed, `$request` and `$response` refer to the objects of the HTTP server library you’re using, for example, Swoole in this case. `action` defines the callback function that would be called when the GET request is executed. In this case, raw HTML is returned as a `$response`.
 
-## More Endpoints
+## More endpoints
 You can perform basic CRUD operations like GET, POST, PUT and DELETE using Utopia. Let’s assume there's a file `todos.json` that stores a list of todo objects with the following structure. In a real-world scenario, you would be fetching this information from a database.
 
 ```json
@@ -44,7 +44,7 @@ You can perform basic CRUD operations like GET, POST, PUT and DELETE using Utopi
 ]
 ```
 
-You can create a PUT request to update a todo by passing it’s reference `id` along with the values to be updated as follows:
+You can create a PUT request to update a todo by passing its reference `id` along with the values to be updated as follows:
 
 ```php
 Http::put('/todos/:id')
@@ -76,21 +76,21 @@ You might have noticed an additional property in the above example, i.e. `param`
 All the parameters need to be defined using the `param` property which accepts the following - `$key`, `$default`, `$validator`, `$description`, `$optional` and `$injections`.
 
 There are typically 3 types of parameters:
-1. Path params ( eg: `/api/users/<userID>` )
-2. Query Params ( eg: `/api/users?userId=<userID>`)
+1. Path params (e.g. `/api/users/<userID>` )
+2. Query Params (e.g. `/api/users?userId=<userID>`)
 3. Body Params ( These are passed in the request body in POST and PUT requests. )
 
 Let's take a look at how these three types of params are taken care of by Utopia:
 
 1. Path parameters are specified using `:<param_name>` in the route path and then adding them as a `->param('param_name', <default_value>, 'description')` in the route definition.
 
-2. Query Parameters are specified simply using the `->param()` function.
+2. Query Parameters are specified using the `->param()` function.
 
 3. Body Parameters are specified using the `->param()` function as well.
 
 Each of these params then become available to the `->action()` callback function in the same order that they were declared in.
 
-### Returning a Response
+### Returning a response
 Based on the type of the response you wish to return, multiple options can be used:
 
 * #### Raw HTML
@@ -108,7 +108,7 @@ $response->json(['Goodbye' => 'World']);
 JSON objects can be returned by passing the JSON object inside `$response->json()`.
 
 
-### Setting Response Status
+### Setting response status
 
 You can set a status code for your response using the `setStatusCode()` function of utopia's response object.
 
@@ -225,7 +225,7 @@ Since each action in Utopia depends on certain resources, `inject` is used to ad
 
 Now that you’re familiar with routing in Utopia, let’s dive into the lifecycle of a utopia request in detail and learn about some of the lifecycle methods.
 
-## Init and Shutdown Methods
+## Init and shutdown methods
 
 The Utopia http goes through the following lifecycle whenever it receives any request:
 

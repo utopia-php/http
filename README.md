@@ -13,7 +13,7 @@ Utopia HTTP is a PHP MVC based framework with minimal must-have features for pro
 
 Utopia HTTP keeps routing and request lifecycle concerns separate from resource wiring by relying on the standalone Utopia DI package for dependency injection.
 
-## Getting Started
+## Getting started
 
 Install using Composer:
 
@@ -65,7 +65,7 @@ Send HTTP request:
 curl http://localhost:8000/hello-world
 ```
 
-### Server Adapters
+### Server adapters
 
 The library supports server adapters to be able to run on any PHP setup. You could use the FPM or Swoole server.
 
@@ -146,7 +146,7 @@ curl http://localhost:8000/hello-world?name=Appwrite
 
 It's always recommended to use params instead of getting params or body directly from the request resource. If you do that intentionally, always make sure to run validation right after fetching such a raw input.
 
-### Multiple Methods
+### Multiple methods
 
 A route can be registered under additional paths and multiple HTTP methods. All matching paths and methods dispatch to the same route, so the action, params, and hooks are defined only once.
 
@@ -290,7 +290,7 @@ Resources are designed to prepare dependencies or context for the request. Resou
 
 To learn more about architecture and features for this library, check out more in-depth [Getting started guide](/docs/Getting-Starting-Guide.md).
 
-## System Requirements
+## System requirements
 
 Utopia HTTP requires PHP 8.3 or later. We recommend using the latest PHP version whenever possible.
 
@@ -298,7 +298,7 @@ Utopia HTTP requires PHP 8.3 or later. We recommend using the latest PHP version
 
 Our ecosystem supports other thin PHP projects aiming to extend the core PHP Utopia HTTP.
 
-Each project is focused on solving a single, very simple problem and you can use composer to include any of them in your next project.
+Each project is focused on solving a single, very simple problem and you can use Composer to include any of them in your next project.
 
 You can find all libraries in [GitHub Utopia organization](https://github.com/utopia-php).
 
