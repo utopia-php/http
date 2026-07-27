@@ -530,8 +530,8 @@ class Http
                         try {
                             $arguments = $this->getArguments($error, [], []);
                             \call_user_func_array($error->getAction(), $arguments);
-                        } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        } catch (\Throwable $hookError) {
+                            throw new Exception('Error handler had an error: ' . $hookError::class . ': ' . $hookError->getMessage(), 500, $e);
                         }
                     }
                 }
@@ -675,8 +675,8 @@ class Http
                         try {
                             $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
                             \call_user_func_array($error->getAction(), $arguments);
-                        } catch (\Throwable $e) {
-                            throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                        } catch (\Throwable $hookError) {
+                            throw new Exception('Error handler had an error: ' . $hookError::class . ': ' . $hookError->getMessage(), 500, $e);
                         }
                     }
                 }
@@ -687,8 +687,8 @@ class Http
                     try {
                         $arguments = $this->getArguments($error, $match->params, $request->getParams(), $route);
                         \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                    } catch (\Throwable $hookError) {
+                        throw new Exception('Error handler had an error: ' . $hookError::class . ': ' . $hookError->getMessage(), 500, $e);
                     }
                 }
             }
@@ -846,8 +846,8 @@ class Http
                     try {
                         $arguments = $this->getArguments($error, [], []);
                         \call_user_func_array($error->getAction(), $arguments);
-                    } catch (\Throwable $e) {
-                        throw new Exception('Error handler had an error: ' . $e->getMessage(), 500, $e);
+                    } catch (\Throwable $hookError) {
+                        throw new Exception('Error handler had an error: ' . $hookError::class . ': ' . $hookError->getMessage(), 500, $e);
                     }
                 }
             }

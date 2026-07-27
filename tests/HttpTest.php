@@ -966,6 +966,170 @@ final class HttpTest extends TestCase
 
         $this->assertEquals($expected, $result);
     }
+
+    public function testStartHooksReceiveTheServerAndRunInOrder(): void
+    {
+        $resources = new Container();
+        $http = new Http($this->startOnlyServer($resources), 'UTC');
+
+        $calls = [];
+
+        Http::onStart()
+            ->inject('server')
+            ->action(function (Adapter $server) use (&$calls, $resources): void {
+                $calls[] = 'first';
+                $this->assertSame($resources, $server->resources());
+            });
+
+        Http::onStart()
+            ->action(function () use (&$calls): void {
+                $calls[] = 'second';
+            });
+
+        $http->start();
+
+        $this->assertSame(['first', 'second'], $calls);
+    }
+
+    public function testFailingStartHookStillDispatchesAWorkingErrorHook(): void
+    {
+        $resources = new Container();
+        $http = new Http($this->startOnlyServer($resources), 'UTC');
+
+        $received = null;
+
+        Http::onStart()
+            ->action(function (): void {
+                throw new \DomainException('config file is unreadable', 17);
+            });
+
+        Http::error()
+            ->inject('error')
+            ->action(function (\Throwable $error) use (&$received): void {
+                $received = $error;
+            });
+
+        $http->start();
+
+        $this->assertInstanceOf(\DomainException::class, $received);
+        $this->assertSame('config file is unreadable', $received->getMessage());
+        $this->assertSame(17, $received->getCode());
+    }
+
+    public function testFailingStartHookIsKeptWhenTheErrorHookCannotRun(): void
+    {
+        $resources = new Container();
+        $http = new Http($this->startOnlyServer($resources), 'UTC');
+
+        $dispatched = false;
+
+        Http::onStart()
+            ->action(function (): void {
+                throw new \DomainException('config file is unreadable', 17);
+            });
+
+        // Every real consumer injects request-scoped resources into its error
+        // hooks, and none of those exist before the first connection.
+        Http::error()
+            ->inject('request')
+            ->action(function (mixed $request) use (&$dispatched): void {
+                $dispatched = true;
+            });
+
+        $thrown = null;
+
+        try {
+            $http->start();
+        } catch (\Throwable $exception) {
+            $thrown = $exception;
+        }
+
+        $this->assertFalse($dispatched, 'a request-scoped error hook cannot run before a request');
+        $this->assertInstanceOf(Exception::class, $thrown);
+        $this->assertSame(
+            'Error handler had an error: Utopia\DI\Exceptions\NotFoundException: Dependency request not found',
+            $thrown->getMessage(),
+            'the hook failure keeps its type and message even though the chain belongs to the start failure',
+        );
+
+        $previous = $thrown->getPrevious();
+        $this->assertInstanceOf(
+            \DomainException::class,
+            $previous,
+            'the start failure must not be replaced by the error hook failure',
+        );
+        $this->assertSame('config file is unreadable', $previous->getMessage());
+        $this->assertSame(17, $previous->getCode());
+    }
+
+    public function testFailingRequestHookIsKeptWhenTheErrorHookThrows(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/path';
+
+        Http::get('/path')->action(function (): void {});
+
+        $this->http
+            ->init()
+            ->action(function (): void {
+                throw new \DomainException('init hook failed', 17);
+            });
+
+        $this->http
+            ->error()
+            ->action(function (): void {
+                throw new \LogicException('error hook failed');
+            });
+
+        $thrown = null;
+
+        try {
+            $this->http->execute(new Request(), new Response());
+        } catch (\Throwable $exception) {
+            $thrown = $exception;
+        }
+
+        $this->assertInstanceOf(Exception::class, $thrown);
+        $this->assertSame('Error handler had an error: LogicException: error hook failed', $thrown->getMessage());
+
+        $previous = $thrown->getPrevious();
+        $this->assertInstanceOf(
+            \DomainException::class,
+            $previous,
+            'the request failure must not be replaced by the error hook failure',
+        );
+        $this->assertSame('init hook failed', $previous->getMessage());
+    }
+
+    /**
+     * A server that fires start hooks and never dispatches a request, which is
+     * the state a real server's start callback runs in.
+     */
+    private function startOnlyServer(Container $resources): Adapter
+    {
+        return new class ($resources) extends Adapter {
+            public function __construct(private Container $resources) {}
+
+            public function onStart(callable $callback): void
+            {
+                \call_user_func($callback, $this);
+            }
+
+            public function onRequest(callable $callback): void {}
+
+            public function start(): void {}
+
+            public function resources(): Container
+            {
+                return $this->resources;
+            }
+
+            public function context(): Container
+            {
+                return $this->resources;
+            }
+        };
+    }
 }
 
 /**
