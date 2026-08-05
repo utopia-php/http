@@ -174,7 +174,8 @@ class Server extends Adapter
         $settings = $server->setting ?? [];
 
         // Register an observable gauge whose value is read on each collect().
-        // A null reading is skipped so absent keys don't emit a series.
+        // A null reading skips the observation, so only register a gauge this
+        // process can actually fill — see the worker-id note below.
         $observe = function (string $name, callable $value) use ($telemetry): void {
             $telemetry->createObservableGauge($name)->observe(function (callable $observer) use ($value): void {
                 $reading = $value();
@@ -214,14 +215,20 @@ class Server extends Adapter
         });
 
         // Server-wide stats are master-tracked, so only worker 0 emits them to
-        // avoid every worker reporting the same numbers. The worker is checked
-        // at collect time, so registration needs no worker id. reactor threads
-        // run in the master (SWOOLE_PROCESS mode) too.
-        $onWorker0 = fn(callable $read) => fn() => $server->getWorkerId() === 0 ? $read() : null;
-        foreach (self::SERVER_STATS as $key => $name) {
-            $observe($name, $onWorker0(fn() => $server->stats()[$key] ?? null));
+        // avoid every worker reporting the same numbers. The check belongs here,
+        // at registration, NOT inside the callback: an instrument whose callback
+        // observes nothing is still exported, as a metric with zero data points,
+        // and Prometheus 3.13 and later rejects the whole OTLP request over one
+        // of those. This runs on worker start, so the worker id is already
+        // assigned. reactor threads run in the master (SWOOLE_PROCESS mode) too.
+        if ($server->getWorkerId() !== 0) {
+            return;
         }
-        $observe(self::METRIC_REACTOR_THREADS, $onWorker0(fn() => $settings['reactor_num'] ?? swoole_cpu_num()));
+
+        foreach (self::SERVER_STATS as $key => $name) {
+            $observe($name, fn() => $server->stats()[$key] ?? null);
+        }
+        $observe(self::METRIC_REACTOR_THREADS, fn() => $settings['reactor_num'] ?? swoole_cpu_num());
     }
 
     public function onStart(callable $callback): void
