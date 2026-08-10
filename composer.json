@@ -33,7 +33,7 @@
         "utopia-php/compression": "^0.1",
         "utopia-php/psr7": "^0.2.0",
         "utopia-php/telemetry": "^0.4",
-        "utopia-php/validators": "0.3.*",
+        "utopia-php/validators": "^0.4",
         "utopia-php/system": "^0.10"
     },
     "suggest": {
