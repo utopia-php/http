@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Utopia\Http\Http;
 use Utopia\Http\Request;
 use Utopia\Http\Response;
+use Utopia\Validator\JSON\ObjectValidator;
 use Utopia\Validator\Text;
 
 ini_set('memory_limit', '1024M');
@@ -80,4 +81,11 @@ Http::get('/aliased')
     ->inject('response')
     ->action(function (Response $response) {
         $response->send('Aliased!');
+    });
+
+Http::post('/object')
+    ->param('data', [], new ObjectValidator())
+    ->inject('response')
+    ->action(function (mixed $data, Response $response) {
+        $response->json(['data' => $data]);
     });

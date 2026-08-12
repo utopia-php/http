@@ -267,7 +267,7 @@ class Request extends UtopiaRequest
             $contentType = substr($contentType, 0, $length);
 
             $this->payload = match ($contentType) {
-                'application/json' => json_decode(\strval($this->swoole->rawContent()), true),
+                'application/json' => $this->decodePayload(\strval($this->swoole->rawContent())),
                 default => $this->swoole->post,
             };
 

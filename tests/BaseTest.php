@@ -54,4 +54,28 @@ trait BaseTest
             $this->assertSame('Aliased!', $response['body']);
         }
     }
+
+    /**
+     * An object param has to come back as the object that was sent. Decoding the
+     * body into associative arrays turned every empty object into an empty array,
+     * so a stored `{}` was served back as `[]` for the life of the record.
+     */
+    public function testObjectParamRoundTrips(): void
+    {
+        $bodies = [
+            '{"data":{}}',
+            '{"data":{"inner":{}}}',
+            '{"data":{"a":{},"b":1}}',
+            '{"data":{"l1":{"l2":{}}}}',
+            '{"data":{"arr":[{},{"x":1}]}}',
+            '{"data":{"a":1}}',
+        ];
+
+        foreach ($bodies as $body) {
+            $response = $this->client->call(Client::METHOD_POST, '/object', ['Content-Type: application/json'], [], $body);
+
+            $this->assertSame(200, $response['headers']['status-code'], $body);
+            $this->assertSame($body, $response['body'], 'the echoed object must match the body that was sent');
+        }
+    }
 }

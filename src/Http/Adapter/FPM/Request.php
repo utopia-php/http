@@ -247,7 +247,7 @@ class Request extends UtopiaRequest
             $this->rawPayload = file_get_contents('php://input') ?: '';
 
             $this->payload = match ($contentType) {
-                'application/json' => json_decode($this->rawPayload, true),
+                'application/json' => $this->decodePayload($this->rawPayload),
                 default => $_POST,
             };
 
