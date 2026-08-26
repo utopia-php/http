@@ -340,6 +340,26 @@ final class RequestTest extends TestCase
         $this->assertSame(0, $this->request->getRangeStart());
         $this->assertNull($this->request->getRangeEnd());
 
+        // RFC 9110 bounds are inclusive: start === end is a valid single-byte range.
+        $_SERVER['HTTP_RANGE'] = 'bytes=0-0';
+        $this->request = new Request();
+        $this->assertSame('bytes', $this->request->getRangeUnit());
+        $this->assertSame(0, $this->request->getRangeStart());
+        $this->assertSame(0, $this->request->getRangeEnd());
+
+        $_SERVER['HTTP_RANGE'] = 'bytes=499-499';
+        $this->request = new Request();
+        $this->assertSame('bytes', $this->request->getRangeUnit());
+        $this->assertSame(499, $this->request->getRangeStart());
+        $this->assertSame(499, $this->request->getRangeEnd());
+
+        // Start past end is still invalid.
+        $_SERVER['HTTP_RANGE'] = 'bytes=5-4';
+        $this->request = new Request();
+        $this->assertNull($this->request->getRangeUnit());
+        $this->assertNull($this->request->getRangeStart());
+        $this->assertNull($this->request->getRangeEnd());
+
         $_SERVER['HTTP_RANGE'] = 'bytes=0--499';
         $this->request = new Request();
         $this->assertNull($this->request->getRangeUnit());
