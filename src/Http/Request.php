@@ -712,7 +712,9 @@ abstract class Request
             $data['end'] = (int) $ranges[1];
         }
 
-        if ($data['end'] !== null && $data['start'] >= $data['end']) {
+        // RFC 9110 range bounds are inclusive, so start === end is a valid
+        // single-byte range (`bytes=0-0`, or the final byte of a file).
+        if ($data['end'] !== null && $data['start'] > $data['end']) {
             return null;
         }
 
