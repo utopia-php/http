@@ -5,3 +5,4 @@
 .phpunit.result.cache
 /.phpunit.cache/
 *.cache
+composer.lock
