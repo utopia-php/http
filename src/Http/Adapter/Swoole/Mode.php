@@ -181,6 +181,12 @@ enum Mode
                 // context switches. 1× cores is the right shape.
                 Constant::OPTION_WORKER_NUM => (int) max(1, ceil(System::getCPU())),
 
+                // Default: 0 / unlimited. Periodically recycle workers so
+                // retained process memory is released. Tune to the workload's
+                // memory growth and worker startup cost. Swoole's default
+                // max_request_grace adds 1..5,000 requests to spread recycling.
+                Constant::OPTION_MAX_REQUEST => 10_000,
+
                 // Default: host CPU × 8 (async_thread.cc:84 +
                 // swoole_config.h:87 SW_AIO_THREAD_NUM_MULTIPLE = 8).
                 // Read by Server::set() via swoole_server.cc:2034 →
