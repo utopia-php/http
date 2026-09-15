@@ -31,6 +31,19 @@ final class RouteTest extends TestCase
         $this->assertSame('/path', $this->route->getPath());
     }
 
+    public function testStopsAtTheOptionsHooksUnlessAsked(): void
+    {
+        $this->assertFalse($this->route->getOptions());
+
+        $this->route->options();
+
+        $this->assertTrue($this->route->getOptions());
+
+        $this->route->options(false);
+
+        $this->assertFalse($this->route->getOptions());
+    }
+
     public function testCanSetAndGetDescription(): void
     {
         $this->assertSame('', $this->route->getDesc());

@@ -558,8 +558,8 @@ class Http
      * Match a request and run its route's handler and hooks.
      *
      * HEAD runs as GET with the response body suppressed. OPTIONS fires
-     * options hooks and returns without dispatching. An unmatched request
-     * fires global error hooks with a 404.
+     * options hooks and returns without dispatching unless the route opted
+     * in. An unmatched request fires global error hooks with a 404.
      *
      * This is a re-entrant dispatch primitive — safe to call from inside
      * another handler with a synthesized Request/Response (e.g. a GraphQL
@@ -578,7 +578,7 @@ class Http
 
         $match = $this->match($request);
 
-        if (self::REQUEST_METHOD_OPTIONS === $method) {
+        if (self::REQUEST_METHOD_OPTIONS === $method && !($match?->route->getOptions() ?? false)) {
             $groups = $match?->route->getGroups() ?? [];
 
             try {

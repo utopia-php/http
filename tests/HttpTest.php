@@ -846,6 +846,35 @@ final class HttpTest extends TestCase
         $_SERVER['REQUEST_URI'] = $uri;
     }
 
+    public function testWildcardRouteCanRunOptions(): void
+    {
+        $_SERVER['REQUEST_METHOD'] = 'OPTIONS';
+        $_SERVER['REQUEST_URI'] = '/unknown_path';
+
+        $seen = [];
+        Http::options()
+            ->action(function () use (&$seen) {
+                $seen[] = 'hook';
+            });
+
+        Http::wildcard()
+            ->options()
+            ->inject('request')
+            ->inject('response')
+            ->action(function (Request $request, Response $response) use (&$seen) {
+                $seen[] = 'action';
+                $response->send($request->getMethod());
+            });
+
+        ob_start();
+        @$this->http->run(new Request(), new Response());
+        $result = ob_get_contents();
+        ob_end_clean();
+
+        $this->assertSame('OPTIONS', $result, 'the action must see the real method');
+        $this->assertSame(['action'], $seen, 'a route that takes OPTIONS replaces the options hooks');
+    }
+
     public function testWildcardRouteWhenUriHasNoPath(): void
     {
         $method = $_SERVER['REQUEST_METHOD'] ?? null;

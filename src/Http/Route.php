@@ -19,6 +19,11 @@ class Route extends Hook
     protected bool $hook = true;
 
     /**
+     * Whether an OPTIONS request runs this route's action.
+     */
+    protected bool $options = false;
+
+    /**
      * Path
      */
     protected string $path = '';
@@ -98,6 +103,25 @@ class Route extends Hook
         $this->hook = $hook;
 
         return $this;
+    }
+
+    /**
+     * When set true, a matching OPTIONS request runs the action instead of
+     * stopping at the options hooks.
+     */
+    public function options(bool $options = true): self
+    {
+        $this->options = $options;
+
+        return $this;
+    }
+
+    /**
+     * Get options status
+     */
+    public function getOptions(): bool
+    {
+        return $this->options;
     }
 
     /**
