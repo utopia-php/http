@@ -225,6 +225,34 @@ abstract class Request
     abstract public function setURI(string $uri): static;
 
     /**
+     * Get original URI
+     *
+     * The path the client asked for before a proxy rewrote it, or the request
+     * URI when no trusted header carries one.
+     */
+    public function getOriginalURI(): string
+    {
+        foreach ($this->trusted->path as $header) {
+            $values = $this->getHeader($header);
+
+            if ($values === []) {
+                continue;
+            }
+
+            // A rewriting hop appends, so the last value is its own and any
+            // before it came from the client. FPM joins repeats with a comma.
+            $pieces = explode(', ', (string) end($values));
+            $path = trim((string) end($pieces));
+
+            if ($path !== '') {
+                return $path;
+            }
+        }
+
+        return $this->getURI();
+    }
+
+    /**
      * Get files
      *
      * Method for querying upload files data. If $key is not found empty array will be returned.

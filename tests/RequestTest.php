@@ -251,6 +251,50 @@ final class RequestTest extends TestCase
         $this->assertSame('203.0.113.7', $this->request->getIP());
     }
 
+    public function testTrustsTheReplacedPathByDefault(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/v1/router/gateway';
+        $_SERVER['HTTP_X_REPLACED_PATH'] = '/submit';
+
+        $this->assertSame('/submit', $this->request->getOriginalURI());
+    }
+
+    public function testCanStopTrustingTheReplacedPath(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/v1/router/gateway';
+        $_SERVER['HTTP_X_REPLACED_PATH'] = '/forged';
+
+        $this->request = new Request(new TrustedHeaders(path: []));
+
+        $this->assertSame('/v1/router/gateway', $this->request->getOriginalURI());
+    }
+
+    public function testCanTrustARewriteHeaderOfAnyName(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/v1/router/gateway';
+        $_SERVER['HTTP_X_REPLACED_PATH'] = '/forged';
+        $_SERVER['HTTP_X_ORIGINAL_PATH'] = '/submit';
+
+        $this->request = new Request(new TrustedHeaders(path: ['x-original-path']));
+
+        $this->assertSame('/submit', $this->request->getOriginalURI());
+    }
+
+    public function testTakesTheProxyPathFromBehindAClientCopy(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/v1/router/gateway';
+        $_SERVER['HTTP_X_REPLACED_PATH'] = '/forged, /submit';
+
+        $this->assertSame('/submit', $this->request->getOriginalURI(), 'the rewriting hop appends, so its value is the last one');
+    }
+
+    public function testFallsBackToTheRequestUriWhenTheRewriteHeaderIsAbsent(): void
+    {
+        $_SERVER['REQUEST_URI'] = '/direct';
+
+        $this->assertSame('/direct', $this->request->getOriginalURI());
+    }
+
     public function testCanGetMethod(): void
     {
         $this->assertSame('UNKNOWN', $this->request->getMethod());

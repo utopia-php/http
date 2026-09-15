@@ -128,6 +128,37 @@ final class SwooleRequestTest extends TestCase
         $this->assertSame('https', $request->getProtocol());
     }
 
+    public function testTrustsTheReplacedPathByDefault(): void
+    {
+        $request = new Request($this->schemeRequest(['X-Replaced-Path' => '/submit']));
+
+        $this->assertSame('/submit', $request->getOriginalURI());
+    }
+
+    public function testTakesTheProxyPathFromBehindAClientCopy(): void
+    {
+        $raw = "GET /v1/router/gateway HTTP/1.1\r\nHost: localhost\r\n"
+            . "X-Replaced-Path: /forged\r\n"
+            . "X-Replaced-Path: /submit\r\n\r\n";
+        $swoole = SwooleRequest::create(['parse_cookie' => false, 'parse_files' => false]);
+        $swoole->parse($raw);
+
+        $request = new Request($swoole);
+
+        $this->assertSame(['/forged', '/submit'], $request->getHeader('x-replaced-path'), 'Swoole keeps every repeated value');
+        $this->assertSame('/submit', $request->getOriginalURI(), 'the rewriting hop appends, so its value is the last one');
+    }
+
+    public function testCanStopTrustingTheReplacedPath(): void
+    {
+        $request = new Request(
+            $this->schemeRequest(['X-Replaced-Path' => '/forged']),
+            new TrustedHeaders(path: []),
+        );
+
+        $this->assertSame('/v1/documents', $request->getOriginalURI());
+    }
+
     /**
      * @param  array<string, string>  $headers
      */

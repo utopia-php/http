@@ -13,6 +13,10 @@ namespace Utopia\Http;
  */
 final readonly class TrustedHeaders
 {
+    public const string FORWARDED_PROTO = 'x-forwarded-proto';
+
+    public const string REPLACED_PATH = 'x-replaced-path';
+
     /**
      * @var array<int, string>
      */
@@ -24,13 +28,20 @@ final readonly class TrustedHeaders
     public array $proto;
 
     /**
+     * @var array<int, string>
+     */
+    public array $path;
+
+    /**
      * @param  array<int, string>  $ip  Headers naming the client address.
      * @param  array<int, string>  $proto  Headers naming the scheme the client used.
+     * @param  array<int, string>  $path  Headers naming the path a proxy rewrote.
      */
-    public function __construct(array $ip = [], array $proto = ['x-forwarded-proto'])
+    public function __construct(array $ip = [], array $proto = [self::FORWARDED_PROTO], array $path = [self::REPLACED_PATH])
     {
         $this->ip = $this->normalize($ip);
         $this->proto = $this->normalize($proto);
+        $this->path = $this->normalize($path);
     }
 
     /**
