@@ -1,5 +1,5 @@
 > [!IMPORTANT]
-> This repository is a read-only mirror of the [utopia-php monorepo](https://github.com/utopia-php/monorepo). Development happens in [`packages/http`](https://github.com/utopia-php/monorepo/tree/main/packages/http) — please open issues and pull requests there.
+> This repository is a read-only mirror of [`packages/http`](https://github.com/appwrite/appwrite/tree/main/packages/http) in [appwrite/appwrite](https://github.com/appwrite/appwrite). Development happens there — please open issues and pull requests against appwrite/appwrite.
 
 <p>
     <img height="45" src="docs/logo.png" alt="Logo">
@@ -117,7 +117,7 @@ $http = new Http(new Server('0.0.0.0', '80', resources: $resources), 'America/Ne
 $http->start();
 ```
 
-> When using Swoole, you can use the command `php src/server.php` to run the HTTP server locally, but you need Swoole installed. For setup with Docker, check out our [example application](/example)
+> When using Swoole, you can use the command `php src/server.php` to run the HTTP server locally, but you need Swoole installed.
 
 ### Parameters
 
